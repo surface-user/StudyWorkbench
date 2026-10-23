@@ -1,0 +1,43 @@
+00:00 +0: loading D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/m0_test.dart
+CMake Warning (dev) at flutter/ephemeral/.plugin_symlinks/flutter_inappwebview_windows/windows/CMakeLists.txt:31 (add_custom_command):
+Building Windows application...                                 
+  The following keywords are not supported when using
+  add_custom_command(TARGET): DEPENDS.
+
+  Policy CMP0175 is not set: add_custom_command() rejects invalid arguments.
+  Run "cmake --help-policy CMP0175" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+Building Windows application...                                    59.2s
+√ Built build\windows\x64\runner\Debug\study_workbench.exe
+00:00 +0: Windows M0 backend, grading, WebView2 and actual video decoding
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Timed out waiting for Windows prototype
+
+When the exception was thrown, this was the stack:
+#0      fail (package:matcher/src/expect/expect.dart:187:31)
+#1      main.<anonymous closure>.until (file:///D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/m0_test.dart:23:9)
+<asynchronous suspension>
+#2      main.<anonymous closure> (file:///D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/m0_test.dart:29:7)
+<asynchronous suspension>
+#3      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#4      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  Windows M0 backend, grading, WebView2 and actual video decoding
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:25 +0 -1: Windows M0 backend, grading, WebView2 and actual video decoding [E]
+  Test failed. See exception logs above.
+  The test description was: Windows M0 backend, grading, WebView2 and actual video decoding
+  
+00:25 +0 -1: (tearDownAll)
+00:25 +0 -1: Some tests failed.
+
+Failing tests:
+  D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/m0_test.dart: Windows M0 backend, grading, WebView2 and actual video decoding

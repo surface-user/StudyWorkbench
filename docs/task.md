@@ -10,6 +10,7 @@
 | M0-04 玻璃/题目/标签/后端原型 | 已实现 | 组件与后端通过；Windows 结果见 m0-validation | 完整产品行为不属于 M0 |
 | M0-05 WebView2/HTML5 | 已实现技术切片 | Windows 原生验证结果见 m0-validation | 外站兼容、字幕/续播/编码矩阵待验 |
 | M0-06 CI / 打包脚手架 | 已实现工作流、PyInstaller、Inno 模板 | 本地冻结后端 smoke 通过 | setup 尚未编译；干净机/卸载待验 |
+| M0-07 题目机器协议 | 全部题型/块的 Python 校验及 JSON Schema；入库/判分接入 | 40 项后端测试通过，含漂移检查 | 不代表所有题型渲染/判分可用；附件解析和 Dart 校验待 M2 |
 
 M0 阶段验收：以 m0-validation.md 的实测和待验证项为准，未获得人工验收前不标记全部通过。
 

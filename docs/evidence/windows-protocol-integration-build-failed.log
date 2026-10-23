@@ -1,0 +1,47 @@
+00:00 +0: loading D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/m0_test.dart
+Building Windows application...                                 
+CMake Warning (dev) at flutter/ephemeral/.plugin_symlinks/flutter_inappwebview_windows/windows/CMakeLists.txt:31 (add_custom_command):
+  The following keywords are not supported when using
+  add_custom_command(TARGET): DEPENDS.
+
+  Policy CMP0175 is not set: add_custom_command() rejects invalid arguments.
+  Run "cmake --help-policy CMP0175" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(156,5): error MSB3073: 命令“setlocal [D:\computer_work\project\StudyWorkbench\apps\desktop\build\windows\x64\plugins\flutter_inappwebview_windows\flutter_inappwebview_windows_DEPENDENCIES_DOWNLOAD.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(156,5): error MSB3073: D:\computer_work\project\StudyWorkbench\.local\bin\nuget.exe install Microsoft.Windows.ImplementationLibrary -Version 1.0.231216.1 -ExcludeVersion -OutputDirectory D:/computer_work/project/StudyWorkbench/apps/desktop/build/windows/x64/packages [D:\computer_work\project\StudyWorkbench\apps\desktop\build\windows\x64\plugins\flutter_inappwebview_windows\flutter_inappwebview_windows_DEPENDENCIES_DOWNLOAD.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(156,5): error MSB3073: if %errorlevel% neq 0 goto :cmEnd [D:\computer_work\project\StudyWorkbench\apps\desktop\build\windows\x64\plugins\flutter_inappwebview_windows\flutter_inappwebview_windows_DEPENDENCIES_DOWNLOAD.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(156,5): error MSB3073: D:\computer_work\project\StudyWorkbench\.local\bin\nuget.exe install Microsoft.Web.WebView2 -Version 1.0.2792.45 -ExcludeVersion -OutputDirectory D:/computer_work/project/StudyWorkbench/apps/desktop/build/windows/x64/packages [D:\computer_work\project\StudyWorkbench\apps\desktop\build\windows\x64\plugins\flutter_inappwebview_windows\flutter_inappwebview_windows_DEPENDENCIES_DOWNLOAD.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(156,5): error MSB3073: if %errorlevel% neq 0 goto :cmEnd [D:\computer_work\project\StudyWorkbench\apps\desktop\build\windows\x64\plugins\flutter_inappwebview_windows\flutter_inappwebview_windows_DEPENDENCIES_DOWNLOAD.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(156,5): error MSB3073: D:\computer_work\project\StudyWorkbench\.local\bin\nuget.exe install nlohmann.json -Version 3.11.2 -ExcludeVersion -OutputDirectory D:/computer_work/project/StudyWorkbench/apps/desktop/build/windows/x64/packages [D:\computer_work\project\StudyWorkbench\apps\desktop\build\windows\x64\plugins\flutter_inappwebview_windows\flutter_inappwebview_windows_DEPENDENCIES_DOWNLOAD.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(156,5): error MSB3073: if %errorlevel% neq 0 goto :cmEnd [D:\computer_work\project\StudyWorkbench\apps\desktop\build\windows\x64\plugins\flutter_inappwebview_windows\flutter_inappwebview_windows_DEPENDENCIES_DOWNLOAD.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(156,5): error MSB3073: :cmEnd [D:\computer_work\project\StudyWorkbench\apps\desktop\build\windows\x64\plugins\flutter_inappwebview_windows\flutter_inappwebview_windows_DEPENDENCIES_DOWNLOAD.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(156,5): error MSB3073: endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone [D:\computer_work\project\StudyWorkbench\apps\desktop\build\windows\x64\plugins\flutter_inappwebview_windows\flutter_inappwebview_windows_DEPENDENCIES_DOWNLOAD.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(156,5): error MSB3073: :cmErrorLevel [D:\computer_work\project\StudyWorkbench\apps\desktop\build\windows\x64\plugins\flutter_inappwebview_windows\flutter_inappwebview_windows_DEPENDENCIES_DOWNLOAD.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(156,5): error MSB3073: exit /b %1 [D:\computer_work\project\StudyWorkbench\apps\desktop\build\windows\x64\plugins\flutter_inappwebview_windows\flutter_inappwebview_windows_DEPENDENCIES_DOWNLOAD.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(156,5): error MSB3073: :cmDone [D:\computer_work\project\StudyWorkbench\apps\desktop\build\windows\x64\plugins\flutter_inappwebview_windows\flutter_inappwebview_windows_DEPENDENCIES_DOWNLOAD.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(156,5): error MSB3073: if %errorlevel% neq 0 goto :VCEnd [D:\computer_work\project\StudyWorkbench\apps\desktop\build\windows\x64\plugins\flutter_inappwebview_windows\flutter_inappwebview_windows_DEPENDENCIES_DOWNLOAD.vcxproj]
+C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(156,5): error MSB3073: :VCEnd”已退出，代码为 1。 [D:\computer_work\project\StudyWorkbench\apps\desktop\build\windows\x64\plugins\flutter_inappwebview_windows\flutter_inappwebview_windows_DEPENDENCIES_DOWNLOAD.vcxproj]
+Building Windows application...                                    61.7s
+00:00 +0 -1: loading D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/m0_test.dart [E]
+  Failed to load "D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/m0_test.dart": Build process failed.
+  package:flutter_tools/src/base/common.dart 34:3                    throwToolExit
+  package:flutter_tools/src/windows/build_windows.dart 262:5         _runBuild
+  ===== asynchronous gap ===========================
+  package:flutter_tools/src/windows/build_windows.dart 118:5         buildWindows
+  ===== asynchronous gap ===========================
+  package:flutter_tools/src/windows/windows_device.dart 60:5         WindowsDevice.buildForDevice
+  ===== asynchronous gap ===========================
+  package:flutter_tools/src/desktop_device.dart 108:7                DesktopDevice.startApp
+  ===== asynchronous gap ===========================
+  package:flutter_tools/src/test/integration_test_device.dart 59:39  IntegrationTestTestDevice.start
+  ===== asynchronous gap ===========================
+  package:flutter_tools/src/test/flutter_platform.dart 679:51        FlutterPlatform._startTest.<fn>
+  ===== asynchronous gap ===========================
+  package:flutter_tools/src/base/async_guard.dart 108:24             asyncGuard.<fn>
+  
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/m0_test.dart: loading D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/m0_test.dart

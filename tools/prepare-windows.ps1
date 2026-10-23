@@ -2,6 +2,12 @@
 $ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path $PSScriptRoot -Parent
 $desktop = Join-Path $taskRoot 'apps/desktop'
+# Use process-local writable scratch paths; do not alter machine/user environment settings.
+$taskTemp = Join-Path $taskRoot '.local/tmp'
+New-Item -ItemType Directory -Force $taskTemp | Out-Null
+$env:TEMP = $taskTemp
+$env:TMP = $taskTemp
+$env:NUGET_SCRATCH = Join-Path $taskRoot '.local/nuget-scratch'
 $metadata = Get-Content (Join-Path $desktop '.flutter-plugins-dependencies') -Raw | ConvertFrom-Json
 $links = Join-Path $desktop 'windows/flutter/ephemeral/.plugin_symlinks'
 New-Item -ItemType Directory -Force $links | Out-Null
@@ -20,4 +26,4 @@ $signature = Get-AuthenticodeSignature (Join-Path $bin 'nuget.exe')
 if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'Microsoft Corporation') {
     throw 'NuGet signature validation failed'
 }
-Write-Output 'Prepared local plugin junctions and signed NuGet. Add .local/bin to PATH for this build session.'
+Write-Output 'Prepared junctions, signed NuGet, and process-local TEMP/NUGET_SCRATCH. Add .local/bin to PATH for this build session.'

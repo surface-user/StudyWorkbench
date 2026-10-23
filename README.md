@@ -20,6 +20,8 @@ flutter run -d windows --dart-define=STUDY_ROOT=D:/computer_work/project/StudyWo
 
 原型自动启动 Python 后端并从私有 stdin 发送临时令牌；源码运行需 STUDY_ROOT 指向仓库绝对路径。关闭窗口时终止其子进程。生产版使用同目录 backend/study_backend.exe（M1 验证）。数据默认在 `%LOCALAPPDATA%/StudyWorkbench/m0`，不在程序目录。
 
+开发/测试可用 `--dart-define=STUDY_DATA_DIR=D:/absolute/test-data` 隔离数据与 WebView profile；该开关只在构建时指定，不代替 M1 的首次目录选择或安全迁移设置。不得指向正式学习目录做技术测试。
+
 视频验证：通过 `--dart-define=STUDY_MEDIA=C:/absolute/path/owned-video.mp4` 指定本人有权使用的视频。不指定时播放器显示缺少样本；不会下载网络视频。建议先测 H.264/AAC MP4，再测 VP9/Opus WebM；具体编解码支持必须实测。
 
 ```powershell

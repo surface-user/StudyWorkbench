@@ -14,7 +14,14 @@ class Backend {
   static Future<Backend> start() async {
     const root = String.fromEnvironment('STUDY_ROOT');
     const media = String.fromEnvironment('STUDY_MEDIA');
-    final data = '${Platform.environment['LOCALAPPDATA']!}/StudyWorkbench/m0';
+    const testData = String.fromEnvironment('STUDY_DATA_DIR');
+    // Build-time override isolates technical tests; user-facing directory settings belong to M1.
+    final data = testData.isEmpty
+        ? '${Platform.environment['LOCALAPPDATA']!}/StudyWorkbench/m0'
+        : testData;
+    if (!Directory(data).isAbsolute) {
+      throw ArgumentError('STUDY_DATA_DIR 必须使用绝对路径');
+    }
     final random = Random.secure();
     final token = base64Url.encode(
       List.generate(32, (_) => random.nextInt(256)),

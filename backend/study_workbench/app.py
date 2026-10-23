@@ -15,6 +15,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .content import DEMO, SUBJECTIVE
 from .db import Attempt, Question, database
+from .question_protocol import QuestionDocument
 
 
 class Submission(BaseModel):
@@ -35,6 +36,7 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
         command.upgrade(config, "head")
     with Session(engine) as session, session.begin():
         for content in (DEMO, SUBJECTIVE):
+            QuestionDocument.model_validate(content)
             if not session.get(Question, content["id"]):
                 session.add(Question(id=content["id"], content=content))
 
@@ -80,12 +82,14 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
                 raise HTTPException(404, "Unknown question")
             score = None
             status = "pending_review"
-            if question.content["kind"] == "single_choice":
+            document = QuestionDocument.model_validate(question.content)
+            if document.kind == "single_choice":
                 selected = body.response.get("selected")
                 if (not isinstance(selected, list) or len(selected) != 1
-                        or not isinstance(selected[0], str) or selected[0] not in {"a", "b"}):
+                        or not isinstance(selected[0], str)
+                        or selected[0] not in {option.id for option in document.options}):
                     raise HTTPException(422, "Select exactly one valid option")
-                score = float(selected == question.content["answer"]["selected"])
+                score = float(selected == document.answer.selected)
                 status = "graded"
             elif not isinstance(body.response.get("text"), str) or not body.response["text"].strip():
                 raise HTTPException(422, "Written response required")

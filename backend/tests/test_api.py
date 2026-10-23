@@ -1,5 +1,7 @@
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 from study_workbench.app import create_app
+from study_workbench.db import Question, database
 
 TOKEN = "test-session-" * 4
 AUTH = {"Authorization": "Bearer " + TOKEN}
@@ -46,6 +48,26 @@ def test_invalid_submissions_do_not_write(tmp_path):
         assert c.post("/api/attempts", headers=AUTH, json={
             "question_id": "demo-proof", "response": {"text": " "}}).status_code == 422
         assert c.get("/api/attempts", headers=AUTH).json() == []
+
+
+def test_grading_uses_protocol_option_ids(tmp_path):
+    with client(tmp_path) as c:
+        engine = database(tmp_path / "study.db")
+        try:
+            with Session(engine) as session, session.begin():
+                question = session.get(Question, "demo-integral")
+                content = dict(question.content)
+                content["options"][0]["id"] = "correct-option"
+                content["answer"] = {"selected": ["correct-option"]}
+                question.content = content
+            response = c.post("/api/attempts", headers=AUTH, json={
+                "question_id": "demo-integral", "response": {"selected": ["correct-option"]}})
+            assert response.status_code == 200
+            assert response.json()["score"] == 1.0
+            assert c.post("/api/attempts", headers=AUTH, json={
+                "question_id": "demo-integral", "response": {"selected": ["a"]}}).status_code == 422
+        finally:
+            engine.dispose()
 
 
 def test_media_capability_and_range(tmp_path):

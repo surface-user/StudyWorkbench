@@ -20,7 +20,15 @@ void main() {
           await tester.pump(const Duration(milliseconds: 200));
           if (condition()) return;
         }
-        fail('Timed out waiting for Windows prototype');
+        final status = find
+            .byType(Text)
+            .evaluate()
+            .map((element) => (element.widget as Text).data)
+            .whereType<String>()
+            .join(' | ');
+        fail(
+          'Timed out waiting for Windows prototype. Visible status: $status',
+        );
       }
 
       await until(() => find.text('本地后端已连接').evaluate().isNotEmpty);
