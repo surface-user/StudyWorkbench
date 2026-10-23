@@ -16,7 +16,7 @@
 | PyInstaller onedir | 退出 0 | 最终使用 6.22.3；本机冻结 exe smoke 通过，不是干净机分发验收 |
 | 源码/冻结后端进程 smoke | 均退出 0 | 握手随机端口、Bearer HTTP、SQLite、stdin EOF 退出；不打印令牌 |
 | Windows Release | 退出 0，36.1 秒 | [构建日志](evidence/windows-release-passed.log)；已复制冻结 backend 到 Release/backend，Release 窗口人工验收待做 |
-| GitHub CI | 已建立工作流 | 远程结果另行记录，不能以本地结果替代 |
+| GitHub CI | 首轮 backend 通过、desktop 编译失败；修复 runner 后待复验 | [失败证据](evidence/ci-first-run-failure.md)；windows-latest 的 VS18 与插件旧协程头不兼容，固定 windows-2022；不能以本地结果替代 |
 | setup.exe | 待验证 | 只有 Inno 模板，当前未安装/运行 ISCC，无安装产物 |
 
 原生集成具体行为：通过实际 UI 提交积分选项得到 1.0、提交解题文字得到 pending_review；切换网页标签读取真实 WebView2 DOM；切到本地播放器，加载由开发用 FFmpeg testsrc 生成的 6 秒 320×180 / 24fps VP9 WebM，无音轨；检查 readyState>=1、播放 currentTime>0、暂停 true、倍速 1.5；最后销毁页面并检查无 Flutter 异常。跳转设置了 currentTime=2，但没有单独作 seek 精度验收。测试通过不证明真实鼠标键盘人工操作或音频播放。

@@ -24,5 +24,7 @@
 
 安全方面：稳定版本锁定不代表无漏洞。当前未执行专门漏洞数据库审计；发行前生成传递依赖 SBOM、许可证 NOTICE、Python/Flutter/native runtime 漏洞清单和二进制哈希。
 
+远程实证补充：windows-latest 的 VS18 / MSVC14.51 编译 flutter_inappwebview_windows 0.6.0 时触发 STL1011（experimental/coroutine 已弃用）。CI desktop 固定 windows-2022/VS2022 与本地基线一致；VS18 不在当前已验证工具链范围，升级前必须替换或升级插件协程实现。详见 evidence/ci-first-run-failure.md。
+
 关键集成风险：WebView 原生合成/焦点/DPI；第三方网站登录；媒体容器与编码矩阵；后台进程退出与多实例；SQLite WAL 一致性备份；Python DLL 打包体积；NuGet 供应链与离线构建；安装器签名与 WebView Runtime 分发。对应验证和门禁在 testing.md、task.md。
 

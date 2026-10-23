@@ -17,7 +17,8 @@ jobs:
           name: backend-results
           path: artifacts/backend.xml
   desktop:
-    runs-on: windows-latest
+    # WebView Windows 0.6.0 uses legacy coroutine headers; VS18 is not compatible.
+    runs-on: windows-2022
     defaults:
       run:
         working-directory: apps/desktop
@@ -32,3 +33,4 @@ jobs:
       - run: flutter analyze
       - run: flutter test
       - run: flutter build windows --release
+
