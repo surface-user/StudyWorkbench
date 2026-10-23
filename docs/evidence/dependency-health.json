@@ -1,0 +1,66 @@
+[
+  {
+    "name": "fastapi",
+    "latest": "0.161.1",
+    "requires_python": ">=3.10",
+    "license_expression": "MIT",
+    "latest_upload": "2026-10-22T22:22:07.757282Z",
+    "source": "https://pypi.org/pypi/fastapi/json"
+  },
+  {
+    "name": "uvicorn",
+    "latest": "0.54.0",
+    "requires_python": ">=3.10",
+    "license_expression": "BSD-3-Clause",
+    "latest_upload": "2026-09-25T06:52:37.601479Z",
+    "source": "https://pypi.org/pypi/uvicorn/json"
+  },
+  {
+    "name": "sqlalchemy",
+    "latest": "2.1.6",
+    "requires_python": ">=3.11",
+    "license_expression": "MIT",
+    "latest_upload": "2026-10-21T19:44:47.119152Z",
+    "source": "https://pypi.org/pypi/sqlalchemy/json"
+  },
+  {
+    "name": "alembic",
+    "latest": "1.20.1",
+    "requires_python": ">=3.10",
+    "license_expression": "MIT",
+    "latest_upload": "2026-10-22T03:24:37.667799Z",
+    "source": "https://pypi.org/pypi/alembic/json"
+  },
+  {
+    "name": "yt-dlp",
+    "latest": "2026.10.21",
+    "requires_python": ">=3.10",
+    "license_expression": "Unlicense",
+    "latest_upload": "2026-10-21T21:54:53.563375Z",
+    "source": "https://pypi.org/pypi/yt-dlp/json"
+  },
+  {
+    "name": "docling",
+    "latest": "2.142.1",
+    "requires_python": "<4.0,>=3.10",
+    "license_expression": "MIT",
+    "latest_upload": "2026-10-23T08:22:09.742880Z",
+    "source": "https://pypi.org/pypi/docling/json"
+  },
+  {
+    "name": "markitdown",
+    "latest": "0.1.9",
+    "requires_python": "<3.15,>=3.10",
+    "license_expression": "MIT",
+    "latest_upload": "2026-10-21T19:41:19.828132Z",
+    "source": "https://pypi.org/pypi/markitdown/json"
+  },
+  {
+    "name": "pyinstaller",
+    "latest": "6.22.3",
+    "requires_python": "<3.16,>=3.8",
+    "license_expression": null,
+    "latest_upload": "2026-09-12T21:54:09.669439Z",
+    "source": "https://pypi.org/pypi/pyinstaller/json"
+  }
+]

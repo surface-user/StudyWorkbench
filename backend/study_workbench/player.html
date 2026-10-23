@@ -1,0 +1,21 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; media-src http://127.0.0.1:* blob:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<style>body{background:#101b2c;color:#eef3ff;font:18px 'Microsoft YaHei',sans-serif;padding:24px}video{width:100%;max-height:65vh}button,label{margin:10px}#status{color:#b7cff7}</style></head>
+<body><h2>本地媒体 · M0 播放验证</h2><video id="video" controls preload="metadata"></video>
+<p><label>倍速 <select id="rate"><option>0.75</option><option selected>1</option><option>1.25</option><option>1.5</option><option>2</option></select></label>
+<label>字幕（WebVTT）<input id="subtitle" type="file" accept=".vtt"></label></p>
+<p id="status">正在读取本地样本；未配置视频时请通过 STUDY_MEDIA 指定本人有权使用的视频。</p>
+<script>
+const v=document.getElementById('video'),status=document.getElementById('status');
+// Replaced with the backend origin by the trusted Flutter host, never an external page.
+v.src='__ORIGIN__/media/demo?cap=__CAPABILITY__';
+document.getElementById('rate').onchange=e=>v.playbackRate=Number(e.target.value);
+let resume=0; // shortcut: M0 position lasts for this tab only; M4 persists by media ID in SQLite.
+v.onloadedmetadata=()=>{v.currentTime=resume;status.textContent='媒体已加载，时长 '+v.duration.toFixed(1)+' 秒';};
+v.ontimeupdate=()=>resume=v.currentTime;
+v.onerror=()=>status.textContent='视频未加载：检查样本路径、容器和编码。此状态不代表播放验证通过。';
+let subtitleUrl;
+document.getElementById('subtitle').onchange=e=>{const f=e.target.files[0];if(!f)return;
+ if(subtitleUrl)URL.revokeObjectURL(subtitleUrl);v.querySelectorAll('track').forEach(t=>t.remove());
+ subtitleUrl=URL.createObjectURL(f);const t=document.createElement('track');t.kind='subtitles';t.label='本地字幕';t.srclang='zh';t.src=subtitleUrl;t.default=true;v.appendChild(t);};
+</script></body></html>

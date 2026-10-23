@@ -1,0 +1,54 @@
+00:00 +0: loading D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/m0_test.dart
+Building Windows application...                                 
+CMake Warning (dev) at flutter/ephemeral/.plugin_symlinks/flutter_inappwebview_windows/windows/CMakeLists.txt:31 (add_custom_command):
+  The following keywords are not supported when using
+  add_custom_command(TARGET): DEPENDS.
+
+  Policy CMP0175 is not set: add_custom_command() rejects invalid arguments.
+  Run "cmake --help-policy CMP0175" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+Building Windows application...                                    21.7s
+√ Built build\windows\x64\runner\Debug\study_workbench.exe
+00:00 +0: Windows M0 backend, grading, WebView2 and actual video decoding
+00:10 +1: (tearDownAll)
+00:10 +1: Windows M0 backend, grading, WebView2 and actual video decoding
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following MissingPluginException was thrown running a test (but after the test had completed):
+MissingPluginException(No implementation found for method dispose on channel
+com.pichillilorenzo/flutter_webview_environment_125017666145245169163218419419123318610565245)
+
+When the exception was thrown, this was the stack:
+#0      MethodChannel._invokeMethod (package:flutter/src/services/platform_channel.dart:364:7)
+<asynchronous suspension>
+#1      WindowsWebViewEnvironment.dispose (package:flutter_inappwebview_windows/src/webview_environment/webview_environment.dart:109:5)
+<asynchronous suspension>
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:10 +0 -1: (tearDownAll)
+00:10 +0 -1: Windows M0 backend, grading, WebView2 and actual video decoding [E]
+  Test failed. See exception logs above.
+  The test description was: Windows M0 backend, grading, WebView2 and actual video decoding
+  
+  This test failed after it had already completed.
+  Make sure to use a matching library which informs the test runner
+  of pending async work.
+  
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following MissingPluginException was thrown running a test (but after the test had completed):
+MissingPluginException(No implementation found for method dispose on channel
+com.pichillilorenzo/flutter_webview_environment_125017666145245169163218419419123318610565245)
+
+When the exception was thrown, this was the stack:
+#0      MethodChannel._invokeMethod (package:flutter/src/services/platform_channel.dart:364:7)
+<asynchronous suspension>
+#1      WindowsWebViewEnvironment.dispose (package:flutter_inappwebview_windows/src/webview_environment/webview_environment.dart:109:5)
+<asynchronous suspension>
+════════════════════════════════════════════════════════════════════════════════════════════════════
+  Test failed. See exception logs above.
+  The test description was: Windows M0 backend, grading, WebView2 and actual video decoding
+  
+00:10 +0 -1: Some tests failed.
+
+Failing tests:
+  D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/m0_test.dart: Windows M0 backend, grading, WebView2 and actual video decoding
