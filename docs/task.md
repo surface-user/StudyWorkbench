@@ -616,3 +616,11 @@ R4独立真实HTTP44次响应断言、Windows题目文件混合集成1项、既�
 失败用例保留为apps/desktop/test/backend_process_test.dart的unwritable config preserves selected directory and learning on restart，全部原断言保留。对应GitHub运行40884455060/job/123484312760；两个Python作业（含R1–R5黑盒）通过。修复计划仅在首个用例显式递归创建父目录，按现有第二个用例方式；复测现有两条真实后端管道用例并重跑CI，不修改产品或降低断言。用户此前已授权发现缺陷后修复并更新同一分支，无需重新取得修复授权。
 
 本地修复验证：Flutter定向两条真实后端管道用例（启用STUDY_ROOT及隔离STUDY_DATA_DIR）退出0、2通过；见evidence/blackbox-20261029/pr1-ci-fix-local.log。原CI失败片段保留pr1-ci-initial-failure.log。GitHub作者身份同时被拒绝APPROVE及REQUEST_CHANGES，已用COMMENT行内记录具体P2问题；CI修复仍以干净runner重跑为准，任务保持in_progress。
+
+## PR #1 冻结生命周期检查路径别名缺陷（2026-10-29）
+
+状态：in_progress，P2，阻断CI的测试判定缺陷。运行40886265000中双Python/黑盒、Flutter全部测试和Windows Release/冻结构建均通过，但check_backend_lifecycle.py:169对配置data_dir与目标字符串比较失败。复现：项目.local建立独立真实临时目录及Junction别名，本进程TMP/TEMP指定别名，执行既有冻结生命周期脚本；本地精确复现同一行AssertionError、退出1，失败日志pr1-lifecycle-alias-before.log。产品write_settings明确保存root.resolve()，原脚本将规范路径与别名字符串比较。期望确认配置指向实际目标目录；实际误将等价路径判失败，未发现迁移内容损坏。
+
+计划：两处配置目录断言改为Path.samefile比较实际目录身份（要求目录存在，不能接受另一目录），其余来源保留/收据/哈希/作答/媒体/重启和退出断言不变；CI以显式目录别名运行生命周期回归，防止本机直路径掩盖。PR已有具体代码行P2评论，保持未解决直至复测/CI通过。
+
+路径别名原用例复测：相同TMP/TEMP/Junction设置与同一R5冻结后端，修复后完整check_backend_lifecycle.py退出0，全部原件/两次迁移/旧收据哈希/作答/媒体/重启/EOF保护断言通过；日志pr1-lifecycle-alias-after.log。Ruff和差异检查退出0。CI新增显式目录别名回归；待干净runner结果，任务仍in_progress。

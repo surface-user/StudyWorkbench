@@ -166,7 +166,7 @@ def main():
                 assert moved.returncode == 0, moved.stderr
                 assert json.loads(moved.stdout)["source_retained"]
                 assert (data / "study.db").is_file()
-                assert json.loads(settings.read_text(encoding="utf-8"))["data_dir"] == str(target)
+                assert Path(json.loads(settings.read_text(encoding="utf-8"))["data_dir"]).samefile(target)
                 for receipt_name, content in old_receipts.items():
                     assert (target / receipt_name).read_bytes() == content
                 added = [p for p in target.glob("migration-receipt*.json") if p.name not in old_receipts]
@@ -201,7 +201,7 @@ def main():
                                        stdin=subprocess.DEVNULL, capture_output=True, text=True, encoding="utf-8", timeout=20)
             assert abandoned.returncode != 0
             assert "桌面进程已退出" in abandoned.stderr
-            assert json.loads(settings.read_text(encoding="utf-8"))["data_dir"] == str(data)
+            assert Path(json.loads(settings.read_text(encoding="utf-8"))["data_dir"]).samefile(data)
             print("PASS: exclusive data lock; auth/origin; objective+Chinese subjective; EOF; restart; crash recovery")
             print("PASS: relocation parent EOF cancels before switching configuration")
             if args.seed_db:

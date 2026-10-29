@@ -56,7 +56,15 @@ jobs:
       - run: flutter build windows --release
       - run: ./packaging/windows/build-backend.ps1 -Python .venv/Scripts/python.exe
         working-directory: .
-      - run: .venv/Scripts/python.exe tools/check_backend_lifecycle.py --exe dist/study_backend/study_backend.exe
+      - shell: pwsh
+        run: |
+          $real = Join-Path $pwd '.local/lifecycle-temp-real'
+          $alias = Join-Path $pwd '.local/lifecycle-temp-alias'
+          New-Item -ItemType Directory -Path $real | Out-Null
+          New-Item -ItemType Junction -Path $alias -Target $real | Out-Null
+          $env:TEMP = $alias
+          $env:TMP = $alias
+          .venv/Scripts/python.exe tools/check_backend_lifecycle.py --exe dist/study_backend/study_backend.exe
         working-directory: .
       - run: .venv/Scripts/python.exe tools/check_document_workers.py --exe dist/study_backend/study_backend.exe
         working-directory: .

@@ -1,0 +1,8 @@
+PASS: reset TCP connection followed by parent EOF exits within 10 seconds
+Traceback (most recent call last):
+  File "D:\computer_work\project\StudyWorkbench\tools\check_backend_lifecycle.py", line 223, in <module>
+    main()
+  File "D:\computer_work\project\StudyWorkbench\tools\check_backend_lifecycle.py", line 169, in main
+    assert json.loads(settings.read_text(encoding="utf-8"))["data_dir"] == str(target)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
