@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +11,7 @@ class _Backend implements Backend {
   final inspections = <List<dynamic>>[];
   bool fail = true;
   bool runUntilCancelled = false, cancelled = false;
+  Completer<void>? inspectionGate;
   @override
   Future<dynamic> request(
     String method,
@@ -17,6 +20,7 @@ class _Backend implements Backend {
   ]) async {
     if (path.endsWith('/resource-inspections')) {
       inspections.add(body!['source_paths'] as List);
+      if (inspectionGate != null) await inspectionGate!.future;
       return [
         for (final source in body['source_paths'] as List)
           {
@@ -113,6 +117,55 @@ void main() {
   tearDown(
     () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(const MethodChannel('study/desktop'), null),
+  );
+
+  testWidgets('stop during preflight never submits a new copy job', (
+    tester,
+  ) async {
+    final backend = _Backend()..runUntilCancelled = true;
+    await _show(tester, backend);
+    await native(tester, 'resourceDrop', ['D:/note.md']);
+    backend.inspectionGate = Completer<void>();
+    await tester.tap(find.text('确认导入'));
+    await tester.pump();
+    expect(backend.inspections, hasLength(2));
+    await tester.tap(find.text('停止导入'));
+    await tester.pump();
+    backend.inspectionGate!.complete();
+    await tester.pumpAndSettle();
+    expect(backend.submitted, isEmpty);
+    await tester.tap(find.text('取消'));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets(
+    'overlapping native drops keep both batches and deduplicate after inspection',
+    (tester) async {
+      final backend = _Backend()..inspectionGate = Completer<void>();
+      await _show(tester, backend);
+      Future<void> send(List<String> paths) =>
+          tester.binding.defaultBinaryMessenger.handlePlatformMessage(
+            'study/desktop',
+            const StandardMethodCodec().encodeMethodCall(
+              MethodCall('resourceDrop', paths),
+            ),
+            (_) {},
+          );
+      final first = send(['D:/note.md']);
+      await tester.pump();
+      final second = send(['D:/note.md', 'D:/second.md']);
+      await tester.pump();
+      backend.inspectionGate!.complete();
+      await tester.pumpAndSettle();
+      await first;
+      await second;
+      expect(find.text('note.md'), findsOneWidget);
+      expect(find.text('second.md'), findsOneWidget);
+      expect(backend.inspections.last, ['D:/second.md']);
+      expect(backend.submitted, isEmpty);
+      await tester.tap(find.text('取消'));
+      await tester.pumpAndSettle();
+    },
   );
 
   testWidgets(

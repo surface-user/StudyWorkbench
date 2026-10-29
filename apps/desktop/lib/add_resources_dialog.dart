@@ -37,6 +37,7 @@ class _AddResourcesDialogState extends State<AddResourcesDialog>
   Rect? lastBounds;
   int jobOffset = 0;
   Timer? timer;
+  Future<void> staging = Future.value();
   String get prefix => '/api/workspaces/${widget.workspaceId}';
   String pathKey(String path) => path.replaceAll('\\', '/').toLowerCase();
 
@@ -142,31 +143,40 @@ class _AddResourcesDialogState extends State<AddResourcesDialog>
     }
   }
 
-  Future<void> stage(List<String> paths) => run(() async {
-    final known = pending
-        .map((r) => pathKey(r['source_path'] as String))
-        .toSet();
-    final unique = paths.where((p) => known.add(pathKey(p))).toList();
-    if (unique.length + pending.length > 1000) {
-      throw const FormatException('待导入列表最多1000项');
-    }
-    final rows = unique.isEmpty
-        ? <dynamic>[]
-        : await widget.backend.request('POST', '$prefix/resource-inspections', {
-            'source_paths': unique,
-          }) as List;
+  Future<void> stage(List<String> paths) => staging = staging.then((_) async {
     if (!mounted) return;
-    setState(() {
-      notice = paths.length > unique.length
-          ? '已跳过 ${paths.length - unique.length} 个重复选择的路径'
-          : null;
-      for (final raw in rows) {
-        final row = Map<String, dynamic>.from(raw as Map);
-        final key = pathKey(row['source_path'] as String);
-        if (!pending.any((p) => pathKey(p['source_path'] as String) == key)) {
-          pending.add({...row, 'state': 'pending'});
-        }
+    if (busy) {
+      setState(() => error = '当前操作尚未完成，请稍后重新添加文件');
+      return;
+    }
+    await run(() async {
+      final known = pending
+          .map((r) => pathKey(r['source_path'] as String))
+          .toSet();
+      final unique = paths.where((p) => known.add(pathKey(p))).toList();
+      if (unique.length + pending.length > 1000) {
+        throw const FormatException('待导入列表最多1000项');
       }
+      final rows = unique.isEmpty
+          ? <dynamic>[]
+          : await widget.backend.request(
+              'POST',
+              '$prefix/resource-inspections',
+              {'source_paths': unique},
+            ) as List;
+      if (!mounted) return;
+      setState(() {
+        notice = paths.length > unique.length
+            ? '已跳过 ${paths.length - unique.length} 个重复选择的路径'
+            : null;
+        for (final raw in rows) {
+          final row = Map<String, dynamic>.from(raw as Map);
+          final key = pathKey(row['source_path'] as String);
+          if (!pending.any((p) => pathKey(p['source_path'] as String) == key)) {
+            pending.add({...row, 'state': 'pending'});
+          }
+        }
+      });
     });
   });
 
@@ -198,6 +208,7 @@ class _AddResourcesDialogState extends State<AddResourcesDialog>
                 'source_paths': [row['source_path']],
               },
             ) as List;
+            if (stop || !mounted) break;
             row.addAll(Map<String, dynamic>.from(checked.single as Map));
             if (row['error'] != null) throw FormatException('${row['error']}');
             final job = await widget.backend.request(
