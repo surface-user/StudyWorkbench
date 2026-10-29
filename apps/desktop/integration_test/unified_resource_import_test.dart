@@ -19,6 +19,21 @@ void main() {
     (tester) async {
       const evidence = String.fromEnvironment('STUDY_EVIDENCE_DIR');
       expect(Backend.testData, isNotEmpty);
+      expect(evidence, isNotEmpty);
+      final source = Directory('${Backend.testData}-unified-source');
+      await tester.runAsync(() async {
+        expect(
+          await source.exists(),
+          isFalse,
+          reason: 'Refuse to overwrite existing integration fixtures',
+        );
+        await source.create(recursive: true);
+        await File('${source.path}/picker-note.md').writeAsString('# 多选样本');
+        await File('${source.path}/picker-video.webm')
+            .writeAsBytes([0x1a, 0x45, 0xdf, 0xa3, 0]);
+        await File('${source.path}/drop-only.md').writeAsString('# 拖放样本');
+        await Directory(evidence).create(recursive: true);
+      });
       final capture = GlobalKey();
       Future<void> until(bool Function() done) async {
         for (var i = 0; i < 6000; i++) {
@@ -62,8 +77,8 @@ void main() {
           const MethodChannel('study/desktop'),
           (call) async => call.method == 'chooseResourceFiles'
               ? [
-                  '${Backend.testData}/../unified-native-source/picker-note.md',
-                  '${Backend.testData}/../unified-native-source/picker-video.webm',
+                  '${source.path}/picker-note.md',
+                  '${source.path}/picker-video.webm',
                 ]
               : null,
         );
@@ -93,9 +108,7 @@ void main() {
         await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
           'study/desktop',
           const StandardMethodCodec().encodeMethodCall(
-            MethodCall('resourceDrop', [
-              '${Backend.testData}/../unified-native-source/drop-only.md',
-            ]),
+            MethodCall('resourceDrop', ['${source.path}/drop-only.md']),
           ),
           (_) {},
         );
