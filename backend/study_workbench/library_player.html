@@ -1,0 +1,36 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; media-src 'self' blob:; connect-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<style>body{background:#101b2c;color:#eef3ff;font:16px sans-serif;padding:16px}video{width:100%;max-height:70vh}label{margin-right:16px}</style></head>
+<body><h2>__TITLE__</h2><video id="video" controls preload="metadata"></video>
+<p><label>倍速 <select id="rate"><option>0.5</option><option>0.75</option><option selected>1</option><option>1.25</option><option>1.5</option><option>2</option><option>3</option></select></label>
+<label>跳转秒数 <input id="seek" type="number" min="0" step="1"></label><button id="jump">跳转</button></p>
+<p><label>字幕（WebVTT，最多32KiB）<input id="sub" type="file" accept=".vtt"></label></p><p id="status">正在读取媒体和续播记录…</p>
+<script>
+const prefix=__PREFIX__,cap=__CAP__,v=document.getElementById('video'),status=document.getElementById('status'),rate=document.getElementById('rate');
+const url=kind=>prefix+'/'+kind+'?cap='+encodeURIComponent(cap);
+let subtitle='',subtitleUrl,lastSave=0,loaded=false,saving=false,pendingSave=false;
+function applySubtitle(text){
+ if(subtitleUrl)URL.revokeObjectURL(subtitleUrl);v.querySelectorAll('track').forEach(t=>t.remove());
+ if(!text)return;subtitleUrl=URL.createObjectURL(new Blob([text],{type:'text/vtt'}));
+ const t=document.createElement('track');t.kind='subtitles';t.label='本地字幕';t.srclang='zh';t.src=subtitleUrl;t.default=true;v.appendChild(t);
+}
+async function save(){
+ if(!loaded||!Number.isFinite(v.currentTime))return;if(saving){pendingSave=true;return;}saving=true;pendingSave=false;
+ try{const response=await fetch(url('state'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({position:v.currentTime,speed:v.playbackRate,subtitle}),keepalive:true});
+ if(!response.ok)throw Error();lastSave=Date.now();}
+ catch(_){status.textContent='播放中；续播记录未确认保存，可稍后暂停重试。';}finally{saving=false;if(pendingSave){pendingSave=false;save();}}
+}
+async function initialize(){try{
+ const response=await fetch(url('state'),{cache:'no-store'});if(!response.ok)throw Error();const state=await response.json();
+ v.onloadedmetadata=()=>{v.currentTime=Number.isFinite(state.position)?Math.min(state.position,Math.max(0,v.duration-0.1)):0;
+ v.playbackRate=state.speed||1;rate.value=String(v.playbackRate);subtitle=state.subtitle||'';applySubtitle(subtitle);loaded=true;status.textContent='媒体已加载；暂停或每5秒保存续播进度。';};
+ v.src=url('content');
+ }catch(_){status.textContent='无法读取媒体状态，请关闭后重新打开播放器。';}}
+rate.onchange=()=>{v.playbackRate=Number(rate.value);save();};
+document.getElementById('jump').onclick=()=>{const n=Number(document.getElementById('seek').value);if(Number.isFinite(n)&&n>=0&&Number.isFinite(v.duration))v.currentTime=Math.min(n,v.duration);};
+v.ontimeupdate=()=>{if(Date.now()-lastSave>5000)save();};v.onpause=save;window.addEventListener('pagehide',save);
+v.onerror=()=>status.textContent='无法播放此容器或编码。原文件保留，可在外部工具中转换为兼容MP4/WebM；本版本不自动转码。';
+document.getElementById('sub').onchange=async e=>{const file=e.target.files[0];if(!file)return;if(file.size>32768){status.textContent='字幕超过32KiB';return;}
+ const text=await file.text();if(!text.replace(/^\uFEFF/,'').startsWith('WEBVTT')){status.textContent='请选择WebVTT字幕';return;}subtitle=text;applySubtitle(subtitle);save();};
+initialize();
+</script></body></html>

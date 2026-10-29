@@ -1,0 +1,5 @@
+# PDF fixtures contain fixed-width xref records; preserve their bytes.
+*.pdf binary
+# Raw test output and serializer-generated fixtures retain their original formatting.
+docs/evidence/** -whitespace
+contracts/samples/question-files-v1/*.md whitespace=-blank-at-eof

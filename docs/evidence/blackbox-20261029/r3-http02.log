@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "D:\computer_work\project\StudyWorkbench\tools\check_r3_blackbox.py", line 116, in <module>
+    main()
+  File "D:\computer_work\project\StudyWorkbench\tools\check_r3_blackbox.py", line 48, in main
+    from reportlab.pdfgen import canvas
+ModuleNotFoundError: No module named 'reportlab'

@@ -18,3 +18,4 @@ apps/desktop/build/
 apps/desktop/windows/flutter/ephemeral/
 *.spec
 artifacts/
+pytest-of-*/

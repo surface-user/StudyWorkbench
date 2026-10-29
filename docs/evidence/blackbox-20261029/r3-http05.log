@@ -1,0 +1,1 @@
+{"stage": "R3", "http_assertions": 58, "source_unchanged": true, "cases": "MD explicit copy, stale save, UTF8 budget, relative image isolation, 21 page PDF, bad PDF, legacy doc, absent Office, cross workspace"}

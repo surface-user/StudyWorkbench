@@ -1,0 +1,2 @@
+{"stage": "R1", "public_http_checks": 67, "source_preserved": true, "independent_cases": "NFC, cycle/self-cycle, names, URL, auth/origin, scope, pagination, empty file/folder, duplicate identity, rejected paths"}
+exit_code=0

@@ -1,0 +1,89 @@
+00:00 +0: loading D:/computer_work/project/StudyWorkbench/apps/desktop/test/author_dialog_test.dart
+00:00 +0: D:/computer_work/project/StudyWorkbench/apps/desktop/test/backend_process_test.dart: unwritable config preserves selected directory and learning on restart
+  Skip: Requires STUDY_ROOT
+00:00 +0 ~1: D:/computer_work/project/StudyWorkbench/apps/desktop/test/backend_process_test.dart: real backend pipe migration preserves attempts and returns after EOF
+  Skip: Run explicitly with STUDY_ROOT and isolated STUDY_DATA_DIR
+00:00 +0 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/author_dialog_test.dart: switching from choice to blanks does not reuse option text as the answer
+00:00 +1 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/author_dialog_test.dart: switching from choice to blanks does not reuse option text as the answer
+00:01 +2 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/author_dialog_test.dart: switching from choice to blanks does not reuse option text as the answer
+00:01 +3 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/author_dialog_test.dart: switching from choice to blanks does not reuse option text as the answer
+00:01 +4 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/author_dialog_test.dart: switching from choice to blanks does not reuse option text as the answer
+00:01 +5 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/author_dialog_test.dart: switching from choice to blanks does not reuse option text as the answer
+00:01 +6 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/author_dialog_test.dart: switching from choice to blanks does not reuse option text as the answer
+00:01 +7 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/author_dialog_test.dart: switching from choice to blanks does not reuse option text as the answer
+00:02 +8 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/document_page_test.dart: Office preview is explicit, polls, paginates and restores state
+00:02 +9 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/document_page_test.dart: Office preview is explicit, polls, paginates and restores state
+00:02 +10 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/import_page_test.dart: closing split preview refreshes persisted preview without confirming a question
+00:02 +11 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/import_page_test.dart: closing split preview refreshes persisted preview without confirming a question
+00:02 +12 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/import_page_test.dart: closing split preview refreshes persisted preview without confirming a question
+00:02 +13 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/import_page_test.dart: closing split preview refreshes persisted preview without confirming a question
+00:03 +14 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/import_page_test.dart: closing split preview refreshes persisted preview without confirming a question
+00:03 +15 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/import_page_test.dart: closing split preview refreshes persisted preview without confirming a question
+00:03 +16 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/import_page_test.dart: closing split preview refreshes persisted preview without confirming a question
+00:03 +17 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/import_page_test.dart: closing split preview refreshes persisted preview without confirming a question
+00:03 +18 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/import_page_test.dart: closing split preview refreshes persisted preview without confirming a question
+00:03 +19 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/import_page_test.dart: closing split preview refreshes persisted preview without confirming a question
+00:03 +20 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/import_page_test.dart: closing split preview refreshes persisted preview without confirming a question
+00:03 +21 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/import_page_test.dart: closing split preview refreshes persisted preview without confirming a question
+00:03 +22 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/learning_record_dialog_test.dart: unknown version stays explicit and failed event preserves text and retry id
+00:04 +23 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/learning_record_dialog_test.dart: unknown version stays explicit and failed event preserves text and retry id
+00:04 +24 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/learning_record_dialog_test.dart: unknown version stays explicit and failed event preserves text and retry id
+00:04 +25 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/learning_record_dialog_test.dart: unknown version stays explicit and failed event preserves text and retry id
+00:04 +26 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/learning_record_dialog_test.dart: unknown version stays explicit and failed event preserves text and retry id
+00:04 +27 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/learning_record_dialog_test.dart: unknown version stays explicit and failed event preserves text and retry id
+00:04 +28 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/learning_record_dialog_test.dart: unknown version stays explicit and failed event preserves text and retry id
+00:04 +29 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/learning_record_dialog_test.dart: unknown version stays explicit and failed event preserves text and retry id
+00:04 +30 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/note_editor_test.dart: selecting a replacement updates only the reference and retains the old note
+00:04 +31 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/note_editor_test.dart: selecting a replacement updates only the reference and retains the old note
+00:04 +32 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/note_editor_test.dart: selecting a replacement updates only the reference and retains the old note
+00:04 +33 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +34 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +35 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +36 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +37 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +38 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +39 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +40 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +41 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +42 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +43 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +44 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +45 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +46 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +47 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +48 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +49 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +50 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:05 +51 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:06 +52 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:06 +53 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/question_split_dialog_test.dart: invalid Word character offset cannot silently split at the block start
+00:06 +54 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/note_editor_test.dart: mixed note edits preserve all resource and inline table fields
+00:06 +55 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/note_editor_test.dart: mixed note edits preserve all resource and inline table fields
+00:06 +56 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/study_page_test.dart: history loads older pages and retains loaded records on failure
+00:06 +57 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/study_page_test.dart: history loads older pages and retains loaded records on failure
+00:06 +58 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/study_page_test.dart: history loads older pages and retains loaded records on failure
+00:06 +59 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/study_page_test.dart: history loads older pages and retains loaded records on failure
+00:06 +60 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/study_page_test.dart: history loads older pages and retains loaded records on failure
+00:06 +61 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/study_page_test.dart: history loads older pages and retains loaded records on failure
+00:06 +62 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/study_page_test.dart: history loads older pages and retains loaded records on failure
+00:06 +63 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/study_page_test.dart: history loads older pages and retains loaded records on failure
+00:06 +64 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/study_page_test.dart: history loads older pages and retains loaded records on failure
+00:06 +65 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/study_page_test.dart: history loads older pages and retains loaded records on failure
+00:07 +66 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/study_page_test.dart: history loads older pages and retains loaded records on failure
+00:07 +67 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/study_page_test.dart: history loads older pages and retains loaded records on failure
+00:07 +68 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/study_page_test.dart: history loads older pages and retains loaded records on failure
+00:07 +69 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/study_page_test.dart: history loads older pages and retains loaded records on failure
+00:07 +70 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/workspace_shell_test.dart: resource answer draft closes into history without submitting or writing Markdown
+00:07 +71 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/workspace_shell_test.dart: resource answer draft closes into history without submitting or writing Markdown
+00:08 +72 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/workspace_shell_test.dart: resource answer draft closes into history without submitting or writing Markdown
+00:08 +73 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/resource_explorer_test.dart: tree pagination, missing resources and failed read retry
+00:08 +74 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/resource_explorer_test.dart: tree pagination, missing resources and failed read retry
+00:08 +75 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/resource_explorer_test.dart: tree pagination, missing resources and failed read retry
+00:08 +76 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/workspace_shell_test.dart: restored saved draft can close before debounce without a false dirty prompt
+00:09 +77 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/workspace_shell_test.dart: restored saved draft can close before debounce without a false dirty prompt
+00:09 +78 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/workspace_shell_test.dart: dirty close cancels, survives save failure, discards and reopens saved draft
+00:10 +79 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/workspace_shell_test.dart: offline page reports error while new, cycle, positional and close shortcuts work
+00:11 +80 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/workspace_shell_test.dart: workbench layout fits simulated 100, 200 and 300 percent DPI
+00:11 +81 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/workspace_shell_test.dart: archiving active workspace keeps a valid page while reload is pending
+00:11 +82 ~2: D:/computer_work/project/StudyWorkbench/apps/desktop/test/workspace_shell_test.dart: editing while save is in flight persists the newest draft last
+00:12 +83 ~2: All tests passed!

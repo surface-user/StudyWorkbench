@@ -3,26 +3,46 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:url_launcher/url_launcher.dart';
 
+import 'external_page.dart';
+import 'page_activity.dart';
 import 'url_policy.dart';
 import 'webview_lifecycle.dart';
 
 class WebPage extends StatefulWidget {
-  const WebPage({required this.profile, this.html, super.key});
+  const WebPage({
+    required this.profile,
+    this.html,
+    this.initialUrl,
+    this.onUrlChanged,
+    this.playerUrl,
+    this.onActivity,
+    super.key,
+  });
   final String profile;
   final String? html;
+  final String? initialUrl;
+  final ValueChanged<String>? onUrlChanged;
+  final String? playerUrl;
+  final PageActivityChanged? onActivity;
   @override
   State<WebPage> createState() => _WebPageState();
 }
 
 class _WebPageState extends State<WebPage> {
-  final address = TextEditingController(text: 'https://example.com');
+  late final address = TextEditingController(
+    text: widget.initialUrl ?? 'https://example.com',
+  );
+  String? restoreUrl;
   WebViewEnvironment? environment;
   InAppWebViewController? controller;
   String? error;
   bool ready = false;
-  bool get player => widget.html != null;
+  bool pageLoading = true;
+  bool openingExternal = false;
+  bool initializing = false;
+  bool missingRuntime = false;
+  bool get player => widget.html != null || widget.playerUrl != null;
   @override
   void initState() {
     super.initState();
@@ -30,10 +50,22 @@ class _WebPageState extends State<WebPage> {
   }
 
   Future<void> _initialize() async {
+    if (initializing || ready) return;
+    initializing = true;
+    widget.onActivity?.call(loading: true);
     try {
+      if (!player && widget.initialUrl != null) {
+        if (await resolvesPublicly(widget.initialUrl!)) {
+          restoreUrl = widget.initialUrl;
+        } else {
+          error = '上次的网页地址暂时无法安全加载，可修改地址后重试';
+        }
+      }
       if (await WebViewEnvironment.getAvailableVersion() == null) {
+        missingRuntime = true;
         throw StateError('未安装 WebView2 Runtime，请安装后重试或使用系统浏览器');
       }
+      missingRuntime = false;
       Directory(widget.profile).createSync(recursive: true);
       final env = await WebViewEnvironment.create(
         settings: WebViewEnvironmentSettings(userDataFolder: widget.profile),
@@ -47,19 +79,43 @@ class _WebPageState extends State<WebPage> {
         ready = true;
       });
     } catch (e) {
-      if (mounted) setState(() => error = '$e');
+      if (mounted) {
+        setState(() => error = '$e');
+        widget.onActivity?.call(loading: false, error: error);
+      }
+    } finally {
+      if (mounted) setState(() => initializing = false);
     }
   }
 
   Future<void> navigate() async {
     if (!await resolvesPublicly(address.text)) {
-      if (mounted) setState(() => error = '仅允许可解析到公网的 HTTPS 页面');
+      if (mounted) {
+        setState(() => error = '仅允许可解析到公网的 HTTPS 页面');
+        widget.onActivity?.call(loading: false, error: error);
+      }
       return;
     }
-    if (mounted) setState(() => error = null);
+    if (!mounted) return;
+    setState(() => error = null);
     await controller?.loadUrl(
       urlRequest: URLRequest(url: WebUri(address.text)),
     );
+  }
+
+  Future<void> openBrowser() async {
+    if (openingExternal) return;
+    setState(() {
+      openingExternal = true;
+      error = null;
+    });
+    try {
+      await openExternalPage(address.text);
+    } catch (failure) {
+      if (mounted) setState(() => error = '无法打开系统浏览器：$failure');
+    } finally {
+      if (mounted) setState(() => openingExternal = false);
+    }
   }
 
   @override
@@ -108,14 +164,7 @@ class _WebPageState extends State<WebPage> {
               ),
               TextButton(onPressed: navigate, child: const Text('打开网页')),
               TextButton(
-                onPressed: () async {
-                  if (await resolvesPublicly(address.text)) {
-                    await launchUrl(
-                      Uri.parse(address.text),
-                      mode: LaunchMode.externalApplication,
-                    );
-                  }
-                },
+                onPressed: openingExternal ? null : openBrowser,
                 child: const Text('系统浏览器'),
               ),
             ],
@@ -123,14 +172,42 @@ class _WebPageState extends State<WebPage> {
         ),
       if (error != null)
         Padding(padding: const EdgeInsets.all(12), child: Text(error!)),
+      if (!ready && !initializing)
+        Wrap(
+          children: [
+            TextButton(onPressed: _initialize, child: const Text('重试初始化网页组件')),
+            if (missingRuntime)
+              TextButton(
+                onPressed: () async {
+                  try {
+                    await openExternalPage(
+                      'https://developer.microsoft.com/microsoft-edge/webview2/',
+                    );
+                  } catch (failure) {
+                    if (mounted) {
+                      setState(() => error = '无法打开 Runtime 下载页：$failure');
+                    }
+                  }
+                },
+                child: const Text('下载 Microsoft WebView2 Runtime'),
+              ),
+          ],
+        ),
       Expanded(
         child: !ready
             ? Center(child: Text(error ?? '正在初始化 WebView2…'))
             : InAppWebView(
                 webViewEnvironment: environment,
-                initialData: InAppWebViewInitialData(
-                  data: player ? widget.html! : '<!doctype html><html lang="zh"><meta charset="utf-8"><h2>内置网页</h2><p>输入 HTTPS 网址后选择打开网页。</p></html>',
-                ),
+                initialUrlRequest: widget.playerUrl != null
+                    ? URLRequest(url: WebUri(widget.playerUrl!))
+                    : restoreUrl == null
+                    ? null
+                    : URLRequest(url: WebUri(restoreUrl!)),
+                initialData: restoreUrl != null || widget.playerUrl != null
+                    ? null
+                    : InAppWebViewInitialData(
+                        data: player ? widget.html! : '<!doctype html><html lang="zh"><meta charset="utf-8"><h2>内置网页</h2><p>输入 HTTPS 网址后选择打开网页。</p></html>',
+                      ),
                 initialSettings: InAppWebViewSettings(
                   useShouldOverrideUrlLoading: true,
                   useShouldInterceptRequest: true,
@@ -139,23 +216,63 @@ class _WebPageState extends State<WebPage> {
                   mediaPlaybackRequiresUserGesture: true,
                 ),
                 onWebViewCreated: (value) => controller = value,
+                onLoadStart: (_, _) {
+                  if (!mounted) return;
+                  setState(() => error = null);
+                  pageLoading = true;
+                  widget.onActivity?.call(loading: true);
+                },
+                onTitleChanged: (_, title) {
+                  if (!player && mounted) {
+                    widget.onActivity?.call(
+                      loading: pageLoading,
+                      error: error,
+                      title: title,
+                    );
+                  }
+                },
+                onLoadStop: (_, url) {
+                  pageLoading = false;
+                  widget.onActivity?.call(loading: false, error: error);
+                  if (!mounted) return;
+                  if (!player &&
+                      url != null &&
+                      publicHttpsUrl(url.toString())) {
+                    address.text = url.toString();
+                    widget.onUrlChanged?.call(url.toString());
+                  }
+                },
                 onCreateWindow: (_, _) async => false,
                 onPermissionRequest: (_, request) async => PermissionResponse(
                   resources: request.resources,
                   action: PermissionResponseAction.DENY,
                 ),
                 shouldOverrideUrlLoading: (_, action) async {
-                  if (player) return NavigationActionPolicy.CANCEL;
+                  if (player) {
+                    return widget.playerUrl != null &&
+                            action.request.url.toString() == widget.playerUrl
+                        ? NavigationActionPolicy.ALLOW
+                        : NavigationActionPolicy.CANCEL;
+                  }
                   return await resolvesPublicly(action.request.url.toString())
                       ? NavigationActionPolicy.ALLOW
                       : NavigationActionPolicy.CANCEL;
                 },
                 shouldInterceptRequest: (_, request) async {
                   final url = request.url.toString();
-                  final allowed = player
-                      ? url.startsWith('http://127.0.0.1:') &&
-                            Uri.parse(url).path == '/media/demo'
-                      : await resolvesPublicly(url);
+                  final primary = widget.playerUrl == null
+                      ? null
+                      : Uri.parse(widget.playerUrl!);
+                  final localMedia =
+                      primary != null &&
+                      allowedPlayerResource(widget.playerUrl!, url);
+                  final allowed =
+                      player && primary == null && url.startsWith('blob:') ||
+                      localMedia ||
+                      (player && primary == null
+                          ? url.startsWith('http://127.0.0.1:') &&
+                                Uri.parse(url).path == '/media/demo'
+                          : !player && await resolvesPublicly(url));
                   if (allowed) return null;
                   return WebResourceResponse(
                     data: Uint8List(0),
@@ -163,9 +280,18 @@ class _WebPageState extends State<WebPage> {
                     reasonPhrase: 'Blocked',
                   );
                 },
+                onReceivedHttpError: (_, request, response) {
+                  if (request.isForMainFrame == true && mounted) {
+                    setState(
+                      () => error = '网页加载失败：HTTP ${response.statusCode}',
+                    );
+                    widget.onActivity?.call(loading: false, error: error);
+                  }
+                },
                 onReceivedError: (_, request, failure) {
                   if (request.isForMainFrame == true && mounted) {
                     setState(() => error = '网页加载失败：${failure.description}');
+                    widget.onActivity?.call(loading: false, error: error);
                   }
                 },
               ),

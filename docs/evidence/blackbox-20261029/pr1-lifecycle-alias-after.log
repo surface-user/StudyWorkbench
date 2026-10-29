@@ -1,0 +1,7 @@
+PASS: reset TCP connection followed by parent EOF exits within 10 seconds
+PASS: two CLI relocations preserve old receipts, hashes and all attempts; restart succeeds
+PASS: import preview/confirmation, idempotency, original bytes and note survive restart, crash and relocations
+PASS: DOCX/PDF each split into two independent Markdown files; bytes survive restart/crash/two relocations
+PASS: local media import, scoped capability, bytes and playback state survive restart/crash/two relocations
+PASS: exclusive data lock; auth/origin; objective+Chinese subjective; EOF; restart; crash recovery
+PASS: relocation parent EOF cancels before switching configuration
