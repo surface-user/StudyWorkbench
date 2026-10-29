@@ -1,0 +1,68 @@
+00:00 +0: loading D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/resource_tabs_test.dart
+Building Windows application...                                 
+CMake Warning (dev) at flutter/ephemeral/.plugin_symlinks/flutter_inappwebview_windows/windows/CMakeLists.txt:31 (add_custom_command):
+  The following keywords are not supported when using
+  add_custom_command(TARGET): DEPENDS.
+
+  Policy CMP0175 is not set: add_custom_command() rejects invalid arguments.
+  Run "cmake --help-policy CMP0175" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+Building Windows application...                                    61.6s
+√ Built build\windows\x64\runner\Debug\study_workbench.exe
+00:00 +0: resource identity tabs retain native instances and legacy state
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following HttpException was thrown while running async test code:
+媒体入库未完成 422，请刷新记录核对；原文件保留
+
+When the exception was thrown, this was the stack:
+#0      Backend.uploadMedia (package:study_workbench/backend.dart:305:7)
+<asynchronous suspension>
+#1      main.<anonymous closure>.<anonymous closure> (file:///D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/resource_tabs_test.dart:96:9)
+<asynchronous suspension>
+#2      LiveTestWidgetsFlutterBinding.runAsync (package:flutter_test/src/binding.dart:3035:14)
+<asynchronous suspension>
+#3      main.<anonymous closure> (file:///D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/resource_tabs_test.dart:78:7)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following _TypeError was thrown running a test:
+Null check operator used on a null value
+
+When the exception was thrown, this was the stack:
+#0      main.<anonymous closure>.<anonymous closure> (file:///D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/resource_tabs_test.dart:115:41)
+#1      main.<anonymous closure>.until (file:///D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/resource_tabs_test.dart:31:24)
+<asynchronous suspension>
+#2      main.<anonymous closure> (file:///D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/resource_tabs_test.dart:113:7)
+<asynchronous suspension>
+#3      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#4      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  resource identity tabs retain native instances and legacy state
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (2) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:07 +0 -1: resource identity tabs retain native instances and legacy state [E]
+  Test failed. See exception logs above.
+  The test description was: resource identity tabs retain native instances and legacy state
+  
+00:07 +0 -1: (tearDownAll)
+00:07 +0 -1: Some tests failed.
+
+Failing tests:
+  D:/computer_work/project/StudyWorkbench/apps/desktop/integration_test/resource_tabs_test.dart: resource identity tabs retain native instances and legacy state

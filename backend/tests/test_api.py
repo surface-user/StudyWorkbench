@@ -55,7 +55,7 @@ def test_grading_uses_protocol_option_ids(tmp_path):
         engine = database(tmp_path / "study.db")
         try:
             with Session(engine) as session, session.begin():
-                question = session.get(Question, "demo-integral")
+                question = session.get(Question, ("demo-integral", "default"))
                 content = dict(question.content)
                 content["options"][0]["id"] = "correct-option"
                 content["answer"] = {"selected": ["correct-option"]}

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "passages": [
+    {
+      "id": "import-sample-passage",
+      "content": [
+        {"type": "text", "text": "导入功能演示材料：每天安排 20 分钟复习，并记录未掌握的知识点。"}
+      ],
+      "source": {"kind": "manual", "title": "自编导入样例，非真题", "verification": "unverified"}
+    }
+  ],
+  "questions": [
+    {
+      "schema_version": 1,
+      "id": "import-sample-square",
+      "revision": 1,
+      "subject": "数学/导入演示",
+      "kind": "single_choice",
+      "stem": [
+        {"type": "text", "text": "根据表格，选择正确的计算结果（自编演示题）。"},
+        {"type": "table", "headers": [[{"type": "text", "text": "表达式"}], [{"type": "text", "text": "结果"}]],
+          "rows": [[[ {"type": "latex", "tex": "2^2"} ], [{"type": "text", "text": "请选择下方选项"}]]]}
+      ],
+      "options": [
+        {"id": "four", "content": [{"type": "text", "text": "四"}]},
+        {"id": "eight", "content": [{"type": "text", "text": "八"}]}
+      ],
+      "answer": {"selected": ["four"]},
+      "explanation": [{"type": "latex", "tex": "2^2=2\\times2=4", "display": true}],
+      "knowledge_points": ["平方"],
+      "source": {"kind": "manual", "title": "自编导入样例，非真题", "verification": "unverified"}
+    },
+    {
+      "schema_version": 1,
+      "id": "import-sample-reading",
+      "revision": 1,
+      "subject": "学习方法/导入演示",
+      "kind": "reading_question",
+      "response_kind": "subjective",
+      "passage_id": "import-sample-passage",
+      "stem": [{"type": "text", "text": "根据材料，说明每天复习时需要记录什么。"}],
+      "options": [],
+      "answer": {"rubric": "说明需要记录未掌握的知识点；应由人工批改。", "reference": [{"type": "text", "text": "记录未掌握的知识点。"}]},
+      "explanation": [{"type": "text", "text": "演示共享阅读材料与主观题协议，不以文本相同判分。"}],
+      "knowledge_points": ["复习记录"],
+      "source": {"kind": "manual", "title": "自编导入样例，非真题", "verification": "unverified"}
+    }
+  ]
+}

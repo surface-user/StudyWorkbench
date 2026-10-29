@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "D:\computer_work\project\StudyWorkbench\tools\check_r3_blackbox.py", line 116, in <module>
+    main()
+  File "D:\computer_work\project\StudyWorkbench\tools\check_r3_blackbox.py", line 21, in main
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+             ^^^^^^
+UnboundLocalError: cannot access local variable 'urllib' where it is not associated with a value

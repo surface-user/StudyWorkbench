@@ -1,0 +1,32 @@
+......................................................F................. [ 34%]
+........................................................................ [ 69%]
+................................................................         [100%]
+================================== FAILURES ===================================
+________________________ test_reparse_points_rejected _________________________
+
+tmp_path = WindowsPath('D:/computer_work/project/StudyWorkbench/.local/blackbox-20261029-full/test_reparse_points_rejected0')
+
+    def test_reparse_points_rejected(tmp_path):
+        import os
+        import subprocess
+        target, source = tmp_path / 'target', tmp_path / 'source'
+        target.mkdir()
+        source.mkdir()
+        (target / 'secret.txt').write_text('fixture', encoding='utf-8')
+        junction = source / 'junction'
+        if os.name == 'nt':
+            result = subprocess.run(['cmd', '/c', 'mklink', '/J', str(junction), str(target)], capture_output=True)
+>           assert result.returncode == 0
+E           AssertionError: assert 1 == 0
+E            +  where 1 = CompletedProcess(args=['cmd', '/c', 'mklink', '/J', 'D:\\computer_work\\project\\StudyWorkbench\\.local\\blackbox-2026...kbox-20261029-full\\test_reparse_points_rejected0\\target'], returncode=1, stdout=b'', stderr=b'Access is denied.\r\n').returncode
+
+backend\tests\test_explorer.py:214: AssertionError
+============================== warnings summary ===============================
+.venv\Lib\site-packages\starlette\testclient.py:45
+  D:\computer_work\project\StudyWorkbench\.venv\Lib\site-packages\starlette\testclient.py:45: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED backend/tests/test_explorer.py::test_reparse_points_rejected - Asserti...
+1 failed, 207 passed, 1 warning in 157.52s (0:02:37)

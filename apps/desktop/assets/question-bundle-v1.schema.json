@@ -1,0 +1,879 @@
+{
+  "$defs": {
+    "AttachmentBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "attachment",
+          "title": "Type",
+          "type": "string"
+        },
+        "attachment_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+          "title": "Attachment Id",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "attachment_id",
+        "label"
+      ],
+      "title": "AttachmentBlock",
+      "type": "object"
+    },
+    "BlankAnswer": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "accepted": {
+          "items": {
+            "maxLength": 500,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "maxItems": 30,
+          "minItems": 1,
+          "title": "Accepted",
+          "type": "array"
+        },
+        "normalization": {
+          "enum": [
+            "exact",
+            "trim"
+          ],
+          "title": "Normalization",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "accepted",
+        "normalization"
+      ],
+      "title": "BlankAnswer",
+      "type": "object"
+    },
+    "ChartBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "chart",
+          "title": "Type",
+          "type": "string"
+        },
+        "attachment_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+          "title": "Attachment Id",
+          "type": "string"
+        },
+        "alt": {
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Alt",
+          "type": "string"
+        },
+        "data_attachment_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Data Attachment Id"
+        }
+      },
+      "required": [
+        "type",
+        "attachment_id",
+        "alt"
+      ],
+      "title": "ChartBlock",
+      "type": "object"
+    },
+    "ChoiceAnswer": {
+      "additionalProperties": false,
+      "properties": {
+        "selected": {
+          "items": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 30,
+          "minItems": 1,
+          "title": "Selected",
+          "type": "array"
+        }
+      },
+      "required": [
+        "selected"
+      ],
+      "title": "ChoiceAnswer",
+      "type": "object"
+    },
+    "FillAnswer": {
+      "additionalProperties": false,
+      "properties": {
+        "blanks": {
+          "items": {
+            "$ref": "#/$defs/BlankAnswer"
+          },
+          "maxItems": 30,
+          "minItems": 1,
+          "title": "Blanks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "blanks"
+      ],
+      "title": "FillAnswer",
+      "type": "object"
+    },
+    "ImageBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "image",
+          "title": "Type",
+          "type": "string"
+        },
+        "attachment_id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+          "title": "Attachment Id",
+          "type": "string"
+        },
+        "alt": {
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Alt",
+          "type": "string"
+        },
+        "caption": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Caption"
+        }
+      },
+      "required": [
+        "type",
+        "attachment_id",
+        "alt"
+      ],
+      "title": "ImageBlock",
+      "type": "object"
+    },
+    "LatexBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "latex",
+          "title": "Type",
+          "type": "string"
+        },
+        "tex": {
+          "maxLength": 8000,
+          "minLength": 1,
+          "title": "Tex",
+          "type": "string"
+        },
+        "display": {
+          "default": false,
+          "title": "Display",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "tex"
+      ],
+      "title": "LatexBlock",
+      "type": "object"
+    },
+    "Option": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "content": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "attachment": "#/$defs/AttachmentBlock",
+                "chart": "#/$defs/ChartBlock",
+                "image": "#/$defs/ImageBlock",
+                "latex": "#/$defs/LatexBlock",
+                "table": "#/$defs/TableBlock",
+                "text": "#/$defs/TextBlock"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextBlock"
+              },
+              {
+                "$ref": "#/$defs/LatexBlock"
+              },
+              {
+                "$ref": "#/$defs/ImageBlock"
+              },
+              {
+                "$ref": "#/$defs/ChartBlock"
+              },
+              {
+                "$ref": "#/$defs/AttachmentBlock"
+              },
+              {
+                "$ref": "#/$defs/TableBlock"
+              }
+            ]
+          },
+          "maxItems": 200,
+          "minItems": 1,
+          "title": "Content",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "content"
+      ],
+      "title": "Option",
+      "type": "object"
+    },
+    "Passage": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "content": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "attachment": "#/$defs/AttachmentBlock",
+                "chart": "#/$defs/ChartBlock",
+                "image": "#/$defs/ImageBlock",
+                "latex": "#/$defs/LatexBlock",
+                "table": "#/$defs/TableBlock",
+                "text": "#/$defs/TextBlock"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextBlock"
+              },
+              {
+                "$ref": "#/$defs/LatexBlock"
+              },
+              {
+                "$ref": "#/$defs/ImageBlock"
+              },
+              {
+                "$ref": "#/$defs/ChartBlock"
+              },
+              {
+                "$ref": "#/$defs/AttachmentBlock"
+              },
+              {
+                "$ref": "#/$defs/TableBlock"
+              }
+            ]
+          },
+          "maxItems": 200,
+          "minItems": 1,
+          "title": "Content",
+          "type": "array"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        }
+      },
+      "required": [
+        "id",
+        "content",
+        "source"
+      ],
+      "title": "Passage",
+      "type": "object"
+    },
+    "QuestionDocument": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "id": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "subject": {
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Subject",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "single_choice",
+            "multiple_choice",
+            "fill_blank",
+            "calculation",
+            "proof",
+            "subjective",
+            "reading_question"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "response_kind": {
+          "anyOf": [
+            {
+              "enum": [
+                "single_choice",
+                "multiple_choice",
+                "fill_blank",
+                "subjective"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Response Kind"
+        },
+        "stem": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "attachment": "#/$defs/AttachmentBlock",
+                "chart": "#/$defs/ChartBlock",
+                "image": "#/$defs/ImageBlock",
+                "latex": "#/$defs/LatexBlock",
+                "table": "#/$defs/TableBlock",
+                "text": "#/$defs/TextBlock"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextBlock"
+              },
+              {
+                "$ref": "#/$defs/LatexBlock"
+              },
+              {
+                "$ref": "#/$defs/ImageBlock"
+              },
+              {
+                "$ref": "#/$defs/ChartBlock"
+              },
+              {
+                "$ref": "#/$defs/AttachmentBlock"
+              },
+              {
+                "$ref": "#/$defs/TableBlock"
+              }
+            ]
+          },
+          "maxItems": 200,
+          "minItems": 1,
+          "title": "Stem",
+          "type": "array"
+        },
+        "options": {
+          "items": {
+            "$ref": "#/$defs/Option"
+          },
+          "maxItems": 30,
+          "title": "Options",
+          "type": "array"
+        },
+        "answer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChoiceAnswer"
+            },
+            {
+              "$ref": "#/$defs/FillAnswer"
+            },
+            {
+              "$ref": "#/$defs/WrittenAnswer"
+            }
+          ],
+          "title": "Answer"
+        },
+        "explanation": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "attachment": "#/$defs/AttachmentBlock",
+                "chart": "#/$defs/ChartBlock",
+                "image": "#/$defs/ImageBlock",
+                "latex": "#/$defs/LatexBlock",
+                "table": "#/$defs/TableBlock",
+                "text": "#/$defs/TextBlock"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextBlock"
+              },
+              {
+                "$ref": "#/$defs/LatexBlock"
+              },
+              {
+                "$ref": "#/$defs/ImageBlock"
+              },
+              {
+                "$ref": "#/$defs/ChartBlock"
+              },
+              {
+                "$ref": "#/$defs/AttachmentBlock"
+              },
+              {
+                "$ref": "#/$defs/TableBlock"
+              }
+            ]
+          },
+          "maxItems": 200,
+          "minItems": 1,
+          "title": "Explanation",
+          "type": "array"
+        },
+        "knowledge_points": {
+          "items": {
+            "maxLength": 500,
+            "minLength": 1,
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Knowledge Points",
+          "type": "array"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "passage_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Passage Id"
+        },
+        "parent_question_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Question Id"
+        }
+      },
+      "required": [
+        "schema_version",
+        "id",
+        "revision",
+        "subject",
+        "kind",
+        "stem",
+        "answer",
+        "explanation",
+        "knowledge_points",
+        "source"
+      ],
+      "title": "QuestionDocument",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "manual",
+            "imported",
+            "official",
+            "ai_generated"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "\\S",
+          "title": "Title",
+          "type": "string"
+        },
+        "verification": {
+          "default": "unverified",
+          "enum": [
+            "unverified",
+            "human_verified",
+            "rejected"
+          ],
+          "title": "Verification",
+          "type": "string"
+        },
+        "original_resource_id": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Original Resource Id"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "pattern": "^https://[^\\s]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "minLength": 1,
+              "pattern": "\\S",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "generated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Generated At"
+        }
+      },
+      "required": [
+        "kind",
+        "title"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "TableBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "table",
+          "title": "Type",
+          "type": "string"
+        },
+        "headers": {
+          "items": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "attachment": "#/$defs/AttachmentBlock",
+                  "chart": "#/$defs/ChartBlock",
+                  "image": "#/$defs/ImageBlock",
+                  "latex": "#/$defs/LatexBlock",
+                  "text": "#/$defs/TextBlock"
+                },
+                "propertyName": "type"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/TextBlock"
+                },
+                {
+                  "$ref": "#/$defs/LatexBlock"
+                },
+                {
+                  "$ref": "#/$defs/ImageBlock"
+                },
+                {
+                  "$ref": "#/$defs/ChartBlock"
+                },
+                {
+                  "$ref": "#/$defs/AttachmentBlock"
+                }
+              ]
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Headers",
+          "type": "array"
+        },
+        "rows": {
+          "items": {
+            "items": {
+              "items": {
+                "discriminator": {
+                  "mapping": {
+                    "attachment": "#/$defs/AttachmentBlock",
+                    "chart": "#/$defs/ChartBlock",
+                    "image": "#/$defs/ImageBlock",
+                    "latex": "#/$defs/LatexBlock",
+                    "text": "#/$defs/TextBlock"
+                  },
+                  "propertyName": "type"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/TextBlock"
+                  },
+                  {
+                    "$ref": "#/$defs/LatexBlock"
+                  },
+                  {
+                    "$ref": "#/$defs/ImageBlock"
+                  },
+                  {
+                    "$ref": "#/$defs/ChartBlock"
+                  },
+                  {
+                    "$ref": "#/$defs/AttachmentBlock"
+                  }
+                ]
+              },
+              "maxItems": 20,
+              "minItems": 1,
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Rows",
+          "type": "array"
+        }
+      },
+      "required": [
+        "type",
+        "headers",
+        "rows"
+      ],
+      "title": "TableBlock",
+      "type": "object"
+    },
+    "TextBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "text",
+          "title": "Type",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "text"
+      ],
+      "title": "TextBlock",
+      "type": "object"
+    },
+    "WrittenAnswer": {
+      "additionalProperties": false,
+      "properties": {
+        "rubric": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Rubric",
+          "type": "string"
+        },
+        "reference": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "attachment": "#/$defs/AttachmentBlock",
+                "chart": "#/$defs/ChartBlock",
+                "image": "#/$defs/ImageBlock",
+                "latex": "#/$defs/LatexBlock",
+                "table": "#/$defs/TableBlock",
+                "text": "#/$defs/TextBlock"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextBlock"
+              },
+              {
+                "$ref": "#/$defs/LatexBlock"
+              },
+              {
+                "$ref": "#/$defs/ImageBlock"
+              },
+              {
+                "$ref": "#/$defs/ChartBlock"
+              },
+              {
+                "$ref": "#/$defs/AttachmentBlock"
+              },
+              {
+                "$ref": "#/$defs/TableBlock"
+              }
+            ]
+          },
+          "maxItems": 200,
+          "title": "Reference",
+          "type": "array"
+        }
+      },
+      "required": [
+        "rubric"
+      ],
+      "title": "WrittenAnswer",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Question/passage references are self-contained; file resolution belongs to M2.",
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "passages": {
+      "items": {
+        "$ref": "#/$defs/Passage"
+      },
+      "maxItems": 100,
+      "title": "Passages",
+      "type": "array"
+    },
+    "questions": {
+      "items": {
+        "$ref": "#/$defs/QuestionDocument"
+      },
+      "maxItems": 1000,
+      "minItems": 1,
+      "title": "Questions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "questions"
+  ],
+  "title": "QuestionBundle",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

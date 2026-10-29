@@ -1,5 +1,32 @@
 import 'dart:io';
 
+bool allowedPlayerResource(String primaryUrl, String requestedUrl) {
+  final primary = Uri.tryParse(primaryUrl);
+  final candidate = Uri.tryParse(requestedUrl);
+  if (primary == null ||
+      primary.scheme != 'http' ||
+      primary.host != '127.0.0.1' ||
+      candidate == null) {
+    return false;
+  }
+  if (requestedUrl.startsWith('blob:${primary.origin}/')) return true;
+  if (candidate.scheme != primary.scheme ||
+      candidate.userInfo.isNotEmpty ||
+      candidate.origin != primary.origin) {
+    return false;
+  }
+  final capability = primary.queryParameters['cap'];
+  return capability != null &&
+      capability.isNotEmpty &&
+      candidate.queryParameters.length == 1 &&
+      candidate.queryParameters['cap'] == capability &&
+      ['/player', '/content', '/state'].any(
+        (suffix) =>
+            candidate.path ==
+            primary.path.replaceFirst(RegExp(r'/player$'), suffix),
+      );
+}
+
 bool publicHttpsUrl(String value) {
   final uri = Uri.tryParse(value);
   if (uri == null ||
