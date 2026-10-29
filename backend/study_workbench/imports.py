@@ -326,6 +326,20 @@ def import_router(engine, root):
             raise HTTPException(422, "不能导入空文件")
         return await run_in_threadpool(stage, workspace_id, data, filename)
 
+    @router.post("/resources/{resource_id}/analyze")
+    def analyze(workspace_id: str, resource_id: str):
+        with Session(engine) as session:
+            require_workspace(session, workspace_id)
+            resource = session.get(Resource, resource_id)
+            if resource is None or resource.workspace_id != workspace_id:
+                raise HTTPException(404, "资源不存在")
+            if resource.size > 8 * 1024 * 1024:
+                raise HTTPException(413, "内容处理最多8MiB；原件仍可在资源管理器中打开")
+            data, filename = read_resource(root, resource), resource.original_name
+        if not data:
+            raise HTTPException(422, "空文件没有可提取内容")
+        return stage(workspace_id, data, filename)
+
     @router.get("/imports")
     def history(workspace_id: str, offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100)):
         with Session(engine) as session:

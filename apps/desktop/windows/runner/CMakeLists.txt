@@ -8,6 +8,7 @@ project(runner LANGUAGES CXX)
 # Any new source files that you add to the application should be added here.
 add_executable(${BINARY_NAME} WIN32
   "flutter_window.cpp"
+  "resource_drop_target.cpp"
   "main.cpp"
   "utils.cpp"
   "win32_window.cpp"
@@ -40,3 +41,11 @@ target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
 
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)
+
+# Explicit native boundary check; excluded from normal application builds and packaging.
+add_executable(resource_drop_check EXCLUDE_FROM_ALL
+  "../../../../tools/check_resource_drop.cpp" "resource_drop_target.cpp" "utils.cpp")
+apply_standard_settings(resource_drop_check)
+target_compile_options(resource_drop_check PRIVATE /utf-8)
+target_compile_definitions(resource_drop_check PRIVATE NOMINMAX)
+target_link_libraries(resource_drop_check PRIVATE flutter flutter_wrapper_app shell32.lib ole32.lib uuid.lib)

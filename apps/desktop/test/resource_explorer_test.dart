@@ -53,6 +53,52 @@ Future<void> show(WidgetTester tester, Backend backend) async {
 }
 
 void main() {
+  testWidgets(
+    'delete confirms, keeps failures visible and refreshes after retry',
+    (tester) async {
+      var removed = false;
+      var fail = true;
+      var deletes = 0;
+      final backend = _Backend((method, path, body) async {
+        if (method == 'DELETE') {
+          deletes++;
+          if (fail) throw StateError('添加任务尚未完成');
+          removed = true;
+          return {
+            'removed_ids': ['file'],
+          };
+        }
+        return removed ? [] : [node('file', '讲义.md', 'resource')];
+      });
+      await show(tester, backend);
+      Future<void> openDelete() async {
+        await tester.tap(find.byTooltip('资源操作'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('删除'));
+        await tester.pumpAndSettle();
+      }
+
+      await openDelete();
+      expect(find.textContaining('不释放磁盘空间'), findsOneWidget);
+      await tester.tap(find.text('取消'));
+      await tester.pumpAndSettle();
+      expect(deletes, 0);
+      expect(find.text('讲义.md'), findsOneWidget);
+      await openDelete();
+      await tester.tap(find.text('确认删除'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('未删除：'), findsOneWidget);
+      expect(find.text('讲义.md'), findsOneWidget);
+      fail = false;
+      await tester.tap(find.text('确认删除'));
+      await tester.pumpAndSettle();
+      expect(deletes, 2);
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.text('讲义.md'), findsNothing);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('refresh ignores a delayed old tree response', (tester) async {
     final pending = Completer<dynamic>();
     var calls = 0;
@@ -103,7 +149,13 @@ void main() {
       await tester.tap(find.text('讲义.md'));
       await tester.pumpAndSettle();
       expect(find.textContaining('资源编号：file'), findsOneWidget);
-      await tester.enterText(find.byType(TextField), '改名.md');
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.byType(TextField),
+        ),
+        '改名.md',
+      );
       await tester.tap(find.text('移动到：当前文件夹'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('选择此位置'));
@@ -129,6 +181,17 @@ void main() {
       var cancelled = false;
       final backend = _Backend((method, path, body) async {
         calls.add('$method $path');
+        if (path.endsWith('/resource-inspections')) {
+          return [
+            {
+              'source_path': 'D:/fixtures/资料',
+              'name': '资料',
+              'kind': 'folder',
+              'type': '文件夹',
+              'size': null,
+            },
+          ];
+        }
         if (path.contains('/nodes?')) return [];
         if (path.endsWith('/cancel')) {
           cancelled = true;
@@ -155,6 +218,7 @@ void main() {
           .setMockMethodCallHandler(const MethodChannel('study/desktop'), (
             call,
           ) async {
+            if (call.method == 'setResourceDropBounds') return null;
             expect(call.method, 'chooseResourceDirectory');
             return 'D:/fixtures/资料';
           });
@@ -168,8 +232,15 @@ void main() {
       await show(tester, backend);
       await tester.tap(find.text('添加资源'));
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('文件夹与网页链接'));
+      await tester.tap(find.text('文件夹与网页链接'));
+      await tester.pumpAndSettle();
       expect(find.textContaining('视频下载尚未实现'), findsOneWidget);
+      await tester.ensureVisible(find.text('复制导入文件夹'));
       await tester.tap(find.text('复制导入文件夹'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('后台添加任务'));
+      await tester.tap(find.text('后台添加任务'));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('复制中 · 1 项'));
       await tester.tap(find.text('复制中 · 1 项'));
@@ -183,7 +254,7 @@ void main() {
         contains('POST /api/workspaces/default/resource-add-jobs/copy/cancel'),
       );
       expect(find.text('已取消 · 1 项'), findsOneWidget);
-      await tester.tap(find.text('关闭'));
+      await tester.tap(find.byTooltip('关闭添加资源'));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     },
@@ -249,17 +320,21 @@ void main() {
       await show(tester, backend);
       await tester.tap(find.text('添加资源'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('添加文件 / 本地媒体'));
+      await tester.tap(find.text('添加文件'));
       await tester.pumpAndSettle();
       expect(posts, 0);
+      await tester.ensureVisible(find.text('文件夹与网页链接'));
+      await tester.tap(find.text('文件夹与网页链接'));
+      await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField).first, '网页资料');
       await tester.enterText(find.byType(TextField).last, 'http://invalid');
+      await tester.ensureVisible(find.text('保存网页链接'));
       await tester.tap(find.text('保存网页链接'));
       await tester.pumpAndSettle();
       expect(find.text('网页资料'), findsOneWidget);
       expect(find.text('http://invalid'), findsOneWidget);
       expect(find.textContaining('添加未完成'), findsOneWidget);
-      await tester.tap(find.text('关闭'));
+      await tester.tap(find.byTooltip('关闭添加资源'));
       await tester.pumpAndSettle();
     },
   );
