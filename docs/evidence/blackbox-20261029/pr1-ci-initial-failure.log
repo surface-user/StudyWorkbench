@@ -1,0 +1,6 @@
+2026-10-29T13:46:39.7225555Z ##[endgroup]
+2026-10-29T13:46:39.7227611Z ##[group]❌ D:/a/StudyWorkbench/StudyWorkbench/apps/desktop/test/backend_process_test.dart: unwritable config preserves selected directory and learning on restart (failed)
+2026-10-29T13:46:39.7230198Z PathNotFoundException: Creation of temporary directory failed, path = 'D:\a\StudyWorkbench\StudyWorkbench/.local/tmp' (OS Error: The system cannot find the path specified, errno = 3)
+2026-10-29T13:46:39.7240603Z dart:io                               _Directory.createTemp
+2026-10-29T13:46:39.7241366Z test\backend_process_test.dart 13:12  main.<fn>
+2026-10-29T13:46:39.7242339Z ##[endgroup]

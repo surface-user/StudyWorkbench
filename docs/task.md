@@ -608,3 +608,11 @@ R4独立真实HTTP44次响应断言、Windows题目文件混合集成1项、既�
 用户已明确授权整理提交R1–R5集成PR，黑盒通过后自动审查并在CI/仓库门禁满足时合并。整批依赖0002–0011及工作空间/导入/媒体基础一同提交，不将历史M0或人工/阶段验收改为通过。现有五份公开HTTP回归接入双Python CI，普通业务保持离线；测试运行profile、数据库、导入原件、构建产物及本机编辑器设置排除。32MiB Office组件解压清单保留本机，不上传Git；转换成功/失败测试证据和完整历史失败日志仍保留。当前提交/CI/审批/合并状态待后续结果记录，不预先声称成功。
 
 提交范围复核：采用显式250文件清单（约2.3MiB），只上传本轮blackbox-20261029的31份隔离证据，其余历史证据留本机；相关旧报告的本机证据链接在GitHub上可能不可用。本轮日志已扫描令牌/密钥模式，截图仅自编内容。PDF固定宽度xref与原始日志保留字节，通过.gitattributes明确二进制/原始格式，不对历史失败日志重新排版。首次暂存前自动审批拒绝递归纳入历史证据；已收窄并扫描后获准。新增黑盒CI不改变产品行为。
+
+## PR #1 桌面CI缺陷：干净检出缺少临时目录（2026-10-29）
+
+状态：in_progress。严重程度P2（阻断CI，测试准备缺陷，尚未触发业务代码）。复现：干净checkout，按.github/workflows/check.yml安装依赖后，以STUDY_ROOT与隔离STUDY_DATA_DIR运行flutter test。backend_process_test.dart首个用例直接对不存在的.local/tmp执行createTemp。期望：测试自行建立scratch父目录，验证配置拒写后数据和作答跨重启保持；实际：PathNotFoundException，84通过/1失败、退出1，未进入业务断言。后续第二个用例才创建父目录，本机旧目录掩盖了问题。
+
+失败用例保留为apps/desktop/test/backend_process_test.dart的unwritable config preserves selected directory and learning on restart，全部原断言保留。对应GitHub运行40884455060/job/123484312760；两个Python作业（含R1–R5黑盒）通过。修复计划仅在首个用例显式递归创建父目录，按现有第二个用例方式；复测现有两条真实后端管道用例并重跑CI，不修改产品或降低断言。用户此前已授权发现缺陷后修复并更新同一分支，无需重新取得修复授权。
+
+本地修复验证：Flutter定向两条真实后端管道用例（启用STUDY_ROOT及隔离STUDY_DATA_DIR）退出0、2通过；见evidence/blackbox-20261029/pr1-ci-fix-local.log。原CI失败片段保留pr1-ci-initial-failure.log。GitHub作者身份同时被拒绝APPROVE及REQUEST_CHANGES，已用COMMENT行内记录具体P2问题；CI修复仍以干净runner重跑为准，任务保持in_progress。

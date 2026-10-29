@@ -9,8 +9,9 @@ void main() {
   test(
     'unwritable config preserves selected directory and learning on restart',
     () async {
-      final fixture = await Directory('$repository/.local/tmp')
-          .createTemp('study-config-denied-');
+      final scratch = await Directory('$repository/.local/tmp')
+          .create(recursive: true);
+      final fixture = await scratch.createTemp('study-config-denied-');
       final blocked = File('${fixture.path}/profile')
         ..writeAsStringSync('retained file');
       final data = '${fixture.path}/selected data';
