@@ -10,6 +10,7 @@ import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -79,6 +80,9 @@ def main():
         process, request = launch()
         assert request('/api/workbench')['workspaces'][0]['name'] == '我的学习空间'
         assert request(prefix + '/layout')['tabs'] == []
+        inspected = request(prefix + '/resource-inspections', {'source_paths': [str(source / '无答案.md')]})
+        assert inspected[0]['type'] == 'Markdown 笔记' and inspected[0]['error'] is None
+        assert request(prefix + '/nodes') == [] and request(prefix + '/resource-add-jobs') == []
         layout = {'version': 1, 'tabs': [{'id': 'legacy', 'kind': 'question', 'draft': '升级仍保留的草稿'}],
                   'closed_tabs': [], 'active_tab_id': 'legacy'}
         layout = request(prefix + '/layout', layout, 'PUT')
@@ -96,6 +100,10 @@ def main():
         top = request(prefix + '/nodes')[0]
         children = request(prefix + '/nodes?parent_id=' + top['resource_item_id'])
         node = next(row for row in children if row['name'] == '无答案.md')
+        analyzed = request(prefix + '/resources/' + node['resource_id'] + '/analyze', {}, 'POST')
+        assert analyzed['resource_id'] == node['resource_id'] and analyzed['status'] == 'preview'
+        assert request(prefix + '/notes') == []
+        assert request(prefix + '/nodes?search=' + urllib.parse.quote('无答案'))[0]['resource_item_id'] == node['resource_item_id']
         renamed = request(prefix + '/nodes/' + node['resource_item_id'], {'name': '已改名.md', 'parent_id': None}, 'PATCH')
         assert renamed['resource_item_id'] == node['resource_item_id']
         assert request(prefix + '/nodes/' + node['resource_item_id'])['status'] == 'ready'
@@ -149,14 +157,25 @@ def main():
             except urllib.error.HTTPError as error:
                 assert error.code == 409
             assert request(endpoint + '/document')['text'] == '外部修改'
+        removed_id = node['resource_item_id']
+        assert request(prefix + '/nodes/' + removed_id, method='DELETE')['removed_ids'] == [removed_id]
+        assert all(row['resource_item_id'] != removed_id for row in request(prefix + '/nodes'))
+        assert request(prefix + '/layout') == layout
+        stop(process)
+        process, request = launch()
+        assert all(row['resource_item_id'] != removed_id for row in request(prefix + '/nodes'))
+        assert request(prefix + '/nodes/' + removed_id)['status'] == 'removed'
+        assert request(prefix + '/layout') == layout
+        assert request(prefix + '/attempts')[0]['id'] == attempt['id']
         stop(process)
         with sqlite3.connect(root / 'data/study.db') as db:
-            assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0011',)
+            assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0012',)
             assert db.execute('PRAGMA integrity_check').fetchone() == ('ok',)
             assert db.execute('PRAGMA foreign_key_check').fetchall() == []
         assert hashes == {str(p.relative_to(source)): hashlib.sha256(p.read_bytes()).hexdigest() for p in source.rglob('*') if p.is_file()}
         print(json.dumps(dict(frozen=bool(args.exe), nodes=5, duplicate_blob=1, layout_preserved=True, documents=args.documents,
-                              attempts_preserved=True, source_preserved=True, restart=True, revision='0011',
+                              attempts_preserved=True, source_preserved=True, restart=True, revision='0012',
+                              removal_preserved_after_restart=True,
                               without_office=args.without_office)))
     finally:
         for process in processes:

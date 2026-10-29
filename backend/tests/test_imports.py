@@ -262,13 +262,13 @@ def test_m1_upgrade_has_one_backup_and_preserves_attempts(tmp_path):
             attempt = c.get("/api/attempts").json()[0]
             assert attempt["id"] == 88 and attempt["response"] == {"selected": ["a"]}
             assert attempt["score"] == 1.0
-    backups = list((tmp_path / "backups").glob("study-before-0011-*.db"))
+    backups = list((tmp_path / "backups").glob("study-before-0012-*.db"))
     assert len(backups) == 1
     with sqlite3.connect(backups[0]) as backup:
         assert backup.execute("SELECT version_num FROM alembic_version").fetchone() == ("0002",)
         assert backup.execute("SELECT id FROM attempts").fetchone() == (88,)
     with sqlite3.connect(tmp_path / "study.db") as upgraded:
-        assert upgraded.execute("SELECT version_num FROM alembic_version").fetchone() == ("0011",)
+        assert upgraded.execute("SELECT version_num FROM alembic_version").fetchone() == ("0012",)
         assert upgraded.execute("PRAGMA foreign_key_check").fetchall() == []
 
 

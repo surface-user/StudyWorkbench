@@ -54,7 +54,18 @@ jobs:
           $taskRoot = (Resolve-Path ../..).Path
           flutter test --dart-define="STUDY_ROOT=$taskRoot" --dart-define="STUDY_DATA_DIR=$taskRoot/.local/ci-pipe-tests"
       - run: flutter build windows --release
+      - name: Native resource drop COM boundary check
+        shell: pwsh
+        run: |
+          $cmake = ((Select-String -Path build/windows/x64/CMakeCache.txt -Pattern '^CMAKE_COMMAND:INTERNAL=').Line -split '=', 2)[1]
+          & $cmake --build build/windows/x64 --config Release --target resource_drop_check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & build/windows/x64/runner/Release/resource_drop_check.exe
+          exit $LASTEXITCODE
       - run: ./packaging/windows/build-backend.ps1 -Python .venv/Scripts/python.exe
+        working-directory: .
+      - name: Frozen unified resource import and document regression
+        run: .venv/Scripts/python.exe tools/check_resource_explorer.py --exe dist/study_backend/study_backend.exe --test-root .local/ci-unified-import --documents
         working-directory: .
       - shell: pwsh
         run: |
