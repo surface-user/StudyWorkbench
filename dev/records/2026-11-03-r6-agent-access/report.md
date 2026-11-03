@@ -90,3 +90,12 @@ PR前置核对：远程PR #2仍open/draft、未合并；head=29f23d3558740545a95
 结论：独立代理computer-use核心切片通过，未发现阻断bug，满足用户本切片提交PR条件。不是独立人工批准或完整R6/产品阶段验收。未实测完整5分钟过期、故障注入、100条边界、多屏DPI、安装器/干净机；过期/故障等自动化覆盖与真实交互分开。窗口留在无活动授权的历史页，未关闭用户程序。
 
 原始步骤/6张截图见artifacts/r6-ui-acceptance-20261103/acceptance.md，旧失败不删除。主代理逐张检查并仅晋升no-selection.jpg和single-summary.jpg，来源/hash/筛选理由见[evidence说明](evidence/README.md)，不包含个人数据或令牌。6份功能代码/测试与独立PR工作树逐字节一致。准备提交以PR #2分支为base的独立R6 PR，不合并、不发行。
+
+
+### PR交付
+
+已创建[PR #3](https://github.com/surface-user/StudyWorkbench/pull/3)，非草稿，base=codex/unified-resource-import（未合并#2），首个远程head=2ce2985b105327daef93a0d825a4b57ec0dac4b5。本地功能提交d690dcfb8a3d14d8a1d2222daf92aab003d84389，15项blob及完整tree 9c3b26cbb9a85d92f486a13ddf895ad4197ef77f逐项相同；提交元信息不同不代表代码差异。追加本节后仅报告/任务状态变化，功能代码不变。
+
+首次组合commit/push在执行前被自动审批拒绝：目的仓库可信性未核实；未绕过拒绝。随后GitHub连接器核验当前用户id205941432与仓库owner相同，visibility=private、admin/push=true、clone_url匹配origin，获准推送。但git push两次退出1，github.com:443连接超时。转用既有GitHub连接器上传同一批审查内容，核对所有blob SHA及tree，创建commit/branch/PR，并已attach_artifact。未提交数据库、原始日志、个人资料或无关文档治理。
+
+首次head的PR CI已查询：[运行41559053107](https://github.com/surface-user/StudyWorkbench/actions/runs/41559053107)，排队中，不能记通过。追加记录后的最终head/CI以PR实时状态为准；报告和任务保留待交付，不宣称合并或产品阶段通过。用户人工、发行/干净机及完整R6继续待验。本次未合并/发布。
