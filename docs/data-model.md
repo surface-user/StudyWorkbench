@@ -101,3 +101,14 @@ learning_events(id、attempt_id FK、request_id、content JSON、created_at)，�
 ## R5事件投影完成（2026-10-29）
 
 复用0011 learning_events.content保存可选note_id及knowledge_points，不另建重复关系表，不改旧事件/迁移。关联笔记按稳定ID读取当前内容，缺失关系保留；最后明确知识点修订投影为记录当前标签，当时快照值仍独立保留。reviewed_count按事件重算，掌握/到期由实际作答与人工评分重算，算法版本和界面语义分开。细则见[ADR0011](adr/0011-learning-record-projections.md)及[R5完成记录](r5-completion-2026-10-29.md)，完整学习数据库备份恢复仍非当前资源导出的能力。
+
+
+## R6本地授权读取增量（2026-11-03）
+
+当前已实现：学习页作答历史显式勾选1–100条记录、确认5分钟本地授权、另行读取摘要、撤销及撤销后关闭；失败保留以重试，过期404清除。API均继承既有Bearer/Host/Origin检查，每次校验空间及作答归属。
+
+接口：POST `/api/workspaces/{workspace_id}/agent-grants` 接收严格独立正整数attempt_ids、purpose=analyze_attempts、expires_in_seconds=1–900（默认300）、严格confirm=true，拒绝额外字段；返回id/范围/用途/期限和transport=local_only。DELETE `/{id}` 撤销；POST `/{id}/read-attempts` 仅返回id/question_id/question_version_id/status/score/created_at。未知/跨空间/过期授权404；活动授权全进程最多100份，超限429。授权仅内存，单调时钟过期、重启失效，不新增表/迁移；撤销与读取串行。原始分数不含后续人工修订，不能用于完整学情判断。
+
+规划中：模型/凭据、资源正文、单独远端授权、草稿外置审核和来源校验；本批不联网或修改学习记录。待验证：真实窗口结果及PR状态见[本任务报告](../dev/records/2026-11-03-r6-agent-access/report.md)，模型/完整R6和产品人工/阶段验收继续保留。上述当前实现取代本文件此前涉及R6全部未实施的描述；不改其他历史阶段结论。本PR以未合并PR #2分支为基线，代码/自动化/自审完成后仍需本切片computer-use验收才创建PR，不授权合并或发布。
+
+最终本切片状态：独立子代理computer-use实际窗口核心流程通过，前后2条作答只读逐值保持；完整5分钟过期/故障注入/100条/DPI/发行和产品阶段仍待验。旧工具阻塞与首次自动化失败保留。后端全量218、Flutter全量93、定向6、静态分析及Windows Release通过；只提交本切片，不夹带本地文档治理。PR/当前head CI见任务报告。
