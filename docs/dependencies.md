@@ -32,6 +32,8 @@
 
 ### 可选离线Office组件
 
+冻结后端通过独立内部helper清除继承的PyInstaller DLL目录后启动组件，避免其加载打包Python的CRT；不在并发主后端切换DLL搜索状态。外部转换的输入/输出/profile与临时目录使用经samefile核对的Windows短名，原始路径和数据保持不变。无短名卷及极端目录尚未验证；此兼容措施不放宽运行时逐文件清单、输入门禁或Job限制。
+
 
 
 选用LibreOffice26.8.1 Windows x64官方MSI作为已接入的可选独立进程运行时；[官方稳定目录](https://download.documentfoundation.org/libreoffice/stable/)及[固定包校验](https://download.documentfoundation.org/libreoffice/stable/26.8.1/win/x86_64/LibreOffice_26.8.1_Win_x86-64.msi.sha256)已读取。官方SHA256为c6298b10cfa1748bcbedad94c62ce771e240e5021bfd6d7a967cd571b04b5312，下载完整包374870016字节，Windows签名Valid、发布者The Document Foundation；准备方式为项目内MSI管理镜像解包，不作系统安装/关联；程序/许可/二进制逐文件清单用tools/lock_office_runtime.py生成，不含MSI副本。

@@ -15,6 +15,9 @@ from .data_root import DataLock, relocate, validate_root, write_settings
 
 
 def main():
+    if len(sys.argv) == 5 and sys.argv[1] == '--launch-office':
+        from .office_runtime import launch_office
+        raise SystemExit(launch_office(Path(sys.argv[2]), Path(sys.argv[3]), sys.argv[4]))
     if sys.argv[1:] == ['--download-media']:
         from .media_download_worker import worker
         worker()

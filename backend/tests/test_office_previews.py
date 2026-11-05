@@ -254,13 +254,18 @@ def test_0008_upgrade_and_failure_retains_workfiles_layout_and_all_old_rows(tmp_
 @pytest.mark.parametrize('abrupt', [False, True])
 def test_owned_process_is_killed_on_cancel_and_owner_exit(tmp_path, abrupt):
     import _winapi
-    marker, gate = tmp_path / 'child.pid', tmp_path / 'exit'
+    marker, grandchild_marker, gate = tmp_path / 'child.pid', tmp_path / 'grandchild.pid', tmp_path / 'exit'
+    grandchild = tmp_path / 'grandchild.py'
+    grandchild.write_text('import os,time,pathlib,sys\np=pathlib.Path(sys.argv[1])\n'
+                          'pending=p.with_suffix(".pending")\npending.write_text(str(os.getpid()))\nos.replace(pending,p)\ntime.sleep(120)\n')
     child = tmp_path / 'child.py'
     # Publish the complete PID atomically; existence alone must never expose an empty marker.
-    child.write_text('import os,time,pathlib,sys\np=pathlib.Path(sys.argv[1])\n'
+    child.write_text('import os,time,pathlib,sys,subprocess\n'
+                     f'subprocess.Popen({[sys._base_executable, str(grandchild), str(grandchild_marker)]!r},creationflags=subprocess.CREATE_NO_WINDOW)\n'
+                     'p=pathlib.Path(sys.argv[1])\n'
                      'pending=p.with_suffix(".pending")\npending.write_text(str(os.getpid()))\nos.replace(pending,p)\ntime.sleep(120)\n')
     command = [sys._base_executable, str(child), str(marker)]
-    job, process, owner, handle = None, None, None, None
+    job, process, owner, handles = None, None, None, []
     try:
         if abrupt:
             script = tmp_path / 'owner.py'
@@ -276,23 +281,24 @@ def test_owned_process_is_killed_on_cancel_and_owner_exit(tmp_path, abrupt):
             job = office_runtime.WindowsProcessJob()
             process = job.start(command, tmp_path, dict(os.environ))
         deadline = time.monotonic() + 10
-        while not marker.exists() and time.monotonic() < deadline:
+        while not (marker.exists() and grandchild_marker.exists()) and time.monotonic() < deadline:
             time.sleep(.02)
-        assert marker.exists()
-        handle = _winapi.OpenProcess(0x100000, False, int(marker.read_text()))
+        assert marker.exists() and grandchild_marker.exists()
+        for path in [marker, grandchild_marker]:
+            handles.append(_winapi.OpenProcess(0x100000, False, int(path.read_text())))
         if abrupt:
             gate.touch()
             assert owner.wait(10) == 3
         else:
             job.close()
-        assert _winapi.WaitForSingleObject(handle, 10000) == 0
+        assert all(_winapi.WaitForSingleObject(handle, 10000) == 0 for handle in handles)
     finally:
         if job:
             job.close()
         if process:
             process.wait(10)
             process.close()
-        if handle:
+        for handle in handles:
             _winapi.CloseHandle(handle)
         if owner and owner.poll() is None:
             gate.touch()

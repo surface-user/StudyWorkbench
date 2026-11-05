@@ -44,3 +44,10 @@ run42061516523最终双后端job均success（含pytest和R1–R5 HTTP黑盒）�
 P tools/check_resource_explorer.py --exe artifacts/lw08-20261105/frozen-review-final/dist/study_backend/study_backend.exe --test-root .local/pr4-resource-before-20261106 --documents退出1复现原schema断言（resource-before.log）；修补后改独立root .local/pr4-resource-after-20261106，退出0（resource-after.log），验证5节点/原件去重/文档/墓碑/布局/历史/重启/SQLite完整性和FK，schema0016。
 
 完整执行该失败步骤及其后CI命令：新建项目.local/pr4-lifecycle-real-20261106和指向它的pr4-lifecycle-alias-20261106 junction，将TEMP/TMP设alias；P tools/check_backend_lifecycle.py --exe同一冻结包退出0（lifecycle-after.log），独占锁、鉴权/Origin、中文主观与客观题、EOF、重启/崩溃恢复和迁移父EOF取消通过。P tools/check_document_workers.py --exe同一包退出0（document-workers-after.log），DOCX/PDF真实离线worker、文字/图片/公式/页及编号/跨页拆分通过。驱动实际收取resource_exit=0/lifecycle_exit=0/workers_exit=0，不仅查看日志。Ruff与暂存diff检查另做后才推送；不改工作流、不跳测试、不更新尚未验证的Office运行代码。新的PR head须再实查全CI，保留两轮红灯及本地先红后绿。
+
+当前已送审head 54ad12b51b0d5bc2c8d2e4d71e42926ab4e86135的PR run42068871152三个job全部success，GitHub实查确认；两轮失败保留。PR描述已据此更新，不改commit/不合并。Office新试验尚未提交，不能混称该head已包含或解决组件问题。
+
+
+## PR后继续：Office隔离启动与深目录修补
+
+按用户原授权继续LW-06，已在原任务报告记录两项原因及最小修补：冻结组件DLL继承由独立受控helper清理自身，外部组件深profile路径使用samefile确认的短名。修补后双Python各476通过，新冻结包真实DOCX/PPTX各2页、Calc、四页页图、完整CI冻结三项探针、R1–R5 HTTP及授权审核/整库恢复闭环通过，实际命令和退出码收取边界见[LW-06原报告](../2026-11-04-lw06-formats/report.md)。没有将54ad12b的绿灯套用到新代码；本次推送后的当前head CI仍需GitHub实际核对。旧Office失败、原组件转储、两次红CI和窗口/人工/安装待验保持，不合并/发行、不接模型。

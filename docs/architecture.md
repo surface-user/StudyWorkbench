@@ -42,7 +42,7 @@ PageHost用稳定页ID的Offstage/ExcludeFocus/TickerMode保留访问过的页�
 
 外部WebView与本地可信播放器隔离，不注册业务JS桥/host object，不传业务令牌。播放器仅取得指定媒体的临时capability。HTTP执行Host/Origin/令牌与同空间校验；导入、Office内容及模型输出都视为不可信。
 
-Office运行时可缺省；显式转换、独立profile和Windows Job、固定参数/版本、输入预算/宏外链拒绝。内部静态图表/OMML例外按门禁受控启用，选项v3；控制不等于完整OS沙箱。缓存核对源和产物hash，重启中断不自动重跑。
+Office运行时可缺省；显式转换、独立profile和Windows Job、固定参数/版本、输入预算/宏外链拒绝。冻结包由同一Job持有的短命内部helper清除自身继承的DLL目录，再启动固定转换命令，主后端不修改全局DLL状态。Windows外部组件使用经samefile核对的任务目录短名，原件、数据库及派生文件身份仍使用原路径；无可用短名时保留原路径，该回退分支的深目录兼容仍待验证。内部静态图表/OMML例外按门禁受控启用，选项v3；控制不等于完整OS沙箱。缓存核对源和产物hash，重启中断不自动重跑。
 
 ### 兼容与数据保护
 

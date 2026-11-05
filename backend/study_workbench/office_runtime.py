@@ -13,7 +13,7 @@ from pathlib import Path, PurePosixPath
 from fastapi import HTTPException
 
 from .imports import resource_path
-from .office_inputs import validate_office
+from .office_inputs import MAX_SOURCE, validate_office
 
 VERSION = '26.8.1'
 PACKAGE_SHA256 = 'c6298b10cfa1748bcbedad94c62ce771e240e5021bfd6d7a967cd571b04b5312'
@@ -38,6 +38,29 @@ PROFILE = '''<?xml version="1.0" encoding="UTF-8"?>
 
 class ConversionStopped(Exception):
     pass
+
+
+def profile_configuration(internal_rendering):
+    # Internal charts/OMML are active content; only input-gated packages enable their rendering.
+    return PROFILE.replace(
+        '<prop oor:name="DisableActiveContent" oor:op="fuse"><value>true</value></prop>',
+        '<prop oor:name="DisableActiveContent" oor:op="fuse"><value>false</value></prop>'
+    ) if internal_rendering else PROFILE
+
+
+def native_directory(directory):
+    # Some Office profile services still fail on deep paths; the alias must name the same directory.
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel.GetShortPathNameW.argtypes = [ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint32]
+    kernel.GetShortPathNameW.restype = ctypes.c_uint32
+    buffer = ctypes.create_unicode_buffer(32768)
+    length = kernel.GetShortPathNameW(str(directory), buffer, len(buffer))
+    if not length or length >= len(buffer):
+        return directory
+    native = Path(buffer.value)
+    if not native.is_absolute() or not os.path.samefile(directory, native):
+        raise ValueError('Office短路径不再指向同一任务目录')
+    return native
 
 
 class OfficeProcess:
@@ -202,36 +225,47 @@ class OfficeRuntime:
         if found != self.files.keys():
             raise ValueError('离线转换包文件缺失')
 
-    def convert(self, source, directory, checkpoint, timeout=90):
-        internal_rendering = validate_office(source.read_bytes(), source.suffix)
-        self.verify(checkpoint)
-        profile = directory / 'profile'
-        (profile / 'user').mkdir(parents=True)
-        # LibreOffice classifies internal charts/OMML as active; only gated packages enable rendering.
-        configuration = PROFILE.replace(
-            '<prop oor:name="DisableActiveContent" oor:op="fuse"><value>true</value></prop>',
-            '<prop oor:name="DisableActiveContent" oor:op="fuse"><value>false</value></prop>'
-        ) if internal_rendering else PROFILE
-        (profile / 'user/registrymodifications.xcu').write_text(configuration, encoding='utf-8')
-        output = directory / 'output'
-        output.mkdir()
-        temporary = directory / 'tmp'
-        temporary.mkdir()
+    def environment(self, directory):
+        profile, temporary = directory / 'profile', directory / 'tmp'
         environment = {key: os.environ[key] for key in ('SystemRoot', 'WINDIR') if key in os.environ}
         environment.update(PATH=str(self.executable.parent) + os.pathsep +
                            str(Path(os.environ['SystemRoot']) / 'System32'),
                            TEMP=str(temporary), TMP=str(temporary), APPDATA=str(profile),
                            LOCALAPPDATA=str(profile), USERPROFILE=str(profile),
                            SAL_DISABLESKIA='1', SAL_DISABLE_OPENCL='1')
+        return environment
+
+    def command(self, source, directory):
         filter_name = 'writer_pdf_Export' if source.suffix == '.docx' else 'impress_pdf_Export'
-        command = [str(self.executable), '-env:UserInstallation=' + profile.as_uri(),
-                   '--headless', '--nologo', '--nodefault', '--norestore', '--quickstart=no',
-                   '--convert-to', 'pdf:' + filter_name, '--outdir', str(output), str(source)]
+        return [str(self.executable), '-env:UserInstallation=' + (directory / 'profile').as_uri(),
+                '--headless', '--nologo', '--nodefault', '--norestore', '--quickstart=no',
+                '--convert-to', 'pdf:' + filter_name, '--outdir', str(directory / 'output'), str(source)]
+
+    def convert(self, source, directory, checkpoint, timeout=90):
+        internal_rendering = validate_office(source.read_bytes(), source.suffix)
+        self.verify(checkpoint)
+        profile = directory / 'profile'
+        (profile / 'user').mkdir(parents=True)
+        configuration = profile_configuration(internal_rendering)
+        (profile / 'user/registrymodifications.xcu').write_text(configuration, encoding='utf-8')
+        output = directory / 'output'
+        output.mkdir()
+        temporary = directory / 'tmp'
+        temporary.mkdir()
+        native = directory
+        if getattr(sys, 'frozen', False):
+            if source != directory / ('source' + source.suffix):
+                raise ValueError('冻结转换只读取本任务固定source文件')
+            command = [sys.executable, '--launch-office', str(self.root), str(directory), source.suffix]
+        else:
+            native = native_directory(directory)
+            command = self.command(native / source.name, native)
+        environment = self.environment(native)
         job = WindowsProcessJob()
         process = None
         try:
             checkpoint()
-            process = job.start(command, directory, environment)
+            process = job.start(command, native, environment)
             deadline = time.monotonic() + timeout
             while process.poll() is None:
                 checkpoint()
@@ -249,6 +283,36 @@ class OfficeRuntime:
                 finally:
                     process.close()
         return output / (source.stem + '.pdf')
+
+
+def launch_office(runtime_root, directory, suffix):
+    """Only the disposable helper clears its inherited DLL directory, never the threaded backend."""
+    if os.name != 'nt' or not getattr(sys, 'frozen', False) or suffix not in {'.docx', '.pptx'}:
+        raise ValueError('只支持冻结Windows内部Office入口')
+    if not directory.is_absolute() or str(directory).startswith(('\\\\', '//')):
+        raise ValueError('转换任务必须为本地绝对目录')
+    instance = OfficeRuntime(runtime_root)
+    source = resource_path(directory, 'source' + suffix)
+    for name in ['profile/user/registrymodifications.xcu', 'output', 'tmp']:
+        if not resource_path(directory, name).exists():
+            raise ValueError('转换任务配置不完整')
+    with source.open('rb') as handle:
+        raw = handle.read(MAX_SOURCE + 1)
+    internal_rendering = validate_office(raw, suffix)
+    expected_profile = profile_configuration(internal_rendering)
+    with resource_path(directory, 'profile/user/registrymodifications.xcu').open('r', encoding='utf-8') as handle:
+        if handle.read(len(expected_profile) + 1) != expected_profile:
+            raise ValueError('转换配置已变化，拒绝启动外部组件')
+    native = native_directory(directory)
+    command, environment = instance.command(native / source.name, native), instance.environment(native)
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel.SetDllDirectoryW.argtypes = [ctypes.c_wchar_p]
+    kernel.SetDllDirectoryW.restype = ctypes.c_int
+    if not kernel.SetDllDirectoryW(None):
+        raise ctypes.WinError(ctypes.get_last_error())
+    return subprocess.run(command, cwd=native, env=environment, stdin=subprocess.DEVNULL,
+                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                          creationflags=subprocess.CREATE_NO_WINDOW).returncode
 
 
 def runtime():
