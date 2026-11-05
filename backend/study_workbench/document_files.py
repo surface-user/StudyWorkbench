@@ -23,6 +23,7 @@ from .office_previews import OfficePreviews
 from .workspaces import require_workspace
 
 TEXT_LIMIT = 1024 * 1024
+PLAIN_TEXT_SUFFIXES = {'.txt', '.json', '.csv', '.log', '.vtt', '.srt'}
 VIEW_SLOTS = BoundedSemaphore(2)
 
 
@@ -83,6 +84,8 @@ def raster(data, mode, page=1):
             raise ValueError('Invalid document')
         return value
     except (subprocess.TimeoutExpired, ValueError) as error:
+        if mode == 'xlsx':
+            raise HTTPException(422, 'XLSX只读解析失败或超过20秒：可能损坏、加密、含外部关系或超出预算；原件保留') from error
         raise HTTPException(422, '文档渲染失败或超过20秒；可能损坏、加密或超限，原件保留') from error
 
 
@@ -138,11 +141,46 @@ class DocumentFiles:
         if work:
             data = text_bytes(self.root, work.relative_path)
         else:
-            limit = TEXT_LIMIT if suffix in {'.md', '.markdown', '.txt'} else 32 * TEXT_LIMIT if suffix in {'.docx', '.pptx'} else 16 * TEXT_LIMIT if suffix in {'.png', '.jpg', '.jpeg'} else 128 * TEXT_LIMIT
+            limit = TEXT_LIMIT if suffix in {'.md', '.markdown'} | PLAIN_TEXT_SUFFIXES else 32 * TEXT_LIMIT if suffix in {'.docx', '.pptx'} else 16 * TEXT_LIMIT if suffix in {'.png', '.jpg', '.jpeg', '.xlsx'} else 128 * TEXT_LIMIT
             if original.size > limit:
                 raise HTTPException(413, f'此格式查看预算为{limit // TEXT_LIMIT}MiB，原件已保留')
             data = read_resource(self.root, original)
         return node, original, suffix, work, data
+
+    def save_text(self, workspace_id: str, node_id: str, body: SaveText):
+        data = body.text.encode('utf-8')
+        if len(data) > TEXT_LIMIT:
+            raise HTTPException(413, 'Markdown最多1MiB UTF-8字节；草稿保留')
+        with self.lock:
+            with write_transaction(self.engine) as session:
+                node, _, suffix, work, before = self.source(session, workspace_id, node_id)
+                if work is None or suffix not in {'.md', '.markdown'}:
+                    raise HTTPException(409, '请先显式创建Markdown工作副本，原件不会改写')
+                if digest(before) != body.expected_sha256:
+                    raise HTTPException(409, '文件已在外部或其他页面修改；草稿保留，请核对冲突')
+                if session.scalar(select(DocumentSave.id).where(DocumentSave.node_id == node.id, DocumentSave.status == 'prepared')):
+                    raise HTTPException(409, '上次保存尚待重启对账；文件和草稿保留')
+                identifier = uuid4().hex
+                relative = work.relative_path
+                directory = Path(relative).parent.as_posix()
+                backup, pending = f'{directory}/{identifier}.before.md', f'{directory}/{identifier}.pending.md'
+                write_new(resource_path(self.root, backup), before)
+                write_new(resource_path(self.root, pending), data)
+                session.add(DocumentSave(id=identifier, node_id=node.id, old_sha256=digest(before),
+                                         new_sha256=digest(data), backup_path=backup, pending_path=pending, status='prepared'))
+            # A receipt is committed before replacement; recovery never blindly replays writes.
+            if digest(text_bytes(self.root, relative)) != body.expected_sha256:
+                with write_transaction(self.engine) as session:
+                    session.get(DocumentSave, identifier).status = 'conflict'
+                raise HTTPException(409, '文件在保存期间变化，草稿及恢复点保留')
+            try:
+                os.replace(resource_path(self.root, pending), resource_path(self.root, relative))
+            except OSError as error:
+                raise HTTPException(409, '文件替换未完成，草稿及恢复点保留；重启后对账再保存') from error
+            with write_transaction(self.engine) as session:
+                session.get(DocumentWorkfile, node_id).indexed_sha256 = digest(data)
+                session.get(DocumentSave, identifier).status = 'committed'
+        return {'sha256': digest(data), 'working_copy': True}
 
     def router(self):
         router = APIRouter(prefix='/api/workspaces/{workspace_id}/nodes/{node_id}')
@@ -155,15 +193,19 @@ class DocumentFiles:
                 result = dict(resource_item_id=node.id, source_resource_id=original.id,
                               source_sha256=original.sha256, sha256=digest(data), working_copy=work is not None,
                               external_change=work is not None and digest(data) != work.indexed_sha256)
-            if suffix in {'.md', '.markdown', '.txt'}:
+            if suffix in {'.md', '.markdown'} | PLAIN_TEXT_SUFFIXES:
                 try:
-                    result.update(type='markdown' if suffix != '.txt' else 'text', text=data.decode('utf-8'))
+                    result.update(type='markdown' if suffix in {'.md', '.markdown'} else 'text', text=data.decode('utf-8'))
+                    if suffix in PLAIN_TEXT_SUFFIXES:
+                        result.update(source_format=suffix[1:], position_kind='text_line' if suffix == '.txt' else 'resource')
                 except UnicodeError as error:
                     raise HTTPException(422, '文本不是UTF-8；原件保留，不进行有损替换') from error
             elif suffix == '.pdf':
                 result.update(type='pdf', **raster(data, 'pdf-info'))
             elif suffix in {'.png', '.jpg', '.jpeg'}:
                 result.update(type='image', **raster(data, 'image'))
+            elif suffix == '.xlsx':
+                result.update(type='spreadsheet', **raster(data, 'xlsx'))
             elif suffix == '.docx' and len(data) <= 8 * TEXT_LIMIT:
                 try:
                     preview = convert_document(data, original.original_name)
@@ -228,38 +270,6 @@ class DocumentFiles:
 
         @router.put('/document')
         def save(workspace_id: str, node_id: str, body: SaveText):
-            data = body.text.encode('utf-8')
-            if len(data) > TEXT_LIMIT:
-                raise HTTPException(413, 'Markdown最多1MiB UTF-8字节；草稿保留')
-            with self.lock:
-                with write_transaction(self.engine) as session:
-                    node, _, suffix, work, before = self.source(session, workspace_id, node_id)
-                    if work is None or suffix not in {'.md', '.markdown'}:
-                        raise HTTPException(409, '请先显式创建Markdown工作副本，原件不会改写')
-                    if digest(before) != body.expected_sha256:
-                        raise HTTPException(409, '文件已在外部或其他页面修改；草稿保留，请核对冲突')
-                    if session.scalar(select(DocumentSave.id).where(DocumentSave.node_id == node.id, DocumentSave.status == 'prepared')):
-                        raise HTTPException(409, '上次保存尚待重启对账；文件和草稿保留')
-                    identifier = uuid4().hex
-                    relative = work.relative_path
-                    directory = Path(relative).parent.as_posix()
-                    backup, pending = f'{directory}/{identifier}.before.md', f'{directory}/{identifier}.pending.md'
-                    write_new(resource_path(self.root, backup), before)
-                    write_new(resource_path(self.root, pending), data)
-                    session.add(DocumentSave(id=identifier, node_id=node.id, old_sha256=digest(before),
-                                             new_sha256=digest(data), backup_path=backup, pending_path=pending, status='prepared'))
-                # A receipt is committed before replacement; recovery never blindly replays writes.
-                if digest(text_bytes(self.root, relative)) != body.expected_sha256:
-                    with write_transaction(self.engine) as session:
-                        session.get(DocumentSave, identifier).status = 'conflict'
-                    raise HTTPException(409, '文件在保存期间变化，草稿及恢复点保留')
-                try:
-                    os.replace(resource_path(self.root, pending), resource_path(self.root, relative))
-                except OSError as error:
-                    raise HTTPException(409, '文件替换未完成，草稿及恢复点保留；重启后对账再保存') from error
-                with write_transaction(self.engine) as session:
-                    session.get(DocumentWorkfile, node_id).indexed_sha256 = digest(data)
-                    session.get(DocumentSave, identifier).status = 'committed'
-            return {'sha256': digest(data), 'working_copy': True}
+            return self.save_text(workspace_id, node_id, body)
 
         return router

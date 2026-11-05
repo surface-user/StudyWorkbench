@@ -8,12 +8,14 @@ class StartupFailure extends StatelessWidget {
     required this.onRetry,
     this.onChooseData,
     this.onUseDefault,
+    this.onRestoreBackup,
   });
 
   final String details;
   final VoidCallback onRetry;
   final VoidCallback? onChooseData;
   final VoidCallback? onUseDefault;
+  final VoidCallback? onRestoreBackup;
 
   @override
   Widget build(BuildContext context) => Center(
@@ -43,6 +45,12 @@ class StartupFailure extends StatelessWidget {
                   spacing: 12,
                   runSpacing: 8,
                   children: [
+                    if (onRestoreBackup != null)
+                      OutlinedButton.icon(
+                        onPressed: onRestoreBackup,
+                        icon: const Icon(Icons.restore),
+                        label: const Text('从完整学习库备份恢复'),
+                      ),
                     if (onUseDefault != null)
                       FilledButton(
                         onPressed: onUseDefault,

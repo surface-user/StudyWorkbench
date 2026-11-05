@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'backend.dart';
+import 'analysis_review_dialog.dart';
 
 class AgentAccessDialog extends StatefulWidget {
   const AgentAccessDialog({
@@ -22,6 +23,7 @@ class _AgentAccessDialogState extends State<AgentAccessDialog> {
   String? grantId, error;
   List? summaries;
   bool busy = false;
+  bool includeContent = false;
   String get endpoint => '${widget.scope}/agent-grants';
 
   Future<void> run(Future<void> Function() action) async {
@@ -33,7 +35,15 @@ class _AgentAccessDialogState extends State<AgentAccessDialog> {
     try {
       await action();
     } catch (failure) {
-      if (mounted) setState(() => error = '$failure');
+      if (mounted) {
+        setState(() {
+          error = '$failure';
+          if (failure is BackendError && failure.statusCode == 404) {
+            grantId = null;
+            summaries = null;
+          }
+        });
+      }
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -63,51 +73,53 @@ class _AgentAccessDialogState extends State<AgentAccessDialog> {
       content: SizedBox(
         width: 640,
         height: 420,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
           children: [
             const Text('选择本次允许读取的记录（最多100条）。用途：作答分析；有效期5分钟。仅本机读取，不发送远端。'),
             const Text(
               '当前尚未接入模型；摘要包含题目/版本编号、原始评分和时间，不含答案正文或后续人工评分，不能代替完整学情分析。',
             ),
+            CheckboxListTile(
+              title: const Text('额外允许读取所选作答正文及对应确认版（不含二进制附件）'),
+              value: includeContent,
+              onChanged: busy || grantId != null
+                  ? null
+                  : (value) => setState(() => includeContent = value == true),
+            ),
             if (busy) const LinearProgressIndicator(),
             if (error != null) Text(error!, key: const ValueKey('grant-error')),
             if (grantId != null) const Text('授权已创建；关闭前可撤销，后端重启或到期后失效。'),
-            Expanded(
-              child: ListView(
-                children: [
-                  if (grantId == null)
-                    for (final attempt in widget.attempts)
-                      CheckboxListTile(
-                        title: Text(
-                          '记录 #${attempt['id']} · ${attempt['question_id']}',
-                        ),
-                        value: selected.contains(attempt['id']),
-                        onChanged:
-                            busy ||
-                                (!selected.contains(attempt['id']) &&
-                                    selected.length >= 100)
-                            ? null
-                            : (value) => setState(() {
-                                if (value == true) {
-                                  selected.add(attempt['id'] as int);
-                                } else {
-                                  selected.remove(attempt['id']);
-                                }
-                              }),
-                      ),
-                  for (final summary in summaries ?? [])
-                    ListTile(
-                      title: Text(
-                        '记录 #${summary['id']} · ${summary['question_id']}',
-                      ),
-                      subtitle: Text(
-                        '原始评分：${summary['status']} / ${summary['score'] ?? '待批改'} · ${summary['created_at']}',
-                      ),
+            ...[
+              if (grantId == null)
+                for (final attempt in widget.attempts)
+                  CheckboxListTile(
+                    title: Text(
+                      '记录 #${attempt['id']} · ${attempt['question_id']}',
                     ),
-                ],
-              ),
-            ),
+                    value: selected.contains(attempt['id']),
+                    onChanged:
+                        busy ||
+                            (!selected.contains(attempt['id']) &&
+                                selected.length >= 100)
+                        ? null
+                        : (value) => setState(() {
+                            if (value == true) {
+                              selected.add(attempt['id'] as int);
+                            } else {
+                              selected.remove(attempt['id']);
+                            }
+                          }),
+                  ),
+              for (final summary in summaries ?? [])
+                ListTile(
+                  title: Text(
+                    '记录 #${summary['id']} · ${summary['question_id']}',
+                  ),
+                  subtitle: Text(
+                    '原始评分：${summary['status']} / ${summary['score'] ?? '待批改'} · ${summary['created_at']}',
+                  ),
+                ),
+            ],
           ],
         ),
       ),
@@ -125,6 +137,7 @@ class _AgentAccessDialogState extends State<AgentAccessDialog> {
                         'purpose': 'analyze_attempts',
                         'expires_in_seconds': 300,
                         'confirm': true,
+                        'include_content': includeContent,
                       },
                     ) as Map;
                     if (mounted) {
@@ -138,22 +151,38 @@ class _AgentAccessDialogState extends State<AgentAccessDialog> {
             onPressed: busy
                 ? null
                 : () => run(() async {
-                    try {
-                      final result = await widget.backend.request(
-                        'POST',
-                        '$endpoint/$grantId/read-attempts',
-                      ) as Map;
-                      if (mounted) {
-                        setState(() => summaries = result['attempts'] as List);
-                      }
-                    } on BackendError catch (failure) {
-                      if (failure.statusCode == 404 && mounted) {
-                        setState(() {
-                          grantId = null;
-                          summaries = null;
-                        });
-                      }
-                      rethrow;
+                    final authorization = await widget.backend.request(
+                      'POST',
+                      '$endpoint/$grantId/read-analysis-context',
+                    ) as Map;
+                    if (!context.mounted) return;
+                    final note = await showDialog<Map<String, dynamic>>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) => AnalysisReviewDialog(
+                        backend: widget.backend,
+                        scope: widget.scope,
+                        authorization: authorization,
+                        grantId: grantId,
+                      ),
+                    );
+                    if (note != null) {
+                      await revoke();
+                      if (context.mounted) Navigator.pop(context, note);
+                    }
+                  }),
+            child: const Text('准备本地上下文 / 录入外部候选'),
+          ),
+          TextButton(
+            onPressed: busy
+                ? null
+                : () => run(() async {
+                    final result = await widget.backend.request(
+                      'POST',
+                      '$endpoint/$grantId/read-attempts',
+                    ) as Map;
+                    if (mounted) {
+                      setState(() => summaries = result['attempts'] as List);
                     }
                   }),
             child: const Text('读取授权摘要'),

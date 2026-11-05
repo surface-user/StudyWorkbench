@@ -14,6 +14,9 @@ import urllib.request
 from pathlib import Path
 from zipfile import ZipFile
 
+from alembic.config import Config
+from alembic.script import ScriptDirectory
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -137,7 +140,9 @@ def main():
             assert request(endpoint + '/previews', body)['id'] == identifier
         stop()
         with sqlite3.connect(root / 'data/study.db') as db:
-            assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0012',)
+            migrations = Config()
+            migrations.set_main_option('script_location', str(Path(__file__).resolve().parents[1] / 'backend/migrations'))
+            assert db.execute('SELECT version_num FROM alembic_version').fetchone() == (ScriptDirectory.from_config(migrations).get_current_head(),)
             assert db.execute('PRAGMA integrity_check').fetchone() == ('ok',)
             assert db.execute('PRAGMA foreign_key_check').fetchall() == []
         print(json.dumps(dict(frozen=bool(args.exe), results=results, restart_cache=True,

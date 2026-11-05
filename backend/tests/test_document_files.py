@@ -233,5 +233,5 @@ def test_0007_to_head_backup_preserves_all_old_rows_and_failure_rollback(tmp_pat
         with sqlite3.connect(root / 'study.db') as db:
             assert db.execute('PRAGMA integrity_check').fetchone() == ('ok',)
             assert db.execute('PRAGMA foreign_key_check').fetchall() == []
-    backups = list((root / 'backups').glob('study-before-0012-*.db'))
+    backups = list((root / 'backups').glob('study-before-0016-*.db'))
     assert backups and all(snapshot(path) == before for path in backups)

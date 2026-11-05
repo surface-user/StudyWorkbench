@@ -1,5 +1,13 @@
 import 'dart:io';
 
+bool isCurrentLibraryPlayer(String? expected, String? current) {
+  if (expected == null || current != expected) return false;
+  final uri = Uri.tryParse(expected);
+  return uri != null &&
+      RegExp(r'^/media/library/[a-f0-9]{32}/player$').hasMatch(uri.path) &&
+      allowedPlayerResource(expected, current!);
+}
+
 bool allowedPlayerResource(String primaryUrl, String requestedUrl) {
   final primary = Uri.tryParse(primaryUrl);
   final candidate = Uri.tryParse(requestedUrl);

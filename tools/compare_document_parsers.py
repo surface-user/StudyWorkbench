@@ -9,7 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SAMPLES = ROOT / "contracts/samples"
-OUT = ROOT / "docs/evidence/m2-followup-20261024"
+OUT = ROOT / "artifacts/parser-comparison"
 
 
 def make_samples():

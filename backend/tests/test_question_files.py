@@ -303,8 +303,8 @@ def test_0009_upgrade_rollback_and_old_version_unknown(tmp_path, monkeypatch):
         with sqlite3.connect(root / 'study.db') as db:
             assert db.execute('PRAGMA integrity_check').fetchone() == ('ok',)
             assert db.execute('PRAGMA foreign_key_check').fetchall() == []
-            assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0012',)
-    backups = list((root / 'backups').glob('study-before-0012-*.db'))
+            assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0016',)
+    backups = list((root / 'backups').glob('study-before-0016-*.db'))
     assert backups and all(snapshot(path) == before for path in backups)
 
 

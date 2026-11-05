@@ -91,14 +91,19 @@ def inspect_source(value, root):
                           warning='容器已识别；编码是否可播放需打开后验证')
         else:
             labels = {'.pdf': 'PDF 文档', '.docx': 'Word 文档', '.pptx': 'PowerPoint 文档',
-                      '.md': 'Markdown 笔记', '.txt': '文本', '.html': 'HTML 文档', '.htm': 'HTML 文档',
+                      '.md': 'Markdown 笔记', '.markdown': 'Markdown 笔记', '.txt': '文本', '.html': 'HTML 文档', '.htm': 'HTML 文档',
+                      '.xlsx': 'Excel 只读单元格', '.csv': 'UTF-8 原文', '.log': 'UTF-8 原文', '.vtt': 'UTF-8 原文', '.srt': 'UTF-8 原文',
                       '.png': 'PNG 图片', '.jpg': 'JPEG 图片', '.jpeg': 'JPEG 图片', '.json': 'JSON 文件'}
             result['type'] = labels.get(extension, '普通文件')
-            signatures = {'.pdf': b'%PDF-', '.docx': b'PK\x03\x04', '.pptx': b'PK\x03\x04',
+            signatures = {'.pdf': b'%PDF-', '.docx': b'PK\x03\x04', '.pptx': b'PK\x03\x04', '.xlsx': b'PK\x03\x04',
                           '.png': b'\x89PNG\r\n\x1a\n', '.jpg': b'\xff\xd8', '.jpeg': b'\xff\xd8'}
             if extension in signatures and not header.startswith(signatures[extension]):
                 result['warning'] = '文件头与扩展名不符；可保存原件，预览可能失败'
-            elif extension not in {'.pdf', '.docx', '.pptx', '.md', '.png', '.jpg', '.jpeg'}:
+            elif extension in {'.md', '.markdown', '.txt', '.json', '.csv', '.log', '.vtt', '.srt'} and info.st_size > 1024 * 1024:
+                result['warning'] = '原件可保留；文本原文查看最多1MiB，当前文件超出查看预算'
+            elif extension == '.xlsx' and info.st_size > 16 * 1024 * 1024:
+                result['warning'] = '原件可保留；XLSX只读查看最多16MiB，当前文件超出查看预算'
+            elif extension not in {'.pdf', '.docx', '.pptx', '.md', '.markdown', '.txt', '.json', '.csv', '.log', '.vtt', '.srt', '.xlsx', '.png', '.jpg', '.jpeg'}:
                 result['warning'] = '可保存原件，当前不支持独立预览；内容处理需另行选择'
     except (ValueError, OSError, HTTPException) as error:
         result['error'] = str(error.detail) if isinstance(error, HTTPException) else '名称无效或文件不可读取（不存在或没有权限）'
@@ -154,7 +159,7 @@ def relative_node(session, workspace, node, value):
     return target
 
 
-def insert_node(session, workspace, parent, name, kind, **payload):
+def insert_node(session, workspace, parent, name, kind, *, identifier=None, **payload):
     name = normalized_name(name)
     base, number = name, 2
     while session.scalar(select(WorkspaceNode.id).where(
@@ -163,7 +168,7 @@ def insert_node(session, workspace, parent, name, kind, **payload):
             WorkspaceNode.name_key == name.casefold())):
         name = f'{base[:180]} ({number})'
         number += 1
-    item = WorkspaceNode(id=uuid4().hex, workspace_id=workspace, parent_id=parent,
+    item = WorkspaceNode(id=identifier or uuid4().hex, workspace_id=workspace, parent_id=parent,
                          kind=kind, name=name, name_key=name.casefold(), **payload)
     session.add(item)
     session.flush()

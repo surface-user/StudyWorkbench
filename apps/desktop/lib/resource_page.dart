@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'backend.dart';
 import 'document_page.dart';
 import 'media_page.dart';
+import 'markdown_note_dialog.dart';
 import 'page_activity.dart';
 import 'resource_explorer.dart';
 import 'web_page.dart';
@@ -16,6 +17,7 @@ class ResourcePage extends StatefulWidget {
     required this.tab,
     required this.onChanged,
     this.onActivity,
+    this.onOpenNote,
     super.key,
   });
   final Backend backend;
@@ -23,6 +25,7 @@ class ResourcePage extends StatefulWidget {
   final WorkbenchTab tab;
   final VoidCallback onChanged;
   final PageActivityChanged? onActivity;
+  final ValueChanged<Map<String, dynamic>>? onOpenNote;
   @override
   State<ResourcePage> createState() => _ResourcePageState();
 }
@@ -94,7 +97,7 @@ class _ResourcePageState extends State<ResourcePage> {
     final tab = widget.tab;
     late final profile =
         '${widget.backend.dataDir}/workspaces/${widget.workspaceId}/resource/${tab.id}';
-    return switch (tab.viewKind) {
+    final viewer = switch (tab.viewKind) {
       'web' => WebPage(
         profile: profile,
         initialUrl: tab.url ?? value['url'] as String?,
@@ -111,15 +114,48 @@ class _ResourcePageState extends State<ResourcePage> {
         workspaceId: widget.workspaceId,
         profile: profile,
         mediaId: value['media_id'] as String,
+        resourceItemId: tab.resourceItemId,
+        sourceSha256: value['sha256'] as String?,
+        jumpAnchor: tab.pendingAnchor,
+        onNavigate: widget.onOpenNote,
         onActivity: widget.onActivity,
       ),
       _ => DocumentPage(
         backend: widget.backend,
         workspaceId: widget.workspaceId,
         tab: tab,
+        jumpAnchor: tab.pendingAnchor,
+        onNavigate: widget.onOpenNote,
         onChanged: widget.onChanged,
         onActivity: widget.onActivity,
       ),
     };
+    return Column(
+      children: [
+        if (widget.onOpenNote != null)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              icon: const Icon(Icons.edit_note),
+              label: const Text('记笔记'),
+              onPressed: () async {
+                final note = await showDialog<Map<String, dynamic>>(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => MarkdownNoteDialog(
+                    backend: widget.backend,
+                    workspaceId: widget.workspaceId,
+                    parentId: value['parent_id'] as String?,
+                    fromResource: true,
+                    sourceResourceItemId: widget.tab.resourceItemId,
+                  ),
+                );
+                if (mounted && note != null) widget.onOpenNote?.call(note);
+              },
+            ),
+          ),
+        Expanded(child: viewer),
+      ],
+    );
   }
 }

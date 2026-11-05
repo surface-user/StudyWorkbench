@@ -106,7 +106,7 @@ def test_0011_upgrade_retains_tree_and_creates_backup(tmp_path):
     with client(root) as c:
         assert c.get(PREFIX + '/nodes').json()[0]['resource_item_id'] == 'old'
         assert c.delete(PREFIX + '/nodes/old').status_code == 200
-    backup = list((root / 'backups').glob('study-before-0012-*.db'))
+    backup = list((root / 'backups').glob('study-before-0016-*.db'))
     assert len(backup) == 1
     with sqlite3.connect(backup[0]) as db:
         assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0011',)

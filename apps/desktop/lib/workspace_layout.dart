@@ -62,6 +62,10 @@ class WorkbenchTab {
   final Map<String, dynamic>? opaque;
   String? draftBaseSha256;
   String questionDraft;
+  Map<String, dynamic> Function()? captureView;
+  Map<String, dynamic>? pendingView;
+  // Transient verified navigation; the bookmark itself is persisted by the backend.
+  Map<String, dynamic>? pendingAnchor;
   final Map<String, dynamic> documentState;
   // Runtime page status is deliberately excluded from the persisted layout.
   String? pageTitle;
@@ -133,7 +137,12 @@ class WorkspaceLayout {
         .where((t) => t.resourceItemId == id && t.viewKind == view)
         .firstOrNull;
     if (existing != null) {
+      existing.pendingView = null;
       existing.resourceName = node['name'] as String;
+      existing.pendingAnchor = node['learning_anchor'] == null
+          ? null
+          : Map<String, dynamic>.from(node['learning_anchor'] as Map);
+      if (node['open_in_edit'] == true) existing.documentState['mode'] = 'edit';
       activeId = existing.id;
       return;
     }
@@ -143,7 +152,12 @@ class WorkspaceLayout {
     if (recent >= 0) {
       if (tabs.length >= 16) throw StateError('请先关闭一个标签页');
       final tab = closed.removeAt(recent);
+      tab.pendingView = null;
       tab.resourceName = node['name'] as String;
+      tab.pendingAnchor = node['learning_anchor'] == null
+          ? null
+          : Map<String, dynamic>.from(node['learning_anchor'] as Map);
+      if (node['open_in_edit'] == true) tab.documentState['mode'] = 'edit';
       tabs.add(tab);
       activeId = tab.id;
       version = 2;
@@ -158,8 +172,12 @@ class WorkspaceLayout {
         resourceItemId: id,
         viewKind: view,
         resourceName: node['name'] as String,
+        documentState: node['open_in_edit'] == true ? {'mode': 'edit'} : null,
       ),
     );
+    tabs.last.pendingAnchor = node['learning_anchor'] == null
+        ? null
+        : Map<String, dynamic>.from(node['learning_anchor'] as Map);
     version = 2;
   }
 

@@ -1,17 +1,25 @@
-# Windows 安装与数据
+# Windows构建、安装与数据
 
-2026-10-26：Word/PPT分页为可选LibreOffice26.8.1组件。官方MSI固定hash/签名后，用 packaging/windows/prepare-office-runtime.ps1 -Package <已下载固定MSI> -Destination <项目内新目录> 作管理镜像解包并生成runtime-lock，不注册安装或关联。build-release.ps1默认不带该组件；显式 -OfficeRuntime <已核目录> 才通过 tools/stage_office_runtime.py 复制清单文件/许可并复核到新stage/converters/libreoffice。已存在组件目录拒绝覆盖。离线运行时19417文件/1577045386字节（约1.47GiB，不含MSI和清单）；默认主包不增加该体积。冻结后端相对安装根定位；仅启动环境可用STUDY_OFFICE_RUNTIME指定可信本地绝对路径，HTTP不接受路径或命令。独立冻结/受限PATH/自编样本测试见[R3记录](r3-office-validation-2026-10-26.md)，不替代干净机、组合许可和安装/卸载验收；未替换StudyWorkbench-current或发布安装器。
+## 当前已实现
 
-2026-10-24 更新：本地 M1 配套 Release/setup 已编译，独立 CPython 3.13.17、app-local CRT、WebView2 离线安装器和许可/文件清单已接入。首次目录选择与设置迁移已实现。下方“M0 脚手架/待 M1”保留为设计来源，最新实际命令、通过项与未完成安装/卸载/干净机验收以 [持续开发报告](m1-completion-2026-10-24.md) 为准。
+构建基线Flutter/Dart、独立CPython3.13.17/PyInstaller onedir、Inno Setup portable工具、app-local CRT和WebView2离线安装器；不打包开发Anaconda。版本/来源/许可见[依赖](dependencies.md)。
 
-构建：先 `packaging/windows/prepare-tools.ps1` 验证固定下载与签名、建立 `.local/release-venv`，再 `packaging/windows/build-release.ps1`。Inno 使用官方 portable 模式部署到项目内；Evergreen 下载地址可变化，哈希不一致必须停止复核。构建脚本从 pubspec.yaml 读取产品版本，只写全新 staging，旧 Release 后端移到项目忽略目录保存。发布仍需要独立授权。
+仓库根先执行packaging/windows/prepare-tools.ps1验证固定下载SHA256/签名并建立.local/release-venv，再执行packaging/windows/build-release.ps1。构建从pubspec.yaml读取版本，写全新staging，收集Python/Dart/Flutter/native许可证、文件hash与PE依赖。Windows构建串行；只能交付配套前端data/app.so与冻结backend，不能只拿exe或旧runner后端。
 
-M0 脚手架：Flutter release 目录 + PyInstaller onedir 后端 + Inno Setup setup.exe。不打包开发用 Anaconda；由独立 venv 构建。PyInstaller 必须在 Windows 构建 Windows 程序，SQLAlchemy/SQLite/迁移文件收集与干净机运行是独立验收。
+可选LibreOffice26.8.1组件以prepare-office-runtime.ps1 -Package <固定MSI> -Destination <新目录>管理镜像解包，不注册系统安装或关联。build-release.ps1默认不带组件；显式-OfficeRuntime <已核目录>才经tools/stage_office_runtime.py复制清单/许可并校验。拒绝覆盖现有组件目录。历史清单19417文件/约1.47GiB（不含MSI/清单），体积属于当时固定版本；默认主包不增加此组件。
 
-安装可选择目录，默认每用户 LocalAppData/Programs/StudyWorkbench；数据默认 LocalAppData/StudyWorkbench/data。M0 原型使用独立 m0 子目录。安装器不设置 UninstallDelete 到个人数据。卸载默认保留，彻底删除功能必须显式确认并校验目标目录。
+后端相对安装根定位组件，仅启动环境可用STUDY_OFFICE_RUNTIME指定可信绝对路径，HTTP不接受转换器路径/命令。完整核验运行时会增加耗时，90秒限制只约束引擎执行。
 
-首次启动数据位置选择和设置内迁移是 M1 任务。迁移流程：停止写入/下载→检查空间与路径（禁止程序目录/根目录/嵌套自身）→SQLite backup API 一致性备份（包含 WAL）→临时目标复制→哈希/数量与 integrity_check→原子切换配置→重启验证→完成日志。失败切回旧配置，绝不自动删除旧目录，跨卷复制不能伪装为原子 move。
+安装与数据目录分离。每用户安装默认LocalAppData/Programs/StudyWorkbench，安装器允许选择目录。数据由Known Folder定位：普通进程LocalAppData/StudyWorkbench/data，低完整性进程LocalAppDataLow；已有明确配置/同profile旧m0库优先。配置定位LocalLow并兼容旧LocalAppData设置，具体见[ADR0006](adr/0006-default-user-storage.md)。首次自动用默认/已保存位置，选择入口位于设置/失败恢复；不因权限失败静默切空库。
 
-WebView2 Evergreen Runtime 安装检测/离线分发、VC++ runtime、代码签名、自动升级回滚、非管理员/中文/空格路径、睡眠恢复、卸载保留数据待 M1 干净 Windows VM 验证。
+数据迁移：保存页面/释放WebView→停写和后端→本地路径/空间/非嵌套/空目标校验→SQLite backup和文件复制→hash/数量/逻辑内容/integrity/外键检查→原子配置切换→重启确认。失败保留旧数据/配置和目标现场，不伪装跨卷原子move，不执行破坏性downgrade。卸载无个人数据删除规则，默认保留学习资料。
 
-许可证：PyInstaller GPL 带 bootloader 例外，可发行自有应用但依赖义务仍在；Inno Setup 自有许可且当前商业使用条款需复核；FFmpeg 需按实际构建开关审查 LGPL/GPL/nonfree 与源码提供义务；未确定二进制前不得发行。
+## 规划中
+
+自动升级/完整回滚产品流程、下载/转码组件、正式签名发行按专项实施。FFmpeg须先锁定实际构建开关与LGPL/GPL/nonfree及来源义务；本地生成样本不等于可随产品分发。
+
+## 待验证
+
+实际setup安装/升级/卸载、无Python/无WebView2干净机、普通用户/中文空格路径、睡眠和硬件矩阵、完整传递依赖许可/SBOM/漏洞/代码签名仍待验。编译出setup、本机清单检查、专项冻结通过不代替它们。发布和合并必须取得对应授权。
+
+本机历史测试包路径与hash仅在[任务报告](../dev/README.md)记录，不在本指南维护多个“最新”入口；本轮未生成或替换测试包。

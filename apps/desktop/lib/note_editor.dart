@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import 'backend.dart';
+import 'internal_links.dart';
 import 'question_contract.dart';
 import 'question_page.dart';
 import 'resource_picker.dart';
@@ -395,6 +396,17 @@ class _NoteEditorState extends State<NoteEditor> {
         ),
       ),
       actions: [
+        TextButton(
+          onPressed: () => copyLearningLink(
+            context,
+            LearningLink(
+              widget.workspaceId,
+              'notes',
+              widget.note['id'] as String,
+            ),
+          ),
+          child: const Text('复制笔记链接'),
+        ),
         TextButton(
           onPressed: busy ? null : () => Navigator.pop(context, false),
           child: const Text('取消'),

@@ -246,7 +246,7 @@ def test_0008_upgrade_and_failure_retains_workfiles_layout_and_all_old_rows(tmp_
             assert db.execute('PRAGMA integrity_check').fetchone() == ('ok',)
             assert db.execute('PRAGMA foreign_key_check').fetchall() == []
     assert (root / 'working/current.md').read_bytes() == b'working'
-    backups = list((root / 'backups').glob('study-before-0012-*.db'))
+    backups = list((root / 'backups').glob('study-before-0016-*.db'))
     assert backups and all(snapshot(path) == before for path in backups)
 
 
@@ -256,7 +256,9 @@ def test_owned_process_is_killed_on_cancel_and_owner_exit(tmp_path, abrupt):
     import _winapi
     marker, gate = tmp_path / 'child.pid', tmp_path / 'exit'
     child = tmp_path / 'child.py'
-    child.write_text('import os,time,pathlib,sys\npathlib.Path(sys.argv[1]).write_text(str(os.getpid()))\ntime.sleep(120)\n')
+    # Publish the complete PID atomically; existence alone must never expose an empty marker.
+    child.write_text('import os,time,pathlib,sys\np=pathlib.Path(sys.argv[1])\n'
+                     'pending=p.with_suffix(".pending")\npending.write_text(str(os.getpid()))\nos.replace(pending,p)\ntime.sleep(120)\n')
     command = [sys._base_executable, str(child), str(marker)]
     job, process, owner, handle = None, None, None, None
     try:

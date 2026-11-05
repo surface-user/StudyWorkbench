@@ -12,7 +12,8 @@ from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from .agent_access import agent_access_router
+from .agent_access import AgentAccess
+from .analysis_review import AnalysisReviews
 from .content import DEMO, SUBJECTIVE
 from .db import (
     Attempt,
@@ -28,10 +29,15 @@ from .document_files import DocumentFiles
 from .draft_editing import draft_router
 from .explorer import Explorer
 from .imports import import_router
+from .internal_links import router as internal_links_router
 from .learning import grade, learning_router, workspace_history
+from .learning_marks import LearningMarks
 from .learning_records import records_router
+from .learning_search import router as learning_search_router
 from .library import library_router
+from .markdown_notes import MarkdownNotes
 from .markdown_questions import markdown_router
+from .media_downloads import MediaDownloads
 from .media_library import media_routers
 from .migrate import migrate
 from .question_files import QuestionFiles, current_question_view, verify_version_assets, version_read
@@ -76,11 +82,17 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
 
     explorer = Explorer(engine, data_dir)
     documents = DocumentFiles(engine, data_dir)
+    markdown_notes = MarkdownNotes(engine, data_dir)
+    learning_marks = LearningMarks(documents)
     question_files = QuestionFiles(documents)
+    downloads = MediaDownloads(engine, data_dir)
+    agent_access = AgentAccess(engine, data_dir)
+    analysis_reviews = AnalysisReviews(engine, data_dir, agent_access, markdown_notes, documents)
 
     @asynccontextmanager
     async def lifespan(_):
         yield
+        await run_in_threadpool(downloads.close)
         await run_in_threadpool(documents.close)
         await run_in_threadpool(explorer.close)
         engine.dispose()
@@ -89,7 +101,12 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
     app.state.engine = engine
     app.state.explorer = explorer
     app.state.documents = documents
+    app.state.markdown_notes = markdown_notes
+    app.state.learning_marks = learning_marks
     app.state.question_files = question_files
+    app.state.downloads = downloads
+    app.state.agent_access = agent_access
+    app.state.analysis_reviews = analysis_reviews
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1"])
     app.add_middleware(RequestLimits)
     capability = secrets.token_urlsafe(32)
@@ -105,9 +122,11 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
             raise HTTPException(401, "Unauthorized")
 
     auth = [Depends(authorize)]
-    app.include_router(agent_access_router(engine), dependencies=auth)
+    app.include_router(agent_access.router(), dependencies=auth)
+    app.include_router(analysis_reviews.router(), dependencies=auth)
     app.include_router(workspace_router(engine), dependencies=auth)
     app.include_router(explorer.router(), dependencies=auth)
+    app.include_router(downloads.router(), dependencies=auth)
     app.include_router(documents.router(), dependencies=auth)
     app.include_router(documents.previews.router(), dependencies=auth)
     app.include_router(question_files.router(), dependencies=auth)
@@ -195,6 +214,10 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
         return FileResponse(media)
 
     app.include_router(import_router(engine, data_dir), dependencies=auth)
+    app.include_router(markdown_notes.router(), dependencies=auth)
+    app.include_router(learning_marks.router(), dependencies=auth)
+    app.include_router(internal_links_router(learning_marks), dependencies=auth)
+    app.include_router(learning_search_router(documents), dependencies=auth)
     app.include_router(library_router(engine, data_dir, question_files), dependencies=auth)
     app.include_router(learning_router(engine), dependencies=auth)
     app.include_router(records_router(engine), dependencies=auth)

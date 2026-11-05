@@ -42,11 +42,24 @@ class Backend {
 
   static Future<String> get settingsPath async =>
       '${await _windowsDirectory('settingsRoot')}/settings.json';
-  static Future<String?> configuredData() async {
-    if (testData.isNotEmpty) return testData;
-    var file = File(await settingsPath);
+  static Future<bool> sameDataDirectory(String? first, String? second) async {
+    if (first == null || second == null) return false;
+    try {
+      return await FileSystemEntity.identical(first, second);
+    } on FileSystemException {
+      return false;
+    }
+  }
+
+  static Future<String?> configuredData({String? configPath}) async {
+    if (configPath == null && testData.isNotEmpty) {
+      final isolated = '$testData.settings.json';
+      if (!await File(isolated).exists()) return testData;
+      configPath = isolated;
+    }
+    var file = File(configPath ?? await settingsPath);
     // Keep explicit selections saved by older builds, even when the runtime profile changes.
-    if (!await file.exists()) {
+    if (configPath == null && !await file.exists()) {
       final legacy = File(
         '${Platform.environment['LOCALAPPDATA']!}/StudyWorkbench/settings.json',
       );
@@ -173,6 +186,10 @@ class Backend {
               path.endsWith('/file') ||
               RegExp(r'/previews/[^/?]+/page(?:\?|$)').hasMatch(path) ||
               path.contains('/relative-image') ||
+              path.contains('/learning-marks') ||
+              path.endsWith('/learning-anchor') ||
+              path.endsWith('/internal-links/resolve') ||
+              path.contains('/learning-search?') ||
               RegExp(r'/nodes/[^/?]+$').hasMatch(path))
           ? const Duration(seconds: 60)
           : const Duration(seconds: 5),
@@ -407,6 +424,104 @@ class Backend {
       );
     }
   }
+
+  static Future<OfflineLibraryOperation> libraryOperation({
+    required bool restore,
+    required String dataDir,
+    required String zipPath,
+    String? configPath,
+    ValueChangedStage? onStage,
+  }) async {
+    const root = String.fromEnvironment('STUDY_ROOT');
+    final executable = File(Platform.resolvedExecutable).parent.path;
+    final worker = await Process.start(
+      root.isEmpty
+          ? '$executable/backend/study_backend.exe'
+          : '$root/.venv/Scripts/python.exe',
+      [
+        if (root.isNotEmpty) ...['-m', 'study_workbench'],
+        '--data-dir',
+        dataDir,
+        restore ? '--restore-backup' : '--backup-to',
+        zipPath,
+        if (!restore) '--confirm-all-workspaces',
+        if (configPath != null) ...['--config', configPath],
+        '--parent-pipe',
+        '--install-dir',
+        executable,
+      ],
+      workingDirectory: root.isEmpty ? executable : '$root/backend',
+      environment: {'PYTHONUTF8': '1', 'PYTHONIOENCODING': 'utf-8'},
+    );
+    return OfflineLibraryOperation(worker, onStage: onStage);
+  }
 }
 
 typedef ValueChangedProgress = void Function(double value);
+typedef ValueChangedStage = void Function(String stage);
+
+class OfflineLibraryOperation {
+  OfflineLibraryOperation(this.process, {ValueChangedStage? onStage}) {
+    done = _wait(onStage);
+  }
+  final Process process;
+  late final Future<Map<String, dynamic>> done;
+  bool cancellationRequested = false;
+  Future<void> cancel() async {
+    if (cancellationRequested) return;
+    cancellationRequested = true;
+    await process.stdin.close();
+  }
+
+  Future<Map<String, dynamic>> _wait(ValueChangedStage? onStage) async {
+    Map<String, dynamic>? result;
+    String? protocolError;
+    var errors = '';
+    final output = process.stdout
+        .transform(const Utf8Decoder(allowMalformed: true))
+        .transform(const LineSplitter())
+        .listen((line) {
+          try {
+            final message = jsonDecode(line) as Map;
+            if (message['stage'] is String) {
+              onStage?.call(message['stage'] as String);
+            }
+            if (message['result'] is Map) {
+              result = Map<String, dynamic>.from(message['result'] as Map);
+            }
+          } catch (_) {
+            protocolError = '离线进程返回了无法确认的结果';
+          }
+        })
+        .asFuture<void>();
+    final stderr = process.stderr
+        .transform(const Utf8Decoder(allowMalformed: true))
+        .listen((part) {
+          errors += part;
+          if (errors.length > 8192) {
+            errors = errors.substring(errors.length - 8192);
+          }
+        })
+        .asFuture<void>();
+    try {
+      final exitCode = await process.exitCode;
+      await output;
+      await stderr;
+      if (exitCode != 0 || result == null || protocolError != null) {
+        final lines = const LineSplitter()
+            .convert(errors)
+            .where((line) => line.trim().isNotEmpty)
+            .toList();
+        final detail =
+            protocolError ??
+            (lines.isEmpty ? '离线操作未完成（$exitCode）' : lines.last);
+        throw StateError(
+          '${detail.substring(max(0, detail.length - 300))}；原库及未完成字节保留',
+        );
+      }
+      return result!;
+    } finally {
+      await process.stdin.close();
+    }
+  }
+}

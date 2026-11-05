@@ -4,6 +4,7 @@ import 'backend.dart';
 import 'add_resources_dialog.dart';
 import 'page_activity.dart';
 import 'web_page.dart';
+import 'learning_marks_dialog.dart';
 
 class MediaPage extends StatefulWidget {
   const MediaPage({
@@ -13,6 +14,10 @@ class MediaPage extends StatefulWidget {
     this.onActivity,
     this.mediaId,
     this.onResourcesChanged,
+    this.resourceItemId,
+    this.sourceSha256,
+    this.jumpAnchor,
+    this.onNavigate,
     super.key,
   });
   final Backend backend;
@@ -20,6 +25,9 @@ class MediaPage extends StatefulWidget {
   final PageActivityChanged? onActivity;
   final String? mediaId;
   final VoidCallback? onResourcesChanged;
+  final String? resourceItemId, sourceSha256;
+  final Map<String, dynamic>? jumpAnchor;
+  final ValueChanged<Map<String, dynamic>>? onNavigate;
   @override
   State<MediaPage> createState() => _MediaPageState();
 }
@@ -30,6 +38,9 @@ class _MediaPageState extends State<MediaPage> {
   double? progress;
   String? error, playerUrl;
   String? openedMedia;
+  PlayerCommands? playerCommands;
+  Map<String, dynamic>? appliedAnchor;
+  Map<String, dynamic>? attemptedAnchor;
   String get scope => '/api/workspaces/${widget.workspaceId}';
   @override
   void initState() {
@@ -47,6 +58,67 @@ class _MediaPageState extends State<MediaPage> {
   void didUpdateWidget(covariant MediaPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.backend != widget.backend && !busy) refreshSession();
+    if (oldWidget.jumpAnchor != widget.jumpAnchor && playerCommands != null) {
+      run(applyAnchor);
+    }
+  }
+
+  Future<void> applyAnchor() async {
+    final point = widget.jumpAnchor;
+    if (point == null || identical(appliedAnchor, point)) {
+      return;
+    }
+    attemptedAnchor = point;
+    if (point['kind'] != 'media_time') return;
+    if (point['workspace_id'] != widget.workspaceId ||
+        point['resource_item_id'] != widget.resourceItemId ||
+        point['content_sha256'] != widget.sourceSha256) {
+      throw StateError('媒体书签的资源或版本不匹配');
+    }
+    final verified = await widget.backend.request(
+      'POST',
+      '$scope/nodes/${widget.resourceItemId}/learning-anchor',
+      {
+        'kind': 'media_time',
+        'position_ms': point['position_ms'],
+        'expected_sha256': point['content_sha256'],
+      },
+    ) as Map;
+    if (playerCommands == null ||
+        !await playerCommands!.seekToMs(verified['position_ms'] as int)) {
+      throw StateError('播放器尚不能跳转，请重新打开媒体');
+    }
+    appliedAnchor = point;
+  }
+
+  Future<void> marks() async {
+    final target = await showDialog<Map<String, dynamic>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => LearningMarksDialog(
+        backend: widget.backend,
+        workspaceId: widget.workspaceId,
+        resourceItemId: widget.resourceItemId,
+        captureCurrent: () async {
+          final milliseconds = await playerCommands?.readPositionMs();
+          if (milliseconds == null) {
+            throw StateError('请等待本地媒体加载后再记录时间点；也可标记整份资料');
+          }
+          return Map<String, dynamic>.from(
+            await widget.backend.request(
+              'POST',
+              '$scope/nodes/${widget.resourceItemId}/learning-anchor',
+              {
+                'kind': 'media_time',
+                'position_ms': milliseconds,
+                'expected_sha256': widget.sourceSha256,
+              },
+            ) as Map,
+          );
+        },
+      ),
+    );
+    if (mounted && target != null) widget.onNavigate?.call(target);
   }
 
   Future<void> load() async {
@@ -80,6 +152,13 @@ class _MediaPageState extends State<MediaPage> {
           progress = null;
         });
         if (backendAtStart != widget.backend) refreshSession();
+        if (playerCommands != null &&
+            widget.jumpAnchor != null &&
+            !identical(widget.jumpAnchor, attemptedAnchor)) {
+          Future.microtask(() {
+            if (mounted) run(applyAnchor);
+          });
+        }
       }
     }
   }
@@ -114,6 +193,8 @@ class _MediaPageState extends State<MediaPage> {
     if (mounted) {
       setState(() {
         playerUrl = uri.toString();
+        playerCommands = null;
+        appliedAnchor = null;
         openedMedia = id;
       });
     }
@@ -128,6 +209,11 @@ class _MediaPageState extends State<MediaPage> {
           spacing: 12,
           runSpacing: 8,
           children: [
+            if (widget.resourceItemId != null)
+              TextButton(
+                onPressed: busy ? null : marks,
+                child: const Text('书签与备注'),
+              ),
             if (widget.mediaId != null)
               OutlinedButton(
                 onPressed: busy
@@ -171,6 +257,10 @@ class _MediaPageState extends State<MediaPage> {
                 profile: widget.profile,
                 playerUrl: playerUrl,
                 onActivity: widget.onActivity,
+                onPlayerReady: (commands) {
+                  playerCommands = commands;
+                  run(applyAnchor);
+                },
               )
             : widget.mediaId != null
             ? const Center(child: Text('媒体尚未加载，可重试打开。'))
