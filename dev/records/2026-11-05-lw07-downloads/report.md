@@ -63,3 +63,8 @@ Q=.local/release-venv/Scripts/python.exe；Q -m PyInstaller --noconfirm --clean 
 Windows前端排除其旧backend后与本批冻结后端配成全新window-bundle，编译固定库.local/lw07-window/data；SHA256及固定目录保存在window-bundle-hashes.json，不碰个人配置或旧包。Computer Use重新list_apps无目标，sky.launch_app新包仍返回computer-use request timed out: launch_app，刷新list_windows目标0；无点击/键入，window-status.json记录。授权不缺失，不再盲重试，不将helper故障写成产品窗口通过或启动失败。
 
 本批实现与自审完成，自动化边界如上；真实无代理公网TLS下载/Range/错误网络与媒体解码、普通窗口、用户/阶段、安装/干净机、独立审查和PR/CI仍待验。用户随后选择LW-08“先完善授权和审核，暂不接模型”，后续工作保持无模型/无远端，不据默认Ollama设计自动接入。
+
+
+### 2026-11-06 网络前置复核
+
+继续任务时只读重查socket.getaddrinfo(upload.wikimedia.org,443,AF_INET,SOCK_STREAM)，退出0；仍仅1个答案、all_public=false、benchmark_fake_ip_seen=true，摘要artifacts/lw06-native-20261106/public-dns-recheck.json。不再启动必然被同一门禁拒绝的完整公网流程，不改代理/DNS/证书或放行网段；原public-flow-01失败与公网下载/窗口待验保持。新Office包的本地媒体导入、download worker负面拒绝及整库恢复已在LW-06对应闭环复验，通过范围不包含公网下载或播放。

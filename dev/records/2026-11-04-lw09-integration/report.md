@@ -36,3 +36,10 @@ computer-use按SKILL读取guidance/API/confirmations并初始化@oai/sky。首�
 ## 2026-11-05 LW-07配套隔离包窗口尝试
 
 LW-07新冻结进程及前端均构建后，创建独立artifacts/lw07-20261105/window-bundle并记录window-bundle-hashes.json，数据仅.local/lw07-window/data。用户已有“可以正常使用”授权仍有效。sky.list_apps未找到应用；sky.launch_app完整隔离exe路径仍返回computer-use request timed out: launch_app；刷新list_windows匹配0。未点击/键入/截图，实际窗口/播放均无验证，结构化摘要artifacts/lw07-20261105/window-status.json。未改系统设置、未用shell启动绕过Computer Use，也不再重复盲试。LW-07公网源测试的DNS阻断及LW-08无模型候选冻结闭环分别记录各自报告，不能替代本任务实际窗口门禁。
+
+
+## 2026-11-06 Office修补后的配套窗口复核
+
+沿用用户“可以正常使用”授权，完整重读Computer Use技能/guidance/API/confirmations。新建artifacts/lw06-native-20261106/window-bundle，复用LW-08已构建且逐文件SHA验证的未改动前端，排除两份旧backend目录，仅配入4cd157a对应新冻结后端；1044文件/158602347字节，hash清单另存window-bundle-hashes.json。编译与配置位置确认仍.local/lw08-window-delivery/data，不读取个人默认库。可选Office组件未随此窗口包复制，不能借此声称窗口Office转换已验。
+
+sky.list_apps成功但未返回StudyWorkbench；仅尝试一次新包完整exe路径launch_app，再次返回computer-use request timed out: launch_app；刷新list_windows成功、匹配窗口0。没有选定窗口、没有输入/截图，不把helper超时判为产品启动失败，不改系统设置、不经shell绕过，停止后续重试。摘要artifacts/lw06-native-20261106/window-status.json，旧失败继续保留。实际阅读/播放/授权审核交互、用户/阶段验收仍待完成；同版本真实后台进程闭环和Office页图结果另见LW-06报告，不能替代本任务窗口门禁。

@@ -174,3 +174,9 @@ unfrozen-deep在160字符物理输出路径重现缺PDF（deep-source-result.jso
 新exe SHA256 a541135a5299e8cbea5b5c4c4e75ebf6f72d3fdbee5fad8a355edf5bff5026ce；五项改动源码hash和两份完整JUnit统计见final-validation-snapshot.json。Ruff/schema/文档保护及diff检查均退出0；52份Markdown/253本地链接/7锚点、114受保护旧文件均保持。Flutter界面未改，沿用PR #4的54ad12b已实查153/Windows/COM/冻结CI结果，不将其冒称Office修补后的远端CI。
 
 本次具体DOCX深目录故障已在同一引擎/同样本/新冻结API中复验消除，LW-06仍进行中：任意复杂第三方文件、无8.3短名卷/其他极端路径、真实窗口、独立人审/用户/阶段/安装与干净机未验。继续同一PR #4送审，推送后必须实查新head CI；不合并/发行、不接模型，旧失败与原始转储全部保留。
+
+
+共享证据仅逐张筛选四页派生PNG（合计176023字节），已查看、逐项核原始/副本SHA256并说明来源、版本、筛选理由及非窗口/非阶段边界，见[证据说明](evidence/README.md)。未复制原件、完整artifacts、转储或个人库。
+
+
+远端实际复核：4cd157a870d557eb82d57204431b8642bf295ffd的[PR run42078193435](https://github.com/surface-user/StudyWorkbench/actions/runs/42078193435)已completed/success，Python3.12、3.13.17与desktop三个job全部success，含完整Release/COM/冻结资料导入/生命周期/文档workers。旧54ad绿灯与两轮红灯、Office旧失败均保留；真实Office矩阵为本机固定组件证据，CI未装可选LibreOffice，不能混称远端运行了它。本节及精选页图属于后续文档/证据增量，当前head CI以同PR实时检查为准，不为记录自身SHA循环提交报告。

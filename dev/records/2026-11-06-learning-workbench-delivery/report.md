@@ -51,3 +51,17 @@ P tools/check_resource_explorer.py --exe artifacts/lw08-20261105/frozen-review-f
 ## PR后继续：Office隔离启动与深目录修补
 
 按用户原授权继续LW-06，已在原任务报告记录两项原因及最小修补：冻结组件DLL继承由独立受控helper清理自身，外部组件深profile路径使用samefile确认的短名。修补后双Python各476通过，新冻结包真实DOCX/PPTX各2页、Calc、四页页图、完整CI冻结三项探针、R1–R5 HTTP及授权审核/整库恢复闭环通过，实际命令和退出码收取边界见[LW-06原报告](../2026-11-04-lw06-formats/report.md)。没有将54ad12b的绿灯套用到新代码；本次推送后的当前head CI仍需GitHub实际核对。旧Office失败、原组件转储、两次红CI和窗口/人工/安装待验保持，不合并/发行、不接模型。
+
+
+本轮Office修补提交4cd157a870d557eb82d57204431b8642bf295ffd已git commit/push，均退出0；PR run42078193435跟进中，当前双后端success、desktop已通过Flutter测试并构建Release。PR描述标明新代码CI进行中，未套用54ad12b结果。实际窗口新包一次launch_app超时、匹配0，继续原LW-09报告；公网DNS只读复核仍拒绝，继续原LW-07报告。
+
+并行核对旧PR：#2当前29f23d3/run40928912483与#3当前7aa8251/run41559301426均completed/success；#2历史自审确有已修复竞态/样本问题，#3/#4当前reviews为空，未发现自动审查服务故障证据。#3原报告与描述补实时CI结果，不改原分支或验收状态。
+
+R6原报告追加时，文档保护初检退出1：该活动报告处于旧快照保护集合，首次写入也将CRLF归一化。已恢复全部原始CRLF字节，原正文prefix的SHA256严格等于旧保护值e153ad11f8ac574f18d9b9071eec0d43daae606af48fc66ed1e698cec38a6409，仅尾部追加本轮PR交付状态。ad hoc保护检查保留其余113文件完整hash严格相等，并单独断言该报告原字节prefix未变，未修改旧checksum/归档/失败内容；复验退出0，52份Markdown/254本地链接/7锚点、113整文件及1原报告原字节均保持。此检查调整只在忽略的artifacts脚本，不删或减弱产品测试。
+
+
+### Office代码提交CI结果与文档收尾
+
+4cd157a的[run42078193435](https://github.com/surface-user/StudyWorkbench/actions/runs/42078193435)已completed/success：双Python及desktop全部通过，Release/COM/冻结三项整链均success。通过GitHub再次核对运行与job，不依据本地成功推断。当前修补功能已送审，仍为draft，未合并/发行；窗口、真实公网、人工/阶段/安装以及无短名卷仍待验。
+
+随后仅补PR状态、窗口/网络工具限制与四张精选派生页图说明，没有再改产品/测试代码。文档保护复验退出0：53份Markdown、260本地链接、7锚点、113整文件与1活动报告原字节保持；R6报告的旧失败/原始前缀不动。文档提交后的当前head仍需远端检查，结果以PR实时页面为准，不把代码head绿灯套成未来提交成功，也不为写自身SHA反复提交文档。
