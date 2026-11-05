@@ -10,7 +10,8 @@ void main() {
     'isolated restored settings remain selected on a fresh application start',
     () async {
       final profile = Backend.testData.replaceAll('\\', '/');
-      expect(profile.startsWith('$repository/.local/'), true);
+      final repositoryProfile = repository.replaceAll('\\', '/');
+      expect(profile.startsWith('$repositoryProfile/.local/'), true);
       final file = File('${Backend.testData}.settings.json');
       expect(
         await file.exists(),

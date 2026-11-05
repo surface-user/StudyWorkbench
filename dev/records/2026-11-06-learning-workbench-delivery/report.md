@@ -21,3 +21,15 @@
 先验证保护文件/链接、源码hash、暂存范围与敏感文件，再以当前完整源码树生成以#3为parent的单一阶段提交，推送新分支并由GitHub连接器建PR。实际命令/退出码、commit/tree/PR和当前head CI结果在本报告追加。提交完成后优先继续LW-06组件崩溃定位：保留原转储，在新隔离组件目录对照源/冻结进程，不降低校验、不修改个人库；其他任务仍依task与现行契约推进。
 
 送审前实测：git fetch origin codex/r6-local-agent-access退出0；.vscode仅本机路径配置，未暂存。git -c core.safecrlf=false add -A -- .gitattributes AGENTS.md README.md apps backend contracts docs dev tools及暂存diff --check退出0。暂存树412文件/4743126字节、相对#3为235项变化；模式扫描未发现真实密钥样式或长Bearer，禁止路径/数据库/媒体/可执行包断言均通过。运行保护文档检查第一次因LW-01改成用户已授权PR送审状态而失败；仅按用户新授权转换该交付措辞，保留其余原单元格全文相等检查，未豁免失败/验收信息。Ruff/schema检查退出0，运行源码仍109项一致。
+
+
+实际创建：git write-tree得到ffdd0a1c4924b6a54afcef88c1bb26c77b63c9fb；git commit-tree该tree -p 7aa8251561c548df9d34163f326980bde20200cd -F artifacts/pr-workbench-20261106/commit-message.txt得到c7dc5dddd58ed73dbacd306d0c9e7f59b5c11891；git update-ref以不存在旧ref的零SHA保护创建codex/learning-workbench-20261106，git switch及git push -u origin同名分支均退出0。只剩.vscode未跟踪，无丢失/覆盖继承改动。通过GitHub连接器创建[PR #4](https://github.com/surface-user/StudyWorkbench/pull/4)，draft/open，以#3为base，235变更文件、1阶段提交，未合并/发行。
+
+首head c7dc5dd的PR CI [run 42061516523](https://github.com/surface-user/StudyWorkbench/actions/runs/42061516523)实查进行中：双Python已过Ruff且在pytest，桌面已过格式且在analyze；不是最终通过。提交后的工作继续LW-06，定位到LibreOffice从冻结包继承VCRUNTIME，设计/修补/验证继续[LW-06原报告](../2026-11-04-lw06-formats/report.md)。新增修补验证后跟进同PR，不自动合并。
+
+
+## 首轮CI失败与路径修补
+
+run42061516523最终双后端job均success（含pytest和R1–R5 HTTP黑盒），desktop失败于Flutter测试：152通过1失败，后续Windows/冻结步骤未执行。日志保留artifacts/pr-workbench-20261106/desktop-ci-first.log。唯一失败backend_process_test.dart首项“isolated restored settings remain selected on a fresh application start”，第13行期望true实际false：仅testData转正斜杠，repository未规范化；CI Resolve-Path给反斜杠，本地前批给正斜杠，导致错误前缀比较。不是后端业务失败，CI缺口确由本地未原样复现参数造成。
+
+用户询问原因后继续按已授权task/PR交付工作使用gh-fix-ci排查流程，通过GitHub连接器取实际job日志。修补只规范化同一个断言两边的路径，不删除“必须在仓库.local中”的保护，不改CI参数或跳过测试。按CI同样的$taskRoot=(Resolve-Path ../..).Path，D F --suppress-analytics test --no-pub --dart-define="STUDY_ROOT=$taskRoot" --dart-define="STUDY_DATA_DIR=$taskRoot/.local/ci-path-before-20261106" test/backend_process_test.dart --plain-name 'isolated restored settings remain selected on a fresh application start'先退出1复现（ci-path-before.log）；改after新profile后退出0（ci-path-after.log）。全量同参数改ci-path-full-20261106退出0，153通过45秒（flutter-full-path.log）；analyze退出0无问题，77.7秒（analyze-path.log，组件复制并行带来机器负载，不降低断言/超时）。当前workflow后续源码检查脚本另做了固定schema/格式契约静态核对，未发现同类硬编码漂移。只提交该测试及交付状态；Office修补仍在工作区验证，不混入此CI修补提交。推送后的当前head CI仍需实际等待。
