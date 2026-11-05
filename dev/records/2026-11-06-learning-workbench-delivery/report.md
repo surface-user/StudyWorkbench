@@ -32,4 +32,15 @@
 
 run42061516523最终双后端job均success（含pytest和R1–R5 HTTP黑盒），desktop失败于Flutter测试：152通过1失败，后续Windows/冻结步骤未执行。日志保留artifacts/pr-workbench-20261106/desktop-ci-first.log。唯一失败backend_process_test.dart首项“isolated restored settings remain selected on a fresh application start”，第13行期望true实际false：仅testData转正斜杠，repository未规范化；CI Resolve-Path给反斜杠，本地前批给正斜杠，导致错误前缀比较。不是后端业务失败，CI缺口确由本地未原样复现参数造成。
 
-用户询问原因后继续按已授权task/PR交付工作使用gh-fix-ci排查流程，通过GitHub连接器取实际job日志。修补只规范化同一个断言两边的路径，不删除“必须在仓库.local中”的保护，不改CI参数或跳过测试。按CI同样的$taskRoot=(Resolve-Path ../..).Path，D F --suppress-analytics test --no-pub --dart-define="STUDY_ROOT=$taskRoot" --dart-define="STUDY_DATA_DIR=$taskRoot/.local/ci-path-before-20261106" test/backend_process_test.dart --plain-name 'isolated restored settings remain selected on a fresh application start'先退出1复现（ci-path-before.log）；改after新profile后退出0（ci-path-after.log）。全量同参数改ci-path-full-20261106退出0，153通过45秒（flutter-full-path.log）；analyze退出0无问题，77.7秒（analyze-path.log，组件复制并行带来机器负载，不降低断言/超时）。当前workflow后续源码检查脚本另做了固定schema/格式契约静态核对，未发现同类硬编码漂移。只提交该测试及交付状态；Office修补仍在工作区验证，不混入此CI修补提交。推送后的当前head CI仍需实际等待。
+用户询问原因后继续按已授权task/PR交付工作使用gh-fix-ci排查流程，通过GitHub连接器取实际job日志。修补只规范化同一个断言两边的路径，不删除“必须在仓库.local中”的保护，不改CI参数或跳过测试。按CI同样的$taskRoot=(Resolve-Path ../..).Path，D F --suppress-analytics test --no-pub --dart-define="STUDY_ROOT=$taskRoot" --dart-define="STUDY_DATA_DIR=$taskRoot/.local/ci-path-before-20261106" test/backend_process_test.dart --plain-name 'isolated restored settings remain selected on a fresh application start'先退出1复现（ci-path-before.log）；改after新profile后退出0（ci-path-after.log）。全量同参数改ci-path-full-20261106退出0，153通过45秒（flutter-full-path.log）；analyze退出0无问题，77.7秒（analyze-path.log，组件复制并行带来机器负载，不降低断言/超时）。当时的静态核对误判未发现硬编码漂移；实际输出截断漏看了check_resource_explorer.py第172行，下一轮CI证实这一遗漏，不能把静态核对当作执行完CI命令链。只提交该测试及交付状态；Office修补仍在工作区验证，不混入此CI修补提交。推送后的当前head CI仍需实际等待。
+
+
+## 第二轮CI：冻结探针旧schema常量
+
+路径修补提交f0a34e3714e618ed95cf3b4f9ab6f8623c3c97ed已推送。PR run42064343519双后端成功；desktop通过153测试、Windows Release、原生COM和冻结打包，随后Frozen unified resource import and document regression失败：tools/check_resource_explorer.py第172行仍严格断言0012，而当前应用正确升级0016；同脚本末尾汇报字段也写死0012。原日志desktop-ci-second.log保留。这里是探针未随迁移维护，不是把旧库未升级当作通过；先前静态核对遗漏由本报告明确纠正。
+
+保留原整数/关系/hash断言，以Alembic ScriptDirectory读取源码唯一current head，SQLite仍须严格相等，报告revision随实际已核head，不使用>=或放宽列表。复用先前已验、与PR后端代码一致的frozen-review-final包，避免混入尚在验证的Office修改。
+
+P tools/check_resource_explorer.py --exe artifacts/lw08-20261105/frozen-review-final/dist/study_backend/study_backend.exe --test-root .local/pr4-resource-before-20261106 --documents退出1复现原schema断言（resource-before.log）；修补后改独立root .local/pr4-resource-after-20261106，退出0（resource-after.log），验证5节点/原件去重/文档/墓碑/布局/历史/重启/SQLite完整性和FK，schema0016。
+
+完整执行该失败步骤及其后CI命令：新建项目.local/pr4-lifecycle-real-20261106和指向它的pr4-lifecycle-alias-20261106 junction，将TEMP/TMP设alias；P tools/check_backend_lifecycle.py --exe同一冻结包退出0（lifecycle-after.log），独占锁、鉴权/Origin、中文主观与客观题、EOF、重启/崩溃恢复和迁移父EOF取消通过。P tools/check_document_workers.py --exe同一包退出0（document-workers-after.log），DOCX/PDF真实离线worker、文字/图片/公式/页及编号/跨页拆分通过。驱动实际收取resource_exit=0/lifecycle_exit=0/workers_exit=0，不仅查看日志。Ruff与暂存diff检查另做后才推送；不改工作流、不跳测试、不更新尚未验证的Office运行代码。新的PR head须再实查全CI，保留两轮红灯及本地先红后绿。

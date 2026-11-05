@@ -6,7 +6,7 @@
 
 2026-11-03用户已审阅并采纳通用学习工作台方向，并要求继续推进。LW-00已形成[契约](learning-workbench-contracts.md)和[ADR0012](adr/0012-learning-notes-anchors-and-backup.md)，设计复核待验；**LW-01自由笔记、LW-02位置书签与备注、LW-03内部链接及LW-04集中查找已本地实现，人工/阶段待验**，LW-05完整备份恢复已本地实现待验；LW-09冻结进程闭环通过，恢复窗口尝试仍受工具启动超时阻断；LW-06文本/XLSX只读切片已本地实现，已有前批Office/Calc样本成功，最终0016包DOCX复核出现组件转储、Calc清单拒绝，新增阻塞待定位；LW-07直接下载切片已本地实现/冻结验证，公网DNS与窗口待验；LW-08按用户11-05要求只完善授权/审核，已本地实现无模型候选流程，双Python回归/桌面构建/冻结闭环通过，人工待验。完整备份设计已纳入LW-00，其余拟议表/API不列为已实现。
 
-R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/PR #3继续交付跟进，模型等新增能力按LW-08后排。既有人工统一待验、历史M0故障、失败证据与PR/当前head CI义务不取消。用户11-06明确授权当前版本提交/推送并创建PR后继续任务；[草稿PR #4](https://github.com/surface-user/StudyWorkbench/pull/4)已创建，base为未合并#3，首head双后端通过、桌面1项路径断言失败，已复现并修正；更新head后CI待查；本批送审覆盖旧窗口前置顺序，不解除窗口/人工待验，不授权合并或发行。批次交付与当前head CI见[交付报告](../dev/records/2026-11-06-learning-workbench-delivery/report.md)。
+R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/PR #3继续交付跟进，模型等新增能力按LW-08后排。既有人工统一待验、历史M0故障、失败证据与PR/当前head CI义务不取消。用户11-06明确授权当前版本提交/推送并创建PR后继续任务；[草稿PR #4](https://github.com/surface-user/StudyWorkbench/pull/4)已创建，base为未合并#3，两轮CI的路径/schema探针失败已保留并本地复现修正，完整冻结探针链通过，更新head后全CI待验；本批送审覆盖旧窗口前置顺序，不解除窗口/人工待验，不授权合并或发行。批次交付与当前head CI见[交付报告](../dev/records/2026-11-06-learning-workbench-delivery/report.md)。
 
 ## 当前任务
 

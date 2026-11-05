@@ -14,6 +14,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+from alembic.script import ScriptDirectory
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -168,13 +170,14 @@ def main():
         assert request(prefix + '/layout') == layout
         assert request(prefix + '/attempts')[0]['id'] == attempt['id']
         stop(process)
+        expected_revision = ScriptDirectory(str(Path(__file__).resolve().parents[1] / 'backend/migrations')).get_current_head()
         with sqlite3.connect(root / 'data/study.db') as db:
-            assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0012',)
+            assert db.execute('SELECT version_num FROM alembic_version').fetchone() == (expected_revision,)
             assert db.execute('PRAGMA integrity_check').fetchone() == ('ok',)
             assert db.execute('PRAGMA foreign_key_check').fetchall() == []
         assert hashes == {str(p.relative_to(source)): hashlib.sha256(p.read_bytes()).hexdigest() for p in source.rglob('*') if p.is_file()}
         print(json.dumps(dict(frozen=bool(args.exe), nodes=5, duplicate_blob=1, layout_preserved=True, documents=args.documents,
-                              attempts_preserved=True, source_preserved=True, restart=True, revision='0012',
+                              attempts_preserved=True, source_preserved=True, restart=True, revision=expected_revision,
                               removal_preserved_after_restart=True,
                               without_office=args.without_office)))
     finally:
