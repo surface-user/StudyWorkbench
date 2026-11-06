@@ -231,3 +231,14 @@ POST /{id}/read-analysis-context返回schema_version=1、workspace_id、scope=su
 上述接口继承Bearer/Host/Origin及workspace隔离。桌面在退出/备份/迁移前刷新打开的候选编辑器；保存失败则保留文字并取消退出，可明确确认放弃窗口编辑。人工采用仅表示保存为笔记，不证明内容正确。
 
 context_sha256及payload_sha256由服务端按对应上下文/候选content计算，客户端原样回传，不从UI文字重建。1MiB上下文预算包含最终校验字段。
+
+
+## 离线资料完整性巡检（M2-05，当前已实现）
+
+`--data-dir <已有库绝对路径> --check-library --confirm-all-workspaces`：先验证已有study.db与本地路径，再持独占数据锁，用SQLite只读连接巡检全部空间及归档。不启动HTTP或业务服务、不创建/迁移业务库、不写配置、不修复或清理；拒绝同时传入备份/恢复/迁移操作或config/media/parent-pipe。锁文件可创建，数据库及学习文件不写入。正在使用的库拒绝；没有桌面或Agent入口。
+
+输出单行JSON的result：schema_version=1、checked_scope=managed_files_and_derived_directories、complete、healthy、data_modified=false、repair_performed=false、entries_checked、rows_checked、bytes_hashed、retained_preview_tasks及issues（code/severity、可选relative_path）；预算中止另含limit_reason。健康且完整退出0，发现问题/不完整退出1；参数或取锁错误非零退出。只报告相对路径与类别，不输出正文或原始SQL异常。
+
+核对当前schema、SQLite完整性/FK、原件/就绪媒体/确认版及附件/就绪派生PDF的大小/hash，工作文件对索引变化报告警告；保留保存恢复点、创建收据和失败预览任务。working、question-files、question-versions、previews目录按数据库归属巡检，包含空目录及working旧generation；无归属只表示候选，不表示可删除。根部未完成迁移/备份/恢复暂存目录提示后不展开；运行profile排除。未知其他目录不猜测归属。
+
+最多20000目录项、50000引用行、512MiB文件哈希、30秒协作式期限、200条问题；超限complete=false/healthy=false，不返回虚假的全库健康。healthy仅针对上述检查范围，不替代所有业务JSON/格式语义验证，数据锁不排斥外部编辑器；单次阻塞文件系统操作不保证可立即中断。旧schema只报告不支持，不借巡检自动升级。
