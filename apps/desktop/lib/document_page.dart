@@ -16,6 +16,7 @@ import 'question_file_panel.dart';
 import 'learning_marks_dialog.dart';
 import 'internal_links.dart';
 import 'spreadsheet_view.dart';
+import 'document_recovery_dialog.dart';
 
 class DocumentPage extends StatefulWidget {
   const DocumentPage({
@@ -575,6 +576,48 @@ class _DocumentPageState extends State<DocumentPage> {
     widget.onChanged();
   });
 
+  Future<void> recovery() async {
+    if (busy) return;
+    if (widget.tab.draftBaseSha256 != null) {
+      setState(() => error = '当前有未保存草稿，请先保存或另行保留后再载入恢复点');
+      return;
+    }
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (_) =>
+          DocumentRecoveryDialog(backend: widget.backend, prefix: prefix),
+    );
+    if (!mounted || result == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('将恢复点放入编辑草稿？'),
+        content: const Text('当前文件暂不改变。请核对草稿内容，再点击“保存工作文件”；保存时仍会检查外部修改。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('确认载入草稿'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || confirmed != true || widget.tab.draftBaseSha256 != null) {
+      return;
+    }
+    setState(() {
+      text.text = result['text'] as String;
+      widget.tab.draft = text.text;
+      widget.tab.draftBaseSha256 = result['current_sha256'] as String;
+      widget.tab.documentState['mode'] = 'edit';
+      rawText = false;
+    });
+    widget.onChanged();
+  }
+
   void change(String value) {
     widget.tab.draft = value;
     widget.tab.draftBaseSha256 ??= hash;
@@ -683,6 +726,11 @@ class _DocumentPageState extends State<DocumentPage> {
                   onPressed: busy ? null : edit,
                   child: Text(working ? '原文编辑' : '创建工作副本并编辑'),
                 ),
+                if (working)
+                  TextButton(
+                    onPressed: busy ? null : recovery,
+                    child: const Text('保存恢复点'),
+                  ),
                 TextButton(
                   onPressed: busy
                       ? null

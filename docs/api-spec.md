@@ -98,11 +98,17 @@ creation_status为prepared/ready/interrupted/conflict；status在未完成时同
 | GET N/relative-image?path=... | 同空间逻辑树相对PNG/JPEG，拒绝网络/绝对/越根；允许树内父导航，目标缺失404 |
 | POST N/working-copy | expected_sha256，仅MD显式创建，原件不变 |
 | PUT N/document | expected_sha256、text，冲突409，文本超限413；保存收据和重启对账 |
+| GET N/document-saves | 仅已有MD工作副本；offset≥0、limit1..100默认50，按随机ID升序分页（不是时间排序）。只含id/status/old_sha256/new_sha256，不读取正文、不返回磁盘路径 |
+| GET N/document-saves/{save_id}?version=before或pending | 同空间/节点收据、受管路径和记录hash核对后返回id/status/version/text/sha256/current_sha256/unavailable_reason；≤1MiB严格UTF-8，缺失/损坏/归属不符409、超限413，未知收据404。只读，不修复、不消费收据 |
 | POST N/previews | expected_source_sha256，拒绝额外字段；组件/源/队列冲突409、空间不足507；复用有效ready缓存或同节点待办 |
 | GET N/previews/{id}、POST N/previews/{id}/cancel | queued/running/ready/failed/cancelled/interrupted及可追溯摘要；不返回磁盘路径 |
 | GET N/previews/{id}/page?page=1 | 核对当前源和派生hash后PNG页图；丢失/篡改409，坏PDF/超时422 |
 
 文档读取/渲染最多2并发，忙429；MD1MiB、预览20万字符；PDF128MiB/2000页/逐页最长边2048；PNG/JPEG16MiB/1600万像素；DOCX结构8MiB。DOCX/PPTX可选分页输入32MiB、单worker/4待办、独立profile/Job和90秒引擎执行限时（不含完整运行时验证）。旧DOC/PPT明确unsupported；动态/外链等输入拒绝，原件保留。详细预算见[架构](architecture.md)与[ADR0009](adr/0009-offline-office-previews.md)。
+
+保存恢复点内容读取同样受2并发门禁约束，保留已移除节点的现有标签访问语义。成功保存后pending已移入当前文件，原pending不可读是正常情况，不用其他内容冒充。当前文件不可读或任意该节点保存仍prepared时，current_sha256=null并给出原因，只允许查看；不会自动重启/对账。否则current_sha256为读取时的当前文件hash，仍不授予覆盖权限。
+
+桌面MD工作副本“保存恢复点”仅在无未保存草稿时打开，选择与字面预览后另行确认载入编辑草稿，沿用现有layout草稿及hash字段，不写正文。再次点击普通保存才执行PUT N/document，expected_sha256采用预览响应的current_sha256，后续外部修改仍409且草稿保留。没有专属恢复写接口、Agent工具或确认版发布；当前文件缺失/不可读时本切片不提供写回，三方合并另行设计。
 
 ### 位置书签、备注与笔记来源（LW-02）
 

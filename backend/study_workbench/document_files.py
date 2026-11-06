@@ -2,11 +2,13 @@
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 from functools import wraps
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from threading import BoundedSemaphore, RLock
+from typing import Literal
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Query
@@ -15,6 +17,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from . import office_runtime
+from .backup_archive import archive_path
 from .db import DocumentSave, DocumentWorkfile, Resource, write_transaction
 from .documents import convert_document
 from .explorer import node_in, relative_node
@@ -182,8 +185,68 @@ class DocumentFiles:
                 session.get(DocumentSave, identifier).status = 'committed'
         return {'sha256': digest(data), 'working_copy': True}
 
+    def recovery_work(self, session, workspace, identifier):
+        node, original, suffix = self.locate(session, workspace, identifier)
+        work = session.get(DocumentWorkfile, node.id)
+        if original.workspace_id != workspace or work is None or work.workspace_id != workspace:
+            raise HTTPException(404, '此资源没有可用的工作副本恢复记录')
+        if suffix not in {'.md', '.markdown'}:
+            raise HTTPException(422, '仅Markdown支持保存恢复点')
+        try:
+            parts = PurePosixPath(archive_path(work.relative_path)).parts
+            if len(parts) < 5 or parts[:2] != ('workspaces', workspace) or parts[2] not in {'working', 'question-files'}:
+                raise ValueError('Invalid workfile owner')
+            if parts[2] == 'working' and (len(parts) != 6 or parts[3] != identifier or parts[5] != 'current.md'):
+                raise ValueError('Invalid working directory')
+            if parts[2] == 'question-files' and (len(parts) != 5 or parts[4] != 'current.md'):
+                raise ValueError('Invalid question workfile')
+        except ValueError as error:
+            raise HTTPException(409, '工作副本路径与空间不符；恢复点保留') from error
+        return work
+
+    def recovery_text(self, workspace, identifier, save_id, version):
+        with self.lock, Session(self.engine) as session:
+            work = self.recovery_work(session, workspace, identifier)
+            row = session.get(DocumentSave, save_id)
+            if row is None or row.node_id != work.node_id:
+                raise HTTPException(404, '保存恢复记录不存在')
+            if not re.fullmatch(r'[a-f0-9]{32}', row.id):
+                raise HTTPException(409, '保存恢复记录标识无效；文件保留')
+            relative = row.backup_path if version == 'before' else row.pending_path
+            expected = row.old_sha256 if version == 'before' else row.new_sha256
+            required = f'{PurePosixPath(work.relative_path).parent}/{row.id}.{version}.md'
+            if relative != required:
+                raise HTTPException(409, '保存恢复点路径与收据不符；文件保留')
+            data = text_bytes(self.root, relative)
+            if digest(data) != expected:
+                raise HTTPException(409, '保存恢复点内容与收据不符；文件保留')
+            current, unavailable = None, None
+            if session.scalar(select(DocumentSave.id).where(
+                    DocumentSave.node_id == work.node_id, DocumentSave.status == 'prepared')):
+                unavailable = '上次保存尚待重启对账，暂不能载入恢复草稿'
+            else:
+                try:
+                    current = digest(text_bytes(self.root, work.relative_path))
+                except HTTPException:
+                    unavailable = '当前工作文件不可读取；恢复点可查看，暂不能载入草稿'
+            return dict(id=row.id, status=row.status, version=version, text=data.decode('utf-8'),
+                        sha256=expected, current_sha256=current, unavailable_reason=unavailable)
+
     def router(self):
         router = APIRouter(prefix='/api/workspaces/{workspace_id}/nodes/{node_id}')
+
+        @router.get('/document-saves')
+        def saves(workspace_id: str, node_id: str, offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100)):
+            with self.lock, Session(self.engine) as session:
+                self.recovery_work(session, workspace_id, node_id)
+                return [dict(id=row.id, status=row.status, old_sha256=row.old_sha256, new_sha256=row.new_sha256)
+                        for row in session.scalars(select(DocumentSave).where(DocumentSave.node_id == node_id)
+                            .order_by(DocumentSave.id).offset(offset).limit(limit))]
+
+        @router.get('/document-saves/{save_id}')
+        @limited_view
+        def saved_text(workspace_id: str, node_id: str, save_id: str, version: Literal['before', 'pending']):
+            return self.recovery_text(workspace_id, node_id, save_id, version)
 
         @router.get('/document')
         @limited_view

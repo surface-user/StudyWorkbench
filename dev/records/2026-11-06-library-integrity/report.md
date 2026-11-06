@@ -67,3 +67,49 @@ Ruff、Question Schema --check及git diff --check均退出0；本地Markdown检�
 实现提交434d4921d939d40c5c1128518f537da651baa720已commit/push，退出0；创建[草稿PR #5](https://github.com/surface-user/StudyWorkbench/pull/5)，base=codex/learning-workbench-20261106（#4、147198a），未合并/发行。该阶段实现/本地自动化/自审已完成，当前head CI继续实查；M2-05其他恢复范围仍进行中，不以本切片退出整个任务。
 
 本节及task仅补实际PR链接，为文档增量，不再改产品/测试代码。文档提交后的最终head CI以PR实时检查及描述为准，不将先前head绿灯套用到后续提交，不为记录自身SHA循环提交。用户未提交summary.md及.vscode仍保留未纳入本PR，旧分支不改写。原始数据/失败记录不上传，报告命令/源码快照及筛选边界按前述执行。
+
+## 保存恢复点切片设计（2026-11-07）
+
+首切片PR #5最终1357d44的三组CI全通过（run 42233131907）；本轮从该提交创建codex/document-recovery，不改旧PR分支、不合并/发行。继续同一M2-05报告，不另建流水目录。
+
+问题：保存中断虽保留before/pending和收据，普通用户尚无查看/找回入口。新增同空间节点的只读收据分页及指定before/pending内容读取，严格验证受管路径、收据归属、UTF-8/1MiB及记录hash。无路径输入/路径输出，不枚举磁盘推测记录，不写文件/数据库。pending经replace消耗后不可读属于正常情况，不能回退成其他正文。
+
+桌面MD工作副本增加“保存恢复点”：选择收据及旧稿/待写稿，字面预览；当前可读且无prepared保存时，用户另行确认才放入编辑草稿。已有未保存草稿时要求先处理，避免丢弃。载入只改既有layout草稿，记录预览时当前hash；随后用户点击原“保存工作文件”，仍经旧的expected hash/恢复点/收据流程，不修改原件、确认版或历史作答。预览后外部修改仍409。当前缺失/坏编码/超限或待启动对账时只预览，不能借恢复点覆盖。无自动写回/删除/三方合并/新表/依赖/模型。
+
+任务：服务与API→路径/归属/损坏/分页/字节不变/重启及冲突回归→普通UI及取消/脏稿/失败/保存守卫组件测试→双Python/Flutter自动化及冻结链→自审/契约/task/同报告更新→阶段草稿PR与当前head CI。人工及Computer Use已取消。原失败记录和用户未提交文件保留；仅保留一份当前后端包。
+
+### 保存恢复点实施、失败与复测
+
+新增DocumentFiles两个GET入口及DocumentRecoveryDialog，复用TEXT_LIMIT、text_bytes/resource_path、archive_path和既有会话鉴权；只读正文受既有2并发门禁。working物理目录按空间/节点/层级核对，question-files兼容现有独立目录；收据before/pending必须在当前工作文件同目录且名称严格匹配记录ID/版本，不能通过修改收据路径读取其他文件。数据锁/启动对账/普通保存流程未改，无数据库迁移或新Agent工具。
+
+原始记录写artifacts/recovery-20261107/。cwd根，P=.venv/Scripts/python.exe，Q=.local/release-venv/Scripts/python.exe，均仅新建.local隔离样本；测试成功目录按现行pytest策略回收，失败日志/JUnit/现场保留。
+
+- P -m pytest backend/tests/test_document_recovery.py backend/tests/test_document_files.py -q --basetemp=.local/recovery-target01 --junitxml=artifacts/recovery-20261107/target01.xml：退出1，18通过2失败，35.68秒。损坏workspace归属被FK在注入时拦截，另mklink在受限执行环境创建失败。target02同命令替换批次名退出1，18通过2失败，33.21秒：先建另一空间仍不能破坏节点复合FK，链接仍创建失败。损坏归属用独立sqlite3连接明确构造坏库（该连接不启用FK），保护断言不变；Windows链接用正常测试执行权限，不跳过或mock真实重解析点。
+- target03同命令替换批次名退出0，20通过，30.21秒。随后补物理foreign-node目录守卫和真实QuestionFile/确认版/作答/墓碑只读回归；P -m pytest backend/tests/test_document_recovery.py -q --basetemp=.local/recovery-target04 --junitxml=artifacts/recovery-20261107/target04.xml退出0，14通过，9.12秒。仅夹具缩短链接路径并保留原目录，未删除保护断言。
+- 初次dart.bat format等待未结束，终止本次调用退出1；改用现有SDK的dart.exe直接format，退出0，不修改SDK。一次新增测试静态检查指出未用Path导入，另一次指出工具urllib导入顺序，均修正后Ruff退出0；没有删测试。一次format使用桌面cwd却传仓库相对路径导致未找到文件，随后从正确根路径实际format退出0。
+- cwd=apps/desktop，flutter test test/document_recovery_test.dart test/document_page_test.dart首轮退出1，8通过3失败，约8秒：父页面把整个用户选择对话框当文件处理而保持busy，持续进度动画令pumpAndSettle超时。改为沿用现有marks/insertLink模态交互模式，由对话框自身维护网络busy，不给等待用户选择展示文件处理进度，未增加等待上限或削弱断言。flutter-target02.log同命令退出0，11通过，约2秒；补400×800窄视图/50+1分页后flutter test test/document_recovery_test.dart退出0，5通过，约2秒（flutter-target03.log）。
+
+新后端回归逐项检查收据/MD字节及所有业务表不变、pending已消耗明确失败、坏编码/超限/hash不符/路径/空间/节点/junction、prepared只读、缺失当前仅预览、重启冲突状态、普通保存拒绝预览后的外改，并在显式重试保存时追加新恢复点保留外改字节。题目确认快照、旧作答和墓碑访问语义保留。
+
+冻结CI复用原tools/check_library_integrity.py步骤扩展真实HTTP：保存→查看before/已消耗pending拒绝→MD字节不变→预览后外改→旧hash保存409→重新核对后普通保存→旧恢复点保留；随后原持锁/离线健康/孤立/外改/业务字节保持全部断言仍执行。无新工具层、组件或窗口测试。
+
+### 保存恢复点最终本地验证
+
+cwd仓库根，P/Q及原始目录同上。所有下列退出码实际收取，完整回归后的产品/测试源码未再改：
+
+| 实际命令（相对仓库根，另注明cwd） | 退出/结果 | 原始记录 |
+|---|---|---|
+| P -m pytest backend/tests -q --basetemp=.local/recovery-full312 --junitxml=artifacts/recovery-20261107/full312.xml | 0；524通过，354.42秒 | full312.log/xml |
+| Q -m pytest backend/tests -q --basetemp=.local/recovery-full313 --junitxml=artifacts/recovery-20261107/full313.xml | 0；524通过，329.63秒 | full313.log/xml |
+| cwd=apps/desktop；SDK dart.exe format lib/document_page.dart lib/document_recovery_dialog.dart test/document_recovery_test.dart；flutter analyze | 0；格式无变化，静态无问题 | format-final.log、analyze-final.log |
+| 同cwd；flutter test --dart-define=STUDY_ROOT=D:/computer_work/project/StudyWorkbench --dart-define=STUDY_DATA_DIR=D:/computer_work/project/StudyWorkbench/.local/recovery-flutter | 0；158通过，约52秒 | flutter-full.log |
+| ./packaging/windows/build-backend.ps1（默认Q，干净构建） | 0；约147秒，41业务模块全部与源码匹配 | build.log |
+| P tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/recovery-frozen | 0；新增恢复点三项及全部旧巡检断言通过 | frozen-recovery.log、隔离result.json |
+| P tools/check_resource_explorer.py --exe同包 --test-root .local/recovery-frozen-resources --documents | 0；原冻结CI导入/文档/移除/重启链 | frozen-resources.log |
+| 新TEMP/TMP junction .local/recovery-lifecycle-alias→recovery-lifecycle-real；P tools/check_backend_lifecycle.py --exe同包 | 0；EOF/崩溃/重启/两次迁移/取消及旧字节/收据/记录保持 | frozen-lifecycle.log |
+| P tools/check_document_workers.py --exe同包（继承上述TEMP/TMP） | 0；DOCX/PDF真实文字/图像/公式/分题 | frozen-workers.log |
+| P -m ruff check backend tools；P tools/export_question_schema.py --check；git diff --check | 各0，无新增依赖或Schema漂移 | 工具返回，原警告保留 |
+
+首轮flutter analyze退出1，3处跨行if缺大括号；修复后上述最终静态/全套通过。初次format --output=none --set-exit-if-changed lib test integration_test退出0；最终新增三文件format无变化，其余文件未修改。包内/源码快照46文件及exe SHA256保存在source-snapshot.json，不含令牌、个人库或原件。Starlette/anyio弃用、固定依赖可更新和PyInstaller既有hidden-import警告仍保留，没有升级依赖或屏蔽警告。文档相对链接检查54份/269链接无缺失（后续PR链接补交再校验）。
+
+自审完成：全调用方/路由、原SaveText和启动recover未改、受控路径/节点/空间和hash、只读GET/正文预算、pending消耗、prepared/当前缺失降级、模态等待/取消/异步mounted、脏稿不覆盖、确认后草稿基线hash与普通保存冲突、QuestionFile/旧作答保护及冻结CI保留原断言。此次为自审，非独立批准；本地不重复生成Windows UI候选，Windows Release/COM及全量R1–R5由本阶段当前head CI执行并另核。人工测试及Computer Use已取消。无自动修复/删除/三方合并；当前文件缺失的写回仍未实现。提交/阶段草稿PR及最终head CI继续跟进，不合并/发行。
