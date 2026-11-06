@@ -8,6 +8,7 @@ import re
 import secrets
 import subprocess
 import threading
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -57,6 +58,36 @@ def main():
         with opener.open(request, timeout=30) as response:
             node = json.load(response)['resource_item_id']
         assert re.fullmatch('[a-f0-9]{32}', node)
+
+        def request_json(method, path, body=None, expected=200):
+            req = urllib.request.Request(f'http://127.0.0.1:{port}/api/workspaces/default/nodes/{node}' + path,
+                data=None if body is None else json.dumps(body).encode(), method=method,
+                headers={'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'})
+            try:
+                with opener.open(req, timeout=30) as response:
+                    assert response.status == expected
+                    return json.load(response)
+            except urllib.error.HTTPError as error:
+                assert error.code == expected, str(error.code)
+                return json.load(error)
+
+        initial = request_json('GET', '/document')
+        saved = request_json('PUT', '/document', {'expected_sha256': initial['sha256'], 'text': 'new workfile'})
+        rows = request_json('GET', '/document-saves?limit=1')
+        receipt = rows[0]['id']
+        before = {p: b for p, b in snapshot().items() if p.endswith('.md')}
+        recovered = request_json('GET', f'/document-saves/{receipt}?version=before')
+        assert recovered['text'] == initial['text'] and recovered['current_sha256'] == saved['sha256']
+        request_json('GET', f'/document-saves/{receipt}?version=pending', expected=409)
+        assert {p: b for p, b in snapshot().items() if p.endswith('.md')} == before
+        current = data / 'workspaces/default/working' / node / 'note/current.md'
+        current.write_bytes(b'external after recovery preview')
+        request_json('PUT', '/document', {'expected_sha256': recovered['current_sha256'], 'text': recovered['text']}, expected=409)
+        assert current.read_bytes() == b'external after recovery preview'
+        recovered = request_json('GET', f'/document-saves/{receipt}?version=before')
+        request_json('PUT', '/document', {'expected_sha256': recovered['current_sha256'], 'text': recovered['text']})
+        assert current.read_text(encoding='utf-8') == initial['text']
+        assert request_json('GET', '/document-saves/' + receipt + '?version=before')['text'] == initial['text']
         blocked = subprocess.run(command + ['--check-library', '--confirm-all-workspaces'], env=env, cwd=root,
                                  capture_output=True, timeout=30, creationflags=subprocess.CREATE_NO_WINDOW)
         assert blocked.returncode != 0, 'Diagnostics bypassed the active application lock'
@@ -78,7 +109,8 @@ def main():
         assert {item['code'] for item in changed['issues']} == {
             'unreferenced_derived_candidate', 'workfile_index_changed'}
         summary = dict(frozen=True, active_lock_refused=True, healthy_case_verified=True, orphan_detected=True,
-                       external_edit_detected=True, business_bytes_preserved=True, repair_performed=False)
+                       external_edit_detected=True, business_bytes_preserved=True, repair_performed=False,
+                       recovery_preview_readonly=True, recovery_save_conflict_guard=True, recovery_explicit_save=True)
         (root / 'result.json').write_text(json.dumps(summary, indent=2) + '\n', encoding='utf-8')
         print(json.dumps(summary))
     finally:

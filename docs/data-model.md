@@ -54,6 +54,8 @@ learning_events.content存kind=annotation/reviewed、note及可选error_type/sel
 
 原件、可编辑工作文件、派生预览、确认快照分别定位。保存收据按old/new hash恢复索引，不自动回放覆盖外部内容；确认版发布前后回读正文和附件。失败/孤立字节保留，文件与SQLite非同一事务。
 
+保存恢复点浏览复用document_saves的before/pending路径及old/new hash，不新增表、正文镜像或恢复状态。只读预览不改收据；UI确认后复用layout的draft/draft_base_sha256，后续普通保存追加新收据，旧恢复点不清除。已确认版本和旧作答不随恢复草稿改变。
+
 0012仅标记树的removed_at，保留父子/原件/工作文件/题目和历史外键；旧节点初始NULL，旧资源适配识别墓碑，刷新不生成替代身份。当前题目/来源入口过滤已移除节点，历史快照保留；已开标签仍按ID访问保留工作文件。
 
 layout v1/v2双读写；旧utility/未知类型保留；16开/10关；MD草稿1MiB、旧题目草稿16000字符、独立question_draft64000字符；状态不存令牌/能力URL。具体视图字段见[API](api-spec.md)。

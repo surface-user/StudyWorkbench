@@ -45,7 +45,7 @@
 
 | 任务 | 原报告 | 同任务附属材料 |
 |---|---|---|
-| M2-05 资料完整性与派生巡检 | [report](records/2026-11-06-library-integrity/report.md) | 离线只读诊断与恢复故障回归，同任务持续记录 |
+| M2-05 资料完整性与保存恢复点 | [report](records/2026-11-06-library-integrity/report.md) | 离线只读诊断、恢复点浏览及恢复故障回归，同任务持续记录 |
 | DOC-01 文档治理 | [report](records/2026-10-30-documentation/report.md) | 含本次目录归位与检查 |
 | 资料树删除 | [report](records/2026-10-30-resource-removal/report.md) | — |
 | 统一资源导入 | [report](records/2026-10-30-unified-resource-import/report.md) | [迁移前独立PR跟进](records/2026-10-30-unified-resource-import/pr-review.md)，保留原拆分，后续写report |
