@@ -28,6 +28,8 @@
 
 ## artifacts 与 evidence
 
+按用户2026-11-06要求限制留存：通过测试的临时目录自动清理；仅保留一份当前冻结包和一份可用Office组件。保留失败日志/JUnit/最小复现/转储及源码版本，不用“保留失败”永久保留所有重复二进制和通过测试的数据库副本。人工测试已取消，不再制作窗口验收包。
+
 | 位置 | 用途 | Git规则 |
 |---|---|---|
 | ../artifacts/<运行批次>/ | 完整原始日志、JUnit、自动截图和临时诊断输出 | 已忽略；本机或CI运行产物，不保证随仓库获取 |
@@ -53,11 +55,11 @@
 | LW-02 位置书签与备注 | [report](records/2026-11-04-lw02-marks/report.md) | 含0014迁移、来源关系、失败与最终回归 |
 | LW-03 内部超链接 | [report](records/2026-11-04-lw03-links/report.md) | 含URI/空间校验、插入跟随、往返与验证 |
 | LW-04 集中查找 | [report](records/2026-11-04-lw04-search/report.md) | 含预算、截断、结果版本与回归 |
-| LW-05 完整备份恢复（待验收） | [report](records/2026-11-04-lw05-backup/report.md) | 离线快照/受控恢复/UI本地实现，窗口/人工/发行待验 |
-| LW-09 学习流程集成（进行中） | [report](records/2026-11-04-lw09-integration/report.md) | 冻结后端真实进程闭环通过；用户使用电脑期间暂停窗口验收 |
+| LW-05 完整备份恢复 | [report](records/2026-11-04-lw05-backup/report.md) | 离线快照/受控恢复/UI本地实现，窗口/人工/发行待验 |
+| LW-09 学习流程集成 | [report](records/2026-11-04-lw09-integration/report.md) | 冻结后端真实进程闭环；人工窗口测试已按用户要求取消 |
 | 11-06 学习工作台阶段交付 | [report](records/2026-11-06-learning-workbench-delivery/report.md) | 当前版本PR、依赖与CI跟进；不代替人工验收 |
 | LW-08 授权与外部候选审核 | [report](records/2026-11-05-lw08-authorization-review/report.md) | 无模型授权扩展、持久候选/人工采用；自动化及窗口状态见报告 |
 | LW-07 直接媒体下载（进行中） | [report](records/2026-11-05-lw07-downloads/report.md) | HTTPS传输/持久队列/普通UI切片，完整回归与真实来源待验证 |
-| LW-06 格式扩展（进行中） | [report](records/2026-11-04-lw06-formats/report.md) | UTF-8文本及XLSX只读单元格；Office样本矩阵/实际窗口待验证 |
+| LW-06 格式扩展（进行中） | [report](records/2026-11-04-lw06-formats/report.md) | UTF-8文本/XLSX及Office自动化矩阵；人工窗口测试已取消 |
 
 [历史索引](archive/README.md)默认不参与日常开发上下文。任务满足[退出条件](../docs/task.md#任务退出条件)后仍保留完成摘要和报告链接。

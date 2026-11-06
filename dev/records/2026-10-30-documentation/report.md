@@ -71,3 +71,16 @@
 下一步按现有task推进LW-02；目录整理继续遵守本报告和dev规则，不按每次对话再产生一份治理报告。
 
 最终复核：check.py再次退出0，43份Markdown/210处本地链接/5处标题锚点、114份保护文件hash、10项LW范围表及其他任务行均保持，迁移评估的链接目标与原位置语义一致；report数量仍7份。git diff --check退出0，仅AGENTS的既有LF/CRLF提示；git check-ignore退出0，本批脚本和清单均被忽略。
+
+
+## 2026-11-06 用户取消人工测试与开发产物治理
+
+用户明确取消人工测试并要求继续开发，指出项目接近30GB。已停止Computer Use/人工窗口流程；AGENTS、task、testing及ADR0013撤销该退出门禁，ADR0005注明替代关系。历史失败不改为通过；模型仍暂缓，产品中的用户授权/候选审核确认保留。LW-01至05及LW-09不再因人工测试保持待验收，自动化/审查/PR义务继续。
+
+实测清理前27.19GiB：.local 15.335、apps 6.961、artifacts 2.303、dist 2.044GiB。主要是重复构建包、Office组件镜像、逐轮pytest成功副本及Flutter缓存。清单与原始结果保存在artifacts/storage-before-20261106.json、storage-cleanup-plan-20261106.json与storage-cleanup-result-20261106.json；未另建报告或删除源码/个人库。清理前逐个绝对路径验证在workspace内、无Git跟踪文件；遇重解析点仅移除链接自身，不跟随目标。原Office崩溃转储和原runtime-lock先复制并SHA256相等核对，保留在artifacts/lw06-native-20261106/original-runtime-diagnostics；删除的是可重建组件/旧测试副本，不是错误日志、JUnit或失败测试代码。可用Office组件与当前冻结后端各保留一份。
+
+继续开发的防复发修补：pyproject.toml启用现有pytest9的tmp_path_retention_policy=failed，无新依赖。已核对已安装_pytest/tmpdir.py：通过测试teardown清理其tmp_path，失败保留；不会删除产品资料目录。人为构造的两例探针预期退出1：1通过/1故意失败，确认仅失败marker留存、JUnit完整；不是产品回归失败。原Office/Job回归21项退出0（24.47秒），全套回归继续记录实际结果。日志retention-probe/retention-real-20261106.log/xml；不为此重建Windows或再制作人工窗口包。
+
+全量复核：P -m pytest backend/tests -q --basetemp=.local/retention-full-20261106 --junitxml=artifacts/retention-full-20261106.xml，退出0，476通过、264.91秒；回归后该basetemp剩43文件/10824047字节（不再每轮保留约150MiB副本）。Ruff、54份Markdown/268本地链接及git diff --check均退出0；旧Starlette/anyio弃用警告未屏蔽。
+
+清理完成：原生PowerShell按238项明确清单操作，退出0，238项全部移除、0失败。重新遍历不跟随重解析点，目录从27.190GiB降为4.912GiB，减少22.278GiB。唯一干净Office组件恢复到默认.local/release-tools/libreoffice-26.8.1，两个绝对路径均核对在workspace且目标不存在后移动；OfficeRuntime.verify完整19417文件校验通过、指纹不变。当前冻结exe SHA256仍a541135a5299e8cbea5b5c4c4e75ebf6f72d3fdbee5fad8a355edf5bff5026ce，核验和复测命令退出0。旧窗口包、逐轮冻结dist/build、Flutter缓存、旧dist测试包及识别为pytest自动目录的副本已清理；源码、个人库、开发venv、日志/JUnit及精选证据保留。旧报告内被清理的二进制/自动副本路径仅作为历史运行位置，不再承诺永久留存。

@@ -2,7 +2,7 @@
 
 ## 自动化运行
 
-仓库根使用既有.venv；TEMP/TMP可按tools/prepare-windows.ps1设置到项目内，避免受限系统TEMP。每轮使用新的隔离profile/basetemp，不指向个人学习目录，不清除失败现场。原始产物写artifacts/<运行批次>/；报告和精选共享证据见[记录规则](../dev/README.md)。
+仓库根使用既有.venv；TEMP/TMP可按tools/prepare-windows.ps1设置到项目内，避免受限系统TEMP。每轮使用新的隔离profile/basetemp，不指向个人学习目录，通过测试的tmp_path自动清理，失败现场保留；不再永久留存每轮完整测试副本。原始产物写artifacts/<运行批次>/；报告和精选共享证据见[记录规则](../dev/README.md)。
 
 ```powershell
 .venv/Scripts/python.exe -m pytest backend/tests -q --basetemp=.local/<新测试目录> --junitxml=artifacts/<本批>/backend.xml
@@ -14,13 +14,17 @@ flutter test --no-pub --dart-define=STUDY_ROOT=<仓库绝对路径> --dart-defin
 flutter build windows --release --no-pub
 ```
 
-先创建本批产物目录。R1–R5真实HTTP回归使用tools/check_r1_blackbox.py至check_r5_blackbox.py，各带新隔离根；源码/冻结检查见tools/check_resource_explorer.py、check_question_files.py、check_backend_lifecycle.py、check_document_workers.py。Windows构建/原生集成串行，避免共享生成资源覆盖；按范围补原生与冻结检查，不能用组件或脚本替代真实窗口。具体CI范围见[check.yml](../.github/workflows/check.yml)，存在工作流不代表远程已通过。
+先创建本批产物目录。R1–R5真实HTTP回归使用tools/check_r1_blackbox.py至check_r5_blackbox.py，各带新隔离根；源码/冻结检查见tools/check_resource_explorer.py、check_question_files.py、check_backend_lifecycle.py、check_document_workers.py。Windows构建/原生集成串行，避免共享生成资源覆盖；按范围补原生与冻结检查，按用户11-06指令不再要求或执行真实窗口/人工测试。具体CI范围见[check.yml](../.github/workflows/check.yml)，存在工作流不代表远程已通过。
 
 STUDY_EVIDENCE_DIR是沿用的历史参数名，原生自动截图应将其值指定为artifacts/<本批>/，不因变量名自动晋升为evidence。M0默认截图现写artifacts/m0/。
 
 只读备份包检查核心可在`backend/`工作目录运行`../.venv/Scripts/python.exe -m study_workbench --inspect-backup "<备份ZIP绝对路径>"`。仅检查manifest与payload字节，不执行包内SQLite、不解压/激活或切换数据目录；输出的`database_semantics_checked=false`和`data_activated=false`不能忽略。完整备份/恢复由设置菜单及启动失败恢复入口执行，不用该检查命令代替恢复验收；冻结发行组合仍须另验。
 
-## 人工与阶段验收
+临时目录策略使用pytest内置failed：用例执行失败时保留tmp_path，成功用例清理；setup/teardown异常以JUnit和错误日志留证，需完整现场时显式使用`-o tmp_path_retention_policy=all`，诊断后只保留最小复现，避免永久累积整轮副本。
+
+## 已取消的人工测试范围（历史参考）
+
+用户2026-11-06明确取消人工测试，以下矩阵仅保留历史范围，不再执行、不再作为退出门禁，也不记为通过。详见[ADR0013](adr/0013-cancel-manual-testing-and-bound-artifacts.md)。产品中的用户确认/候选人工审核功能仍保留。
 
 | 范围 | 必要场景 |
 |---|---|
@@ -36,4 +40,4 @@ STUDY_EVIDENCE_DIR是沿用的历史参数名，原生自动截图应将其值�
 | 安装/发行 | 无Python/无WebView2干净机、自选目录、升级/卸载保留、前后端配套/签名/实际二进制许可 |
 | R6授权/人工候选审核；模型路径规划 | 本地范围/到期/撤销/预算、历史版本、修订/hash与独立采用、失败/恢复/备份及原数据保持；模型实施后另验出境/提示注入/降级和AI来源 |
 
-记录OS/Runtime、样本来源与编码、应用/后端版本或hash、实际行为与截图。Agent自动窗口交互和用户人工验收分开，回调注入不证明Explorer真实拖放。失败测试/断言不删除不降低，旧head绿灯不代表新head。任务完成按[退出条件](task.md#任务退出条件)，延后人工不等于豁免。
+记录OS/Runtime、样本来源与编码、应用/后端版本或hash、实际行为与截图。Agent自动窗口交互和用户人工验收分开，回调注入不证明Explorer真实拖放。失败测试/断言不删除不降低，旧head绿灯不代表新head。任务完成按[退出条件](task.md#任务退出条件)，人工测试按用户指令已取消。
