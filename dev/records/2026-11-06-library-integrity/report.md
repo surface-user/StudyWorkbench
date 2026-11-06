@@ -60,3 +60,10 @@ CI新增探针原命令最终复核：P tools/check_library_integrity.py --exe d
 Ruff、Question Schema --check及git diff --check均退出0；本地Markdown检查56份/277链接无缺失（docs.json，包含用户先前未提交的summary）。报告链接/任务入口按当前目录检查，无新doc平行入口。--check-library无前端改动，本轮本地不重复构建Flutter；远端CI保留原桌面检查/Release/COM/全部冻结链，并新增真正冻结CLI探针和构建时41模块一致性门禁。
 
 新冻结包完成验证后，先核旧a541候选特定SHA256、两个目标的workspace绝对路径及无重解析点，再用原生PowerShell删除旧artifacts/lw06-native-20261106/frozen-alias/dist和build/study_backend，退出0；保留本轮dist/study_backend一份当前包，原始日志/失败/JUnit/转储/源码快照不删，无人工窗口包或新组件副本。
+
+
+## 阶段PR交付
+
+实现提交434d4921d939d40c5c1128518f537da651baa720已commit/push，退出0；创建[草稿PR #5](https://github.com/surface-user/StudyWorkbench/pull/5)，base=codex/learning-workbench-20261106（#4、147198a），未合并/发行。该阶段实现/本地自动化/自审已完成，当前head CI继续实查；M2-05其他恢复范围仍进行中，不以本切片退出整个任务。
+
+本节及task仅补实际PR链接，为文档增量，不再改产品/测试代码。文档提交后的最终head CI以PR实时检查及描述为准，不将先前head绿灯套用到后续提交，不为记录自身SHA循环提交。用户未提交summary.md及.vscode仍保留未纳入本PR，旧分支不改写。原始数据/失败记录不上传，报告命令/源码快照及筛选边界按前述执行。
