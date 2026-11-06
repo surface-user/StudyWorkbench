@@ -67,6 +67,9 @@ jobs:
       - name: Frozen unified resource import and document regression
         run: .venv/Scripts/python.exe tools/check_resource_explorer.py --exe dist/study_backend/study_backend.exe --test-root .local/ci-unified-import --documents
         working-directory: .
+      - name: Frozen offline library integrity check
+        run: .venv/Scripts/python.exe tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/ci-library-integrity
+        working-directory: .
       - shell: pwsh
         run: |
           $real = Join-Path $pwd '.local/lifecycle-temp-real'

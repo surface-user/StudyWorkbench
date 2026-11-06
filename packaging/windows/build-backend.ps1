@@ -7,6 +7,8 @@ try {
     $env:TMP = $env:TEMP
     & $Python -c 'import sys; assert "Anaconda" not in sys.version and "conda" not in sys.base_prefix.lower(), "Release requires independent CPython"'
     if ($LASTEXITCODE -ne 0) { throw 'Invalid release interpreter' }
-    & $Python -m PyInstaller --noconfirm --onedir --name study_backend --paths backend --collect-submodules study_workbench --copy-metadata docling-slim --copy-metadata docling-core --copy-metadata doclang --copy-metadata pypdfium2 --copy-metadata python-docx --copy-metadata pylatexenc --add-data 'backend/migrations;migrations' --add-data 'backend/study_workbench/player.html;study_workbench' --add-data 'backend/study_workbench/library_player.html;study_workbench' tools/frozen_entry.py
+    & $Python -m PyInstaller --clean --noconfirm --onedir --name study_backend --paths backend --collect-submodules study_workbench --copy-metadata docling-slim --copy-metadata docling-core --copy-metadata doclang --copy-metadata pypdfium2 --copy-metadata python-docx --copy-metadata pylatexenc --add-data 'backend/migrations;migrations' --add-data 'backend/study_workbench/player.html;study_workbench' --add-data 'backend/study_workbench/library_player.html;study_workbench' tools/frozen_entry.py
     if ($LASTEXITCODE -ne 0) { throw 'PyInstaller failed' }
+    & $Python tools/check_frozen_sources.py --exe dist/study_backend/study_backend.exe
+    if ($LASTEXITCODE -ne 0) { throw 'Frozen application code differs from current source' }
 } finally { Pop-Location }
