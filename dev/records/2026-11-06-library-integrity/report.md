@@ -113,3 +113,5 @@ cwd仓库根，P/Q及原始目录同上。所有下列退出码实际收取，�
 首轮flutter analyze退出1，3处跨行if缺大括号；修复后上述最终静态/全套通过。初次format --output=none --set-exit-if-changed lib test integration_test退出0；最终新增三文件format无变化，其余文件未修改。包内/源码快照46文件及exe SHA256保存在source-snapshot.json，不含令牌、个人库或原件。Starlette/anyio弃用、固定依赖可更新和PyInstaller既有hidden-import警告仍保留，没有升级依赖或屏蔽警告。文档相对链接检查54份/269链接无缺失（后续PR链接补交再校验）。
 
 自审完成：全调用方/路由、原SaveText和启动recover未改、受控路径/节点/空间和hash、只读GET/正文预算、pending消耗、prepared/当前缺失降级、模态等待/取消/异步mounted、脏稿不覆盖、确认后草稿基线hash与普通保存冲突、QuestionFile/旧作答保护及冻结CI保留原断言。此次为自审，非独立批准；本地不重复生成Windows UI候选，Windows Release/COM及全量R1–R5由本阶段当前head CI执行并另核。人工测试及Computer Use已取消。无自动修复/删除/三方合并；当前文件缺失的写回仍未实现。提交/阶段草稿PR及最终head CI继续跟进，不合并/发行。
+
+实现提交a272b4f94de8de9475b32b51313d467802e34cde已commit/push，均退出0；[草稿PR #6](https://github.com/surface-user/StudyWorkbench/pull/6)已创建，以未合并#5的1357d44为base。本节及task仅补真实交付链接；文档补交后的最终head CI、检查时间及交付结论以该PR描述/实时检查为准，不以旧head替代，也不为记录自身SHA循环提交。仍保留用户未提交summary.md及.vscode，旧分支不改写，未合并/发行。
