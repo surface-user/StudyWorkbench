@@ -8,6 +8,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:lightweight_liquid_glass/lightweight_liquid_glass.dart';
 
 import 'backend.dart';
+import 'analysis_review_dialog.dart';
+import 'backup_dialog.dart';
 import 'data_settings.dart';
 import 'startup_failure.dart';
 import 'webview_lifecycle.dart';
@@ -48,6 +50,8 @@ class _WorkbenchState extends State<Workbench> with WidgetsBindingObserver {
   bool closing = false;
   bool recovering = false;
   String? connectionError;
+  OfflineLibraryOperation? libraryWorker;
+  String libraryProgress = '';
   final shellKey = GlobalKey<WorkspaceShellState>();
   @override
   void initState() {
@@ -60,7 +64,7 @@ class _WorkbenchState extends State<Workbench> with WidgetsBindingObserver {
     String? dataDir,
     Map<String, Map<String, dynamic>>? recoveredLayouts,
   }) async {
-    if (starting) return;
+    if (starting || !mounted) return;
     setState(() {
       starting = true;
       error = null;
@@ -95,10 +99,7 @@ class _WorkbenchState extends State<Workbench> with WidgetsBindingObserver {
       final startedService = service;
       unawaited(
         service.process.exitCode.then((code) {
-          if (mounted &&
-              identical(backend, startedService) &&
-              !migrating &&
-              !closing) {
+          if (mounted && identical(backend, startedService) && !closing) {
             setState(() => connectionError = '本地后端已停止（退出码 $code），当前页面草稿仍保留。');
           }
         }),
@@ -160,6 +161,161 @@ class _WorkbenchState extends State<Workbench> with WidgetsBindingObserver {
   }
 
   Future<void> _settings() async {
+    if (starting || migrating || recovering) return;
+    final action = await showDialog<String>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('数据与学习库'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(context, 'move'),
+            child: const Text('迁移数据位置'),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(context, 'backup'),
+            child: const Text('备份全部学习库'),
+          ),
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(context, 'restore'),
+            child: const Text('从完整备份恢复到新空目录'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (action == 'move') {
+      await _migrateSettings();
+    }
+    if (action == 'backup') {
+      await _library(restore: false);
+    }
+    if (action == 'restore') {
+      await _library(restore: true);
+    }
+  }
+
+  Future<void> _library({required bool restore}) async {
+    if (starting || migrating || recovering || recoveryLayouts != null) return;
+    final service = backend;
+    if (!restore && service == null) return;
+    final plan = await showDialog<LibraryBackupPlan>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => LibraryBackupDialog(restore: restore, backend: service),
+    );
+    if (plan == null || !mounted) return;
+    String? config;
+    String? priorConfigData;
+    var activated = false;
+    var activationUncertain = false;
+    try {
+      config = Backend.testData.isEmpty
+          ? await Backend.settingsPath
+          : '${Backend.testData}.settings.json';
+      if (restore) {
+        priorConfigData = await Backend.configuredData(configPath: config);
+      }
+      await flushAnalysisDraftEditors();
+      await shellKey.currentState?.flush();
+      if (!mounted) return;
+      setState(() {
+        migrating = true;
+        backend = null;
+        error = null;
+        libraryProgress = '正在保存页面并停止本地服务';
+      });
+      await WidgetsBinding.instance.endOfFrame;
+      try {
+        await drainWebEnvironments();
+      } finally {
+        await service?.shutdown();
+      }
+      if (!mounted) return;
+      libraryWorker = await Backend.libraryOperation(
+        restore: restore,
+        dataDir: restore ? plan.target! : service!.dataDir,
+        zipPath: plan.zipPath,
+        configPath: !restore && service?.startupWarning != null ? null : config,
+        onStage: (stage) {
+          if (mounted) {
+            setState(() => libraryProgress = libraryStageLabel(stage));
+          }
+        },
+      );
+      if (mounted) setState(() {});
+      final result = await libraryWorker!.done;
+      libraryWorker = null;
+      if (!mounted) return;
+      if (restore &&
+          (result['data_activated'] != true ||
+              !await Backend.sameDataDirectory(
+                result['data_dir'] as String?,
+                plan.target,
+              ))) {
+        throw StateError('恢复结果与所选目录不符，先保留现场核对启动配置');
+      }
+      activated = restore;
+      await _start(dataDir: restore ? plan.target : service!.dataDir);
+      if (backend == null) throw StateError('文件已处理，但本地服务尚未重新启动：$error');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${restore ? '完整备份已恢复到新目录，原库保留' : '全部学习库备份完成'}${result['cleanup_pending'] == true ? '；已完成校验，暂存副本清理待处理' : ''}',
+            ),
+            duration: const Duration(seconds: 10),
+          ),
+        );
+      }
+    } catch (failure) {
+      if (migrating && restore && config != null && !activated) {
+        try {
+          final current = await Backend.configuredData(configPath: config);
+          activated = await Backend.sameDataDirectory(current, plan.target);
+          activationUncertain =
+              !activated &&
+              current != priorConfigData &&
+              !await Backend.sameDataDirectory(current, priorConfigData);
+        } catch (_) {
+          activationUncertain = true;
+        }
+      }
+      if (migrating &&
+          backend == null &&
+          service != null &&
+          !activated &&
+          !activationUncertain) {
+        await _start(dataDir: service.dataDir);
+      }
+      final message = activationUncertain
+          ? '离线结果或当前数据位置未能确认，原库保留；请先核对启动配置再重试：$failure'
+          : activated
+          ? '新目录已完成激活，服务启动仍待恢复；原库保留：$failure'
+          : '操作未完成，原库/启动配置及未完成字节保留：$failure';
+      if (mounted) {
+        if (backend == null) {
+          setState(() => error = message);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              duration: const Duration(seconds: 15),
+            ),
+          );
+        }
+      }
+    } finally {
+      libraryWorker = null;
+      if (mounted) {
+        setState(() {
+          migrating = false;
+          libraryProgress = '';
+        });
+      }
+    }
+  }
+
+  Future<void> _migrateSettings() async {
     final service = backend;
     if (service == null || migrating || starting) return;
     if (service.startupWarning != null) {
@@ -177,6 +333,7 @@ class _WorkbenchState extends State<Workbench> with WidgetsBindingObserver {
     );
     if (target == null || target == service.dataDir || !mounted) return;
     try {
+      await flushAnalysisDraftEditors();
       await shellKey.currentState?.flush();
     } catch (failure) {
       if (mounted) {
@@ -226,6 +383,7 @@ class _WorkbenchState extends State<Workbench> with WidgetsBindingObserver {
   Future<AppExitResponse> didRequestAppExit() async {
     if (migrating || starting || recovering) return AppExitResponse.cancel;
     try {
+      await flushAnalysisDraftEditors();
       await shellKey.currentState?.flush();
     } catch (failure) {
       if (mounted) {
@@ -242,6 +400,10 @@ class _WorkbenchState extends State<Workbench> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    final operation = libraryWorker;
+    if (operation != null) {
+      unawaited(operation.cancel().catchError((Object _) {}));
+    }
     backend?.close();
     super.dispose();
   }
@@ -250,6 +412,31 @@ class _WorkbenchState extends State<Workbench> with WidgetsBindingObserver {
   Widget build(BuildContext context) => Scaffold(
     body: Column(
       children: [
+        if (migrating && libraryProgress.isNotEmpty)
+          MaterialBanner(
+            content: Text(libraryProgress),
+            actions: [
+              TextButton(
+                onPressed:
+                    libraryWorker == null ||
+                        libraryWorker!.cancellationRequested
+                    ? null
+                    : () async {
+                        await libraryWorker!.cancel();
+                        if (mounted) {
+                          setState(
+                            () => libraryProgress = '正在停止，原库和未完成字节保留，请稍候',
+                          );
+                        }
+                      },
+                child: Text(
+                  libraryWorker?.cancellationRequested == true
+                      ? '正在停止'
+                      : '取消离线操作',
+                ),
+              ),
+            ],
+          ),
         if (backend?.startupWarning != null)
           MaterialBanner(
             content: Text(
@@ -292,6 +479,9 @@ class _WorkbenchState extends State<Workbench> with WidgetsBindingObserver {
                               : null,
                           onChooseData: recoveryLayouts == null
                               ? _chooseData
+                              : null,
+                          onRestoreBackup: recoveryLayouts == null
+                              ? () => _library(restore: true)
                               : null,
                         )
                       : const Center(

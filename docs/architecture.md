@@ -1,97 +1,69 @@
-# 系统架构：资源驱动的本地学习工作台
+# 系统架构
 
-2026-10-30统一添加：Windows原生多选/OLE拖放→同一Flutter待导入清单→受保护`resource-inspections`只读识别→显式确认→既有`resource-add-jobs`顺序后台复制。媒体视图复用该弹窗。资料处理通过`resources/{id}/analyze`读取并校验已有原件、复用ImportJob，不复制第二份；仍需预览和确认。导航移除辅助工具分组而保留旧utility/layout及页面生命周期；搜索在同空间未删除资源中分页。无新依赖/迁移，边界及证据见[本批记录](unified-resource-import-2026-10-30.md)。
+现行验证安排：用户2026-11-06已取消人工测试及Computer Use/实际窗口测试，不再作为开发或退出门禁；历史未验不补记通过。自动化、代码审查及当前head CI继续，产品内用户授权/候选审核确认保留，详见[ADR0013](adr/0013-cancel-manual-testing-and-bound-artifacts.md)。
 
-2026-10-26：用户授权从R1复核后按R1–R6顺序继续开发、自动测试与审查。人工及阶段验收待统一进行。下文2026-10-25“仅授权R1”为历史边界；R2增量设计见[r2-design.md](r2-design.md)，本轮实际状态见[续开发记录](resource-continuation-2026-10-26.md)。
+状态基线：2026-11-05本地代码。下列“当前已实现”表示代码存在，不代表全部人工、发行或阶段验收通过。当前安排见[task](task.md)，决策见[ADR](adr/)。
 
-当前增量：R2资源身份/layout v2已实施；R3 PDF/图片阅读、Markdown工作副本及DOCX结构预览已接入，0008追加工作副本/保存收据；0009追加可选离线DOCX/PPTX分页任务与派生收据。固定LibreOffice独立profile/受限Job、静态内部图表/OMML与安全边界见[ADR0009](adr/0009-offline-office-previews.md)、[本批记录](r3-office-validation-2026-10-26.md)。首批工作文件设计见[r3-design.md](r3-design.md)、[ADR0008](adr/0008-resource-tabs-and-document-workfiles.md)。旧题目/作答权威链未切换，R4–R6尚未展开；不将本机冻结自动化当完整发行/阶段验收。
+## 当前已实现
 
-2026-10-25。产品方向与最小方案已由用户确认，本轮仅授权实施R1。资源目录/复制任务已落地（0007），[详细设计](r1-design.md)与[验证记录](r1-validation.md)单列；资源标签、查看器、题目MD和记录贯通仍为后续方案。未替换既有开发包。
+模块化单体：Flutter UI → 受控loopback HTTP → Python业务/文件服务 → SQLite和受管文件。Flutter使用固定提交lightweight_liquid_glass公开API，不改上游；普通业务不依赖LLM。
 
-## 保留的技术基线
+| 模块 | 当前责任 | 实现入口 |
+|---|---|---|
+| 工作空间与布局 | 空间隔离/归档、v1/v2布局、旧utility及未知页兼容 | workspaces.py、workspace_layout.dart、workspace_shell.dart |
+| 资源目录 | 稳定逻辑ID、树/搜索、改名移动、删除墓碑、旧资源适配 | explorer.py、resource_explorer.dart |
+| 统一添加 | 原生多选/OLE回调→暂存预检→明确确认→后台受管复制 | resource_picker.dart、add_resources_dialog.dart、Windows runner、Explorer |
+| 内容提取 | 原件哈希校验→ImportJob解析→候选预览/调整→显式确认 | imports.py、documents.py、question_splitting.py、draft_editing.py |
+| 查看与编辑 | PDF/PNG/JPEG、DOCX结构、MD工作副本、冲突保存/恢复收据；TXT及JSON/CSV/LOG/VTT/SRT严格UTF-8只读原文，新增文本仅资源级位置 | document_files.py、document_view_worker.py、document_page.dart |
+| 自由笔记（LW-01） | 受管目录新建MD原件/可编辑副本、持久幂等创建/中断核对、目录及资料/媒体页入口；旧notes不迁移 | markdown_notes.py、markdown_note_dialog.dart、resource_explorer.dart、resource_page.dart |
+| 位置书签与备注（LW-02） | 版本化资源/页/原文行/媒体时间锚点、标记修订/墓碑、同空间笔记关系和来源回跳；失效位置不自动重定位 | learning_marks.py、media_duration.py、learning_marks_dialog.dart、document_page.dart、media_page.dart |
+| 内部链接（LW-03） | 严格版本URI、受鉴权解析、复制/MD插入跟随、最多50条运行时往返；目标/返回位置重验，不注册系统协议 | internal_links.py、internal_links.dart、document_page.dart |
+| 集中查找（LW-04） | 活动MD当前正文、旧笔记及书签备注的有界纯文本扫描/分页，显式截断；跳转重验版本，无搜索正文镜像 | learning_search.py、learning_search_dialog.dart |
+| 完整库备份恢复（LW-05） | 离线SQLite快照/全文件包、受控新空目录恢复、旧schema保留后升级、表/文件/关系校验、草稿落盘/停服/取消/配置激活；人工/发行仍待验 | backup_archive.py、backup_store.py、backup_dialog.dart、main.dart、__main__.py |
+| XLSX只读查看 | 有界OOXML ZIP/XML在既有查看子进程读取，多表稀疏单元格/缓存值；不执行公式/宏或外链，不提供Office编辑/样式保真 | spreadsheet_view.py、document_view_worker.py、spreadsheet_view.dart、document_page.dart |
+| Office分页 | 可选固定LibreOffice进程→派生PDF→PDFium页图 | office_inputs.py、office_runtime.py、office_previews.py |
+| 题目文件 | 检查/旧内容显式转换/确认快照/资产完整性/按确认版作答 | question_files_format.py、question_files.py、app.py |
+| 学习与记录 | 判分、追加作答/评分、组卷、统计、事件、笔记关系和投影 | learning.py、learning_records.py、study_page.dart |
+| 标签和媒体 | EditorTabBar/PageHost稳定实例、关闭释放、独立WebView和播放器能力 | page_host.dart、web_page.dart、media_library.py |
+| 授权与人工候选审核 | 内存显式授权/有界作答与确认版读取；外部候选修订、拒绝和独立MD采用收据；无模型调用 | agent_access.py、analysis_review.py、analysis_review_dialog.dart |
+| 直接媒体下载 | 持久任务/单worker/独占attempt、固定下载子进程/暂停与显式恢复、受管原件入库/媒体身份复用；首批无站点解析/转码 | media_download_http.py、media_download_worker.py、media_downloads.py、media_download_dialog.dart |
 
-Monorepo模块化单体：Flutter交互 → 受保护本地HTTP → Python应用服务 → SQLite及受管文件。沿用固定玻璃库公开API、WebView2/HTML5、SQLAlchemy/Alembic及冻结/安装流程。Python负责业务、路径/资源权限、文件处理和事务；不引入微服务、通用插件平台或第二套题目/播放后端。
+资源身份、原件blob、题目ID、确认版ID、tab_id分开，不能用标题/hash代替身份。资源树是受管逻辑目录，不是任意系统文件夹的原地工作区。
 
-可复用：Workspace隔离/归档、data_root迁移、EditorTabBar、WorkspaceLayout保存队列、PageHost稳定Key、Resource原件读取、ImportJob预览确认、DOCX/PDF受限解析、拆题编辑、QuestionDocument/判分、Attempt/AttemptReview追加和MediaEntry/独立播放器。新方向改变组织与关联，不表示已经有文件工作区。
+### 文件与数据库权威
 
-## 目标结构
+Resource原件不可变，按大小/hash验证。工作副本保存校验expected hash，独占写旧版本和待写内容、fsync、提交prepared收据、同目录replace，再提交索引；重启依据old/new/外部hash对账，不自动覆盖冲突。文件与SQLite不构成跨介质原子事务，恢复点及失败字节保留。
 
-```mermaid
-flowchart LR
-    Explorer[工作空间 / 文件树] --> Open[统一打开资源]
-    Add[添加文件 / 文件夹 / 媒体 / 链接 / 下载] --> Catalog[资源目录与导入任务]
-    Catalog --> Explorer
-    Open --> Tabs[EditorTabBar + 资源身份]
-    Tabs --> Host[PageHost + 类型查看器]
-    Host --> API[受控业务 API]
-    API --> Files[原件 / 可编辑文件 / 派生预览]
-    API --> DB[SQLite索引 / 版本 / 学习记录]
-    Panels[搜索 / 记录 / 可选 Agent] --> Open
-    Panels --> API
-```
+QuestionFile普通保存只改编辑内容。显式确认冻结MD、标题、编译题目/材料和附件，回读校验后写不可变版本并更新questions缓存。提交按确认版读取和核验资产；旧作答不补造版本、不重算旧分数。当前文件失效时可读取最后确认快照，但不得重新发布。
 
-左侧树组织资源，中央按内容类型分派查看器。题库列表/计划/统计作为辅助视图，导入作为全局任务/对话流程；旧总览暂作兼容入口，不能继续决定新标签身份。
+学习事件追加且不可更新/删除；记录标签按完整事件流最后明确修订重建，掌握/到期仍依真实作答和最新人工评分计算。关联笔记显示当前笔记，不伪造历史笔记快照。
 
-### 1. 资源目录与统一添加
+### 界面、原生资源与安全
 
-2026-10-30增量：0012追加`workspace_nodes.removed_at`及未删除节点的同层名称唯一索引；受控DELETE事务标记整棵子树，复制任务运行时拒绝操作。列表/相对查找过滤，旧资源适配保留墓碑避免重现；原件/工作文件/历史与layout不删除，已打开编辑器仍按ID访问保留文件。见[设计与证据](resource-removal-2026-10-30.md)。
+PageHost用稳定页ID的Offstage/ExcludeFocus/TickerMode保留访问过的页面，关闭立即释放原生资源。每空间16个打开页、10条关闭历史；文件草稿和作答草稿分开。网页/播放器切换不重建，后台媒体沿用继续播放策略。
 
-R1新增工作空间内的逻辑目录/资源身份层`workspace_nodes`。文件夹有稳定ID与父节点；当前资源节点定位现有Resource原件、MediaEntry或保存的网页链接，严格择一。工作文件分支留R3。先适配既有存储，不合并表或重排全部磁盘文件。
+外部WebView与本地可信播放器隔离，不注册业务JS桥/host object，不传业务令牌。播放器仅取得指定媒体的临时capability。HTTP执行Host/Origin/令牌与同空间校验；导入、Office内容及模型输出都视为不可信。
 
-首批复制导入文件/文件夹并记录层级，原目录保持不变；树是受管资源的逻辑视图，**不承诺首次就原地打开任意系统目录**。相同字节可复用原件blob，不同逻辑文件仍有不同ID。改名/移动保持关系；递归导入有数量/大小/路径预算与显式失败处理。
+Office运行时可缺省；显式转换、独立profile和Windows Job、固定参数/版本、输入预算/宏外链拒绝。冻结包由同一Job持有的短命内部helper清除自身继承的DLL目录，再启动固定转换命令，主后端不修改全局DLL状态。Windows外部组件使用经samefile核对的任务目录短名，原件、数据库及派生文件身份仍使用原路径；无可用短名时保留原路径，该回退分支的深目录兼容仍待验证。内部静态图表/OMML例外按门禁受控启用，选项v3；控制不等于完整OS沙箱。缓存核对源和产物hash，重启中断不自动重跑。
 
-R1统一添加调用Python资源编排，复用Resource原件、路径校验、MediaEntry/媒体容器校验和播放器；资料只保存原件，不先提取题目。既有ImportJob预览审核继续作为辅助工具，新增原件在刷新树时适配目录。视频下载入口明确提示未实现，服务仍属M4缺项。新库与新空间默认空工作区，已有空间名、v1布局与草稿保持原值。
+### 兼容与数据保护
 
-### 2. 资源标签与查看器
+0001–0016增量迁移；升级前SQLite backup、事务迁移、完整性/外键检查、失败保留备份和旧文件。旧JSON/提取MD不在打开时升级；旧布局不猜测资源绑定。删除只标记节点，已打开编辑器仍可按ID操作保留工作文件；树/搜索/当前关系入口过滤墓碑。标记改写先追加旧修订，移除来源/笔记不级联清除标记、修订或学习历史。
 
-标签保留`tab_id`，新增`resource_item_id`与受控`view_kind`，以`workspace_id + resource_item_id + view_kind`定位已有页。文件名、URL显示标题和SHA256是属性。默认同一文件的编辑/预览在页内切换；辅助计划/搜索视图用utility身份，不伪造文件ID。
+## 规划中
 
-扩展WorkspaceLayout与页面工厂，复用EditorTabBar/PageHost、加载/错误、关闭确认、快捷键及释放机制。新建默认进入欢迎/新文件/添加资源体验，不默认学习模块。
+普通学习流程采用[契约](learning-workbench-contracts.md)与[ADR0012](adr/0012-learning-notes-anchors-and-backup.md)，LW-01至05本地能力见上文，实际窗口/阶段状态查task。内部链接由受控业务解析；完整恢复采用离线整库包到新空目录，无HTTP任意路径恢复接口。格式/下载及R6剩余按[路线](learning-workbench-roadmap.md)推进，沿用受管资源、UI/后端分层和固定技术栈；任务进度仅查task。
 
-拟议布局v2兼容读取v1。旧question/study/import/player没有具体资源身份，**不得按标题或最后活动页猜测绑定文件**：先作为legacy utility恢复，保留草稿/顺序/关闭历史/网页URL；显式打开资源后才创建新标签。未知标签原样保留并提示。前后端严格校验、序列化和恢复测试共同变更。
+- R6：模型/凭据适配、通用资料读取及其他候选场景仍规划中；当前本地授权/分析上下文和人工候选审核已实现，详见agent-design.md。
+- 单空间备份合并、站点提取/质量选择/转码、OCR及更广文档解析。
+- 外部目录原地工作区、监听、MD三方合并等方向另行设计，尚未确定的实现细节不视为现有契约。
+- 不预建微服务、通用任务平台、插件框架或Agent专属题库。
 
-### 3. 原件、工作文件、派生文件
+## 待验证
 
-- Resource原件继续不可变及哈希校验，不通过放宽`read_resource`容忍覆盖。
-- Markdown编辑使用明确工作副本/新文件。磁盘文本是当前内容来源；SQLite解析内容是有hash/版本的索引或已确认快照。外部修改显示待解析/冲突，不能自动覆盖可判分缓存。
-- 保存检查expected hash，同目录临时写入/原子替换并留恢复点。文件与SQLite非跨介质事务，要有小范围写入记录/重启对账及故障测试。首批在打开/刷新/保存时检测变更，不立即引入监听依赖。
-- Word/PPT转换、PDF页图和缩略图是派生缓存，记录源ID/hash、转换器版本/选项。失败/过期不删除原件，不用派生PDF覆盖DOCX/PPTX。本地查看器按资源ID/专用能力授权，外部网页保持完全隔离。
+- Windows Explorer真实跨窗口拖放、多屏DPI及提权差异；回调注入/COM自检不替代该验证。
+- 普通Explorer启动/原默认目录历史故障、中文IME、原生WebView焦点快捷键、真实显示器性能。
+- 无Python/无WebView2干净机、安装升级卸载保留数据、组合包前后端一致性及签名/许可/SBOM。
+- Office复杂字体/版式/第三方文件、网页登录/DRM/休眠、音轨和编码矩阵、安全负面测试。
 
-查看器增量接入：Markdown原文/预览、PDF分页/缩放、图片、WebPage、指定MediaEntry的播放器；Word先结构预览，再按能力提供PDF/受控HTML；PPT需明确幻灯片转换能力。Docling提取/PDFium可复用，但不凭上游支持列表宣称产品PPT已可用。转换证据与发行边界见[审查报告](resource-first-architecture-review.md)。
-
-### 4. 题目与记录
-
-新增题目文件到既有题目ID/资源ID的映射，不重写判分器。拟议QuestionFile格式经解析、来源降权与用户确认，编译为QuestionDocument缓存；原件/MD、确认版本快照和作答历史各有职责。
-
-新作答绑定题目ID及不可变确认版本，服务器据其判分；主观/缺答案待批改。改答案发布新版本，不改旧作答/快照。错误类型、自评、复习操作追加为事件，掌握状态可重算。旧记录无完整快照时标记历史版本不可追溯，禁止把当前文件冒充当年题目。历史可反向打开当前MD、快照、笔记和来源。
-
-### 5. 可选 Agent
-
-Agent调用同一套范围受控的读取、候选草稿、确认保存接口。题目/知识点/计划/变式建议均可审核；路径、ID、抽题、评分和事务由程序决定。模型不能直接操作磁盘/SQL/标准答案。无模型/网络仍能查看、编辑、抽题和记录，详见[权限设计](agent-design.md)。
-
-## 迁移与实施门禁
-
-沿用升级前SQLite备份、事务迁移、完整性校验和旧文件保留。R1经兼容审查仅追加0007目录与复制任务及必要唯一索引；不落地文件映射、确认版本或学习注记。后续分阶段按需落表，具体列/约束先过兼容审查。
-
-R1资源管理器/统一添加基础 → R2资源标签 → R3查看器/编辑器 → R4题目MD/确认版本 → R5记录反向关联 → R6 Agent。R1包含最小迁移及旧库回归，R4/R5在映射/快照/双读通过前不开放新MD提交作答。完整备份恢复、下载队列等旧缺项保留并归入资源主线。
-
-默认数据位置、Known Folder、配置拒写提示、数据锁和迁移不提权规则不变。当前开发包未替换；R1源码侧栏以资源树为主，旧业务页为辅助工具。历史启动/安装、DPI/原生焦点和人工/阶段验收不因自动化通过而清除。[任务](task.md)、[数据模型](data-model.md)、[历史架构全文](archive/resource-direction-baseline-2026-10-25.md)。
-
-## R4确认链（0010）
-
-资源文档页→QuestionFiles检查/确认服务→QuestionFile v1解析与附件校验→不可变MD/附件快照及question_versions→当前questions缓存→带版本的Attempt。UI不直连数据库；原件、旧JSON/旧提取MD和历史作答保留。快照落盘回读校验后提交，失败收据保留；当前文件无效时可用上次确认快照。复用PageHost隔离隐藏文档焦点、StudyAnswer保存独立作答草稿；无新增产品依赖。详见[ADR0010](adr/0010-question-files-and-confirmed-versions.md)、[文件格式](question-file-spec.md)和[R4证据](r4-validation-2026-10-26.md)。人工/阶段待验。
-
-## R5完成批（2026-10-29）
-
-LearningRecordDialog→受保护records_router→Attempt/QuestionVersion/学习事件/同空间Note与资源节点，串起历史快照、当前文件、来源及相关笔记。记录标签latest-explicit-annotation-v1和掌握attempt-review-streak-v1均可从追加记录重算，不允许注记改标准答案或覆盖旧分数。没有新增技术栈或产品依赖。见[R5完成记录](r5-completion-2026-10-29.md)，人工及阶段仍待验。
-
-
-## R6本地授权读取增量（2026-11-03）
-
-当前已实现：学习页作答历史显式勾选1–100条记录、确认5分钟本地授权、另行读取摘要、撤销及撤销后关闭；失败保留以重试，过期404清除。API均继承既有Bearer/Host/Origin检查，每次校验空间及作答归属。
-
-接口：POST `/api/workspaces/{workspace_id}/agent-grants` 接收严格独立正整数attempt_ids、purpose=analyze_attempts、expires_in_seconds=1–900（默认300）、严格confirm=true，拒绝额外字段；返回id/范围/用途/期限和transport=local_only。DELETE `/{id}` 撤销；POST `/{id}/read-attempts` 仅返回id/question_id/question_version_id/status/score/created_at。未知/跨空间/过期授权404；活动授权全进程最多100份，超限429。授权仅内存，单调时钟过期、重启失效，不新增表/迁移；撤销与读取串行。原始分数不含后续人工修订，不能用于完整学情判断。
-
-规划中：模型/凭据、资源正文、单独远端授权、草稿外置审核和来源校验；本批不联网或修改学习记录。待验证：真实窗口结果及PR状态见[本任务报告](../dev/records/2026-11-03-r6-agent-access/report.md)，模型/完整R6和产品人工/阶段验收继续保留。上述当前实现取代本文件此前涉及R6全部未实施的描述；不改其他历史阶段结论。本PR以未合并PR #2分支为基线，代码/自动化/自审完成后仍需本切片computer-use验收才创建PR，不授权合并或发布。
-
-最终本切片状态：独立子代理computer-use实际窗口核心流程通过，前后2条作答只读逐值保持；完整5分钟过期/故障注入/100条/DPI/发行和产品阶段仍待验。旧工具阻塞与首次自动化失败保留。后端全量218、Flutter全量93、定向6、静态分析及Windows Release通过；只提交本切片，不夹带本地文档治理。PR/当前head CI见任务报告。
+这些待验证项不取消已有自动化结果，也不能因整理文档改成已通过。验证出处见[开发索引](../dev/README.md)和[任务](task.md)。

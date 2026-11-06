@@ -1,17 +1,23 @@
-# 标签页与 WebView2
+# 标签与WebView生命周期
 
-2026-10-25最新M5：采用38px连续EditorTabBar与PageHost，支持横向溢出/列表、右键批量关闭、活动左邻规则、未保存确认、数字定位快捷键与空白双击。下文IndexedStack为历史实现：当前Flutter包装不保留直接子页Key，真实Windows关闭兄弟页会重建原生实例，已用Stack直接Key的Offstage/ExcludeFocus/TickerMode修复。网页同控制器/DOM标记、视频2秒保留与后台继续播放均通过原生自动化。Ctrl+T现新建默认学习页，其他键保留；操作系统原生焦点矩阵仍待验。[设计](editor-tabs-design.md)、[验证与截图](editor-tabs-validation-2026-10-25.md)。
+## 当前已实现
 
-2026-10-24 后续：已实现鼠标拖动标签排序并通过冻结 Windows 自动交互；下段“尚未实现”是首批历史。目录迁移先销毁页面并等待原生环境释放，再复制 profile；真实 WebView 已创建后的迁移通过。崩溃恢复保留内存草稿，通过业务 API 写回新后端。完整当前状态见 [持续开发报告](m1-completion-2026-10-24.md)。
+EditorTabBar使用38px连续标签、112–220px宽度、活动/非活动/hover/焦点/加载/错误/未保存状态，横向溢出与菜单、拖动排序、右键批量关闭和减少动画。视觉目标原文见[用户规范](editor-tabs-spec.md)，有规范不等于逐项验收通过。
 
-M0 旧标签为题目/网页/播放器三个固定入口。M1 首批现已支持动态新增、关闭、重开和持久化，按工作空间隔离；可开多个同类页面。IndexedStack 保留已打开页的标签内状态，未访问的恢复页延迟创建；关闭后重新实例化，WebView profile 按空间/标签 ID 独立保存。关闭历史最多10项，打开页最多16项；主观草稿、网页最后成功加载地址、活动空间/标签重启恢复。原生视频的字幕选择与播放进度不纳入本批持久化，完整媒体状态属 M4。拖动排序尚未实现，不将其算作 M1-02 已通过。
+WorkspaceShell统一Ctrl+T（欢迎页）、Ctrl+W、Ctrl+Shift+T、Ctrl+Tab/Shift+Tab、Ctrl+1–8/9及空白双击；重复资源打开激活同一身份。活动页关闭优先左邻、再右邻，末页为空工作区；批量关闭逐页处理保存/放弃/取消，保存失败保留页面。每空间16开/10关，旧utility/layout与未知页兼容。
 
-Flutter 获得键盘焦点时提供 Ctrl+T 新网页、Ctrl+W 关闭、Ctrl+Shift+T 重开、Ctrl+Tab/Ctrl+Shift+Tab 切页；外部原生 WebView 焦点下的快捷键转发仍待专门验证。自动保存串行执行，避免旧请求覆盖新草稿；切换空间及正常退出先等待保存，失败保留当前状态并提示，不自动丢弃。WebView 原生生命周期已回归关闭/重开播放器的真实解码，不代表 DPI/焦点矩阵完成。
+PageHost用Stack直接子项的稳定页ID Key与Offstage/ExcludeFocus/TickerMode保留已访问实例；不是IndexedStack。未访问页惰性创建，关闭立即释放页面和原生WebView环境，关闭动画仅保留标签外观。后台媒体继续播放，网页切换保持实例；重开只恢复已序列化URL/状态，不承诺原DOM实例。归档空间和应用退出释放对应页面。
 
-候选对比：[webview_windows 0.4.0](https://pub.dev/packages/webview_windows)（BSD-3-Clause、Windows 专用、Windows.Graphics.Capture 合成，版本较旧）与 [flutter_inappwebview 6.1.5](https://pub.dev/packages/flutter_inappwebview)（Apache-2.0、多平台公开 API、有 Windows 实现）。M0 先试后者，Windows SDK/NuGet/Runtime 和导航拦截能力需要构建确认；尚未授予生产可用结论。
+布局保存串行，切空间/退出等待；后端意外退出保留内存草稿，重启后经业务接口恢复。文件草稿/基准hash与作答草稿分离；保存layout不等于保存文件/提交答案。资源移动改名不变tab_id，重开按身份恢复模式/位置。
 
-外部页面仅 HTTPS，拒绝 loopback/私有 IP/本机、file/data/javascript；每次导航和重定向校验。阻止新窗口，权限请求默认拒绝，不注册 JS handler/host object，不传 Authorization、不允许任意本地资源。生产版还要验证 DNS 重绑定、弹窗/下载/重定向和存储 profile 隔离；不能仅凭初始 URL 白名单声称安全。
+外部HTTPS WebView拒绝本机/私网/file/data/javascript等，导航和重定向校验，阻止新窗、默认拒绝权限，不注册业务JS handler/host object、不传Authorization。插件自身内部脚本不等于已禁用，DNS预检存在TOCTOU。可信播放器只加载内置HTML与指定媒体capability，CSP限制远程加载，外网页面无业务桥/令牌。
 
-播放器只加载内置可信 HTML 与一个会话媒体 capability；不共享业务令牌。HTML CSP 禁止远程 connect/frame/object，视频源限定 loopback。媒体能力只读单个启动时指定的文件，没有目录列表/任意路径。业务 API 即使外部网页访问 loopback 也必须认证且拒绝外部 Origin。
+内部链接的原生导航复用资源标签身份，前后返回每次重新resolve，保存失败/脏页不被定位覆盖。最多50条运行时URI/视图记录不含正文、令牌或capability，关闭窗口不承诺恢复该栈；文档返回位置先匹配显示版本，Office分页还匹配原预览。MD预览点击才跟随，外站页面不解析studyworkbench URI或获得业务桥。
 
-导航提供前进/后退/刷新与系统浏览器回退。DeepSeek 登录、验证码、DRM、硬件解码、睡眠恢复待实际站点/硬件验证。
+## 规划中
+
+固定标签、无限期独立资源阅读位置库、完整三方合并/网页进程恢复不属于已实现能力；按具体需求另行设计。下载队列及R6见[任务](task.md)。
+
+## 待验证
+
+原生WebView获得OS焦点后的完整快捷键矩阵、真实显示器多DPI/性能、中文IME、外站登录/验证码/DRM、硬件解码/休眠及全部导航子资源负面测试仍待验。插件0.6.0环境释放版本限定兼容见[ADR0002](adr/0002-webview-windows-disposal.md)，升级前复核并回测，不能修改上游缓存绕过。

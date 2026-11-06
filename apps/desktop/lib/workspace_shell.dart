@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:lightweight_liquid_glass/lightweight_liquid_glass.dart';
 
 import 'backend.dart';
+import 'internal_links.dart';
 import 'editor_tab_bar.dart';
 import 'page_host.dart';
 import 'import_page.dart';
@@ -764,131 +765,137 @@ class _WorkspacePagesState extends State<_WorkspacePages> {
     final active = widget.layout.activeId;
     visited.removeWhere((id) => !tabs.any((tab) => tab.id == id));
     if (active != null) visited.add(active);
-    if (tabs.isEmpty) {
-      return const Center(child: Text('此工作空间尚未打开页面。请从左侧添加文件、文件夹或链接。'));
-    }
-    return PageHost(
-      activeId: active,
-      pages: {
-        for (final tab in tabs)
-          tab.id: !visited.contains(tab.id)
-              ? const SizedBox()
-              : switch (tab.kind) {
-                  'welcome' => Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('欢迎使用 StudyWorkbench'),
-                        const Text('从左侧资源管理器添加文件、文件夹、媒体或网页链接。'),
-                        FilledButton.tonal(
-                          onPressed: () => showDialog<void>(
-                            context: context,
-                            builder: (_) => AddResourcesDialog(
-                              backend: widget.backend,
-                              workspaceId: widget.workspaceId,
-                              onImported: widget.onResourcesChanged,
-                              onOpen: _openResource,
-                              onProcess: () {
-                                widget.layout.openSingleton('import');
-                                widget.onChanged();
-                              },
+    return InternalLinkHost(
+      backend: widget.backend,
+      workspaceId: widget.workspaceId,
+      layout: widget.layout,
+      onChanged: widget.onChanged,
+      child: tabs.isEmpty
+          ? const Center(child: Text('此工作空间尚未打开页面。请从左侧添加文件、文件夹或链接。'))
+          : PageHost(
+              activeId: active,
+              pages: {
+                for (final tab in tabs)
+                  tab.id: !visited.contains(tab.id)
+                      ? const SizedBox()
+                      : switch (tab.kind) {
+                          'welcome' => Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('欢迎使用 StudyWorkbench'),
+                                const Text('从左侧资源管理器添加文件、文件夹、媒体或网页链接。'),
+                                FilledButton.tonal(
+                                  onPressed: () => showDialog<void>(
+                                    context: context,
+                                    builder: (_) => AddResourcesDialog(
+                                      backend: widget.backend,
+                                      workspaceId: widget.workspaceId,
+                                      onImported: widget.onResourcesChanged,
+                                      onOpen: _openResource,
+                                      onProcess: () {
+                                        widget.layout.openSingleton('import');
+                                        widget.onChanged();
+                                      },
+                                    ),
+                                  ),
+                                  child: const Text('添加资源'),
+                                ),
+                              ],
                             ),
                           ),
-                          child: const Text('添加资源'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  'resource' => ResourcePage(
-                    backend: widget.backend,
-                    workspaceId: widget.workspaceId,
-                    tab: tab,
-                    onChanged: widget.onChanged,
-                    onActivity: ({required loading, error, title}) =>
-                        widget.onActivity(
-                          tab,
-                          loading: loading,
-                          error: error,
-                          title: title,
-                        ),
-                  ),
-                  'study' => StudyPage(
-                    historyRevision: widget.historyRevision,
-                    backend: widget.backend,
-                    workspaceId: widget.workspaceId,
-                    onOpenResource: _openResource,
-                    onActivity: ({required loading, error, title}) =>
-                        widget.onActivity(
-                          tab,
-                          loading: loading,
-                          error: error,
-                          title: title,
-                        ),
-                  ),
-                  'import' => ImportPage(
-                    onResourcesChanged: widget.onResourcesChanged,
-                    backend: widget.backend,
-                    workspaceId: widget.workspaceId,
-                    onOpenResource: _openResource,
-                    onActivity: ({required loading, error, title}) =>
-                        widget.onActivity(
-                          tab,
-                          loading: loading,
-                          error: error,
-                          title: title,
-                        ),
-                  ),
-                  'question' => QuestionPage(
-                    backend: widget.backend,
-                    workspaceId: widget.workspaceId,
-                    onActivity: ({required loading, error, title}) =>
-                        widget.onActivity(
-                          tab,
-                          loading: loading,
-                          error: error,
-                          title: title,
-                        ),
-                    initialDraft: tab.draft,
-                    onDraftChanged: (value) {
-                      tab.draft = value;
-                      widget.onChanged();
-                    },
-                  ),
-                  'web' => WebPage(
-                    onActivity: ({required loading, error, title}) =>
-                        widget.onActivity(
-                          tab,
-                          loading: loading,
-                          error: error,
-                          title: title,
-                        ),
-                    profile:
-                        '${widget.backend.dataDir}/workspaces/${widget.workspaceId}/web/${tab.id}',
-                    initialUrl: tab.url,
-                    onUrlChanged: (value) {
-                      if (tab.url != value) {
-                        tab.url = value;
-                        widget.onChanged();
-                      }
-                    },
-                  ),
-                  'player' => MediaPage(
-                    onResourcesChanged: widget.onResourcesChanged,
-                    backend: widget.backend,
-                    workspaceId: widget.workspaceId,
-                    onActivity: ({required loading, error, title}) =>
-                        widget.onActivity(
-                          tab,
-                          loading: loading,
-                          error: error,
-                          title: title,
-                        ),
-                    profile:
-                        '${widget.backend.dataDir}/workspaces/${widget.workspaceId}/player/${tab.id}',
-                  ),
-                  _ => const Center(child: Text('此标签类型尚未支持，原始状态保留')),
-                },
-      },
+                          'resource' => ResourcePage(
+                            backend: widget.backend,
+                            workspaceId: widget.workspaceId,
+                            tab: tab,
+                            onOpenNote: _openResource,
+                            onChanged: widget.onChanged,
+                            onActivity: ({required loading, error, title}) =>
+                                widget.onActivity(
+                                  tab,
+                                  loading: loading,
+                                  error: error,
+                                  title: title,
+                                ),
+                          ),
+                          'study' => StudyPage(
+                            historyRevision: widget.historyRevision,
+                            backend: widget.backend,
+                            workspaceId: widget.workspaceId,
+                            onOpenResource: _openResource,
+                            onActivity: ({required loading, error, title}) =>
+                                widget.onActivity(
+                                  tab,
+                                  loading: loading,
+                                  error: error,
+                                  title: title,
+                                ),
+                          ),
+                          'import' => ImportPage(
+                            onResourcesChanged: widget.onResourcesChanged,
+                            backend: widget.backend,
+                            workspaceId: widget.workspaceId,
+                            onOpenResource: _openResource,
+                            onActivity: ({required loading, error, title}) =>
+                                widget.onActivity(
+                                  tab,
+                                  loading: loading,
+                                  error: error,
+                                  title: title,
+                                ),
+                          ),
+                          'question' => QuestionPage(
+                            backend: widget.backend,
+                            workspaceId: widget.workspaceId,
+                            onActivity: ({required loading, error, title}) =>
+                                widget.onActivity(
+                                  tab,
+                                  loading: loading,
+                                  error: error,
+                                  title: title,
+                                ),
+                            initialDraft: tab.draft,
+                            onDraftChanged: (value) {
+                              tab.draft = value;
+                              widget.onChanged();
+                            },
+                          ),
+                          'web' => WebPage(
+                            onActivity: ({required loading, error, title}) =>
+                                widget.onActivity(
+                                  tab,
+                                  loading: loading,
+                                  error: error,
+                                  title: title,
+                                ),
+                            profile:
+                                '${widget.backend.dataDir}/workspaces/${widget.workspaceId}/web/${tab.id}',
+                            initialUrl: tab.url,
+                            onUrlChanged: (value) {
+                              if (tab.url != value) {
+                                tab.url = value;
+                                widget.onChanged();
+                              }
+                            },
+                          ),
+                          'player' => MediaPage(
+                            onResourcesChanged: widget.onResourcesChanged,
+                            backend: widget.backend,
+                            workspaceId: widget.workspaceId,
+                            onActivity: ({required loading, error, title}) =>
+                                widget.onActivity(
+                                  tab,
+                                  loading: loading,
+                                  error: error,
+                                  title: title,
+                                ),
+                            profile:
+                                '${widget.backend.dataDir}/workspaces/${widget.workspaceId}/player/${tab.id}',
+                          ),
+                          _ => const Center(child: Text('此标签类型尚未支持，原始状态保留')),
+                        },
+              },
+            ),
     );
   }
 }

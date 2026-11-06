@@ -89,8 +89,10 @@ bool FlutterWindow::OnCreate() {
       return;
     }
     const bool multiple = call.method_name() == "chooseResourceFiles";
-    const bool choose_file = call.method_name() == "chooseImportFile" || multiple;
-    const bool save_file = call.method_name() == "chooseExportFile";
+    const bool backup_open = call.method_name() == "chooseBackupArchive";
+    const bool backup_save = call.method_name() == "chooseBackupDestination";
+    const bool choose_file = call.method_name() == "chooseImportFile" || multiple || backup_open;
+    const bool save_file = call.method_name() == "chooseExportFile" || backup_save;
     const bool resource_folder = call.method_name() == "chooseResourceDirectory";
     if (call.method_name() != "chooseDirectory" && !resource_folder && !choose_file && !save_file) {
       result->NotImplemented();
@@ -106,22 +108,29 @@ bool FlutterWindow::OnCreate() {
     }
     DWORD options = 0;
     dialog->GetOptions(&options);
+    if (backup_save) options &= ~FOS_OVERWRITEPROMPT;
     dialog->SetOptions(options | FOS_FORCEFILESYSTEM |
                        (multiple ? FOS_ALLOWMULTISELECT : 0) |
-                       (save_file ? FOS_OVERWRITEPROMPT :
+                       (save_file ? (backup_save ? 0 : FOS_OVERWRITEPROMPT) :
                         choose_file ? FOS_FILEMUSTEXIST : FOS_PICKFOLDERS));
-    dialog->SetTitle(save_file ? L"导出当前工作空间资料" :
+    dialog->SetTitle(backup_save ? L"备份全部学习库（选择新ZIP文件名）" :
+                     backup_open ? L"选择完整学习库备份包" :
+                     save_file ? L"导出当前工作空间资料" :
                      choose_file ? L"选择要导入的学习资料" :
                      resource_folder ? L"选择要复制导入的资源文件夹（原目录保留）" : L"选择 StudyWorkbench 数据文件夹");
     if (multiple) {
       const COMDLG_FILTERSPEC filters[] = {
-        {L"学习资料与媒体", L"*.pdf;*.docx;*.pptx;*.md;*.txt;*.html;*.htm;*.json;*.png;*.jpg;*.jpeg;*.mp4;*.webm;*.m4a"},
+        {L"学习资料与媒体", L"*.pdf;*.docx;*.pptx;*.xlsx;*.md;*.txt;*.html;*.htm;*.json;*.csv;*.log;*.vtt;*.srt;*.png;*.jpg;*.jpeg;*.mp4;*.webm;*.m4a"},
         {L"所有文件（不支持预览的文件仍可保存）", L"*.*"}};
       dialog->SetFileTypes(2, filters);
     }
+    if (backup_open || backup_save) {
+      const COMDLG_FILTERSPEC filters[] = {{L"StudyWorkbench学习库备份", L"*.zip"}};
+      dialog->SetFileTypes(1, filters);
+    }
     if (save_file) {
       dialog->SetDefaultExtension(L"zip");
-      dialog->SetFileName(L"StudyWorkbench资料.zip");
+      dialog->SetFileName(backup_save ? L"StudyWorkbench学习库备份.zip" : L"StudyWorkbench资料.zip");
     }
     hr = dialog->Show(GetHandle());
     if (multiple && SUCCEEDED(hr)) {

@@ -9,6 +9,12 @@ import 'page_activity.dart';
 import 'url_policy.dart';
 import 'webview_lifecycle.dart';
 
+class PlayerCommands {
+  PlayerCommands({required this.readPositionMs, required this.seekToMs});
+  final Future<int?> Function() readPositionMs;
+  final Future<bool> Function(int) seekToMs;
+}
+
 class WebPage extends StatefulWidget {
   const WebPage({
     required this.profile,
@@ -17,6 +23,7 @@ class WebPage extends StatefulWidget {
     this.onUrlChanged,
     this.playerUrl,
     this.onActivity,
+    this.onPlayerReady,
     super.key,
   });
   final String profile;
@@ -25,6 +32,7 @@ class WebPage extends StatefulWidget {
   final ValueChanged<String>? onUrlChanged;
   final String? playerUrl;
   final PageActivityChanged? onActivity;
+  final ValueChanged<PlayerCommands>? onPlayerReady;
   @override
   State<WebPage> createState() => _WebPageState();
 }
@@ -43,6 +51,39 @@ class _WebPageState extends State<WebPage> {
   bool initializing = false;
   bool missingRuntime = false;
   bool get player => widget.html != null || widget.playerUrl != null;
+
+  Future<bool> trustedPlayer() async =>
+      widget.playerUrl != null &&
+      controller != null &&
+      isCurrentLibraryPlayer(
+        widget.playerUrl,
+        (await controller!.getUrl())?.toString(),
+      );
+
+  Future<int?> readPositionMs() async {
+    if (!await trustedPlayer()) return null;
+    final value = await controller!.evaluateJavascript(
+      source: "(()=>{const v=document.getElementById('video');return v&&v.readyState>=1&&Number.isFinite(v.currentTime)?Math.floor(v.currentTime*1000):null})()",
+    );
+    if (value is! num || !value.isFinite || value < 0 || value > 604800000) {
+      return null;
+    }
+    return value.toInt();
+  }
+
+  Future<bool> seekToMs(int milliseconds) async {
+    if (milliseconds < 0 ||
+        milliseconds > 604800000 ||
+        !await trustedPlayer()) {
+      return false;
+    }
+    return await controller!.evaluateJavascript(
+          source:
+              "(()=>{const v=document.getElementById('video');if(!v)return false;const seek=()=>{if(Number.isFinite(v.duration))v.currentTime=Math.min($milliseconds/1000,v.duration)};if(v.readyState>=1)seek();else v.addEventListener('loadedmetadata',seek,{once:true});return true})()",
+        ) ==
+        true;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -235,6 +276,15 @@ class _WebPageState extends State<WebPage> {
                   pageLoading = false;
                   widget.onActivity?.call(loading: false, error: error);
                   if (!mounted) return;
+                  if (widget.playerUrl != null &&
+                      url?.toString() == widget.playerUrl) {
+                    widget.onPlayerReady?.call(
+                      PlayerCommands(
+                        readPositionMs: readPositionMs,
+                        seekToMs: seekToMs,
+                      ),
+                    );
+                  }
                   if (!player &&
                       url != null &&
                       publicHttpsUrl(url.toString())) {

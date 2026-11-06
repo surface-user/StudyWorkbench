@@ -173,12 +173,66 @@ class ResourceAddJob(Base):
     error: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
+class MediaDownloadJob(Base):
+    __tablename__ = 'media_download_jobs'
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    workspace_id: Mapped[str] = mapped_column(ForeignKey('workspaces.id'))
+    parent_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    request_id: Mapped[str] = mapped_column(String)
+    source_url: Mapped[str] = mapped_column(String)
+    name: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String)
+    cancel_requested: Mapped[bool] = mapped_column(Boolean)
+    attempt: Mapped[int] = mapped_column(Integer)
+    relative_path: Mapped[str] = mapped_column(String)
+    progress: Mapped[dict] = mapped_column(JSON)
+    result: Mapped[dict] = mapped_column(JSON)
+    error: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[str] = mapped_column(String)
+
+
+class AnalysisReviewDraft(Base):
+    __tablename__ = 'analysis_review_drafts'
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    workspace_id: Mapped[str] = mapped_column(ForeignKey('workspaces.id'))
+    request_id: Mapped[str] = mapped_column(String)
+    creation_content: Mapped[dict] = mapped_column(JSON)
+    content: Mapped[dict] = mapped_column(JSON)
+    payload_sha256: Mapped[str] = mapped_column(String)
+    revision: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String)
+    adoption: Mapped[dict] = mapped_column(JSON)
+    result: Mapped[dict] = mapped_column(JSON)
+    error: Mapped[str | None] = mapped_column(String, nullable=True)
+    rejection_reason: Mapped[str] = mapped_column(String)
+    created_at: Mapped[str] = mapped_column(String)
+
+
+class AnalysisReviewRevision(Base):
+    __tablename__ = 'analysis_review_revisions'
+    draft_id: Mapped[str] = mapped_column(ForeignKey('analysis_review_drafts.id'), primary_key=True)
+    revision: Mapped[int] = mapped_column(Integer, primary_key=True)
+    snapshot: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[str] = mapped_column(String)
+
+
 class DocumentWorkfile(Base):
     __tablename__ = 'document_workfiles'
     node_id: Mapped[str] = mapped_column(ForeignKey('workspace_nodes.id'), primary_key=True)
     workspace_id: Mapped[str] = mapped_column(String)
     relative_path: Mapped[str] = mapped_column(String)
     indexed_sha256: Mapped[str] = mapped_column(String)
+
+
+class MarkdownNoteCreation(Base):
+    __tablename__ = 'markdown_note_creations'
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    workspace_id: Mapped[str] = mapped_column(ForeignKey('workspaces.id'))
+    request_id: Mapped[str] = mapped_column(String)
+    request: Mapped[dict] = mapped_column(JSON)
+    resource_id: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String)
+    error: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
 class DocumentSave(Base):
@@ -190,6 +244,40 @@ class DocumentSave(Base):
     backup_path: Mapped[str] = mapped_column(String)
     pending_path: Mapped[str] = mapped_column(String)
     status: Mapped[str] = mapped_column(String)
+
+
+class LearningMark(Base):
+    __tablename__ = 'learning_marks'
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    workspace_id: Mapped[str] = mapped_column(String)
+    resource_item_id: Mapped[str] = mapped_column(String)
+    anchor: Mapped[dict] = mapped_column(JSON)
+    title: Mapped[str] = mapped_column(String)
+    note: Mapped[str] = mapped_column(String)
+    revision: Mapped[int] = mapped_column(Integer)
+    request_id: Mapped[str] = mapped_column(String)
+    creation_content: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[str] = mapped_column(String)
+    updated_at: Mapped[str] = mapped_column(String)
+    removed_at: Mapped[str | None] = mapped_column(String, nullable=True)
+
+
+class LearningMarkRevision(Base):
+    __tablename__ = 'learning_mark_revisions'
+    mark_id: Mapped[str] = mapped_column(String, primary_key=True)
+    revision: Mapped[int] = mapped_column(Integer, primary_key=True)
+    content: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[str] = mapped_column(String)
+
+
+class LearningMarkNote(Base):
+    __tablename__ = 'learning_mark_notes'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    workspace_id: Mapped[str] = mapped_column(String)
+    mark_id: Mapped[str] = mapped_column(String)
+    kind: Mapped[str] = mapped_column(String)
+    file_node_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    legacy_note_id: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
 class DocumentPreview(Base):

@@ -13,6 +13,9 @@ import 'page_host.dart';
 import 'question_page.dart';
 import 'workspace_layout.dart';
 import 'question_file_panel.dart';
+import 'learning_marks_dialog.dart';
+import 'internal_links.dart';
+import 'spreadsheet_view.dart';
 
 class DocumentPage extends StatefulWidget {
   const DocumentPage({
@@ -21,6 +24,8 @@ class DocumentPage extends StatefulWidget {
     required this.tab,
     required this.onChanged,
     this.onActivity,
+    this.jumpAnchor,
+    this.onNavigate,
     super.key,
   });
   final Backend backend;
@@ -28,6 +33,8 @@ class DocumentPage extends StatefulWidget {
   final WorkbenchTab tab;
   final VoidCallback onChanged;
   final PageActivityChanged? onActivity;
+  final Map<String, dynamic>? jumpAnchor;
+  final ValueChanged<Map<String, dynamic>>? onNavigate;
   @override
   State<DocumentPage> createState() => _DocumentPageState();
 }
@@ -48,6 +55,11 @@ class _DocumentPageState extends State<DocumentPage> {
   Timer? previewTimer;
   int previewGeneration = 0;
   bool requestedPreview = false;
+  bool rawText = false;
+  int sourceLine = 1;
+  Map<String, dynamic>? appliedAnchor;
+  Map<String, dynamic>? attemptedAnchor;
+  Map<String, dynamic>? attemptedView;
   late bool openedQuestion = widget.tab.documentState['mode'] == 'question';
   int questionGeneration = 0;
   String get prefix =>
@@ -67,6 +79,16 @@ class _DocumentPageState extends State<DocumentPage> {
   @override
   void initState() {
     super.initState();
+    widget.tab.captureView = () => {
+      'sha256': hash,
+      'state': Map<String, dynamic>.from(widget.tab.documentState),
+      'raw_text': rawText,
+      'source_line': sourceLine,
+      'selection_start': text.selection.start,
+      'selection_end': text.selection.end,
+      if (usingPreview) 'preview_id': preview!['id'],
+      if (usingPreview) 'pdf_sha256': preview!['pdf_sha256'],
+    };
     scroll.addListener(() {
       if (!mounted || !scroll.hasClients) return;
       widget.tab.documentState['scroll'] = scroll.offset.clamp(0, 10000000);
@@ -90,6 +112,19 @@ class _DocumentPageState extends State<DocumentPage> {
       if (mounted) {
         setState(() => busy = false);
         widget.onActivity?.call(loading: previewPending, error: error);
+        if (document != null &&
+            widget.jumpAnchor != null &&
+            !identical(widget.jumpAnchor, attemptedAnchor)) {
+          scheduleMicrotask(() {
+            if (mounted) run(applyAnchor);
+          });
+        } else if (document != null &&
+            widget.tab.pendingView != null &&
+            !identical(widget.tab.pendingView, attemptedView)) {
+          scheduleMicrotask(() {
+            if (mounted) run(restoreView);
+          });
+        }
       }
     }
   }
@@ -129,7 +164,293 @@ class _DocumentPageState extends State<DocumentPage> {
       await loadPage(page.clamp(1, pageCount));
     }
     schedulePreview();
+    await applyAnchor();
   });
+
+  @override
+  void didUpdateWidget(covariant DocumentPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.jumpAnchor != oldWidget.jumpAnchor && document != null) {
+      run(applyAnchor);
+    } else if (widget.tab.pendingView != null &&
+        !identical(widget.tab.pendingView, attemptedView) &&
+        document != null) {
+      run(restoreView);
+    }
+  }
+
+  Future<void> restoreView() async {
+    final view = widget.tab.pendingView;
+    if (view == null || identical(view, attemptedView)) return;
+    attemptedView = view;
+    if (widget.tab.draftBaseSha256 != null) {
+      throw StateError('返回来源含未保存草稿，原文与位置保留，请先处理草稿');
+    }
+    final fresh =
+        await widget.backend.request('GET', '$prefix/document') as Map;
+    if (!mounted) return;
+    if (fresh['sha256'] != view['sha256']) throw StateError('返回来源内容已变化，旧视图未应用');
+    Map<String, dynamic>? restoredPreview;
+    if (view['preview_id'] != null) {
+      restoredPreview = Map<String, dynamic>.from(
+        await widget.backend.request(
+          'GET',
+          '$prefix/previews/${view['preview_id']}',
+        ) as Map,
+      );
+      if (!mounted) return;
+      if (restoredPreview['pdf_sha256'] != view['pdf_sha256'] ||
+          restoredPreview['source_sha256'] != fresh['source_sha256']) {
+        throw StateError('返回来源分页版本已变化，旧视图未应用');
+      }
+    }
+    setState(() {
+      document = Map<String, dynamic>.from(fresh);
+      hash = fresh['sha256'] as String;
+      if (fresh['text'] != null) text.text = fresh['text'] as String;
+      widget.tab.documentState.addAll(
+        Map<String, dynamic>.from(view['state'] as Map),
+      );
+      rawText = view['raw_text'] == true;
+      sourceLine = view['source_line'] as int;
+      if (restoredPreview != null) preview = restoredPreview;
+      if (text.text.isNotEmpty) {
+        final start = (view['selection_start'] as int).clamp(
+          0,
+          text.text.length,
+        );
+        final end = (view['selection_end'] as int).clamp(0, text.text.length);
+        text.selection = TextSelection(baseOffset: start, extentOffset: end);
+      }
+    });
+    if (fresh['type'] == 'pdf' || usingPreview) await loadPage(page);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && scroll.hasClients) {
+        scroll.jumpTo(
+          (widget.tab.documentState['scroll'] as num).toDouble().clamp(
+            0,
+            scroll.position.maxScrollExtent,
+          ),
+        );
+      }
+    });
+    widget.onChanged();
+  }
+
+  Future<void> applyAnchor() async {
+    final point = widget.jumpAnchor;
+    if (point == null || identical(point, appliedAnchor)) return;
+    attemptedAnchor = point;
+    if (point['workspace_id'] != widget.workspaceId ||
+        point['resource_item_id'] != widget.tab.resourceItemId) {
+      throw StateError('书签不属于当前资料');
+    }
+    if (widget.tab.draftBaseSha256 != null) {
+      throw StateError('当前文件有未保存草稿，保存或放弃后再刷新定位');
+    }
+    final fresh =
+        await widget.backend.request('GET', '$prefix/document') as Map;
+    if (!mounted) return;
+    void acceptFresh() {
+      document = Map<String, dynamic>.from(fresh);
+      hash = fresh['sha256'] as String;
+      if (fresh['text'] != null) text.text = fresh['text'] as String;
+    }
+
+    if (point['kind'] == 'office_pdf_page') {
+      final oldPreview = await widget.backend.request(
+        'GET',
+        '$prefix/previews/${point['preview_id']}',
+      ) as Map;
+      if (oldPreview['pdf_sha256'] != point['content_sha256'] ||
+          fresh['source_sha256'] != point['source_sha256']) {
+        throw StateError('派生版本已变化，未跳转旧页码');
+      }
+      setState(() {
+        acceptFresh();
+        preview = Map<String, dynamic>.from(oldPreview);
+        widget.tab.documentState['representation'] = 'paginated';
+        widget.tab.documentState['mode'] = 'read';
+      });
+      await loadPage(point['page'] as int);
+    } else {
+      if (fresh['sha256'] != point['content_sha256']) {
+        throw StateError('内容已变化，旧位置未自动应用');
+      }
+      if (point['kind'] == 'pdf_page') {
+        setState(() {
+          acceptFresh();
+          widget.tab.documentState['mode'] = 'read';
+        });
+        await loadPage(point['page'] as int);
+      } else if (point['kind'] == 'text_line') {
+        final content = fresh['text'] as String;
+        final lines = content.split('\n');
+        final line = point['line'] as int;
+        if (line < 1 || line > lines.length) throw StateError('原文行已失效');
+        final position = lines
+            .take(line - 1)
+            .fold<int>(0, (sum, s) => sum + s.length + 1);
+        setState(() {
+          acceptFresh();
+          text.text = content;
+          rawText = true;
+          sourceLine = line;
+          widget.tab.documentState['mode'] = 'read';
+          text.selection = TextSelection(
+            baseOffset: position,
+            extentOffset:
+                position +
+                lines[line - 1].replaceFirst(RegExp(r'\r$'), '').length,
+          );
+        });
+      } else {
+        setState(() {
+          acceptFresh();
+          if (fresh['type'] == 'spreadsheet') {
+            widget.tab.documentState['page'] = 1;
+            widget.tab.documentState['scroll'] = 0.0;
+          }
+        });
+        if (fresh['type'] == 'spreadsheet' && scroll.hasClients) {
+          scroll.jumpTo(0);
+        }
+      }
+    }
+    appliedAnchor = point;
+    widget.onChanged();
+  }
+
+  Future<Map<String, dynamic>> captureCurrent() async {
+    if (document == null || busy) throw StateError('资料尚未就绪');
+    if (widget.tab.draftBaseSha256 != null) {
+      throw StateError('请先保存当前草稿，再记录原文位置');
+    }
+    final type = document!['type'];
+    final Map<String, dynamic> position;
+    if (document!['position_kind'] == 'resource') {
+      position = {'kind': 'resource'};
+    } else if (usingPreview) {
+      position = {
+        'kind': 'office_pdf_page',
+        'page': page,
+        'preview_id': preview!['id'],
+        'expected_sha256': preview!['pdf_sha256'],
+      };
+    } else if (type == 'pdf') {
+      position = {'kind': 'pdf_page', 'page': page, 'expected_sha256': hash};
+    } else if (type == 'text' || type == 'markdown') {
+      if (!rawText && !(editing && working)) {
+        throw StateError('请先打开原文行并选择要记录的位置；阅读预览不推断行号');
+      }
+      final selection = text.selection.baseOffset;
+      final line = selection < 0
+          ? sourceLine
+          : '\n'
+                    .allMatches(
+                      text.text.substring(
+                        0,
+                        selection.clamp(0, text.text.length),
+                      ),
+                    )
+                    .length +
+                1;
+      position = {'kind': 'text_line', 'line': line, 'expected_sha256': hash};
+    } else {
+      position = {'kind': 'resource'};
+    }
+    return Map<String, dynamic>.from(
+      await widget.backend.request('POST', '$prefix/learning-anchor', position)
+          as Map,
+    );
+  }
+
+  Future<void> marks({bool sources = false}) async {
+    final target = await showDialog<Map<String, dynamic>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => LearningMarksDialog(
+        backend: widget.backend,
+        workspaceId: widget.workspaceId,
+        resourceItemId: sources ? null : widget.tab.resourceItemId,
+        noteResourceItemId: sources ? widget.tab.resourceItemId : null,
+        captureCurrent: sources ? null : captureCurrent,
+      ),
+    );
+    if (mounted && target != null) widget.onNavigate?.call(target);
+  }
+
+  Future<void> insertLink() async {
+    final link = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (_) => LearningLinkInput(
+        backend: widget.backend,
+        workspaceId: widget.workspaceId,
+      ),
+    );
+    if (!mounted || link == null) return;
+    final label = (link['title'] as String? ?? '学习链接')
+        .replaceAll('\\', '\\\\')
+        .replaceAll('[', r'\[')
+        .replaceAll(']', r'\]')
+        .replaceAll('\n', ' ')
+        .replaceAll('\r', ' ');
+    final selection = text.selection;
+    final start = selection.isValid ? selection.start : text.text.length;
+    final end = selection.isValid ? selection.end : start;
+    final insertion = '[$label](${link['uri']})';
+    final updated = text.text.replaceRange(start, end, insertion);
+    setState(() {
+      text.value = TextEditingValue(
+        text: updated,
+        selection: TextSelection.collapsed(offset: start + insertion.length),
+      );
+      change(updated);
+    });
+  }
+
+  Widget sourceText() => Padding(
+    padding: const EdgeInsets.all(12),
+    child: Column(
+      children: [
+        if (sourceLine <= text.text.split('\n').length)
+          SelectableText(
+            '定位行：${text.text.split('\n')[sourceLine - 1].replaceFirst(RegExp(r'\r$'), '').characters.take(1000)}',
+          ),
+        Expanded(
+          child: TextField(
+            key: const ValueKey('source-line-view'),
+            controller: text,
+            readOnly: true,
+            expands: true,
+            minLines: null,
+            maxLines: null,
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: '原文 · 第$sourceLine行（可选择文字定位）',
+            ),
+            onTap: () {
+              final selection = text.selection.baseOffset;
+              if (selection >= 0) {
+                setState(
+                  () => sourceLine =
+                      '\n'
+                          .allMatches(
+                            text.text.substring(
+                              0,
+                              selection.clamp(0, text.text.length),
+                            ),
+                          )
+                          .length +
+                      1,
+                );
+              }
+            },
+          ),
+        ),
+      ],
+    ),
+  );
 
   void schedulePreview() {
     previewTimer?.cancel();
@@ -262,6 +583,7 @@ class _DocumentPageState extends State<DocumentPage> {
 
   @override
   void dispose() {
+    widget.tab.captureView = null;
     previewGeneration++;
     previewTimer?.cancel();
     text.dispose();
@@ -308,6 +630,22 @@ class _DocumentPageState extends State<DocumentPage> {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(widget.tab.resourceName ?? '学习资源'),
+              TextButton(
+                onPressed: busy || document == null ? null : marks,
+                child: const Text('书签与备注'),
+              ),
+              if (value?['type'] == 'markdown')
+                TextButton(
+                  onPressed: busy ? null : () => marks(sources: true),
+                  child: const Text('笔记关联的来源'),
+                ),
+              if (value?['type'] == 'markdown' || value?['type'] == 'text')
+                TextButton(
+                  onPressed: busy
+                      ? null
+                      : () => setState(() => rawText = !rawText),
+                  child: Text(rawText ? '返回阅读' : '查看原文行'),
+                ),
               OutlinedButton(
                 onPressed: busy ? null : load,
                 child: const Text('刷新文件'),
@@ -321,6 +659,12 @@ class _DocumentPageState extends State<DocumentPage> {
                   child: const Text('返回文件阅读'),
                 ),
               if (value?['type'] == 'markdown') ...[
+                TextButton(
+                  onPressed: busy || !editing || !working || rawText
+                      ? null
+                      : insertLink,
+                  child: const Text('插入内部链接'),
+                ),
                 TextButton(
                   onPressed: busy || widget.tab.draftBaseSha256 != null
                       ? null
@@ -481,6 +825,8 @@ class _DocumentPageState extends State<DocumentPage> {
         ],
         if (value?['external_change'] == true)
           const Text('检测到外部修改；当前显示磁盘内容，旧索引不会自动成为确认答案。'),
+        if (value?['type'] == 'text' && value?['position_kind'] == 'resource')
+          const Text('UTF-8只读原文 · 资料级书签'),
         if (value != null)
           SelectableText(
             'SHA256：${value['sha256']}',
@@ -499,8 +845,23 @@ class _DocumentPageState extends State<DocumentPage> {
                   ? picture()
                   : switch (value['type']) {
                       'pdf' || 'image' => picture(),
+                      'spreadsheet' => SpreadsheetView(
+                        workbook: value,
+                        sheetIndex: page - 1,
+                        scrollController: scroll,
+                        onSheetChanged: (index) {
+                          if (scroll.hasClients) scroll.jumpTo(0);
+                          setState(() {
+                            widget.tab.documentState['page'] = index + 1;
+                            widget.tab.documentState['scroll'] = 0.0;
+                          });
+                          widget.onChanged();
+                        },
+                      ),
                       'markdown' =>
-                        editing && working
+                        rawText
+                            ? sourceText()
+                            : editing && working
                             ? Padding(
                                 padding: const EdgeInsets.all(12),
                                 child: TextField(
@@ -536,18 +897,30 @@ class _DocumentPageState extends State<DocumentPage> {
                                       uri: uri,
                                       alt: alt ?? '相对图片',
                                     ),
-                                onTapLink: (label, href, title) =>
+                                onTapLink: (label, href, title) {
+                                  if (href == null) return;
+                                  final scope = InternalLinkScope.maybeOf(
+                                    context,
+                                  );
+                                  if (scope != null) {
+                                    scope.follow(href, sourceSha256: hash);
+                                  } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('链接地址：$href（可保存为独立网页资源）'),
+                                      const SnackBar(
+                                        content: Text('链接导航入口不可用，原文链接保留'),
                                       ),
-                                    ),
+                                    );
+                                  }
+                                },
                               ),
-                      'text' => SingleChildScrollView(
-                        controller: scroll,
-                        padding: const EdgeInsets.all(16),
-                        child: SelectableText(text.text),
-                      ),
+                      'text' =>
+                        rawText
+                            ? sourceText()
+                            : SingleChildScrollView(
+                                controller: scroll,
+                                padding: const EdgeInsets.all(16),
+                                child: SelectableText(text.text),
+                              ),
                       'word' => SingleChildScrollView(
                         controller: scroll,
                         padding: const EdgeInsets.all(16),

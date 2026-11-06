@@ -8,6 +8,9 @@ VERSION = 'pdfium-pillow-view-v1'
 
 
 def render(data, mode, page=1):
+    if mode == 'xlsx':
+        from .spreadsheet_view import read_workbook
+        return read_workbook(data)
     if mode == 'image':
         from PIL import Image
         with Image.open(io.BytesIO(data)) as picture:
@@ -50,10 +53,10 @@ def worker(mode):
     try:
         options = json.loads(sys.stdin.buffer.readline(4096))
         data = sys.stdin.buffer.read(128 * 1024 * 1024 + 1)
-        if len(data) > 128 * 1024 * 1024 or mode not in {'image', 'pdf-info', 'pdf-page'}:
+        if len(data) > 128 * 1024 * 1024 or mode not in {'image', 'pdf-info', 'pdf-page', 'xlsx'}:
             raise ValueError('查看大小或类型超限')
         value = render(data, mode, options.get('page', 1))
-        value['renderer_version'] = VERSION
+        value['renderer_version'] = 'xlsx-values-v1' if mode == 'xlsx' else VERSION
     except Exception:
         value = {'error': '文档无法渲染：可能损坏、加密、超出页数/像素预算；原件已保留'}
     print(json.dumps(value), flush=True)

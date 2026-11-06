@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 
 import 'backend.dart';
 import 'add_resources_dialog.dart';
+import 'markdown_note_dialog.dart';
+import 'learning_marks_dialog.dart';
+import 'media_download_dialog.dart';
 export 'add_resources_dialog.dart';
 
 class ResourceExplorer extends StatefulWidget {
@@ -115,6 +118,21 @@ class _ResourceExplorerState extends State<ResourceExplorer> {
     if (mounted) {
       await reload();
     }
+  }
+
+  Future<void> newNote(String? parent) async {
+    final node = await showDialog<Map<String, dynamic>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => MarkdownNoteDialog(
+        backend: widget.backend,
+        workspaceId: widget.workspaceId,
+        parentId: parent,
+      ),
+    );
+    if (!mounted) return;
+    await reload();
+    if (mounted && node != null) widget.onOpen?.call(node);
   }
 
   Future<void> details(Map<String, dynamic> node) async {
@@ -338,6 +356,7 @@ class _ResourceExplorerState extends State<ResourceExplorer> {
           tooltip: '资源操作',
           onSelected: (action) => switch (action) {
             'add' => add(raw['resource_item_id'] as String),
+            'note' => newNote(raw['resource_item_id'] as String),
             'delete' => remove(Map<String, dynamic>.from(raw)),
             _ => details(Map<String, dynamic>.from(raw)),
           },
@@ -345,6 +364,8 @@ class _ResourceExplorerState extends State<ResourceExplorer> {
             const PopupMenuItem(value: 'details', child: Text('详情 / 改名 / 移动')),
             if (raw['kind'] == 'folder')
               const PopupMenuItem(value: 'add', child: Text('添加到此文件夹')),
+            if (raw['kind'] == 'folder')
+              const PopupMenuItem(value: 'note', child: Text('在此新建笔记')),
             const PopupMenuItem(value: 'delete', child: Text('删除')),
           ],
         ),
@@ -402,12 +423,48 @@ class _ResourceExplorerState extends State<ResourceExplorer> {
             onPressed: reload,
             icon: const Icon(Icons.refresh, size: 18),
           ),
+          IconButton(
+            tooltip: '书签与备注',
+            icon: const Icon(Icons.bookmarks_outlined, size: 18),
+            onPressed: () async {
+              final node = await showDialog<Map<String, dynamic>>(
+                context: context,
+                barrierDismissible: false,
+                builder: (_) => LearningMarksDialog(
+                  backend: widget.backend,
+                  workspaceId: widget.workspaceId,
+                ),
+              );
+              if (mounted && node != null) widget.onOpen?.call(node);
+            },
+          ),
         ],
       ),
       FilledButton.tonalIcon(
         onPressed: () => add(null),
         icon: const Icon(Icons.add),
         label: const Text('添加资源'),
+      ),
+      TextButton.icon(
+        onPressed: () => newNote(null),
+        icon: const Icon(Icons.note_add_outlined),
+        label: const Text('新建笔记'),
+      ),
+      TextButton.icon(
+        onPressed: () async {
+          final node = await showDialog<Map<String, dynamic>>(
+            context: context,
+            builder: (_) => MediaDownloadDialog(
+              backend: widget.backend,
+              workspaceId: widget.workspaceId,
+            ),
+          );
+          if (!mounted) return;
+          await reload();
+          if (mounted && node != null) widget.onOpen?.call(node);
+        },
+        icon: const Icon(Icons.download_outlined),
+        label: const Text('下载媒体'),
       ),
       TextField(
         key: const ValueKey('resource-search'),
