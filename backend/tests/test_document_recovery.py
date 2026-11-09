@@ -216,3 +216,38 @@ def test_question_file_history_does_not_change_confirmed_version_or_old_attempt(
         removed = business(tmp_path)
         assert c.get(endpoint + f'/document-saves/{row["id"]}?version=before').status_code == 200
         assert business(tmp_path) == removed
+
+
+@pytest.mark.parametrize('text', ['', '字面恢复正文 <script>not executed</script>'])
+def test_missing_source_copy_uses_existing_creation_save_and_restart_receipts(tmp_path, monkeypatch, text):
+    with client(tmp_path) as c:
+        _, endpoint, identifier, paths, current, original = interrupted(c, tmp_path, monkeypatch)
+        with write_transaction(c.app.state.engine) as session:
+            session.get(DocumentSave, identifier).new_sha256 = digest(text.encode())
+        paths['pending_path'].write_bytes(text.encode())
+    current.rename(current.with_name('current.retained'))
+    with client(tmp_path) as c:
+        before = business(tmp_path)
+        recovered = c.get(endpoint + f'/document-saves/{identifier}?version=pending').json()
+        assert recovered['text'] == text and recovered['current_sha256'] is None
+        assert business(tmp_path) == before
+        request = {'name': '恢复副本.md', 'request_id': 'recovery-note-copy-request-0001'}
+        copied = c.post(PREFIX + '/markdown-notes', json=request).json()
+        target = f'{PREFIX}/nodes/{copied["resource_item_id"]}/document'
+        saved = c.put(target, json={'expected_sha256': copied['sha256'], 'text': recovered['text']})
+        assert saved.status_code == 200, saved.text
+        assert c.get(target).json()['text'] == text
+        for content in ('old', 'after other edit'):
+            if content != 'old':
+                changed = c.put(target, json={'expected_sha256': saved.json()['sha256'], 'text': content})
+                assert changed.status_code == 200
+            duplicate = c.post(PREFIX + '/markdown-notes', json=request).json()
+            assert duplicate['resource_item_id'] == copied['resource_item_id']
+            assert c.put(target, json={'expected_sha256': copied['sha256'], 'text': 'stale overwrite'}).status_code == 409
+        assert c.get(target).json()['text'] == 'after other edit'
+        assert not current.exists() and original.read_bytes() == b'old'
+        assert paths['pending_path'].read_bytes() == text.encode()
+    with client(tmp_path) as c:
+        assert c.post(PREFIX + '/markdown-notes', json=request).json()['resource_item_id'] == copied['resource_item_id']
+        assert c.get(target).json()['text'] == 'after other edit'
+        assert not current.exists() and paths['pending_path'].read_bytes() == text.encode()

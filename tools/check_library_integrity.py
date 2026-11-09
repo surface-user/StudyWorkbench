@@ -60,7 +60,8 @@ def main():
         assert re.fullmatch('[a-f0-9]{32}', node)
 
         def request_json(method, path, body=None, expected=200):
-            req = urllib.request.Request(f'http://127.0.0.1:{port}/api/workspaces/default/nodes/{node}' + path,
+            api_path = path if path.startswith('/api/') else f'/api/workspaces/default/nodes/{node}' + path
+            req = urllib.request.Request(f'http://127.0.0.1:{port}' + api_path,
                 data=None if body is None else json.dumps(body).encode(), method=method,
                 headers={'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'})
             try:
@@ -88,6 +89,30 @@ def main():
         request_json('PUT', '/document', {'expected_sha256': recovered['current_sha256'], 'text': recovered['text']})
         assert current.read_text(encoding='utf-8') == initial['text']
         assert request_json('GET', '/document-saves/' + receipt + '?version=before')['text'] == initial['text']
+        retained = current.with_name('missing-current.retained')
+        current.rename(retained)  # Deliberately missing fixture; the product never repairs this path.
+        request_json('GET', '/document', expected=409)
+        recovered = request_json('GET', f'/document-saves/{receipt}?version=before')
+        assert recovered['current_sha256'] is None
+        copy_request = {'name': '恢复副本.md', 'request_id': 'integrity-recovery-copy-0001'}
+        copied = request_json('POST', '/api/workspaces/default/markdown-notes', copy_request)
+        copy_id = copied['resource_item_id']
+        assert copy_id != node
+        copy_path = f'/api/workspaces/default/nodes/{copy_id}/document'
+        initial_copy = request_json('GET', copy_path)
+        assert initial_copy['sha256'] == copied['sha256']
+        request_json('PUT', copy_path, {'expected_sha256': copied['sha256'], 'text': recovered['text']})
+        saved_copy = request_json('GET', copy_path)
+        assert saved_copy['sha256'] == recovered['sha256'] and saved_copy['text'] == recovered['text']
+        duplicate = request_json('POST', '/api/workspaces/default/markdown-notes', copy_request)
+        assert duplicate['resource_item_id'] == copy_id
+        edited = request_json('PUT', copy_path, {'expected_sha256': saved_copy['sha256'], 'text': 'keep changed copy'})
+        request_json('POST', '/api/workspaces/default/markdown-notes', copy_request)
+        request_json('PUT', copy_path, {'expected_sha256': copied['sha256'], 'text': recovered['text']}, expected=409)
+        assert request_json('GET', copy_path)['sha256'] == edited['sha256']
+        assert not current.exists() and retained.read_text(encoding='utf-8') == initial['text']
+        assert request_json('GET', f'/document-saves/{receipt}?version=before')['text'] == initial['text']
+        retained.rename(current)  # Reset only this deliberate missing-file fixture for the healthy CLI case below.
         blocked = subprocess.run(command + ['--check-library', '--confirm-all-workspaces'], env=env, cwd=root,
                                  capture_output=True, timeout=30, creationflags=subprocess.CREATE_NO_WINDOW)
         assert blocked.returncode != 0, 'Diagnostics bypassed the active application lock'
@@ -110,7 +135,8 @@ def main():
             'unreferenced_derived_candidate', 'workfile_index_changed'}
         summary = dict(frozen=True, active_lock_refused=True, healthy_case_verified=True, orphan_detected=True,
                        external_edit_detected=True, business_bytes_preserved=True, repair_performed=False,
-                       recovery_preview_readonly=True, recovery_save_conflict_guard=True, recovery_explicit_save=True)
+                       recovery_preview_readonly=True, recovery_save_conflict_guard=True, recovery_explicit_save=True,
+                       missing_source_copy=True, copy_creation_idempotent=True, original_missing_not_repaired=True)
         (root / 'result.json').write_text(json.dumps(summary, indent=2) + '\n', encoding='utf-8')
         print(json.dumps(summary))
     finally:

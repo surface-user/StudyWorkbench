@@ -584,10 +584,31 @@ class _DocumentPageState extends State<DocumentPage> {
     }
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (_) =>
-          DocumentRecoveryDialog(backend: widget.backend, prefix: prefix),
+      barrierDismissible: false,
+      builder: (_) => DocumentRecoveryDialog(
+        backend: widget.backend,
+        prefix: prefix,
+        workspacePrefix: widget.onNavigate == null
+            ? null
+            : '/api/workspaces/${widget.workspaceId}',
+      ),
     );
     if (!mounted || result == null) return;
+    if (result['copy_node'] != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('恢复副本“${result['copy_node']['name']}”已保存，可从资源目录打开新笔记。'),
+        ),
+      );
+      try {
+        widget.onNavigate?.call(
+          Map<String, dynamic>.from(result['copy_node'] as Map),
+        );
+      } catch (failure) {
+        setState(() => error = '副本笔记已保存，打开失败：$failure。请从资源目录打开新笔记。');
+      }
+      return;
+    }
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -693,6 +714,11 @@ class _DocumentPageState extends State<DocumentPage> {
                 onPressed: busy ? null : load,
                 child: const Text('刷新文件'),
               ),
+              if (working || (value == null && error != null))
+                TextButton(
+                  onPressed: busy ? null : recovery,
+                  child: const Text('保存恢复点'),
+                ),
               if (widget.tab.documentState['mode'] == 'question')
                 TextButton(
                   onPressed: () {
@@ -726,11 +752,6 @@ class _DocumentPageState extends State<DocumentPage> {
                   onPressed: busy ? null : edit,
                   child: Text(working ? '原文编辑' : '创建工作副本并编辑'),
                 ),
-                if (working)
-                  TextButton(
-                    onPressed: busy ? null : recovery,
-                    child: const Text('保存恢复点'),
-                  ),
                 TextButton(
                   onPressed: busy
                       ? null

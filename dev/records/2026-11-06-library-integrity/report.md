@@ -115,3 +115,46 @@ cwd仓库根，P/Q及原始目录同上。所有下列退出码实际收取，�
 自审完成：全调用方/路由、原SaveText和启动recover未改、受控路径/节点/空间和hash、只读GET/正文预算、pending消耗、prepared/当前缺失降级、模态等待/取消/异步mounted、脏稿不覆盖、确认后草稿基线hash与普通保存冲突、QuestionFile/旧作答保护及冻结CI保留原断言。此次为自审，非独立批准；本地不重复生成Windows UI候选，Windows Release/COM及全量R1–R5由本阶段当前head CI执行并另核。人工测试及Computer Use已取消。无自动修复/删除/三方合并；当前文件缺失的写回仍未实现。提交/阶段草稿PR及最终head CI继续跟进，不合并/发行。
 
 实现提交a272b4f94de8de9475b32b51313d467802e34cde已commit/push，均退出0；[草稿PR #6](https://github.com/surface-user/StudyWorkbench/pull/6)已创建，以未合并#5的1357d44为base。本节及task仅补真实交付链接；文档补交后的最终head CI、检查时间及交付结论以该PR描述/实时检查为准，不以旧head替代，也不为记录自身SHA循环提交。仍保留用户未提交summary.md及.vscode，旧分支不改写，未合并/发行。
+
+## 恢复点另存笔记切片设计（2026-11-09）
+
+PR #6最终4686c8b的三组CI通过记录保留；本轮从该提交建立codex/recovery-note-copy，按用户要求继续M2-05并提交独立草稿PR、核实最终head CI，不合并/发行。继续同一任务报告，不接模型、不做人工测试。
+
+问题：当前工作文件缺失时，恢复点已有只读API，但重启后的页面无法打开恢复入口，也不能将所选内容变成可继续使用的文件。首批补“另存为新笔记”：错误页也可打开MD保存恢复点；明确选择/字面预览及填写新名称后，复用现有新建笔记收据和普通expected hash保存接口创建独立副本，不修复或覆盖原缺失路径，不发布题目版本。
+
+设计：创建前重读所选恢复点核对hash/正文；同一窗口失败重试固定request_id和名称/正文，创建响应丢失不重复建笔记。新笔记初始hash来自既有创建响应；保存前回读目标，已是所选正文则对账成功，仍为初始hash才保存，其他内容拒绝覆盖。保存响应丢失可重试对账；失败保留新笔记、源恢复点和原文件。关闭后创建收据及原恢复点仍可查，不承诺跨关闭自动续写。成功返回普通新节点，由既有导航打开；打开失败时新文件保留并明确提示。不新增后端写接口、表、依赖、原地修复/三方合并或Agent工具。
+
+实施顺序：入口/受控另存交互→响应丢失/冲突/取消/失败/重启/空稿与字面内容自动回归→冻结HTTP串联及源/历史保持→全量/自审→契约、task、原报告→PR与当前head CI。仅一份当前后端构建；不改用户未提交summary.md/.vscode，不清除历史失败。
+
+### 另存副本实施与专项验证
+
+DocumentRecoveryDialog在同窗口冻结创建请求及已核对正文，正常创建/回读/保存均复用现有接口；PUT只向新节点，expected hash为创建返回的初始值。目标已是预期hash和正文时对账，不重复保存；其他改动拒绝覆盖。错误名在创建前仍可编辑。保存中禁用关闭及系统返回，异步卸载后不继续后续请求；成功后普通导航失败也明确文件已保存。原草稿恢复操作保持原确认与hash守卫；读取失败页不以树名称后缀猜格式，交服务校验恢复资格。
+
+原始产物artifacts/recovery-copy-20261109/，P/Q、cwd约定同前，只用新.local隔离样本。本轮未改backend/study_workbench业务源码或后端契约字段，无需新迁移/依赖或重复冻结大包；Q tools/check_frozen_sources.py --exe dist/study_backend/study_backend.exe实际退出0，41模块仍匹配当前源码，使用唯一当前包。当前PR的远端CI仍执行全新Windows Release/后端构建/源码一致性及整条冻结链，不用旧CI代替。
+
+- 首次format报告导入指令错误放到声明之后；修正导入位置后实际format通过。最初复合命令末尾读取文件使整体返回0，不能用该0宣称format通过。未执行有语法问题的组件测试；后续独立format退出0。
+- cwd=apps/desktop；flutter test test/recovery_note_copy_test.dart test/document_recovery_test.dart test/document_page_test.dart退出0，19项通过，约2秒（flutter-target01.log）。覆盖新入口、空/字面内容、创建/保存响应丢失同请求重试、改后目标不覆盖、导航失败保留、取消和异步卸载；后补无后缀改名、名称校验纳入最终全量。
+- P -m pytest backend/tests/test_document_recovery.py backend/tests/test_markdown_notes.py -q --basetemp=.local/recovery-copy-target01 --junitxml=artifacts/recovery-copy-20261109/backend-target01.xml退出0，27通过，18.97秒（backend-target01.log/xml）。新增真实HTTP缺失源→读取pending→新建/保存→重复请求/陈旧覆盖拒绝→重启，原件/源恢复点保持，空稿与字面正文均覆盖。
+- P tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/recovery-copy-frozen退出0（frozen-copy.log/result.json），新增missing_source_copy/copy_creation_idempotent/original_missing_not_repaired均true，原恢复点/持锁/健康/孤立/索引变化/业务字节保持断言仍通过。只在完成缺失源不被修复的断言后，重置本探针自编的缺失夹具以继续原健康巡检，不改产品、不清除故障证据。
+- 首轮flutter analyze退出1，测试内2处跨行if缺大括号（analyze01.log）；修正后最终analyze无问题，退出0（analyze-final.log）。无忽略规则、删测试或降断言。原依赖可更新/Starlette警告继续保留，未升级依赖。
+
+自审边界：源码调用方仅DocumentPage/恢复对话框及其测试，导航沿用现有回调，创建收据和保存语义未改；保存先核目标初始hash，重复请求不覆盖外部编辑；同窗口重试固定内容/名称，跨关闭不自动重放。不自动绑定来源标记，不把正文里的旧ID注释解释为新笔记身份或自动发布QuestionFile。另存不恢复原缺失路径，不将有缺失的源库标为健康，原完整性/备份规则不放宽。三方合并、原地修复及其他派生类型仍在M2-05。
+
+自审发现实际_WorkspacePages._openResource会拦截导航异常，不能仅依靠DocumentPage的catch提示副本已保存。补在调用导航前明确显示保存成功，即使标签上限等错误被导航层处理也不会误报成保存失败；相应断言纳入最终回归。修补前全量flutter-full.log为167项通过，不能直接套用至补丁后；补丁后另记flutter-final.log/analyze-navigation.log。后端业务源码仍未改变，双Python本轮结果不受该纯UI提示修改影响。
+
+### 另存切片最终验证与交付要求
+
+| 命令（cwd根，除另注明） | 实际退出与覆盖 | 原始记录 |
+|---|---|---|
+| P -m pytest backend/tests -q --basetemp=.local/recovery-copy-full312 --junitxml=artifacts/recovery-copy-20261109/full312.xml | 0；526通过，321.55秒 | full312.log/xml |
+| Q -m pytest backend/tests -q --basetemp=.local/recovery-copy-full313 --junitxml=artifacts/recovery-copy-20261109/full313.xml | 0；526通过，297.74秒 | full313.log/xml |
+| cwd=apps/desktop；SDK dart.exe format lib test integration_test | 0；85文件，无变化 | format-final.log |
+| 同cwd；SDK dart.exe format lib/document_page.dart test/recovery_note_copy_test.dart；flutter analyze（导航提示补丁后） | 各0；格式及静态无问题 | format-navigation.log、analyze-navigation.log |
+| 同cwd；flutter test --dart-define=STUDY_ROOT=D:/computer_work/project/StudyWorkbench --dart-define=STUDY_DATA_DIR=D:/computer_work/project/StudyWorkbench/.local/recovery-copy-final-flutter | 0；167通过，约45秒 | flutter-final.log |
+| Q tools/check_frozen_sources.py --exe dist/study_backend/study_backend.exe | 0；41业务模块匹配，当前唯一包复用未变化的后端 | 工具实际返回及source-snapshot.json |
+| P tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/recovery-copy-frozen | 0；新增另存及全部既有冻结巡检/恢复守卫 | frozen-copy.log/result.json |
+| P -m ruff check backend tools；P tools/export_question_schema.py --check；git diff --check | 各0 | 实际工具返回，旧警告保留 |
+
+当前产品/测试源码47文件hash及复用exe hash记录于source-snapshot.json；导航补丁前快照另保留，不将旧UI版本结果冒充最终版本。后端41模块及exe与11-07已验证包hash一致，本轮未新建重复二进制、Office组件或UI验收包。相对文档链接54份/269链接无缺失（docs.json，交付链接补交另核）。全量后临时测试文件已由原流程清理，用户未提交文件未处理。
+
+本地自审已完成，未执行独立人工批准；人工测试/Computer Use明确取消。当前head CI须包含Windows Release、COM、全量R1–R5和全新冻结包整条原有链；本地不重复Windows/原冻结其他专项，不把旧包模块一致性当作新UI构建证明。阶段草稿PR依赖#6，要求提交/PR/当前head CI，不要求合并。整体M2-05仍进行中，原地缺失恢复、三方合并等不退出。
