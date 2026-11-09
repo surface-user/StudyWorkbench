@@ -16,7 +16,8 @@ class RequestLimits:
             # The authorized streaming handler enforces MEDIA_LIMIT on actual chunks, without buffering video in RAM.
             return await self.app(scope, receive, send)
         limit = (32 * 1024 * 1024 if path.startswith('/api/workspaces/') and path.endswith('/layout')
-                 else 8 * 1024 * 1024 if path.startswith('/api/workspaces/') and path.endswith('/document')
+                 else 8 * 1024 * 1024 if path.startswith('/api/workspaces/') and
+                 path.endswith(('/document', '/document-merge-preview'))
                  else IMPORT_LIMIT if path.startswith("/api/workspaces/") and path.endswith("/imports")
                  else 2 * 1024 * 1024 if path.startswith("/api/workspaces/") and
                  "/notes/" in path

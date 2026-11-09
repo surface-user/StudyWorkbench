@@ -14,7 +14,7 @@
 | 资源目录 | 稳定逻辑ID、树/搜索、改名移动、删除墓碑、旧资源适配 | explorer.py、resource_explorer.dart |
 | 统一添加 | 原生多选/OLE回调→暂存预检→明确确认→后台受管复制 | resource_picker.dart、add_resources_dialog.dart、Windows runner、Explorer |
 | 内容提取 | 原件哈希校验→ImportJob解析→候选预览/调整→显式确认 | imports.py、documents.py、question_splitting.py、draft_editing.py |
-| 查看与编辑 | PDF/PNG/JPEG、DOCX结构、MD工作副本、冲突保存/恢复收据；TXT及JSON/CSV/LOG/VTT/SRT严格UTF-8只读原文，新增文本仅资源级位置 | document_files.py、document_view_worker.py、document_page.dart |
+| 查看与编辑 | PDF/PNG/JPEG、DOCX结构、MD工作副本、冲突保存/恢复收据及同节点基线核验的只读合并预览API（尚无UI）；TXT及JSON/CSV/LOG/VTT/SRT严格UTF-8只读原文，新增文本仅资源级位置 | document_files.py、markdown_merge.py、document_view_worker.py、document_page.dart |
 | 自由笔记（LW-01） | 受管目录新建MD原件/可编辑副本、持久幂等创建/中断核对、目录及资料/媒体页入口；旧notes不迁移 | markdown_notes.py、markdown_note_dialog.dart、resource_explorer.dart、resource_page.dart |
 | 位置书签与备注（LW-02） | 版本化资源/页/原文行/媒体时间锚点、标记修订/墓碑、同空间笔记关系和来源回跳；失效位置不自动重定位 | learning_marks.py、media_duration.py、learning_marks_dialog.dart、document_page.dart、media_page.dart |
 | 内部链接（LW-03） | 严格版本URI、受鉴权解析、复制/MD插入跟随、最多50条运行时往返；目标/返回位置重验，不注册系统协议 | internal_links.py、internal_links.dart、document_page.dart |
@@ -37,6 +37,8 @@ Resource原件不可变，按大小/hash验证。工作副本保存校验expecte
 
 QuestionFile普通保存只改编辑内容。显式确认冻结MD、标题、编译题目/材料和附件，回读校验后写不可变版本并更新questions缓存。提交按确认版读取和核验资产；旧作答不补造版本、不重算旧分数。当前文件失效时可读取最后确认快照，但不得重新发布。
 
+MD三方合并预览由document_files核验同节点原件/保存恢复点作为基线、预期基线和当前hash后调用纯函数markdown_merge.preview_merge；继承会话鉴权/空间与路径守卫/两并发门禁，不持久化候选或改变文件/数据库。每份文本及结果限1MiB UTF-8，按LF保留原始换行；每侧用公共前后缀之间的单个行区间表示变更，仅合并不相交区间，重叠与插入贴边保守冲突，无标记。多处不连续编辑可能保守冲突；纯函数成功不构成保存授权。接口当前无UI调用，候选确认载入草稿及普通expected hash保存仍待接入。
+
 学习事件追加且不可更新/删除；记录标签按完整事件流最后明确修订重建，掌握/到期仍依真实作答和最新人工评分计算。关联笔记显示当前笔记，不伪造历史笔记快照。
 
 ### 界面、原生资源与安全
@@ -57,7 +59,7 @@ Office运行时可缺省；显式转换、独立profile和Windows Job、固定�
 
 - R6：模型/凭据适配、通用资料读取及其他候选场景仍规划中；当前本地授权/分析上下文和人工候选审核已实现，详见agent-design.md。
 - 单空间备份合并、站点提取/质量选择/转码、OCR及更广文档解析。
-- 外部目录原地工作区、监听等方向另行设计。MD三方合并仅有内部纯函数核心`markdown_merge.preview_merge`，没有HTTP/桌面调用，端到端功能仍规划中。核心对base/local/current各限1MiB UTF-8，按LF保留原始换行；每侧用公共前后缀之间的单个行区间表示变更，仅合并不相交区间。插入与另一变更边界接触、重叠或多处编辑包围另一侧变更均保守返回冲突，无候选文本，不插入冲突标记；相同两侧/一侧未变直接采用另一侧。结果也限1MiB，无I/O、数据库或发布权限。未来调用方须独立验证基线来源/hash、空间和当前版本，保留三份输入，经用户核对后仍走原expected hash保存；纯函数成功不构成保存授权。
+- 外部目录原地工作区、监听等方向另行设计。MD三方合并端到端编辑器仍规划中：只读核心及基线核验HTTP预览已实现，桌面基线选择/用户核对/确认载入与原expected hash保存尚未接入。
 - 不预建微服务、通用任务平台、插件框架或Agent专属题库。
 
 ## 待验证
