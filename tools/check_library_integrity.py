@@ -45,6 +45,19 @@ def main():
         return {p.relative_to(data).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                 for p in data.rglob('*') if p.is_file() and p.name != '.study.lock'}
 
+    def capacity():
+        before = snapshot()
+        run = subprocess.run(command + ['--report-recovery-storage', '--confirm-all-workspaces'], env=env, cwd=root,
+                             capture_output=True, text=True, encoding='utf-8', timeout=60,
+                             creationflags=subprocess.CREATE_NO_WINDOW)
+        assert run.returncode == 0, run.stderr[-1000:] + run.stdout[-2000:]
+        report = json.loads(run.stdout)['result']
+        assert report['complete'] and not report['data_modified'] and not report['deletion_authorized']
+        assert not report['content_integrity_checked'] and not report['library_health_checked']
+        assert report['bytes_kind'] == 'observed_logical_lengths' and not report['snapshot_atomic']
+        assert snapshot() == before, 'Capacity report changed business data'
+        return report
+
     try:
         process.stdin.write(json.dumps({'token': token}) + '\n')
         process.stdin.flush()
@@ -136,11 +149,17 @@ def main():
         blocked = subprocess.run(command + ['--check-library', '--confirm-all-workspaces'], env=env, cwd=root,
                                  capture_output=True, timeout=30, creationflags=subprocess.CREATE_NO_WINDOW)
         assert blocked.returncode != 0, 'Diagnostics bypassed the active application lock'
+        blocked = subprocess.run(command + ['--report-recovery-storage', '--confirm-all-workspaces'], env=env, cwd=root,
+                                 capture_output=True, timeout=30, creationflags=subprocess.CREATE_NO_WINDOW)
+        assert blocked.returncode != 0, 'Capacity report bypassed the active application lock'
         process.stdin.close()
         assert process.wait(timeout=20) == 0
         assert not process.stderr.read().strip()
         healthy = inspect(0)
         assert healthy['healthy'] and not healthy['issues']
+        sizes = capacity()
+        assert sizes['categories']['current_workfile']['file_count'] == 2
+        assert sizes['categories']['before_recovery']['file_count'] >= 1
         orphan = data / 'workspaces/default/working' / node / 'orphan-generation'
         orphan.mkdir()
         (orphan / 'keep').write_bytes(b'self-authored retained orphan')
@@ -148,6 +167,9 @@ def main():
         assert not found['healthy']
         assert found['issues'] == [dict(code='unreferenced_derived_candidate', severity='warning',
                                        relative_path=orphan.relative_to(data).as_posix())]
+        extra = capacity()
+        assert (extra['categories']['unreferenced_working_file']['logical_bytes']
+                - sizes['categories']['unreferenced_working_file']['logical_bytes']) == len(b'self-authored retained orphan')
         current = data / 'workspaces/default/working' / node / 'note/current.md'
         current.write_bytes(b'external workfile edit must survive diagnostics')
         changed = inspect(1)
@@ -157,7 +179,9 @@ def main():
                        external_edit_detected=True, business_bytes_preserved=True, repair_performed=False,
                        recovery_preview_readonly=True, recovery_save_conflict_guard=True, recovery_explicit_save=True,
                        missing_source_copy=True, copy_creation_idempotent=True, original_missing_not_repaired=True,
-                       merge_preview_readonly=True, merge_stale_save_refused=True, merge_conflict_has_no_candidate=True)
+                       merge_preview_readonly=True, merge_stale_save_refused=True, merge_conflict_has_no_candidate=True,
+                       capacity_report_metadata_readonly=True, capacity_unregistered_bytes_accounted=True,
+                       capacity_deletion_authorized=False)
         (root / 'result.json').write_text(json.dumps(summary, indent=2) + '\n', encoding='utf-8')
         print(json.dumps(summary))
     finally:
