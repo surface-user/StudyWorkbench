@@ -49,6 +49,7 @@ def main():
     operations.add_argument('--restore-backup', type=Path)
     operations.add_argument('--check-library', action='store_true')
     operations.add_argument('--report-recovery-storage', action='store_true')
+    operations.add_argument('--report-office-storage', action='store_true')
     parser.add_argument('--confirm-all-workspaces', action='store_true')
     parser.add_argument("--install-dir", type=Path)
     parser.add_argument("--parent-pipe", action="store_true")
@@ -63,11 +64,12 @@ def main():
         result = check_library(args.data_dir, install=install)
         print(json.dumps({'result': result}), flush=True)
         raise SystemExit(0 if result['healthy'] else 1)
-    if args.report_recovery_storage:
+    if args.report_recovery_storage or args.report_office_storage:
         if not args.confirm_all_workspaces or args.config or args.media or args.parent_pipe:
             raise ValueError('容量报告须确认全部空间，且不接受配置、媒体或父管道参数')
-        from .recovery_storage import report_recovery_storage
-        result = report_recovery_storage(args.data_dir, install=install)
+        from .recovery_storage import report_office_storage, report_recovery_storage
+        report = report_office_storage if args.report_office_storage else report_recovery_storage
+        result = report(args.data_dir, install=install)
         print(json.dumps({'result': result}), flush=True)
         raise SystemExit(0 if result['complete'] else 1)
     data = validate_root(args.data_dir, install)

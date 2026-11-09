@@ -15,27 +15,40 @@ from .library_integrity import ENTRY_LIMIT, ISSUE_LIMIT, ROW_LIMIT, SECONDS, Inc
 TOP_LIMIT = 20
 KINDS = {'working', 'question-files'}
 STATUSES = {'prepared', 'committed', 'interrupted', 'conflict'}
+OFFICE_STATUSES = {'queued', 'running', 'ready', 'failed', 'interrupted', 'cancelled'}
 
 
 def report_recovery_storage(directory, *, install=None):
+    return _report_storage(directory, install=install, office=False)
+
+
+def report_office_storage(directory, *, install=None):
+    return _report_storage(directory, install=install, office=True)
+
+
+def _report_storage(directory, *, install, office):
     no_links(directory)
     root = validate_root(directory, install)
     no_links(root / 'study.db')
     if not (root / 'study.db').is_file():
         raise ValueError('容量报告只接受已有学习库，不会创建或迁移数据库')
     no_links(root / '.study.lock')
-    result = dict(schema_version=1, scope='markdown_working_and_save_recovery_files', complete=True,
+    statuses = OFFICE_STATUSES if office else STATUSES
+    kinds = {'previews'} if office else KINDS
+    roles = ([status + '_preview_file' for status in sorted(statuses)] + ['unregistered_preview_file'] if office else
+             ['current_workfile', 'before_recovery', 'pending_recovery', 'unreferenced_working_file'])
+    result = dict(schema_version=1, scope='office_preview_task_files' if office else 'markdown_working_and_save_recovery_files', complete=True,
                   data_modified=False, deletion_authorized=False, content_integrity_checked=False,
                   library_health_checked=False, snapshot_atomic=False, bytes_kind='observed_logical_lengths',
                   entries_checked=0, rows_checked=0, file_count=0, logical_bytes=0,
-                  records_by_status={status: 0 for status in sorted(STATUSES)},
-                  missing_committed_pending=0, largest_files=[], largest_files_limit=TOP_LIMIT,
+                  records_by_status={status: 0 for status in sorted(statuses)},
+                  largest_files=[], largest_files_limit=TOP_LIMIT,
                   largest_files_truncated=False,
-                  categories={role: dict(file_count=0, logical_bytes=0) for role in
-                              ['current_workfile', 'before_recovery', 'pending_recovery', 'unreferenced_working_file']},
+                  categories={role: dict(file_count=0, logical_bytes=0) for role in roles},
                   issues=[])
+    result['missing_nonready_pdf' if office else 'missing_committed_pending'] = 0
     deadline = time.monotonic() + SECONDS
-    references, works, seen = {}, {}, set()
+    references, works, seen, preview_directories = {}, {}, set(), {}
 
     def checkpoint():
         if time.monotonic() >= deadline:
@@ -75,41 +88,71 @@ def report_recovery_storage(directory, *, install=None):
                 if [r[0] for r in db.execute('SELECT version_num FROM alembic_version')] != [SUPPORTED_SCHEMA]:
                     issue('unsupported_schema')
                     return result
-                for row in rows(db, 'SELECT w.*, n.workspace_id AS node_workspace, n.kind, q.question_id '
-                                    'FROM document_workfiles w LEFT JOIN workspace_nodes n ON n.id=w.node_id '
-                                    'LEFT JOIN question_files q ON q.node_id=w.node_id AND q.workspace_id=w.workspace_id '
-                                    'ORDER BY w.node_id'):
-                    try:
-                        relative = archive_path(row['relative_path'])
-                        parts = PurePosixPath(relative).parts
-                        owner = (row['kind'] == 'resource' and row['node_workspace'] == row['workspace_id']
-                                 and len(parts) >= 5 and parts[:2] == ('workspaces', row['workspace_id'])
-                                 and parts[-1] == 'current.md')
-                        valid = owner and ((parts[2] == 'working' and len(parts) == 6 and parts[3] == row['node_id'])
-                                           or (parts[2] == 'question-files' and len(parts) == 5
-                                               and parts[3] == row['question_id']))
-                        if not valid:
-                            raise ValueError('Invalid workfile ownership')
-                    except (TypeError, ValueError):
-                        issue('unsafe_workfile_reference')
-                        continue
-                    works[row['node_id']] = PurePosixPath(relative).parent.as_posix()
-                    reference(relative, 'current_workfile')
-                for row in rows(db, 'SELECT id,node_id,backup_path,pending_path,status FROM document_saves ORDER BY id'):
-                    status = row['status'] if row['status'] in STATUSES else 'unknown'
-                    result['records_by_status'][status] = result['records_by_status'].get(status, 0) + 1
-                    if status == 'unknown':
-                        issue('unknown_receipt_status')
-                    directory = works.get(row['node_id'])
-                    if directory is None or not isinstance(row['id'], str) or not re.fullmatch('[a-f0-9]{32}', row['id']):
-                        issue('unsafe_save_reference')
-                        continue
-                    for column, version in [('backup_path', 'before'), ('pending_path', 'pending')]:
-                        expected = f"{directory}/{row['id']}.{version}.md"
-                        if row[column] != expected:
+                if office:
+                    for row in rows(db, 'SELECT p.id,p.workspace_id,p.node_id,p.source_resource_id,p.relative_pdf,p.status, '
+                                        'n.workspace_id AS node_workspace,n.kind,n.resource_id, '
+                                        'r.workspace_id AS source_workspace,s.id AS existing_workspace '
+                                        'FROM document_previews p LEFT JOIN workspace_nodes n ON n.id=p.node_id '
+                                        'LEFT JOIN resources r ON r.id=p.source_resource_id '
+                                        'LEFT JOIN workspaces s ON s.id=p.workspace_id ORDER BY p.id'):
+                        status = row['status'] if row['status'] in statuses else 'unknown'
+                        result['records_by_status'][status] = result['records_by_status'].get(status, 0) + 1
+                        if status == 'unknown':
+                            issue('unknown_preview_status')
+                            continue
+                        try:
+                            relative = archive_path(row['relative_pdf'])
+                            parts = PurePosixPath(relative).parts
+                            expected = f"workspaces/{row['workspace_id']}/previews/{row['id']}/output/source.pdf"
+                            if (not isinstance(row['id'], str) or not re.fullmatch('[a-f0-9]{32}', row['id'])
+                                    or relative != expected or len(parts) != 6 or parts[1] != row['workspace_id']
+                                    or row['existing_workspace'] != row['workspace_id']
+                                    or row['node_workspace'] != row['workspace_id'] or row['kind'] != 'resource'
+                                    or row['source_workspace'] != row['workspace_id']
+                                    or row['resource_id'] != row['source_resource_id']):
+                                raise ValueError('Invalid preview ownership')
+                        except (TypeError, ValueError):
+                            issue('unsafe_preview_reference')
+                            continue
+                        ref = dict(role=status + '_preview_file', status=status)
+                        preview_directories['/'.join(PurePosixPath(relative).parts[:4])] = ref
+                        reference(relative, ref['role'], status)
+                if not office:
+                    for row in rows(db, 'SELECT w.*, n.workspace_id AS node_workspace, n.kind, q.question_id '
+                                        'FROM document_workfiles w LEFT JOIN workspace_nodes n ON n.id=w.node_id '
+                                        'LEFT JOIN question_files q ON q.node_id=w.node_id AND q.workspace_id=w.workspace_id '
+                                        'ORDER BY w.node_id'):
+                        try:
+                            relative = archive_path(row['relative_path'])
+                            parts = PurePosixPath(relative).parts
+                            owner = (row['kind'] == 'resource' and row['node_workspace'] == row['workspace_id']
+                                     and len(parts) >= 5 and parts[:2] == ('workspaces', row['workspace_id'])
+                                     and parts[-1] == 'current.md')
+                            valid = owner and ((parts[2] == 'working' and len(parts) == 6 and parts[3] == row['node_id'])
+                                               or (parts[2] == 'question-files' and len(parts) == 5
+                                                   and parts[3] == row['question_id']))
+                            if not valid:
+                                raise ValueError('Invalid workfile ownership')
+                        except (TypeError, ValueError):
+                            issue('unsafe_workfile_reference')
+                            continue
+                        works[row['node_id']] = PurePosixPath(relative).parent.as_posix()
+                        reference(relative, 'current_workfile')
+                    for row in rows(db, 'SELECT id,node_id,backup_path,pending_path,status FROM document_saves ORDER BY id'):
+                        status = row['status'] if row['status'] in STATUSES else 'unknown'
+                        result['records_by_status'][status] = result['records_by_status'].get(status, 0) + 1
+                        if status == 'unknown':
+                            issue('unknown_receipt_status')
+                        directory = works.get(row['node_id'])
+                        if directory is None or not isinstance(row['id'], str) or not re.fullmatch('[a-f0-9]{32}', row['id']):
                             issue('unsafe_save_reference')
                             continue
-                        reference(expected, version + '_recovery', status)
+                        for column, version in [('backup_path', 'before'), ('pending_path', 'pending')]:
+                            expected = f"{directory}/{row['id']}.{version}.md"
+                            if row[column] != expected:
+                                issue('unsafe_save_reference')
+                                continue
+                            reference(expected, version + '_recovery', status)
 
                 scope = root / 'workspaces'
                 no_links(scope)
@@ -131,7 +174,7 @@ def report_recovery_storage(directory, *, install=None):
                             result['entries_checked'] += 1
                             relative = Path(entry.path).relative_to(root).as_posix()
                             parts = PurePosixPath(relative).parts
-                            if len(parts) == 3 and parts[2] not in KINDS:
+                            if len(parts) == 3 and parts[2] not in kinds:
                                 continue
                             try:
                                 archive_path(relative)
@@ -163,14 +206,16 @@ def report_recovery_storage(directory, *, install=None):
                                 if relative in seen:
                                     continue
                                 seen.add(relative)
-                                ref = references.get(relative, dict(role='unreferenced_working_file', status=None))
+                                ref = (preview_directories.get('/'.join(parts[:4]), dict(role='unregistered_preview_file', status=None))
+                                       if office else references.get(relative, dict(role='unreferenced_working_file', status=None)))
                                 group = result['categories'][ref['role']]
                                 group['file_count'] += 1
                                 group['logical_bytes'] += info.st_size
                                 result['file_count'] += 1
                                 result['logical_bytes'] += info.st_size
-                                result['largest_files'].append(dict(relative_path=relative, logical_bytes=info.st_size,
-                                                                    role=ref['role'], save_status=ref['status']))
+                                item = dict(relative_path=relative, logical_bytes=info.st_size, role=ref['role'])
+                                item['preview_status' if office else 'save_status'] = ref['status']
+                                result['largest_files'].append(item)
                                 result['largest_files'].sort(key=lambda item: (-item['logical_bytes'], item['relative_path']))
                                 del result['largest_files'][TOP_LIMIT:]
                             except (OSError, ValueError):
@@ -182,7 +227,9 @@ def report_recovery_storage(directory, *, install=None):
                 for relative, ref in references.items():
                     checkpoint()
                     if relative not in seen:
-                        if ref['role'] == 'pending_recovery' and ref['status'] == 'committed':
+                        if office and ref['status'] != 'ready':
+                            result['missing_nonready_pdf'] += 1
+                        elif ref['role'] == 'pending_recovery' and ref['status'] == 'committed':
                             result['missing_committed_pending'] += 1
                         else:
                             issue('missing_required_reference', relative)

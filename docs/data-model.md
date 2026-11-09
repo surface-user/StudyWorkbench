@@ -54,6 +54,8 @@ learning_events.content存kind=annotation/reviewed、note及可选error_type/sel
 
 恢复副本容量报告复用document_workfiles、document_saves与节点/题目归属，按所有空间working/question-files的当前文件、before、pending及未登记文件统计逻辑长度，不新增表或持久报告。committed pending正常缺失单独计数，其他缺失/不安全引用标不完整；不核正文/hash，不能证明库健康。按相对路径计长，hardlink不同路径可重复计数，不代表实际磁盘分配/可回收空间。任何分类均不授权删除；Office/下载失败字节及其他派生恢复仍不在此切片范围。
 
+Office独立容量报告复用document_previews及空间/节点/源资源元数据，严格核对任务ID及固定relative_pdf后，按持久queued/running/ready/failed/interrupted/cancelled状态统计整个任务目录（含源副本、profile/tmp及输出）的逻辑长度；未匹配有效任务的文件单列。归档/墓碑仍纳入，不改收据或启动转换/对账。ready固定PDF缺失标不完整，其他状态可尚未生成PDF，missing_nonready_pdf单独计数。不解析正文/格式或验证hash，不证明ready内容有效；不是实际分配/可回收空间，也不授权删除。无新表、迁移或持久报告；下载attempt及其他派生恢复仍属后续。
+
 原件、可编辑工作文件、派生预览、确认快照分别定位。保存收据按old/new hash恢复索引，不自动回放覆盖外部内容；确认版发布前后回读正文和附件。失败/孤立字节保留，文件与SQLite非同一事务。
 
 保存恢复点浏览复用document_saves的before/pending路径及old/new hash，不新增表、正文镜像或恢复状态。只读预览不改收据；UI确认后复用layout的draft/draft_base_sha256，后续普通保存追加新收据，旧恢复点不清除。已确认版本和旧作答不随恢复草稿改变。
@@ -71,7 +73,7 @@ LW-00已形成[普通学习流程契约](learning-workbench-contracts.md)，上�
 - 完整学习数据库及事件/笔记关系的备份恢复；现有资源导出v1/v2不能替代它。
 - R6凭据及其他候选实体未实施；外部分析候选/修订已落表。临时授权仍仅进程内存（重启失效），不存数据库；API见api-spec.md。
 - 外部目录监听/原地修改、独立长期阅读位置库、通用投影持久化尚未实现；是否落表待具体需求设计。
-- 失败副本容量治理已实现上述Markdown只读统计；其他失败字节范围、保留策略和全部派生孤立目录恢复仍需设计实施，删除学习数据/恢复点未获授权。三方合并已覆盖有可核验基线的MD预览/确认载入与原保存，不提供自动修复或任意版本猜测。
+- 失败副本容量治理已实现上述Markdown与Office只读统计；下载等其他失败字节范围、保留策略和全部派生孤立目录恢复仍需设计实施，删除学习数据/恢复点未获授权。三方合并已覆盖有可核验基线的MD预览/确认载入与原保存，不提供自动修复或任意版本猜测。
 
 ## 待验证
 
