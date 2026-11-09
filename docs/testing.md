@@ -48,3 +48,5 @@ STUDY_EVIDENCE_DIR是沿用的历史参数名，原生自动截图应将其值�
 `python -m study_workbench --data-dir <已有隔离库绝对路径> --check-library --confirm-all-workspaces`（backend工作目录）。测试缺失/损坏字节、索引冲突、未登记派生目录、空目录、已登记失败任务、创建/保存收据、重解析点、范围/预算和锁冲突，并比对业务数据库和学习文件前后字节一致。
 
 冻结CI通过`python tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root <全新隔离目录>`运行：先以真实HTTP创建笔记/保存，核对恢复点只读读取、pending缺失、外改冲突和显式普通保存；再关闭进程，在本探针独立样本库执行持锁拒绝、健康/孤立/索引差异及字节保持。不会复用或清空旧样本，也不改既有统一导入探针故意制造的冲突场景。后端专项见test_document_recovery.py，桌面确认/取消/脏稿/分页及失败保护见document_recovery_test.dart；不以源进程或组件通过代替冻结入口。
+
+同一冻结探针还故意移走自建源工作文件，验证只读恢复点仍可读取、另存新笔记、重复创建不复制、陈旧保存不覆盖改后的副本、原路径未被修复。完成这些断言后仅重置本探针故意制造的缺失现场，再执行既有健康/孤立巡检，不把另存冒充原库已修复。另存交互与响应丢失、空稿、错误名称、取消、异步卸载/窄视图及导航失败由recovery_note_copy_test.dart验证。

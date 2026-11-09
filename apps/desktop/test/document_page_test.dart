@@ -30,8 +30,9 @@ WorkbenchTab tab() => WorkbenchTab(
 Future<void> show(
   WidgetTester tester,
   Backend backend,
-  WorkbenchTab tab,
-) async {
+  WorkbenchTab tab, {
+  ValueChanged<Map<String, dynamic>>? onNavigate,
+}) async {
   tester.view.physicalSize = const Size(1300, 900);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
@@ -45,6 +46,7 @@ Future<void> show(
             workspaceId: 'default',
             tab: tab,
             onChanged: () => update(() {}),
+            onNavigate: onNavigate,
           ),
         ),
       ),
