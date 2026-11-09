@@ -22,6 +22,7 @@
 | 完整库备份恢复（LW-05） | 离线SQLite快照/全文件包、受控新空目录恢复、旧schema保留后升级、表/文件/关系校验、草稿落盘/停服/取消/配置激活；人工/发行仍待验 | backup_archive.py、backup_store.py、backup_dialog.dart、main.dart、__main__.py |
 | XLSX只读查看 | 有界OOXML ZIP/XML在既有查看子进程读取，多表稀疏单元格/缓存值；不执行公式/宏或外链，不提供Office编辑/样式保真 | spreadsheet_view.py、document_view_worker.py、spreadsheet_view.dart、document_page.dart |
 | 离线完整性巡检 | 独占数据锁和SQLite只读连接，受限核文件hash/外键及派生目录归属；仅报告，不迁移、修复或删除；无HTTP/Agent/桌面入口 | library_integrity.py、__main__.py |
+| 恢复副本容量报告 | 离线、全部空间working/question-files的文件逻辑长度与收据分类；只读元数据、有界扫描，不读正文或授权删除；非原子文件系统快照 | recovery_storage.py、__main__.py |
 | Office分页 | 可选固定LibreOffice进程→派生PDF→PDFium页图 | office_inputs.py、office_runtime.py、office_previews.py |
 | 题目文件 | 检查/旧内容显式转换/确认快照/资产完整性/按确认版作答 | question_files_format.py、question_files.py、app.py |
 | 学习与记录 | 判分、追加作答/评分、组卷、统计、事件、笔记关系和投影 | learning.py、learning_records.py、study_page.dart |

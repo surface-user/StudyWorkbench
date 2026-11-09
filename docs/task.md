@@ -1,6 +1,6 @@
 # 当前任务与交付状态
 
-更新日期：2026-11-09。本表分开实现、自动化、审查、人工及交付；自动化数字属于各报告的当时版本，不代表本轮重跑或当前全产品通过。历史完整清单见[迁移前快照](../dev/archive/baseline-20261030/docs/task.md)，默认无需读取。
+更新日期：2026-11-10。本表分开实现、自动化、审查、人工及交付；自动化数字属于各报告的当时版本，不代表本轮重跑或当前全产品通过。历史完整清单见[迁移前快照](../dev/archive/baseline-20261030/docs/task.md)，默认无需读取。
 
 ## 当前安排
 
@@ -63,6 +63,7 @@ LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人�
 | M2-05a / 三方合并核心，自动化/自审交付 | 已实现有界、无副作用的保守行区间合并核心；该PR仅纯核心，API/UI见b/c | 本轮Linux Python3.12.14专项8项及77子测试、ruff通过，自审完成。已创建[草稿PR #8](https://github.com/surface-user/StudyWorkbench/pull/8)，依赖#7，原head e3dfed4的CI #48在冻结源码检查发现漏包；11-09已修补收集路径并本地干净构建核对42模块，核心8项/77子测试及全量Ruff通过，最终ac9cd02的CI #58全部通过，自审完成、无独立批准（见PR实时描述）；[原报告](../dev/records/2026-11-06-library-integrity/report.md)记录边界与交付链接。基线hash/空间校验的只读预览接口见下项，UI确认载入草稿后续独立开发；不宣称编辑器已有三方合并，不自动保存/发布，未合并/发行 |
 | M2-05b / 只读合并预览API，实现/自审完成 | 已实现同节点原件/恢复点基线、空间及当前hash核验；该PR仅API，UI见c | 双Python全量各557项及77子测试、Ruff/Schema、42模块干净冻结构建与真实HTTP只读/陈旧保存/冲突及原巡检链通过，自审完成，独立审查未执行；人工测试已取消。独立分支codex/markdown-merge-preview-api依赖#8的ac9cd02，[独立草稿PR #9](https://github.com/surface-user/StudyWorkbench/pull/9)已创建；最终head CI及切片退出结论见PR描述/实时检查，过程继续[原报告](../dev/records/2026-11-06-library-integrity/report.md)。预览不写文件/草稿/索引/确认版，不自动保存/发布；UI确认载入及原保存由05c承接，M2-05整体未退出 |
 | M2-05c / 桌面三方合并，实现/自审完成 | 已实现匹配草稿基线的原件/恢复点选择、字面候选/冲突、确认前重验、仅载入草稿及原expected-hash保存 | Flutter全量193、分析/格式、后端API/核心31及77子测试通过；关闭动画重复确认竞态先失败后通过，旧失败保留。自审完成、独立批准未取得；[独立草稿PR #10](https://github.com/surface-user/StudyWorkbench/pull/10)已创建，最终head全CI及切片退出结论见PR描述/实时检查，过程继续[原报告](../dev/records/2026-11-06-library-integrity/report.md)；分支codex/markdown-merge-desktop基于#9的37fa76e。不自动保存或改原件/确认版/历史，取消与迟到响应保留草稿；人工测试已取消，未合并/发行，M2-05整体仍进行中 |
+| M2-05d / 恢复副本容量只读报告，实现/自审完成 | 已实现全部空间working/question-files的current/before/pending及未登记文件逻辑长度；离线显式确认、持锁、只读元数据与有界扫描 | 双Python全量各583及77子测试、最终专项26、静态/Schema、43模块干净冻结构建与原恢复/资源巡检链通过，版本边界见报告；自审完成，无独立批准。[独立草稿PR #11](https://github.com/surface-user/StudyWorkbench/pull/11)已创建，分支codex/recovery-storage-report依赖#10的af6fec7；最终head CI及切片交付结论见PR描述/实时检查，未确认前保持待交付；命令/旧失败继续[原报告](../dev/records/2026-11-06-library-integrity/report.md)。不含Office/下载等其他失败字节，不提供删除/覆盖或清理策略；人工测试已取消，未合并/发行，M2-05整体仍进行中 |
 | M3-03 / R5 | 富内容作答扩展、科目知识体系、复习算法校准、更广规模性能综合回归 | 旧历史分页已有实现；规模读取回归不等于百万记录性能/学习效果验证 |
 | M4（由LW-07承接） | yt-dlp/FFmpeg下载队列、质量选择、取消/重试/断点恢复、转码、自动入库 | 依赖/许可/固定二进制审查及授权来源真实流程；本地媒体上传/播放不抵销此项 |
 | M4 / WebView媒体 | 音轨/编码矩阵、外站登录/DRM/休眠、安全导航/子资源/弹窗/下载/DNS/profile矩阵 | 实际站点/硬件及负面测试；容器后缀不证明解码能力 |

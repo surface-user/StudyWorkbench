@@ -259,3 +259,13 @@ context_sha256及payload_sha256由服务端按对应上下文/候选content计�
 核对当前schema、SQLite完整性/FK、原件/就绪媒体/确认版及附件/就绪派生PDF的大小/hash，工作文件对索引变化报告警告；保留保存恢复点、创建收据和失败预览任务。working、question-files、question-versions、previews目录按数据库归属巡检，包含空目录及working旧generation；无归属只表示候选，不表示可删除。根部未完成迁移/备份/恢复暂存目录提示后不展开；运行profile排除。未知其他目录不猜测归属。
 
 最多20000目录项、50000引用行、512MiB文件哈希、30秒协作式期限、200条问题；超限complete=false/healthy=false，不返回虚假的全库健康。healthy仅针对上述检查范围，不替代所有业务JSON/格式语义验证，数据锁不排斥外部编辑器；单次阻塞文件系统操作不保证可立即中断。旧schema只报告不支持，不借巡检自动升级。
+
+## 离线恢复副本容量报告（M2-05d，当前已实现）
+
+`--data-dir <已有库绝对路径> --report-recovery-storage --confirm-all-workspaces`：独占数据锁、SQLite只读事务，仅扫描全部空间（含归档/墓碑）的`workspaces/*/working`和`question-files`。拒绝缺库、正在使用的库、其他离线操作及config/media/parent-pipe组合；旧schema返回不完整，不创建/迁移业务库、启动HTTP或写配置。锁文件可创建/锁定，不写学习数据。没有桌面、HTTP或Agent入口，也没有清理开关。
+
+输出单行JSON的result：schema_version=1、scope=markdown_working_and_save_recovery_files、complete、entries_checked、rows_checked、file_count、logical_bytes、categories（current_workfile/before_recovery/pending_recovery/unreferenced_working_file各含file_count/logical_bytes）、records_by_status、missing_committed_pending、largest_files（最多20个，按逻辑长度降序/相对路径升序；含relative_path/logical_bytes/role/save_status）、largest_files_limit、largest_files_truncated、issues（code及可选relative_path），预算中止另含limit_reason。data_modified/deletion_authorized/content_integrity_checked/library_health_checked/snapshot_atomic恒false；bytes_kind=observed_logical_lengths。完整退出0，发现缺失/坏引用/不可读/扫描变化或预算不足退出1，参数/取锁错误非零退出；不输出正文或原始SQL异常。
+
+先核对工作文件所属节点/空间/题目及收据ID和精确before/pending名称，再分组；不沿数据库任意路径展开。成功保存已消费的committed pending缺失单独计数，其他应有文件缺失标不完整。未登记仅指所选目录中的文件未匹配有效收据，不表示可删除，也不判断其业务价值或年龄。原件/媒体/确认快照、Office失败预览、下载attempt、未知根目录与迁移/备份/恢复暂存排除。重解析点不展开，问题标不完整；不读取正文或核hash，不替代完整性巡检。
+
+最多20000目录项、50000相关行、30秒协作期限、200问题及20个较大文件；超限只返回不完整的已观察小计，不推算全库总量。逻辑长度按相对路径计数，hardlink不同路径重复计长，不代表实际分配/去重/可回收字节。SQLite事务不构成文件系统原子快照，数据锁不排斥外部编辑器，阻塞系统调用不可保证即时中止。任何结果均不授权删除、覆盖、自动修复或保留策略执行。

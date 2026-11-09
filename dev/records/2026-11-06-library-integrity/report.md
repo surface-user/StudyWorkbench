@@ -285,3 +285,50 @@ DocumentFiles新增严格MergeText请求与只读路由，复用已有路径/收
 交付前附加检查：SDK dart.exe format --output=none --set-exit-if-changed apps/desktop/lib apps/desktop/test apps/desktop/integration_test退出0，87文件无变化；显式8文件UTF-8/替换字符/尾空白检查和49文档相对链接检查退出0，无缺失。原工作区分支及未提交文件未切换/覆盖；远端仅上传上述3份Dart实现/测试和4份现行文档及本报告，采用Base64/UTF-8和逐文件Git blob SHA/回读检查。最终head/CI另在PR描述维护，不为记录自身SHA循环提交。
 
 实际PR交付：[草稿PR #10](https://github.com/surface-user/StudyWorkbench/pull/10)，实现84b841e195784c828959fd860f2cca84c2322861，base为#9的37fa76e，独立分支codex/markdown-merge-desktop。8份明确文件上传后blob SHA逐项核对，本节/task补实际交付链接；最终head/CI运行/核对时间及切片退出结论继续PR描述，不记录自身SHA形成循环提交。没有独立批准，不合并/发行；task.md仍有其他未完成项，后续继续按依赖推进。
+
+## M2-05d：恢复副本容量只读报告设计（2026-11-09）
+
+本轮重新核对#10仍open/draft，head af6fec76bb7d8497fe68f78cad38ec379ac277bc、base 37fa76e，当前CI #68全部success，无未解决行内线程。原工作区仍codex/recovery-note-copy，仅原.vscode和阶段summary.md未跟踪；未切换/覆盖。沿用隔离副本，__main__/library_integrity/task/本报告规范UTF-8 Git blob逐项与#10核对一致。新独立分支codex/recovery-storage-report基于该head，交付要求实现/自动化/自审/独立草稿PR与最终head CI，不要求合并/发行。
+
+用户边界：本轮只界定和实施容量可见性，不授权删除恢复点、失败字节或任何学习数据，不自动删除/覆盖。新离线--report-recovery-storage须显式--confirm-all-workspaces，持既有数据锁和SQLite只读连接；拒绝正在使用、缺库、旧schema、其他操作/config/media/parent-pipe组合，不迁移/启动服务/写配置。锁文件沿用原DataLock约定可创建/锁定，不写学习数据。
+
+首批范围限定所有空间（含归档/墓碑）的workspaces/*/working和question-files，读取document_workfiles/document_saves及节点/题目映射以核对归属和严格before/pending名称。原件/媒体/确认快照、Office失败预览、下载attempt、未知根目录及备份/恢复暂存不纳入，后续单独设计。统计current、before、pending及未登记工作目录文件的数量/逻辑长度，按收据状态计数，并给最多20个较大文件的受限相对路径。成功保存后缺失的committed pending单独计数，不假称损坏或已释放空间；其他缺失/不安全引用/不可读/变化/预算中止标不完整。
+
+逻辑长度按不同相对文件路径计数，重复引用不重复累计；不同路径的hardlink可重复计长，不声称实际磁盘分配/去重或可回收字节。仅元数据，不读正文/核hash，不证明库健康；外部编辑器不受数据锁约束，报告非原子文件系统快照。任何分类/未登记状态/文件大小都不构成删除依据，不提供清理开关、年龄/TTL推断或写接口。最多20000目录项、50000相关行、30秒协作期限和200问题，输出明确complete/bytes_kind/content_integrity_checked/data_modified/deletion_authorized等边界，复用既有路径/只读/锁守卫，不放宽原完整性巡检。
+
+任务拆分：只读容量服务/CLI→真实保存中断/状态/消费pending/旧generation与未登记字节、归档墓碑/QuestionFile、坏路径/归属/重解析点/特殊文件、缺失/变化/预算/旧库及参数回归，逐字节保持→冻结CLI串联及旧全部探针→双Python全量/静态/当前head完整CI→自审与契约/task/原报告→独立草稿PR。不新增依赖/迁移、HTTP/桌面/Agent入口，不接模型，不做人工测试。
+
+### M2-05d 实施与验证（2026-11-10）
+
+实现落在recovery_storage.py与__main__.py，新CLI独立互斥分支，沿用DataLock、validate_root、archive_path、no_links及SQLite mode=ro/query_only。按受限目录扫描，不对数据库外报路径做stat，不读正文；逐项累计数量/逻辑长度并维持最多20文件列表，坏引用/缺失/变化/预算停止均不假称完整。原完整性巡检逻辑、现有收据/恢复/合并/普通保存及全部断言保留。无新表、迁移、依赖、模型或Agent接口。已更新API/架构/数据模型以区分当前范围与后续容量治理。
+
+首轮Q专项capacity-target01退出1：13失败/13通过。真实实现错误为Windows DirEntry缓存的inode/时间精度与Path即时stat不同，正常文件全部误判变化；改为两次即时stat签名复核，仍核对缓存大小/类型并保留变化回归。另有夹具错误：给多工作文件设置相同非法路径触发UNIQUE；改为各节点独立坏路径。第二轮target02退出1：3失败/23通过；第三轮target03退出1：1失败/25通过。归档夹具原本未创建题目工作文件，补真实working-copy创建以保证实际覆盖QuestionFile；junction断言原先错把其他归档空间正常working也排除，改为精确断言default被链接范围不展开，同时核对保留目标字节。未删失败、跳过Windows边界或降低产品断言；旧日志/XML及失败fixture保留在artifacts/capacity-*与.local/cap-t01..03。
+
+cwd均为隔离副本.local/markdown-merge-followup-src。Q=D:/computer_work/project/StudyWorkbench/.local/release-venv/Scripts/python.exe，独立CPython3.13.17；P=.venv/Scripts/python.exe，链接原项目Python3.12.7环境，测试源码仍是本副本。以下日志仅保存生成fixture/脱敏结果，不包含个人库：
+
+| 实际命令 | 退出/结果 | 原始记录（副本artifacts/） |
+|---|---|---|
+| Q -m pytest backend/tests/test_recovery_storage.py -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/cap-t04 --junitxml=artifacts/capacity-target04.xml | 0；26项，44.73秒 | capacity-target04.log/xml |
+| Q -m pytest -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/cap-qfull01 --junitxml=artifacts/capacity-qfull01.xml | 0；583项及77子测试，341.62秒 | capacity-qfull01.log/xml |
+| P -m pytest -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/cap-pfull01 --junitxml=artifacts/capacity-pfull01.xml | 0；最终源码583项及77子测试，389.33秒；与Q串行 | capacity-pfull01.log/xml |
+| Q -m ruff check backend tools | 0；全量静态检查 | 实际输出；首轮--fix亦0且无额外文件改动 |
+| Q tools/export_question_schema.py --check | 0；协议无漂移 | 实际输出 |
+| ./packaging/windows/build-backend.ps1 -Python Q | 0；43模块与当前源码一致，包括新CLI模块/嵌套代码/常量；约146秒 | capacity-build01.log |
+| Q tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/capacity-frozen01 | 0；原HTTP恢复/另存/三方合并/持锁/健康/孤立目录/外改巡检全链，新报告持锁拒绝、业务字节保持与未登记容量精确增加均通过 | capacity-frozen01.log；.local/capacity-frozen01/result.json |
+| Q tools/check_resource_explorer.py --exe dist/study_backend/study_backend.exe --test-root .local/capacity-resources01 --documents | 0；原统一导入/文档/布局/作答/原件及删除/重启保持，schema0016 | capacity-resources01.log |
+
+新增26项覆盖所有收据状态与消费pending、归档/墓碑及真实QuestionFile工作文件、旧generation/二进制未登记字节、无正文读取、参数互斥与显式全空间确认、只读逐字节保持、坏路径/归属/ID/状态、缺失/不可读/损坏库/变化、4预算、旧schema/无迁移/持锁、实际Windows junction、1GiB逻辑长度与较大文件截断、hardlink按路径重复计长。不是全库健康/真实磁盘可释放空间证明。
+
+辅助失败如实保留：误调用不存在的Q tools/check_schema.py退出1，随后用仓库实际export_question_schema.py --check退出0；无协议文件改动。原.git仍只读，未再fetch/clone；GitHub工具不返回commit tree，匿名REST读取遇共享IP限流，未用于判定CI。已按本地#7固定树和#8–10全部实际变更路径、#10逐文件blob SHA重建基树838715922517e74a040788a45af1c22d72c9b3b2，无分支引用变更；后续仅显式9文件上传并核对expected head，既有工作不覆盖。
+
+自审核对调用方/参数、读取范围与路径/空间/题目归属、锁与只读事务、扫描及SQL预算、分类失效/部分小计、Windows缓存/重解析点/外改、hardlink/逻辑长度解释、输出无正文/绝对路径、冻结收集与原探针未弱化。只有自审，无独立批准，CI不计作独立审查。P全量、冻结资源探针、最终head全CI及实际PR链接继续本节/PR实时描述；人工测试已取消，不合并/发行。其他失败字节范围及全部派生恢复仍未完成，删除/覆盖学习数据或恢复点未获授权。
+
+验证边界及留存：Q全量在追加目录即时类型守卫前启动，最终源码由Q专项26项、43模块源码一致性、冻结两探针、P全量及当前head CI复核，不把启动前导入的进程称作最终源码全量。业务UI未改，本地不重复Flutter/Windows构建；最终head CI仍完整执行双Python/R1–R5、Flutter/Windows/COM和全套冻结链，不能沿用#10。artifacts/capacity_validate.py退出0：明确9份改动，其他427份基线文件保持、48文档相对链接无缺失、UTF-8/替换字符/尾空白检查通过。该辅助脚本不入Git。
+
+两冻结探针成功/进程退出后，以PowerShell Resolve-Path逐一确认隔离副本范围且全部子项无reparse point，再Remove-Item -LiteralPath -Recurse -Force清理仅本副本dist/study_backend、build/study_backend、.local/capacity-frozen01、.local/capacity-resources01，退出0。先保存包SHA256至capacity-package-hash.json、文件数量/逻辑长度及精确路径至capacity-generated-artifacts.json、结果至capacity-frozen-result.json，全部日志/JUnit保留。原仓库当前冻结包/Office组件、.venv环境junction、用户数据与所有失败现场未动；此为明确生成产物回收，不是新容量报告提供删除功能。
+
+本地收尾：P全量最终源码退出0，583及77子测试；两环境仅既有Starlette anyio别名弃用警告。原工作区仍a959b9f/codex/recovery-note-copy，仅原.vscode与summary.md未跟踪、SHA256与任务开始相同，未切换分支或修改原文件。实现/相关自动化/自审完成，独立审查没有取得；下一步为本切片独立草稿PR及最终head完整CI，不将已跑本地或父PR绿灯替代新head。M2-05整体未完成；下一候选是另行界定Office失败预览/下载attempt的只读容量范围与有效归属，尚未设计实施，不授权清除恢复点或学习数据。
+
+实际交付：[草稿PR #11](https://github.com/surface-user/StudyWorkbench/pull/11)，独立分支codex/recovery-storage-report，base=#10的af6fec76bb7d8497fe68f78cad38ec379ac277bc，实现提交2b06b07d41a5f722eaedb00d6ac27a51eacabac0。仅上述9文件，远端实现commit完整差异逐项核对一致，无额外基线改动；均以规范UTF-8/LF Base64上传并校验Git blob SHA。首次create_blob遇连接器Transport send error，未执行任何分支更新；先读取目标分支__main__确认仍为原blob 3ebfaca，再恢复内容寻址的blob上传成功，随后带expected_sha推进独立分支，未强推/重试不确定的分支写入。实际PR链接补入task/原报告；最终head、当前CI运行/核对时间及切片退出结论另在PR描述维护，不为记录自身SHA循环提交。CI尚未确认前待交付，不将CI视为独立批准；不合并/发行。
+
+文档链接补交检查：直接关闭autocrlf比较LF基线与Windows CRLF副本的git diff --no-index --check退出1，将所有行末CR作为空白告警；规范上传字节检查原已通过。随后artifacts/capacity_diffcheck.py对与Git上传完全相同的UTF-8/LF临时副本逐一执行git -c core.autocrlf=false diff --no-index --check；辅助脚本首次误要求退出0失败，核对--no-index隐含--exit-code后按0/1且stdout/stderr均空严格判定（1也表示存在正常差异）。九文件检查结果保存capacity-diffcheck.log；不改源文件或放宽正文空白断言。
