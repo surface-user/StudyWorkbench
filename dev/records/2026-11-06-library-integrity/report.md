@@ -246,3 +246,40 @@ DocumentFiles新增严格MergeText请求与只读路由，复用已有路径/收
 本地不重复Flutter/Windows UI构建：此独立切片没有Dart/UI/原生改动，项目原完整桌面/COM/全量R1–R5/冻结生命周期及文档worker仍由本PR最终head CI执行并逐项核对，不沿用#8结果。#8功能head 5d74ad6的CI #52已全部通过；记录UTF-8纠正后的最终#8 head ac9cd02已于2026-11-09核对[CI #58](https://github.com/surface-user/StudyWorkbench/actions/runs/42573718426)三组全部completed/success，含所有原冻结链；本切片依赖满足，仍无独立审查批准。独立API草稿PR的实际URL、最终head/运行/检查时间在其描述与task交付条目维护，不为记录自身SHA循环提交。UI合并确认载入未实施，整体M2-05继续进行中；未合并/发布。
 
 实际交付：实现提交b227d9cc663808a4189905c73769897700aa79a5，独立[草稿PR #9](https://github.com/surface-user/StudyWorkbench/pull/9)，base为#8的ac9cd02。9份文件均以Base64传输规范UTF-8/LF字节并核对返回Git blob SHA，正文无替换字符；远端回读和最终head全CI继续核对。此处与task仅补实际PR链接，最终head/运行/退出结论持续记录在PR描述，不为记录自身SHA循环提交。任务要求实现、相关自动化、自审/如实披露独立审查状态、独立PR及当前head CI；不要求合并/发行。未通过当前head CI前不宣称切片退出。
+
+## M2-05c：桌面合并预览与确认载入设计（2026-11-09）
+
+基线核对：PR #9仍open/draft，head 37fa76e339de8dd1076d807daeaf80609353122c、base ac9cd02；当前head CI #63三组success，无未解决行内线程，仅有明确标注的自审，无独立批准。沿用已校验的隔离源码副本，DocumentPage/恢复对话框/task/本报告规范UTF-8内容的Git blob SHA逐项与该head核对一致；不重试原工作区只读.git操作，原.vscode/summary.md保留。独立远端分支codex/markdown-merge-desktop从该head建立；提交/独立草稿PR/当前head全CI为交付要求，不要求合并/发行。
+
+需求与设计：仅在已有MD工作副本且draft_base_sha256非空时提供合并入口，空草稿仍是有效草稿。对话框冻结原草稿/基线，仅允许选择与原draft_base_sha256一致的原件或同节点before/pending收据，记录有界分页；基线/当前字节最终由#9 API核验，不猜测基线，不新增后端接口。显式点击预览后先读取当前工作文件hash，再请求只读合并，字面显示候选（可为空）或冲突无候选。取消/错误/缺失基线不修改任何原草稿。
+
+用户另行点击确认载入时，以预览时相同的基线、本地草稿和expected_current_sha256再调用只读API，候选/基线/当前版本不一致或外改则拒绝，必须重新预览。返回父页前后均检查mounted，父页再次核对资源/标签身份、原草稿文字和原基线未变化；仅更新TextEditingController及既有tab.draft/draft_base_sha256，切换原文编辑。后续点击原保存按钮才PUT document，expected hash使用候选对应current hash，后续外改仍409且草稿保留。重复打开/预览/确认有本地忙门禁，不自动保存、解析/发布题目，不改原件、确认版或历史。
+
+任务拆分：独立只读对话框及DocumentPage入口/确认载入→原件/恢复点/分页、取消、确认时陈旧/外改、空稿、冲突无候选、重复操作/卸载、父草稿变更保持及普通保存回归→Flutter格式/分析/全量与Windows构建/原CI→自审→更新现行契约/task及本报告→独立PR并核实最终head CI。复用现有组件/Backend/layout，无新依赖或迁移；不接模型，不执行人工测试/Computer Use，不新建UI验收包，保留旧失败。
+
+### M2-05c实现、失败及修补
+
+新增DocumentMergeDialog，仅调用既有GET document、分页GET document-saves和POST document-merge-preview。仅匹配原草稿基线的选项可见；点击预览读取当前hash，候选按字面显示，可为空，冲突无候选。确认重发已核对的相同请求，不刷新expected current绕过陈旧检查；base/current/local绑定或候选不一致拒绝。DocumentPage冻结原标签/资源prefix/Backend实例/草稿/基线，返回时再次核对，才更新既有草稿字段与当前hash；普通save流程未改。后台来源切换、父草稿变化、取消、卸载或异步错误均不覆盖原草稿。
+
+环境仍为本轮隔离副本，原工作区.git只读未重试写入。固定Flutter3.47.1/Dart3.13.1，P/Q同前；所有原始日志位于本副本artifacts/merge-ui-*.log及merge-ui-api.xml，不入Git。
+
+- cwd=apps/desktop，flutter pub get --offline退出1：依赖解析完成，但Windows未启用symlink支持；未更改系统Developer Mode。既有锁文件逐字规范核对不变，没有新依赖。后续--no-pub静态/组件测试正常执行，Windows Release/COM交最终head CI，不能把该次pub get记成功。
+- 为完整Flutter真实后端管道测试，在本副本.venv建立到原已有Python环境的单一junction，不复制或修改环境。首次执行的自动权限审批超时，CreateProcess未启动；实际Test-Path确认链接不存在、目标环境仍为普通目录后，仅重试一次更小的New-Item Junction命令，退出0。无需用户修改全局权限，不访问个人学习目录。
+- 首轮flutter analyze --no-pub退出1：新文件两处跨行if缺块（analyze01）；补块后关闭守卫增加了另一处跨行if，第二轮退出1（analyze-final），修复后最终analyze02退出0，6.9秒。未关闭lint或降低规则。
+- flutter test --no-pub test/document_merge_test.dart test/document_recovery_test.dart test/document_page_test.dart：target01退出1，18通过13失败。多数新测试未等待选择后的widget重绘即点击仍禁用的预览，补pump；窄视图夹具从当前B开始编辑却要求选择原件A，修正夹具使真实草稿基线与原件一致，不允许产品猜测。target02退出1，30通过1失败；target03退出1，33通过1失败。剩余直接重复callback测试触发Flutter guard冲突：mock异步回调中使用guarded expect与pump重叠，改为等价expectSync，断言保留。
+- 自审发现关闭动画期间State仍mounted，确认成功finally清busy会让迟到callback再次POST甚至再次pop。新增dismiss-red回归实际退出1：关闭期间第二次确认回调产生第3次POST，预期仅2次；另一失败为上述fixture guard。新增不可逆closing状态，覆盖成功、取消、系统返回；每个await后及catch/finally均检查关闭状态，关闭后不续发请求、不重启按钮、不再次pop。target04退出0，相关36项通过；新增系统返回/重复取消继续纳入最终全量。没有删除失败测试或增加超时掩盖问题。
+
+### M2-05c最终验证与审查
+
+| 命令（cwd另注明） | 实际退出/覆盖 | 原始记录 |
+|---|---|---|
+| cwd=apps/desktop；SDK dart.exe format lib/document_merge_dialog.dart lib/document_page.dart test/document_merge_test.dart | 0；最终3文件规范 | 实际输出 |
+| 同cwd；flutter analyze --no-pub | 0；无问题，6.9秒 | merge-ui-analyze02.log |
+| 同cwd；flutter test --no-pub --dart-define=STUDY_ROOT=D:/computer_work/project/StudyWorkbench/.local/markdown-merge-followup-src --dart-define=STUDY_DATA_DIR=D:/computer_work/project/StudyWorkbench/.local/markdown-merge-followup-src/.local/merge-ui-full-data | 0；全量193项，约44秒；真实后端进程测试使用该副本#9源码及新隔离数据 | merge-ui-full.log |
+| cwd副本根；Q -m pytest backend/tests/test_document_merge.py backend/tests/test_markdown_merge.py -q --basetemp=.local/merge-ui-api-tests --junitxml=artifacts/merge-ui-api.xml | 0；31项及77子测试，13.08秒 | merge-ui-api.log/xml |
+
+新增26项组件回归包含原件/before/pending、50+1分页/基线不符不猜测、预览/确认/取消/系统返回、关闭动画迟到响应/重复确认和取消、空稿、字面候选/冲突无候选、确认时外改/结果变化、载入后陈旧保存拒绝、父草稿变化不覆盖、能力变化/失效收据/错误响应绑定、卸载及400×800视图。组件/后端分项证据不冒充实际窗口测试。后端业务源码未改，两个API模块Git blob与#9逐项相同；本地不重复双Python全量/冻结包和原生Windows构建，最终head CI仍执行双Python全量/R1–R5、Flutter/Windows Release/COM及全套冻结链，不沿用#9绿灯。静态/全量后仅更新现行契约/task/本报告。
+
+自审已核对新增路由调用与所有受影响的DocumentPage load/edit/save/recovery/草稿布局、Backend实例及资源身份、空稿和异步失效、PopScope所有退出路径、关闭竞态先失败后通过、原普通expected hash保存以及QuestionFile/历史权威。无新表/迁移/依赖/Agent工具，不自动修复路径或发布确认版；旧恢复入口和失败证据保留。此次仅自审，无独立批准；不把CI当独立审查。人工测试/Computer Use按用户指令取消。独立草稿PR/最终head CI继续核实，未合并/发行；M2-05其他派生恢复与容量治理仍未完成。
+
+交付前附加检查：SDK dart.exe format --output=none --set-exit-if-changed apps/desktop/lib apps/desktop/test apps/desktop/integration_test退出0，87文件无变化；显式8文件UTF-8/替换字符/尾空白检查和49文档相对链接检查退出0，无缺失。原工作区分支及未提交文件未切换/覆盖；远端仅上传上述3份Dart实现/测试和4份现行文档及本报告，采用Base64/UTF-8和逐文件Git blob SHA/回读检查。最终head/CI另在PR描述维护，不为记录自身SHA循环提交。
