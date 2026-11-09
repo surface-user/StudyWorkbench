@@ -244,3 +244,5 @@ DocumentFiles新增严格MergeText请求与只读路由，复用已有路径/收
 自审已核对实际差异、DocumentFiles所有新增调用方及app.include_router继承鉴权、RequestLimits实际分块预算、恢复点所有权/路径/hash/重解析点守卫的复用、prepared拒绝、当前读取期间外改、原expected hash保存、失败不写库/文件、QuestionFile确认版/实际旧作答与墓碑语义。新增23项HTTP用例覆盖空稿/CRLF/字面内容、原件及before/pending基线、错误基线/版本、跨节点/空间、401/403/Host、非法字段与Unicode、1MiB输入/结果及8MiB无Content-Length帧、两并发忙、预览后外改和实际普通保存。无独立审查批准；不将本轮CI或另一个任务的自审当独立审查。按项目规则不创建子Agent。
 
 本地不重复Flutter/Windows UI构建：此独立切片没有Dart/UI/原生改动，项目原完整桌面/COM/全量R1–R5/冻结生命周期及文档worker仍由本PR最终head CI执行并逐项核对，不沿用#8结果。#8功能head 5d74ad6的CI #52已全部通过；记录UTF-8纠正后的最终#8 head ac9cd02已于2026-11-09核对[CI #58](https://github.com/surface-user/StudyWorkbench/actions/runs/42573718426)三组全部completed/success，含所有原冻结链；本切片依赖满足，仍无独立审查批准。独立API草稿PR的实际URL、最终head/运行/检查时间在其描述与task交付条目维护，不为记录自身SHA循环提交。UI合并确认载入未实施，整体M2-05继续进行中；未合并/发布。
+
+实际交付：实现提交b227d9cc663808a4189905c73769897700aa79a5，独立[草稿PR #9](https://github.com/surface-user/StudyWorkbench/pull/9)，base为#8的ac9cd02。9份文件均以Base64传输规范UTF-8/LF字节并核对返回Git blob SHA，正文无替换字符；远端回读和最终head全CI继续核对。此处与task仅补实际PR链接，最终head/运行/退出结论持续记录在PR描述，不为记录自身SHA循环提交。任务要求实现、相关自动化、自审/如实披露独立审查状态、独立PR及当前head CI；不要求合并/发行。未通过当前head CI前不宣称切片退出。
