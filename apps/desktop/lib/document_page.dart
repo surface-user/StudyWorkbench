@@ -17,6 +17,7 @@ import 'learning_marks_dialog.dart';
 import 'internal_links.dart';
 import 'spreadsheet_view.dart';
 import 'document_recovery_dialog.dart';
+import 'document_merge_dialog.dart';
 
 class DocumentPage extends StatefulWidget {
   const DocumentPage({
@@ -52,6 +53,7 @@ class _DocumentPageState extends State<DocumentPage> {
   Uint8List? image;
   String? hash, error;
   bool busy = false;
+  bool mergeOpen = false;
   Map<String, dynamic>? preview;
   Timer? previewTimer;
   int previewGeneration = 0;
@@ -639,6 +641,53 @@ class _DocumentPageState extends State<DocumentPage> {
     widget.onChanged();
   }
 
+  Future<void> merge() async {
+    if (busy || mergeOpen || !working || widget.tab.draftBaseSha256 == null) {
+      return;
+    }
+    final owner = widget.tab;
+    final sourceBackend = widget.backend;
+    final sourcePrefix = prefix;
+    final base = owner.draftBaseSha256!;
+    final local = text.text;
+    setState(() => mergeOpen = true);
+    try {
+      final result = await showDialog<Map<String, dynamic>>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => DocumentMergeDialog(
+          backend: sourceBackend,
+          prefix: sourcePrefix,
+          baseHash: base,
+          localText: local,
+        ),
+      );
+      if (!mounted || result == null) return;
+      if (widget.tab != owner ||
+          widget.backend != sourceBackend ||
+          prefix != sourcePrefix ||
+          text.text != local ||
+          owner.draft != local ||
+          owner.draftBaseSha256 != base) {
+        setState(() => error = '草稿或资源已变化，合并候选未载入；当前草稿保留。');
+        return;
+      }
+      setState(() {
+        text.text = result['text'] as String;
+        owner.draft = text.text;
+        owner.draftBaseSha256 = result['current_sha256'] as String;
+        hash = owner.draftBaseSha256;
+        document!['sha256'] = hash;
+        owner.documentState['mode'] = 'edit';
+        rawText = false;
+        error = null;
+      });
+      widget.onChanged();
+    } finally {
+      if (mounted) setState(() => mergeOpen = false);
+    }
+  }
+
   void change(String value) {
     widget.tab.draft = value;
     widget.tab.draftBaseSha256 ??= hash;
@@ -769,6 +818,16 @@ class _DocumentPageState extends State<DocumentPage> {
                       ? null
                       : save,
                   child: const Text('保存工作文件'),
+                ),
+                TextButton(
+                  onPressed:
+                      busy ||
+                          mergeOpen ||
+                          !working ||
+                          widget.tab.draftBaseSha256 == null
+                      ? null
+                      : merge,
+                  child: const Text('合并修改'),
                 ),
                 Text(
                   widget.tab.draftBaseSha256 != null
