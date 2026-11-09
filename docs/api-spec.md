@@ -269,3 +269,13 @@ context_sha256及payload_sha256由服务端按对应上下文/候选content计�
 先核对工作文件所属节点/空间/题目及收据ID和精确before/pending名称，再分组；不沿数据库任意路径展开。成功保存已消费的committed pending缺失单独计数，其他应有文件缺失标不完整。未登记仅指所选目录中的文件未匹配有效收据，不表示可删除，也不判断其业务价值或年龄。原件/媒体/确认快照、Office失败预览、下载attempt、未知根目录与迁移/备份/恢复暂存排除。重解析点不展开，问题标不完整；不读取正文或核hash，不替代完整性巡检。
 
 最多20000目录项、50000相关行、30秒协作期限、200问题及20个较大文件；超限只返回不完整的已观察小计，不推算全库总量。逻辑长度按相对路径计数，hardlink不同路径重复计长，不代表实际分配/去重/可回收字节。SQLite事务不构成文件系统原子快照，数据锁不排斥外部编辑器，阻塞系统调用不可保证即时中止。任何结果均不授权删除、覆盖、自动修复或保留策略执行。
+
+## 离线Office预览目录容量报告（M2-05e，当前已实现）
+
+`--data-dir <已有库绝对路径> --report-office-storage --confirm-all-workspaces`：与Markdown报告独立互斥，仅统计所有空间（含归档/墓碑）的`workspaces/*/previews`。共用独占锁、SQLite只读事务、本地路径/旧schema/参数守卫及20000目录项、50000相关行、30秒协作期限、200问题、前20较大文件预算。不启动HTTP、转换组件、对账或迁移，不写学习数据/配置；锁文件可创建/锁定。拒绝config/media/parent-pipe及同时指定其他离线操作，无桌面或Agent入口。
+
+输出result共用schema_version=1、complete、数量/逻辑长度、较大文件上限/截断、issues/limit_reason及全部只读边界字段；scope=office_preview_task_files。categories为queued_preview_file/running_preview_file/ready_preview_file/failed_preview_file/interrupted_preview_file/cancelled_preview_file及unregistered_preview_file，各含file_count/logical_bytes。records_by_status统计数据库任务状态，非法状态以unknown计数并报不完整。largest_files按逻辑长度降序/相对路径升序，含relative_path/logical_bytes/role/preview_status；不含Markdown的save_status或missing_committed_pending。missing_nonready_pdf记录未就绪任务固定PDF的缺失次数，不视为损坏；ready固定PDF缺失则报missing_required_reference/complete=false。完整退出0，不完整退出1，参数/取锁错误非零退出。
+
+仅通过32位小写hex任务ID、精确`workspaces/<workspace>/previews/<id>/output/source.pdf`、现存空间、资源节点及源资源同空间/绑定检查的任务，才用于整个任务目录的状态分类。未登记不等于可删除；坏引用不用于展开任意路径。任务目录中的源副本、profile/tmp和输出都按路径计长，不因扩展名、年龄或任务失败而排除。持久queued/running只是原记录，不推断仍有进程运行，也不借报告改为interrupted。
+
+只读元数据，不打开正文/PDF/profile或输出原件标题、错误文本、运行时指纹；不证明文件格式、hash、ready可用性或全库健康。data_modified/deletion_authorized/content_integrity_checked/library_health_checked/snapshot_atomic恒false，bytes_kind=observed_logical_lengths。非原子观测、hardlink重复计长、阻塞系统调用与部分小计限制沿用Markdown报告。原件目录、媒体、Markdown工作副本/恢复点、确认版、下载及操作暂存排除；报告不授权删除/覆盖任何学习数据或恢复证据，也没有保留/清理策略开关。

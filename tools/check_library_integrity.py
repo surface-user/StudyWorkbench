@@ -6,6 +6,7 @@ import os
 import queue
 import re
 import secrets
+import sqlite3
 import subprocess
 import threading
 import urllib.error
@@ -45,14 +46,15 @@ def main():
         return {p.relative_to(data).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                 for p in data.rglob('*') if p.is_file() and p.name != '.study.lock'}
 
-    def capacity():
+    def capacity(*, office=False, expected=0):
         before = snapshot()
-        run = subprocess.run(command + ['--report-recovery-storage', '--confirm-all-workspaces'], env=env, cwd=root,
+        flag = '--report-office-storage' if office else '--report-recovery-storage'
+        run = subprocess.run(command + [flag, '--confirm-all-workspaces'], env=env, cwd=root,
                              capture_output=True, text=True, encoding='utf-8', timeout=60,
                              creationflags=subprocess.CREATE_NO_WINDOW)
-        assert run.returncode == 0, run.stderr[-1000:] + run.stdout[-2000:]
+        assert run.returncode == expected, run.stderr[-1000:] + run.stdout[-2000:]
         report = json.loads(run.stdout)['result']
-        assert report['complete'] and not report['data_modified'] and not report['deletion_authorized']
+        assert report['complete'] is (expected == 0) and not report['data_modified'] and not report['deletion_authorized']
         assert not report['content_integrity_checked'] and not report['library_health_checked']
         assert report['bytes_kind'] == 'observed_logical_lengths' and not report['snapshot_atomic']
         assert snapshot() == before, 'Capacity report changed business data'
@@ -152,6 +154,9 @@ def main():
         blocked = subprocess.run(command + ['--report-recovery-storage', '--confirm-all-workspaces'], env=env, cwd=root,
                                  capture_output=True, timeout=30, creationflags=subprocess.CREATE_NO_WINDOW)
         assert blocked.returncode != 0, 'Capacity report bypassed the active application lock'
+        blocked = subprocess.run(command + ['--report-office-storage', '--confirm-all-workspaces'], env=env, cwd=root,
+                                 capture_output=True, timeout=30, creationflags=subprocess.CREATE_NO_WINDOW)
+        assert blocked.returncode != 0, 'Office report bypassed the active application lock'
         process.stdin.close()
         assert process.wait(timeout=20) == 0
         assert not process.stderr.read().strip()
@@ -175,13 +180,53 @@ def main():
         changed = inspect(1)
         assert {item['code'] for item in changed['issues']} == {
             'unreferenced_derived_candidate', 'workfile_index_changed'}
+        assert capacity(office=True)['file_count'] == 0
+        # Synthetic offline metadata exercises the CLI without requiring an Office runtime.
+        resource_id, office_node, preview_id = 'd' * 32, 'e' * 32, 'f' * 32
+        source_relative = f'workspaces/default/originals/{resource_id}.bin'
+        source = data / source_relative
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_bytes(b'self-authored retained Office source')
+        pdf_relative = f'workspaces/default/previews/{preview_id}/output/source.pdf'
+        with sqlite3.connect(data / 'study.db') as db:
+            db.execute('INSERT INTO resources (id,workspace_id,original_name,relative_path,mime,size,sha256) VALUES (?,?,?,?,?,?,?)',
+                       (resource_id, 'default', 'fixture.docx', source_relative, 'application/octet-stream',
+                        source.stat().st_size, hashlib.sha256(source.read_bytes()).hexdigest()))
+            db.execute('INSERT INTO workspace_nodes (id,workspace_id,kind,name,name_key,resource_id) VALUES (?,?,?,?,?,?)',
+                       (office_node, 'default', 'resource', 'fixture.docx', 'fixture.docx', resource_id))
+            db.execute('INSERT INTO document_previews '
+                       '(id,workspace_id,node_id,source_resource_id,source_sha256,runtime_fingerprint,converter_version, '
+                       'options_hash,status,cancel_requested,relative_pdf,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+                       (preview_id, 'default', office_node, resource_id, hashlib.sha256(source.read_bytes()).hexdigest(),
+                        'a' * 64, 'fixture', 'b' * 64, 'failed', False, pdf_relative, '2026-11-10T00:00:00+08:00'))
+        directory = (data / pdf_relative).parent.parent
+        generated = {'source.docx': b'retained source', 'profile/user/failed.bin': b'failed profile evidence',
+                     'tmp/partial.bin': b'partial output'}
+        for name, content in generated.items():
+            target = directory / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(content)
+        orphan_office = data / 'workspaces/default/previews/unregistered/keep'
+        orphan_office.parent.mkdir(parents=True)
+        orphan_office.write_bytes(b'unknown Office evidence')
+        office = capacity(office=True)
+        assert office['scope'] == 'office_preview_task_files' and office['missing_nonready_pdf'] == 1
+        assert office['records_by_status']['failed'] == 1
+        assert office['categories']['failed_preview_file'] == dict(file_count=3, logical_bytes=sum(map(len, generated.values())))
+        assert office['categories']['unregistered_preview_file'] == dict(file_count=1, logical_bytes=orphan_office.stat().st_size)
+        with sqlite3.connect(data / 'study.db') as db:
+            db.execute("UPDATE document_previews SET status='ready' WHERE id=?", (preview_id,))
+        missing_ready = capacity(office=True, expected=1)
+        assert any(i['code'] == 'missing_required_reference' for i in missing_ready['issues'])
         summary = dict(frozen=True, active_lock_refused=True, healthy_case_verified=True, orphan_detected=True,
                        external_edit_detected=True, business_bytes_preserved=True, repair_performed=False,
                        recovery_preview_readonly=True, recovery_save_conflict_guard=True, recovery_explicit_save=True,
                        missing_source_copy=True, copy_creation_idempotent=True, original_missing_not_repaired=True,
                        merge_preview_readonly=True, merge_stale_save_refused=True, merge_conflict_has_no_candidate=True,
                        capacity_report_metadata_readonly=True, capacity_unregistered_bytes_accounted=True,
-                       capacity_deletion_authorized=False)
+                       capacity_deletion_authorized=False, office_inventory_metadata_readonly=True,
+                       office_failed_profile_bytes_accounted=True, office_missing_ready_refused=True,
+                       office_deletion_authorized=False)
         (root / 'result.json').write_text(json.dumps(summary, indent=2) + '\n', encoding='utf-8')
         print(json.dumps(summary))
     finally:

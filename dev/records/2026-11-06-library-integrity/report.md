@@ -332,3 +332,46 @@ cwd均为隔离副本.local/markdown-merge-followup-src。Q=D:/computer_work/pro
 实际交付：[草稿PR #11](https://github.com/surface-user/StudyWorkbench/pull/11)，独立分支codex/recovery-storage-report，base=#10的af6fec76bb7d8497fe68f78cad38ec379ac277bc，实现提交2b06b07d41a5f722eaedb00d6ac27a51eacabac0。仅上述9文件，远端实现commit完整差异逐项核对一致，无额外基线改动；均以规范UTF-8/LF Base64上传并校验Git blob SHA。首次create_blob遇连接器Transport send error，未执行任何分支更新；先读取目标分支__main__确认仍为原blob 3ebfaca，再恢复内容寻址的blob上传成功，随后带expected_sha推进独立分支，未强推/重试不确定的分支写入。实际PR链接补入task/原报告；最终head、当前CI运行/核对时间及切片退出结论另在PR描述维护，不为记录自身SHA循环提交。CI尚未确认前待交付，不将CI视为独立批准；不合并/发行。
 
 文档链接补交检查：直接关闭autocrlf比较LF基线与Windows CRLF副本的git diff --no-index --check退出1，将所有行末CR作为空白告警；规范上传字节检查原已通过。随后artifacts/capacity_diffcheck.py对与Git上传完全相同的UTF-8/LF临时副本逐一执行git -c core.autocrlf=false diff --no-index --check；辅助脚本首次误要求退出0失败，核对--no-index隐含--exit-code后按0/1且stdout/stderr均空严格判定（1也表示存在正常差异）。九文件检查结果保存capacity-diffcheck.log；不改源文件或放宽正文空白断言。
+
+## M2-05e：Office预览目录容量只读统计设计（2026-11-10）
+
+前置核对：#11仍open/draft，head bd9b4ddcb1c755251bedbb601b8ae61de03192f8、base af6fec7，CI #73三个job/每步success，无未解决行内线程，仅自审；不是独立批准。副本九文件逐项与此head远端blob SHA一致。原工作区仍codex/recovery-note-copy，原.vscode/settings.json及summary.md SHA256保持，未切换或覆盖。新分支codex/office-preview-storage-report从该head建立；继续隔离副本和连接器，不重试原.git写权限操作。独立切片要求实现、相关自动化、自审、独立草稿PR及最终head CI，不合并/发行；人工测试已取消，不接模型。
+
+选择Office而非下载：Office任务已有固定previews/<id>/output/source.pdf路径与DocumentPreview归属，目录还保留source.docx/pptx、profile和tmp；这些是失败/来源证据，不是天然垃圾。下载attempt路径可能就是已入库媒体的权威字节，须另行核对复用关系，不混在本切片。
+
+范围：新增互斥离线--report-office-storage --confirm-all-workspaces，仅统计所有空间（含归档/墓碑）的workspaces/*/previews。复用#11的有界元数据扫描/锁/只读事务和共同输出边界，保留原Markdown CLI及schema/范围不变；不新增通用扫描框架、依赖或表。Office专用只读查询严格核对32位任务ID、精确relative_pdf、空间存在、节点类型/空间/源资源一致及原件同空间后，才按queued/running/ready/failed/interrupted/cancelled状态归属整个任务目录；不读取/导出原件标题、任务错误或运行时指纹，不打开正文、PDF、profile或Office组件。
+
+输出按上述六状态的*_preview_file及unregistered_preview_file累计文件数/逻辑长度，records_by_status仅统计表中记录状态；同一状态目录中的所有文件均计入，不把profile/tmp当可清缓存。未登记只表示未能匹配有效任务。ready的固定PDF缺失标不完整；其他状态PDF可尚未生成，missing_nonready_pdf单独计数，不推断损坏或已释放；queued/running收据保持原状，不借报告启动对账/重试转换。没有就绪内容/hash或全库健康证明。
+
+继续限制20000目录项、50000相关行、30秒协作时间、200问题和前20个较大文件；输出非原子观测的按路径逻辑长度，不承诺分配/可回收字节，hardlink不同路径可重复计长。重解析点不展开，坏归属/路径/未知状态/缺失/不可读/变化/预算不足均明确不完整。原件、媒体、Markdown恢复点、确认版、下载、其他目录及备份/恢复暂存不在Office范围。任何结果均不授权删除/覆盖、保留策略执行或自动恢复；无HTTP、桌面或Agent入口。
+
+拆分：共用扫描仅提取必要分支，保留原26项→Office专用状态/真实失败字节/归档墓碑/坏归属/缺失/排除/预算/锁/CLI/重解析点与逐字节保持回归→扩展原冻结探针的合成Office任务样本（无组件依赖，不弱化原断言）→串行双Python全量、Ruff/Schema、干净冻结及现有探针→自审/现行契约/task/原报告→独立草稿PR、最终head CI。整个M2-05/task.md仍未完成。
+
+### M2-05e 实施与本地验证
+
+实现只增加report_office_storage公开业务函数与互斥CLI；recovery_storage.py内的私有共同扫描保留原Markdown对外schema/目录与missing_committed_pending语义。Office只读SQL明确选取必要字段，校验空间存在、节点/源资源绑定和严格路径后建目录状态映射；整个有效任务目录按状态计长。无新模块、表、迁移、依赖、HTTP/桌面/Agent入口。原巡检算法、Office转换与下载实现未改；只是扩展原冻结巡检探针，所有旧断言仍在。
+
+失败与修正：Q的office-target01退出1，2失败/46通过；均为夹具建库阶段，六状态用了相同源字节触发resources空间/hash唯一约束，node_kind注错时未清空resource_id触发CHECK。分别改用每状态不同自建OOXML及合法folder+NULL绑定，保留坏归属判定。target02退出1，1失败/47通过：同级节点仍同名触发ux_nodes_sibling_name，修正为状态独立名称。针对全状态夹具office-one01退出0、1项、3.26秒；最终target03退出0，48项、74.81秒。没有删除失败、跳过Windows边界或降低断言；old目标日志/XML及失败fixture保留。
+
+首轮Q全量office-qfull01在修正前已导入旧测试函数，运行期间源文件修正不会替换其Python函数；最终退出1，2失败/603通过及77子测试，365.35秒，仍是首轮源重复/hash与node_kind旧夹具失败（traceback可能回显修改后的磁盘行，不能以其证明执行了新夹具）。此结果保留，不伪记全量成功。后续以冻结最终源码、最终48专项及串行P/Q新全量和最终head CI复核，不用旧进程结果替代最终版。
+
+cwd仍为隔离副本.local/markdown-merge-followup-src；P=.venv/Scripts/python.exe（原Python3.12.7环境junction），Q=D:/computer_work/project/StudyWorkbench/.local/release-venv/Scripts/python.exe（独立3.13.17）。实际命令/证据：
+
+| 命令 | 退出/结果 | 副本artifacts/ |
+|---|---|---|
+| Q -m ruff check backend tools | 0；全量静态 | 实际输出 |
+| Q tools/export_question_schema.py --check | 0；协议无漂移 | 实际输出 |
+| Q -m pytest backend/tests/test_office_storage.py backend/tests/test_recovery_storage.py -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/off-t03 --junitxml=artifacts/office-target03.xml | 0；48项（新22+原26），74.81秒 | office-target03.log/xml |
+| P -m pytest -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/off-pfull01 --junitxml=artifacts/office-pfull01.xml | 0；最终版本605项及77子测试，476.14秒 | office-pfull01.log/xml |
+| Q -m pytest -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/off-qfull02 --junitxml=artifacts/office-qfull02.xml | 0；最终版本605项及77子测试，387.01秒；在P结束后串行 | office-qfull02.log/xml |
+| ./packaging/windows/build-backend.ps1 -Python Q | 0；43冻结模块与最终源码/嵌套代码/常量一致，约135秒 | office-build01.log |
+| Q tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/office-frozen01 | 0；原恢复/另存/合并/持锁/完整性/字节保持全链与新Office CLI持锁拒绝、空范围/失败profile+源副本+tmp计长/未登记/缺失非就绪计数/缺失ready不完整且业务字节保持 | office-frozen01.log，.local/office-frozen01/result.json |
+| Q tools/check_resource_explorer.py --exe dist/study_backend/study_backend.exe --test-root .local/office-resources01 --documents | 0；原导入/文档/布局/原件/作答/删除与重启保持，schema0016 | office-resources01.log |
+
+新22项覆盖真实归档/墓碑元数据、六持久状态不对账、源副本/profile/tmp/输出及未登记二进制字节、hardlink按路径计长、前20截断/排序、无内容读取、缺失ready/其他状态、8种坏归属/ID/路径/状态、4预算、旧库/无库/损坏库/持锁、Windows实际junction和全部CLI参数互斥/显式确认及逐字节保持。故意用不解析的PDF/Office字节证明报告不声称内容健康，不冒充真实转换测试；既有转换/worker及冻结探针仍保留。
+
+实现自审：逐项核对共用扫描的MD不变分支及所有调用方、Office表/路径/空间/源关系、边界预算、部分小计、非原子/逻辑长度含义、profile/tmp不当垃圾、ready非内容证明、参数互斥、只读事务及无组件/正文调用。没有发现剩余阻断实现问题；只有自审，无独立批准，CI不计作独立审查。双Python最终全量、补交校验、独立PR与当前head CI继续；人工测试已取消，不合并/发行。下一候选为下载attempt与入库权威的只读容量范围及交叉引用，未实施，不授权删除或清除恢复证据。
+
+补交校验：Q -X utf8 artifacts/office_validate.py退出0，明确9份文件、其余428份#11基线文件保持；48文档相对链接无缺失，UTF-8/替换字符/尾空白及规范UTF-8/LF上传字节的git diff --no-index --check逐项通过，详见office-diffcheck.json。--no-index隐含--exit-code，正常非空差异返回1；检查要求stdout/stderr均空且返回0/1，不修改空白断言。脚本/日志不入Git；业务UI、依赖和schema未改，本地不重复Flutter/Windows大包，最终head CI仍执行全部原流程，不沿用#11绿灯。
+
+本地收尾：串行P/Q最终全量均605及77子测试通过，仅既有Starlette anyio别名弃用警告。全部本地验证成功、持有的冻结样本进程已退出后，以PowerShell Resolve-Path逐一验证隔离副本边界、Get-ChildItem检查无重解析点，再仅Remove-Item -LiteralPath -Recurse -Force清理本副本dist/study_backend、build/study_backend、.local/office-frozen01、.local/office-resources01，退出0；包SHA256、精确路径/数量/逻辑长度及样本结论先保存office-package-hash.json、office-generated-artifacts.json、office-frozen-result.json。原工作区当前包/Office组件、.venv junction、用户数据及所有失败现场未动；这不是容量报告删除功能。下一步独立PR/最终head全CI及补交链接；未确认前仍待交付，不把一个切片冒充整个M2-05/task.md完成。
