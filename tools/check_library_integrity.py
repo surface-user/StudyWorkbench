@@ -89,6 +89,26 @@ def main():
         request_json('PUT', '/document', {'expected_sha256': recovered['current_sha256'], 'text': recovered['text']})
         assert current.read_text(encoding='utf-8') == initial['text']
         assert request_json('GET', '/document-saves/' + receipt + '?version=before')['text'] == initial['text']
+        # A merge preview must retain the same bytes/receipts and cannot authorize a later stale save.
+        merge_body = dict(base='before', save_id=receipt, expected_base_sha256=initial['sha256'],
+                          expected_current_sha256=initial['sha256'], text=initial['text'])
+        before = snapshot()
+        candidate = request_json('POST', '/document-merge-preview', merge_body)
+        assert not candidate['conflicted'] and candidate['text'] == initial['text']
+        assert snapshot() == before
+        current.write_bytes(b'external after merge preview')
+        request_json('PUT', '/document', {'expected_sha256': candidate['current_sha256'],
+                                        'text': candidate['text']}, expected=409)
+        assert current.read_bytes() == b'external after merge preview'
+        request_json('POST', '/document-merge-preview', merge_body, expected=409)
+        merge_body.update(expected_current_sha256=hashlib.sha256(current.read_bytes()).hexdigest(),
+                          text='different local text')
+        before = snapshot()
+        candidate = request_json('POST', '/document-merge-preview', merge_body)
+        assert candidate['conflicted'] and candidate['text'] is None
+        assert snapshot() == before
+        request_json('PUT', '/document', {'expected_sha256': merge_body['expected_current_sha256'],
+                                        'text': initial['text']})
         retained = current.with_name('missing-current.retained')
         current.rename(retained)  # Deliberately missing fixture; the product never repairs this path.
         request_json('GET', '/document', expected=409)
@@ -136,7 +156,8 @@ def main():
         summary = dict(frozen=True, active_lock_refused=True, healthy_case_verified=True, orphan_detected=True,
                        external_edit_detected=True, business_bytes_preserved=True, repair_performed=False,
                        recovery_preview_readonly=True, recovery_save_conflict_guard=True, recovery_explicit_save=True,
-                       missing_source_copy=True, copy_creation_idempotent=True, original_missing_not_repaired=True)
+                       missing_source_copy=True, copy_creation_idempotent=True, original_missing_not_repaired=True,
+                       merge_preview_readonly=True, merge_stale_save_refused=True, merge_conflict_has_no_candidate=True)
         (root / 'result.json').write_text(json.dumps(summary, indent=2) + '\n', encoding='utf-8')
         print(json.dumps(summary))
     finally:

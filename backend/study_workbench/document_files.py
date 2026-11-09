@@ -12,7 +12,7 @@ from typing import Literal
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -22,6 +22,7 @@ from .db import DocumentSave, DocumentWorkfile, Resource, write_transaction
 from .documents import convert_document
 from .explorer import node_in, relative_node
 from .imports import read_resource, resource_path
+from .markdown_merge import preview_merge
 from .office_previews import OfficePreviews
 from .workspaces import require_workspace
 
@@ -101,6 +102,30 @@ class SaveText(BaseModel):
 class CreateCopy(BaseModel):
     model_config = ConfigDict(extra='forbid')
     expected_sha256: str = Field(pattern=r'^[a-f0-9]{64}$')
+
+
+class MergeText(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    base: Literal['original', 'before', 'pending']
+    save_id: str | None = Field(default=None, pattern=r'^[a-f0-9]{32}$')
+    expected_base_sha256: str = Field(pattern=r'^[a-f0-9]{64}$')
+    expected_current_sha256: str = Field(pattern=r'^[a-f0-9]{64}$')
+    text: str = Field(max_length=TEXT_LIMIT)
+
+    @model_validator(mode='wrap')
+    @classmethod
+    def safe_validation(cls, values, handler):
+        try:
+            return handler(values)
+        except ValidationError as error:
+            # Raw invalid Unicode cannot be echoed by the default JSON validation response.
+            raise HTTPException(422, '合并请求字段或UTF-8文字无效；草稿保留') from error
+
+    @model_validator(mode='after')
+    def baseline_reference(self):
+        if (self.base == 'original') != (self.save_id is None):
+            raise ValueError('Original base must omit save_id; recovery base requires save_id')
+        return self
 
 
 class DocumentFiles:
@@ -232,8 +257,53 @@ class DocumentFiles:
             return dict(id=row.id, status=row.status, version=version, text=data.decode('utf-8'),
                         sha256=expected, current_sha256=current, unavailable_reason=unavailable)
 
+    def merge_preview(self, workspace, identifier, body: MergeText):
+        try:
+            local = body.text.encode('utf-8')
+        except UnicodeError as error:
+            raise HTTPException(422, '合并草稿必须是UTF-8文字；草稿保留') from error
+        if len(local) > TEXT_LIMIT:
+            raise HTTPException(413, '合并草稿最多1MiB UTF-8字节；草稿保留')
+        with self.lock, Session(self.engine) as session:
+            work = self.recovery_work(session, workspace, identifier)
+            if session.scalar(select(DocumentSave.id).where(
+                    DocumentSave.node_id == identifier, DocumentSave.status == 'prepared')):
+                raise HTTPException(409, '上次保存尚待重启对账；暂不能合并，草稿保留')
+            current = text_bytes(self.root, work.relative_path)
+            current_hash = digest(current)
+            if current_hash != body.expected_current_sha256:
+                raise HTTPException(409, '当前工作文件已变化，请重新核对；草稿保留')
+            if body.base == 'original':
+                _, original, _ = self.locate(session, workspace, identifier)
+                if original.size > TEXT_LIMIT:
+                    raise HTTPException(413, '合并基线最多1MiB；原件保留')
+                base = read_resource(self.root, original)
+            else:
+                saved = self.recovery_text(workspace, identifier, body.save_id, body.base)
+                base = saved['text'].encode('utf-8')
+            if digest(base) != body.expected_base_sha256:
+                raise HTTPException(409, '合并基线与草稿版本不符；请保留草稿并重新核对')
+            try:
+                base_text = base.decode('utf-8')
+            except UnicodeError as error:
+                raise HTTPException(409, '合并基线不是UTF-8文字；原件和草稿保留') from error
+            try:
+                result = preview_merge(base_text, body.text, current.decode('utf-8'))
+            except ValueError as error:
+                raise HTTPException(413, '合并结果超过1MiB；原件和草稿保留') from error
+            # External editors are not covered by the service lock. Saving still needs this exact hash.
+            if digest(text_bytes(self.root, work.relative_path)) != current_hash:
+                raise HTTPException(409, '工作文件在预览期间变化；草稿保留，请重新核对')
+            return dict(conflicted=result.conflicted, text=result.text, base_sha256=digest(base),
+                        local_sha256=digest(local), current_sha256=current_hash)
+
     def router(self):
         router = APIRouter(prefix='/api/workspaces/{workspace_id}/nodes/{node_id}')
+
+        @router.post('/document-merge-preview')
+        @limited_view
+        def merge(workspace_id: str, node_id: str, body: MergeText):
+            return self.merge_preview(workspace_id, node_id, body)
 
         @router.get('/document-saves')
         def saves(workspace_id: str, node_id: str, offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100)):

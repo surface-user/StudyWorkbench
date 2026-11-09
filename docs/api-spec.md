@@ -10,7 +10,7 @@
 
 除标明全路径外，下表以W=`/api/workspaces/{workspace_id}`为前缀，节点N=`W/nodes/{node_id}`。归档/不存在空间及跨空间资源拒绝。常见状态401鉴权、403 Origin/能力、404未知/隔离、409冲突、413超预算、422输入非法，具体见服务实现；不能笼统把任意4xx当作预期结果。
 
-请求体按实际接收帧计数：layout 32MiB、document 8MiB（文本仍1MiB UTF-8）、imports 8MiB、notes编辑2MiB、其余64KiB。media/import由流式处理器自行限制512MiB。省略Content-Length不绕过预算。[实现](../backend/study_workbench/request_limits.py)
+请求体按实际接收帧计数：layout 32MiB、document及document-merge-preview 8MiB（每份文本仍1MiB UTF-8）、imports 8MiB、notes编辑2MiB、其余64KiB。media/import由流式处理器自行限制512MiB。省略Content-Length不绕过预算。[实现](../backend/study_workbench/request_limits.py)
 
 ### 工作空间与布局
 
@@ -98,6 +98,7 @@ creation_status为prepared/ready/interrupted/conflict；status在未完成时同
 | GET N/relative-image?path=... | 同空间逻辑树相对PNG/JPEG，拒绝网络/绝对/越根；允许树内父导航，目标缺失404 |
 | POST N/working-copy | expected_sha256，仅MD显式创建，原件不变 |
 | PUT N/document | expected_sha256、text，冲突409，文本超限413；保存收据和重启对账 |
+| POST N/document-merge-preview | 同节点原件/保存收据作为真实基线，校验基线及当前hash后仅返回合并候选；字段/边界见下文。尚无UI调用方 |
 | GET N/document-saves | 仅已有MD工作副本；offset≥0、limit1..100默认50，按随机ID升序分页（不是时间排序）。只含id/status/old_sha256/new_sha256，不读取正文、不返回磁盘路径 |
 | GET N/document-saves/{save_id}?version=before或pending | 同空间/节点收据、受管路径和记录hash核对后返回id/status/version/text/sha256/current_sha256/unavailable_reason；≤1MiB严格UTF-8，缺失/损坏/归属不符409、超限413，未知收据404。只读，不修复、不消费收据 |
 | POST N/previews | expected_source_sha256，拒绝额外字段；组件/源/队列冲突409、空间不足507；复用有效ready缓存或同节点待办 |
@@ -113,6 +114,10 @@ creation_status为prepared/ready/interrupted/conflict；status在未完成时同
 “确认另存为新笔记”先重读/核对所选恢复点，再复用POST W/markdown-notes及PUT新节点/document，创建到当前空间根目录；不是新HTTP写接口。固定同窗口request_id、名称和已核对正文用于失败重试：已是目标hash/正文则对账成功，仍为创建响应的初始hash才普通保存，其他内容拒绝覆盖，保存仍有expected hash守卫。创建/保存非跨请求原子操作，失败保留收据、新笔记及源字节；关闭后可查已有笔记/创建收据，不承诺自动续写。同一重试不重复创建，改选名称或恢复点需关闭后重新操作。成功用普通节点导航打开，导航失败明确“已保存”，文件仍在目录。
 
 另存仅复制文字，不自动建立来源关系、解析/发布QuestionFile、修复原缺失路径或清除恢复点；原库完整性/备份仍按原规则校验。没有Agent工具、自动删除或三方合并。
+
+三方合并预览API：请求base=original/before/pending、expected_base_sha256、expected_current_sha256（均64位小写hex）、text（本地草稿）；original禁止save_id，before/pending须提供同节点32位小写hex保存收据save_id。未知字段/非法Unicode或字段组合422，不回显非法输入。基线由服务从该节点不可变原件或经路径/归属/hash核验的恢复点读取，不接受调用方自报基线正文或任意磁盘路径。MD工作副本/空间/节点归属必须有效；prepared未对账、基线版本不符、当前不可读/变化或恢复点缺失/损坏409，未知/跨空间/跨节点404；正文UTF-8字节或合并结果超过1MiB为413（请求字符串超过1MiB字符由模型拒绝为422）。继承Bearer/Host/Origin、两并发门禁；实际请求帧8MiB，省略Content-Length仍受限。
+
+响应conflicted、text（冲突时null）、base_sha256、local_sha256、current_sha256。不相交行区间可组合，重叠或插入贴边保守冲突，无标记注入；保留CR/LF/尾换行及字面内容。每侧一个连续变更区间，多处不连续编辑可能保守冲突。读取期间再次核对当前hash；响应后仍可能外改，候选不授予覆盖许可。此接口不创建或修改文件、收据、索引、layout草稿、确认版或历史记录。后续UI仍需用户明确确认载入，再以响应current_sha256走原PUT document；UI尚未接入，不能视为完整编辑器合并功能。缺少真实草稿基线时不得换用其他基线猜测。
 
 ### 位置书签、备注与笔记来源（LW-02）
 

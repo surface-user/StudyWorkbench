@@ -204,3 +204,45 @@ DocumentRecoveryDialog在同窗口冻结创建请求及已核对正文，正常�
 审查：自审覆盖打包参数、固定解释器、PYTHONPATH继承/异常还原、核心及其测试、全部业务模块源码检查和冻结探针调用链。没有独立审查批准；按用户规则不创建子Agent。人工测试/Computer Use已取消，未执行窗口测试。不合并/发行；修复本前置阻塞后下一独立任务为验证基线归属/hash的只读预览API，UI确认载入与普通保存另分切片，均不能将纯核心冒充编辑器功能。
 
 上传校验纠正：中间提交经本机Python默认GBK管道回传中文时乱码，且Windows git archive导出的CRLF与原始Git blob的LF不同。仅PR中的task/报告受影响，未合并/触及个人库。由保留的正确UTF-8副本重建，以Base64传输UTF-8/LF字节，逐文件核对Git blob SHA及回读内容；错误中间提交保留，不改写历史，最终head重新核实CI。
+
+## M2-05b：受控只读合并预览API设计（2026-11-09）
+
+独立切片基于#8打包修补及UTF-8记录恢复后的ac9cd02，分支codex/markdown-merge-preview-api；PR交付须先核对#8该head CI，再核对本PR最终head完整CI。不合并/发行，不接UI或模型，人工测试已取消。
+
+范围：POST N/document-merge-preview只读取同空间MD工作副本。请求显式指明base=original/before/pending、可选同节点save_id、expected_base_sha256、expected_current_sha256及本地草稿text。基线从该节点原件或已校验的保存收据读取，不接受调用方自报基线正文或任意磁盘路径；原件/恢复点与期望hash不同、prepared未对账、当前不可读/变化、未知/跨空间/跨节点均拒绝。继承Bearer/Host/Origin及两并发门禁；本路由独立采用8MiB实际帧预算以容纳1MiB JSON转义文字，普通其他路由仍64KiB。每份文本及合并结果仍1MiB UTF-8。
+
+实现复用recovery_work/recovery_text、原件读取与text_bytes路径/hash守卫及#8纯核心，不新增表/文件/收据/草稿镜像，不调用recover或save_text。响应只给conflicted/text及base/local/current hash，冲突无候选/无标记。干净候选仍不是保存许可；未来UI须明确确认载入并使用响应current hash走原PUT document，预览后的外改仍409。无法找回真实草稿基线时不猜测；保守行区间核心的冲突边界保留。
+
+拆分：服务/严格请求模型及帧预算→HTTP授权/归属/故障/预算/只读/外改保存/QuestionFile历史保护回归→冻结HTTP探针→全量后端与静态→自审/契约/task→独立PR及当前head CI。UI选择/确认载入与完整编辑流程为下一独立任务，不将此API切片登记成完整编辑器合并。
+
+### M2-05b实施与首次失败
+
+DocumentFiles新增严格MergeText请求与只读路由，复用已有路径/收据读取、RLock与VIEW_SLOTS；读取/计算后再次校验当前文件hash。RequestLimits只扩大这个具体路由的实际帧预算，其他路由不变。无Schema/新依赖/写接口/迁移/Agent工具。冻结CI仍运行同一check_library_integrity.py，补只读候选、陈旧保存409和冲突无候选断言，原完整巡检与另存断言均保留。
+
+本轮cwd与P/Q同前，P为原仓库.venv/Scripts/python.exe（Python3.12.7），Q为独立CPython3.13.17；原始产物位于副本artifacts/merge-api/及artifacts/merge-api-target*.log，隔离测试只新建.local目录。
+
+- Q -m pytest backend/tests/test_document_merge.py -q --basetemp=.local/merge-api-target01 --junitxml=artifacts/merge-api/target01.xml：退出1，19通过4失败。两个跨节点收据测试先被不匹配的当前hash正确拒绝为409，夹具改为提供目标节点当前hash后仍断言404；QuestionFile作答夹具缺确认版ID被正确拒绝409，补实际确认ID再验证历史不变。另一个是真实边界错误：Pydantic拒绝未配对surrogate后，FastAPI默认校验错误回显原输入，JSONResponse无法编码而500。新增模型wrap校验，仅本请求返回固定422，不回显非法输入，未放宽UTF-8或字段校验。
+- target02同命令更换批次名：退出1，22通过1失败；合并结果预算用例第二个资源夹具重名触发既有唯一约束，补独立名称，未降低预算/原件保持断言。
+- Q -m pytest backend/tests/test_document_merge.py backend/tests/test_document_recovery.py backend/tests/test_document_files.py backend/tests/test_markdown_merge.py -q --basetemp=.local/merge-api-target03 --junitxml=artifacts/merge-api/target03.xml：退出1，54通过1失败及77子测试通过；唯一失败为原恢复点测试的Windows mklink/J被沙箱拒绝Access is denied。未改测试/跳过/降低断言；检查确认working链接不存在、retained-working字节保留后，以允许该隔离夹具创建junction的执行权限继续一次完整回归，结果另记。不是产品合并失败，也不将该轮记通过。
+- 初次Ruff退出1指出新测试未使用DocumentSave导入，移除后完整backend/tools Ruff及Schema --check均退出0。非法Unicode回归还覆盖hash及未知字段，不只测正文。
+
+### M2-05b最终本地验证与审查
+
+所有下列命令cwd均为本轮隔离源码副本；最终业务源码/测试未在通过后再修改，仅补本报告和task交付链接。
+
+| 实际命令 | 退出/结果 | 原始记录 |
+|---|---|---|
+| Q -m pytest backend/tests -q --basetemp=.local/api-full313 --junitxml=artifacts/merge-api/full313.xml | 0；557项及77子测试，298.98秒，真实junction保护包含在内 | full313.log/xml |
+| P -m pytest backend/tests -q --basetemp=.local/api-full312 --junitxml=artifacts/merge-api/full312.xml | 0；557项及77子测试，304.83秒；两轮串行，TEMP/TMP指本副本.local/tmp | full312.log/xml |
+| ./packaging/windows/build-backend.ps1 -Python Q | 0；约86秒，42业务模块全部与当前源码一致，旧验证包先安全清理，仅本副本产生临时新包 | build.log |
+| Q tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/merge-api-frozen | 0；新增merge_preview_readonly/merge_stale_save_refused/merge_conflict_has_no_candidate及全部原恢复点/另存/锁/巡检/字节保持断言通过 | frozen-api.log/result.json |
+| Q -m ruff check backend tools；Q tools/export_question_schema.py --check | 各0；无新依赖/Schema漂移 | 实际命令输出 |
+| Q -X utf8 -运行内联相对链接检查（docs全部MD、dev/records各report及dev/README） | 0；49文档，无缺失目标 | 实际工具输出；交付链接补交仍校验 |
+
+全量复测使用正常自动化执行权限，仅允许在各自新建隔离夹具中生成Windows junction；没有重试旧缺失链接或访问个人库。Starlette/anyio弃用和PyInstaller既有可选hidden-import警告保留，无升级/屏蔽。通过的pytest临时目录由现行failed策略自动回收；失败日志/JUnit/最小现场不删。冻结新包验证后清理本副本成功产物，原工作区包不覆盖，保留一份原有Office组件，不制作人工验收包。
+
+自审已核对实际差异、DocumentFiles所有新增调用方及app.include_router继承鉴权、RequestLimits实际分块预算、恢复点所有权/路径/hash/重解析点守卫的复用、prepared拒绝、当前读取期间外改、原expected hash保存、失败不写库/文件、QuestionFile确认版/实际旧作答与墓碑语义。新增23项HTTP用例覆盖空稿/CRLF/字面内容、原件及before/pending基线、错误基线/版本、跨节点/空间、401/403/Host、非法字段与Unicode、1MiB输入/结果及8MiB无Content-Length帧、两并发忙、预览后外改和实际普通保存。无独立审查批准；不将本轮CI或另一个任务的自审当独立审查。按项目规则不创建子Agent。
+
+本地不重复Flutter/Windows UI构建：此独立切片没有Dart/UI/原生改动，项目原完整桌面/COM/全量R1–R5/冻结生命周期及文档worker仍由本PR最终head CI执行并逐项核对，不沿用#8结果。#8功能head 5d74ad6的CI #52已全部通过；记录UTF-8纠正后的最终#8 head ac9cd02已于2026-11-09核对[CI #58](https://github.com/surface-user/StudyWorkbench/actions/runs/42573718426)三组全部completed/success，含所有原冻结链；本切片依赖满足，仍无独立审查批准。独立API草稿PR的实际URL、最终head/运行/检查时间在其描述与task交付条目维护，不为记录自身SHA循环提交。UI合并确认载入未实施，整体M2-05继续进行中；未合并/发布。
+
+实际交付：实现提交b227d9cc663808a4189905c73769897700aa79a5，独立[草稿PR #9](https://github.com/surface-user/StudyWorkbench/pull/9)，base为#8的ac9cd02。9份文件均以Base64传输规范UTF-8/LF字节并核对返回Git blob SHA，正文无替换字符；远端回读和最终head全CI继续核对。此处与task仅补实际PR链接，最终head/运行/退出结论持续记录在PR描述，不为记录自身SHA循环提交。任务要求实现、相关自动化、自审/如实披露独立审查状态、独立PR及当前head CI；不要求合并/发行。未通过当前head CI前不宣称切片退出。
