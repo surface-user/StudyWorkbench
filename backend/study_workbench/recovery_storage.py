@@ -16,28 +16,36 @@ TOP_LIMIT = 20
 KINDS = {'working', 'question-files'}
 STATUSES = {'prepared', 'committed', 'interrupted', 'conflict'}
 OFFICE_STATUSES = {'queued', 'running', 'ready', 'failed', 'interrupted', 'cancelled'}
+DOWNLOAD_STATUSES = {'queued', 'running', 'ready', 'failed', 'interrupted', 'paused'}
 
 
 def report_recovery_storage(directory, *, install=None):
-    return _report_storage(directory, install=install, office=False)
+    return _report_storage(directory, install=install, kind='markdown')
 
 
 def report_office_storage(directory, *, install=None):
-    return _report_storage(directory, install=install, office=True)
+    return _report_storage(directory, install=install, kind='office')
 
 
-def _report_storage(directory, *, install, office):
+def report_download_storage(directory, *, install=None):
+    return _report_storage(directory, install=install, kind='downloads')
+
+
+def _report_storage(directory, *, install, kind):
+    office, download = kind == 'office', kind == 'downloads'
     no_links(directory)
     root = validate_root(directory, install)
     no_links(root / 'study.db')
     if not (root / 'study.db').is_file():
         raise ValueError('容量报告只接受已有学习库，不会创建或迁移数据库')
     no_links(root / '.study.lock')
-    statuses = OFFICE_STATUSES if office else STATUSES
-    kinds = {'previews'} if office else KINDS
-    roles = ([status + '_preview_file' for status in sorted(statuses)] + ['unregistered_preview_file'] if office else
+    statuses = DOWNLOAD_STATUSES if download else OFFICE_STATUSES if office else STATUSES
+    kinds = {'downloads'} if download else {'previews'} if office else KINDS
+    roles = (['media_referenced_file', 'current_attempt_file', 'lower_numbered_attempt_file', 'other_download_file'] if download else
+             [status + '_preview_file' for status in sorted(statuses)] + ['unregistered_preview_file'] if office else
              ['current_workfile', 'before_recovery', 'pending_recovery', 'unreferenced_working_file'])
-    result = dict(schema_version=1, scope='office_preview_task_files' if office else 'markdown_working_and_save_recovery_files', complete=True,
+    scope = 'download_attempt_files' if download else 'office_preview_task_files' if office else 'markdown_working_and_save_recovery_files'
+    result = dict(schema_version=1, scope=scope, complete=True,
                   data_modified=False, deletion_authorized=False, content_integrity_checked=False,
                   library_health_checked=False, snapshot_atomic=False, bytes_kind='observed_logical_lengths',
                   entries_checked=0, rows_checked=0, file_count=0, logical_bytes=0,
@@ -46,9 +54,13 @@ def _report_storage(directory, *, install, office):
                   largest_files_truncated=False,
                   categories={role: dict(file_count=0, logical_bytes=0) for role in roles},
                   issues=[])
-    result['missing_nonready_pdf' if office else 'missing_committed_pending'] = 0
+    if download:
+        result.update(missing_optional_download_files=0, media_reference_rows=0, media_referenced_paths=0, attempt_history_checked=False)
+    else:
+        result['missing_nonready_pdf' if office else 'missing_committed_pending'] = 0
     deadline = time.monotonic() + SECONDS
     references, works, seen, preview_directories = {}, {}, set(), {}
+    download_jobs, media_paths = {}, {}
 
     def checkpoint():
         if time.monotonic() >= deadline:
@@ -79,6 +91,21 @@ def _report_storage(directory, *, install, office):
         # Compare two fresh path stats rather than cached DirEntry metadata.
         return info.st_size, info.st_mtime_ns, info.st_ino, stat.S_IFMT(info.st_mode)
 
+    def download_metadata(relative):
+        parts = PurePosixPath(relative).parts
+        job = download_jobs.get('/'.join(parts[:4]))
+        relation = 'other'
+        if job and len(parts) == 5:
+            matched = re.fullmatch(r'([1-9][0-9]*)' + re.escape(job['suffix']), parts[-1])
+            if matched:
+                number = int(matched[1])
+                relation = 'current' if number == job['attempt'] else 'lower_numbered' if number < job['attempt'] else 'other'
+        count = media_paths.get(relative, 0)
+        role = ('media_referenced_file' if count else 'current_attempt_file' if relation == 'current' else
+                'lower_numbered_attempt_file' if relation == 'lower_numbered' else 'other_download_file')
+        return dict(role=role, attempt_relation=relation, current_job_status=job['status'] if job else None,
+                    media_reference_count=count)
+
     with DataLock(root):
         try:
             checkpoint()
@@ -88,6 +115,47 @@ def _report_storage(directory, *, install, office):
                 if [r[0] for r in db.execute('SELECT version_num FROM alembic_version')] != [SUPPORTED_SCHEMA]:
                     issue('unsupported_schema')
                     return result
+                if download:
+                    for row in rows(db, 'SELECT d.id,d.workspace_id,d.attempt,d.relative_path,d.status,s.id AS existing_workspace '
+                                        'FROM media_download_jobs d LEFT JOIN workspaces s ON s.id=d.workspace_id ORDER BY d.id'):
+                        status = row['status'] if row['status'] in statuses else 'unknown'
+                        result['records_by_status'][status] = result['records_by_status'].get(status, 0) + 1
+                        if status == 'unknown':
+                            issue('unknown_download_status')
+                            continue
+                        try:
+                            relative = archive_path(row['relative_path'])
+                            parts = PurePosixPath(relative).parts
+                            suffix = PurePosixPath(relative).suffix
+                            if (not isinstance(row['id'], str) or not re.fullmatch('[a-f0-9]{32}', row['id'])
+                                    or type(row['attempt']) is not int or row['attempt'] < 1
+                                    or suffix not in {'.mp4', '.webm', '.m4a'} or row['existing_workspace'] != row['workspace_id']
+                                    or parts != ('workspaces', row['workspace_id'], 'downloads', row['id'], str(row['attempt']) + suffix)):
+                                raise ValueError('Invalid download ownership')
+                        except (TypeError, ValueError):
+                            issue('unsafe_download_reference')
+                            continue
+                        download_jobs['/'.join(parts[:4])] = dict(status=status, attempt=row['attempt'], suffix=suffix)
+                        references[relative] = dict(required=status == 'ready')
+                    for row in rows(db, 'SELECT m.workspace_id,m.relative_path,m.status,s.id AS existing_workspace '
+                                        'FROM media_entries m LEFT JOIN workspaces s ON s.id=m.workspace_id ORDER BY m.id'):
+                        try:
+                            relative = archive_path(row['relative_path'])
+                            parts = PurePosixPath(relative).parts
+                            if len(parts) < 3 or parts[0] != 'workspaces' or parts[2] != 'downloads':
+                                continue
+                            if len(parts) < 4 or parts[1] != row['workspace_id'] or row['existing_workspace'] != row['workspace_id']:
+                                raise ValueError('Invalid media ownership')
+                        except (TypeError, ValueError):
+                            issue('unsafe_media_reference')
+                            continue
+                        if row['status'] not in {'importing', 'ready', 'failed'}:
+                            issue('unknown_media_status')
+                        media_paths[relative] = media_paths.get(relative, 0) + 1
+                        result['media_reference_rows'] += 1
+                        required = row['status'] not in {'importing', 'failed'}
+                        references.setdefault(relative, dict(required=False))['required'] |= required
+                    result['media_referenced_paths'] = len(media_paths)
                 if office:
                     for row in rows(db, 'SELECT p.id,p.workspace_id,p.node_id,p.source_resource_id,p.relative_pdf,p.status, '
                                         'n.workspace_id AS node_workspace,n.kind,n.resource_id, '
@@ -117,7 +185,7 @@ def _report_storage(directory, *, install, office):
                         ref = dict(role=status + '_preview_file', status=status)
                         preview_directories['/'.join(PurePosixPath(relative).parts[:4])] = ref
                         reference(relative, ref['role'], status)
-                if not office:
+                if kind == 'markdown':
                     for row in rows(db, 'SELECT w.*, n.workspace_id AS node_workspace, n.kind, q.question_id '
                                         'FROM document_workfiles w LEFT JOIN workspace_nodes n ON n.id=w.node_id '
                                         'LEFT JOIN question_files q ON q.node_id=w.node_id AND q.workspace_id=w.workspace_id '
@@ -206,7 +274,8 @@ def _report_storage(directory, *, install, office):
                                 if relative in seen:
                                     continue
                                 seen.add(relative)
-                                ref = (preview_directories.get('/'.join(parts[:4]), dict(role='unregistered_preview_file', status=None))
+                                ref = (download_metadata(relative) if download else
+                                       preview_directories.get('/'.join(parts[:4]), dict(role='unregistered_preview_file', status=None))
                                        if office else references.get(relative, dict(role='unreferenced_working_file', status=None)))
                                 group = result['categories'][ref['role']]
                                 group['file_count'] += 1
@@ -214,7 +283,10 @@ def _report_storage(directory, *, install, office):
                                 result['file_count'] += 1
                                 result['logical_bytes'] += info.st_size
                                 item = dict(relative_path=relative, logical_bytes=info.st_size, role=ref['role'])
-                                item['preview_status' if office else 'save_status'] = ref['status']
+                                if download:
+                                    item.update(ref)
+                                else:
+                                    item['preview_status' if office else 'save_status'] = ref['status']
                                 result['largest_files'].append(item)
                                 result['largest_files'].sort(key=lambda item: (-item['logical_bytes'], item['relative_path']))
                                 del result['largest_files'][TOP_LIMIT:]
@@ -227,7 +299,12 @@ def _report_storage(directory, *, install, office):
                 for relative, ref in references.items():
                     checkpoint()
                     if relative not in seen:
-                        if office and ref['status'] != 'ready':
+                        if download:
+                            if ref['required']:
+                                issue('missing_required_reference', relative)
+                            else:
+                                result['missing_optional_download_files'] += 1
+                        elif office and ref['status'] != 'ready':
                             result['missing_nonready_pdf'] += 1
                         elif ref['role'] == 'pending_recovery' and ref['status'] == 'committed':
                             result['missing_committed_pending'] += 1
