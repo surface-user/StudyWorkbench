@@ -424,3 +424,51 @@ cwd=.local/markdown-merge-followup-src，P=.venv/Scripts/python.exe（原3.12.7�
 实现/相关本地自动化/自审完成，独立批准仍没有；下一步仅本切片独立PR与最终head全CI，不用父PR或本地通过代替它。现行API/架构/数据模型/task已写清范围与当前/后续状态，业务UI和依赖未变，本地不重复Flutter/Windows大包，最终head CI仍跑全部原流程。人工测试已取消，不接模型，不合并/发行；M2-05及task.md整体仍有未完成项。
 
 实际交付：[草稿PR #13](https://github.com/surface-user/StudyWorkbench/pull/13)，分支codex/download-storage-report，base=#12的f141770fca6daa1ce57508e3349db3262576d921，实现e1c40532db979d31543eb7019027f6863779a1e0。创建前复核父PR未变化，九份文件按规范UTF-8/LF Base64上传并校验Git blob SHA，远端实现commit完整差异恰为九份，其余429基线文件保持；以expected_sha推进分支，未强推。task/原报告补实际链接，最终head、CI运行/检查时间和切片交付结论另在PR描述维护，不为记录自身SHA循环提交；未核实前待交付。只有自审，不将CI计作独立批准；原分支/未提交改动及所有用户数据/恢复证据保留，不合并/发行。其他派生恢复及task.md剩余项未因本切片销项。
+
+## 2026-11-10 M2-05g：旧提取题目孤立目录漏检
+
+### 需求依据、依赖和最小范围
+
+先复核#13的最终edf835000f49ec1cbfa59794f74a2a153e14ce07：草稿、未合并、base=#12的f141770，当前head CI #83（42678503501）三job/43步骤成功，独立批准没有。沿用该head源副本，独立分支codex/extracted-question-integrity，不重复05d/e/f容量统计。原根工作区保持#7的a959b9f及未提交.vscode/summary.md，已有失败/恢复数据和旧包不动。
+
+当前question-markdown-spec第17行明确未登记派生MD/图片目录的专门巡检恢复待补；实际markdown_questions.confirm先复制assets、写question.md，最后登记Resource/MarkdownQuestion。library_integrity.DERIVED只识别working/question-files/question-versions/previews，真实questions目录中断被漏报；资源路径归属逻辑已存在，无需新登记算法。孤立原件显式登记已有GET/POST recovery，不重复开发。以上现行规范与实际实现共同构成此项依据，不把历史方案当新需求。
+
+只把questions加入既有派生目录集合，复用同空间资源路径归属、受限扫描、锁、只读数据库及unreferenced_derived_candidate警告。覆盖空目录、仅assets中断、MD落盘未登记；已登记真实DOCX/PDF题目保持健康。候选不等于可删/可自动入库，图片副本独立校验、候选恢复/重新登记语义仍未定义，未擅自实现。无表/迁移/依赖/HTTP/UI/Agent变更。
+
+先任务/设计再测试复现与实现：新增参数两项及真实写入故障两项；先保持生产代码不变执行红灯。P=.venv/Scripts/python.exe（3.12.7），Q=D:/computer_work/project/StudyWorkbench/.local/release-venv/Scripts/python.exe（3.13.17），cwd=.local/markdown-merge-followup-src；命令如下，后续结果续本节，不另建报告。
+
+| 命令 | 退出/结果 | 副本artifacts/ |
+|---|---|---|
+| P -X utf8 -m pytest backend/tests/test_library_integrity.py backend/tests/test_markdown_questions.py -k 'unregistered_derived or interrupted_question or real_document' --basetemp .local/extracted-red01 --junitxml artifacts/extracted-red01.xml | 1；4失败/10通过/25未选、42.46秒；细查为三项产品漏报、一项夹具提前替换模型导致NoInspectionAvailable，不能把该项当产品复现 | extracted-red01.log/xml，失败目录保留 |
+| Q -m ruff check backend tools | 0；完整静态通过 | extracted-ruff01.log |
+| Q tools/export_question_schema.py --check | 0；协议无漂移 | extracted-schema01.log |
+
+冻结探针在原健康/工作generation/外部编辑断言之后追加独立questions的空目录及仅assets样本，逐字节不变沿用原snapshot断言，不放宽既有断言。当前待专项/双Python全量/干净冻结、自审及独立PR最终head CI；人工测试已取消，不接模型，不合并/发行。CI不等同独立审查；M2-05/task.md整体仍未完成。
+
+首次Q专项extracted-target01退出1，41通过/2失败、76.65秒：旧junction用例的mklink返回拒绝访问（未创建链接）；新markdown_written夹具同上述过早替换模型，改为只注入Resource.__init__，保留真实模型查询与所有落盘/候选/字节不变断言。生产逻辑没有为测试放宽。只读检查确认junction不存在、data/external均普通目录且ACL有FullControl，据此仅允许一次提升权限重试该原用例；若仍受阻，停止此操作并明确报告，不跳过用例或记作通过。所有旧日志/XML/失败目录保留。
+
+权限复验：Q -m pytest backend/tests/test_library_integrity.py::test_real_reparse_directory_is_reported_without_following_it -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/eq-j01 --junitxml=artifacts/extracted-junction01.xml，提升权限退出0、1项/2.87秒，确认原问题是运行权限；同样权限用于后续相关测试和全量，不跳过路径隔离用例。Q -X utf8 artifacts/extracted_red02.py仅在当前进程把DERIVED还原为原四目录集合、不修改源码，四项均在healthy漏报断言失败（退出1，4失败/35未选、15.36秒），确认修正后的真实落盘故障均能复现原缺口。原始红灯及两次初轮错误均保留。
+
+最终Q专项：Q -m pytest backend/tests/test_library_integrity.py backend/tests/test_markdown_questions.py backend/tests/test_integrity_recovery_faults.py -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/eq-t02 --junitxml=artifacts/extracted-target02.xml，退出0、43项/71.05秒。完整Ruff再次退出0。双Python全量按P后Q串行，尚未结束的命令不先记通过。
+
+11-10最新全栈核对（2026-11-09 19:47:15 UTC）：#2–#13均open/unmerged，各自当前head的PR CI success；head依次29f23d3、7aa8251、147198a、1357d44、4686c8b、a959b9f、ac9cd02、37fa76e、af6fec7、bd9b4dd、f141770、edf8350，CI运行分别#16/#20/#32/#36/#40/#44/#58/#63/#68/#73/#78/#83。每个子PR的base分支与SHA均对应前一PR的当前head；完整快照副本artifacts/extracted-stack-snapshot.json。未合并、未改base或替换他人提交。#13无未解决review线程，唯一review明确是自审COMMENT，非独立批准。任何现有绿灯不替代本项最终head CI。
+
+### 本项代码自审与剩余边界
+
+逐项核对DERIVED的归属建立和目录遍历两处使用、唯一CLI调用方__main__.main、旧提取题目写入/登记次序、Resource引用校验及同空间约束，复用现有机制，无新旁路。新增目录不改变行/字节/条目/问题/时间预算或重解析点保护，不增加正文读取类型；注册MD仍核原Resource的hash/size，目录图片副本只保留、不新增独立hash保证。资源所有权覆盖全部空间和归档，不能由“存在目录”推断入库，也不以检查完成推断可删除。自审未发现本项阻断代码问题，后续仍核对最终远端差异与CI；当前只有自审，未取得独立审查/批准。
+
+M2-05剩余有明确区分：三方合并核心/API/UI由05a/b/c交付；三种只读容量报告由05d/e/f交付；原件显式登记及缺失工作文件恢复点另存已有实现。旧派生题目候选如何恢复/重新登记、关联与幂等性规则尚未确定，不能把本项候选提示冒充恢复完成；容量报告不产生留存/删除策略，用户数据、失败与恢复现场继续保留。后续应先定义恢复目标和确认约束，不为凑切片另造统计或擅自恢复/覆盖/删除。本项无新模型/依赖/表/UI，不需要人工窗口测试（已取消），合并/发行无授权。
+
+### 本地全量与冻结验证
+
+| 命令（cwd/P/Q同上） | 退出/结果 | 副本artifacts/ |
+|---|---|---|
+| P -m pytest -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/eq-pfull01 --junitxml=artifacts/extracted-pfull01.xml | 0；640项及77子测试，480.90秒 | extracted-pfull01.log/xml |
+| Q -m pytest -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/eq-qfull01 --junitxml=artifacts/extracted-qfull01.xml | 0；640项及77子测试，424.16秒，P结束后串行 | extracted-qfull01.log/xml |
+| ./packaging/windows/build-backend.ps1 -Python Q | 0；43模块/嵌套代码/常量匹配当前源码，干净构建约87秒 | extracted-build01.log |
+| Q tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/extracted-frozen01 | 0；新增questions空目录/仅图片候选、字节保持，原健康/持锁/恢复另存/合并/三类容量与引用探针均保持 | extracted-frozen01.log，.local/extracted-frozen01/result.json |
+| Q tools/check_resource_explorer.py --exe dist/study_backend/study_backend.exe --test-root .local/extracted-resources01 --documents | 0；原导入/文档/布局/作答/删除与重启保持，schema0016 | extracted-resources01.log |
+
+P结束后才启动Q全量；构建/冻结探针与P后半段并行，事先确认backend测试不读取dist/build产物，两者使用独立数据根，未并行两个全量。包SHA256记录extracted-package-hash.json；本轮不删除或覆盖现有旧包、失败目录、恢复字节或样本。仅既有Starlette anyio别名弃用警告，不改依赖掩盖。双Python全量最终均通过，独立PR/最终head CI仍待完成；本地未重复Flutter/Windows UI构建（无前端改动，最终head CI仍执行原完整桌面流程）。
+
+提交前Q -X utf8 artifacts/extracted_validate.py退出0：九份明确文件，其余429份#13基线保持，48份文档相对链接、UTF-8/替换字符/尾空白及规范上传字节git diff --no-index --check无告警（有差异返回1为该命令正常语义；检查辅助程序退出0）。初次文档补丁因误写旧行文本而校验失败、未应用，改为读取精确原行后定向更新，未覆盖他人内容。原根git status --short仍仅两项未提交工作；.vscode/settings.json与summary.md SHA256继续等于942934E3BE65634E50D53860B51F8D5DC5FFF5C757A73B37A13FFA0565C4BC9F及B4BD7245DE809C01266F4F590C56BAFBB3395B849D83C4705C65D69E057ED9AB。本项仅实现/本地自动化/自审完成，无独立审查，PR/最终head CI确认前保持待交付；不接模型/人工测试，不合并/发行，整体任务未完成。

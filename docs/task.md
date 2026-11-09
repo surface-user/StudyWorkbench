@@ -12,7 +12,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 
 本轮开发维护：已清理重复产物并启用通过测试的临时目录自动回收，项目27.19→4.91GiB；相关21项及全量476通过，见[DOC-01报告](../dev/records/2026-10-30-documentation/report.md)。本轮维护提交的当前head CI另核，未合并/发行。
 
-本轮远端核对（2026-11-09）：#2–#7均未合并，各自当前head的PR CI通过；#8依赖#7，原head CI失败已修补，最终ac9cd02的PR CI #58已全部通过；只读预览API另按M2-05b推进。#3–#7无已提交的GitHub独立审查，#8新增明确标注的自审；CI通过不计作独立审查通过。具体head/运行/失败继续记M2-05原报告。
+本轮远端核对（2026-11-10）：#2–#13均打开且未合并，各自当前head的PR CI通过，base/head依赖连续；#8依赖#7，纯核心原head冻结漏包失败已修补，API/UI另由#9/#10实现，05d/e/f容量统计分别#11/#12/#13，不重复开发。#13最终edf8350的CI #83成功，仅有明确标注的自审，无独立批准；CI通过不计作独立审查通过。具体head/运行/失败继续记M2-05原报告，后续远端变化以实时状态为准。
 
 ## 当前任务
 
@@ -25,7 +25,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | R4 QuestionFile/不可变确认版 | 已实现 | 当批串行双Python各205、Flutter82、Windows/冻结；并发owner启动超时失败保留 | 当批完成 | 人工测试已取消（用户11-06）；不补记阶段通过 | [交付](../dev/archive/reports/r4-validation-2026-10-26.md)、[黑盒](../dev/archive/reports/r4-blackbox-2026-10-29.md) |
 | R5 学习事件/笔记/知识点投影 | 已实现 | 当批双Python各208、Flutter83（2跳过）、Windows/Release/冻结 | 当批完成 | 人工测试已取消（用户11-06）；不补记阶段通过 | [交付](../dev/archive/reports/r5-completion-2026-10-29.md)、[黑盒](../dev/archive/reports/r5-blackbox-2026-10-29.md) |
 | 资料树删除/0012 | 已实现，保留原件历史 | 当批后端212、Flutter86、Windows1、Release/冻结 | 当批完成 | 人工测试已取消（用户11-06）；不补记阶段通过 | [报告](../dev/records/2026-10-30-resource-removal/report.md)；已随PR #2提交的历史记录见统一导入跟进 |
-| 统一添加/导航/搜索/原件复用 | 已实现，含PR竞态修复 | PR跟进记载Flutter91、静态/原生COM自检通过；自建样本Windows集成被单实例锁阻断，不能记通过 | 当批自审已记录，非独立人工批准 | 人工测试已取消（用户11-06）；不补记阶段通过 | [报告](../dev/records/2026-10-30-unified-resource-import/report.md)、[PR跟进](../dev/records/2026-10-30-unified-resource-import/pr-review.md)；[PR #2](https://github.com/surface-user/StudyWorkbench/pull/2)最终head/CI/合并本轮未查询，不据历史绿灯销项 |
+| 统一添加/导航/搜索/原件复用 | 已实现，含PR竞态修复 | PR跟进记载Flutter91、静态/原生COM自检通过；自建样本Windows集成被单实例锁阻断，不能记通过 | 当批自审已记录，非独立人工批准 | 人工测试已取消（用户11-06）；不补记阶段通过 | [报告](../dev/records/2026-10-30-unified-resource-import/report.md)、[PR跟进](../dev/records/2026-10-30-unified-resource-import/pr-review.md)；11-10核对[PR #2](https://github.com/surface-user/StudyWorkbench/pull/2)的29f23d3当前head CI #16成功、仍打开未合并；保留原被阻断集成，不据CI销项 |
 | R6 可选Agent（原M5-AI） | 原临时授权/摘要切片已实现；新增正文范围及人工候选审核见LW-08；模型/凭据等未实施 | API定向10项（前批）；本批Flutter93项、定向6项、静态分析及Windows Release通过；首构失败保留 | 本批自审完成；严格确认校验已修 | 人工测试已取消（用户11-06）；不补记阶段通过 | [设计](agent-design.md)、[报告](../dev/records/2026-11-03-r6-agent-access/report.md)；已接授权UI，无模型/凭据；[PR #3](https://github.com/surface-user/StudyWorkbench/pull/3)已创建，依赖#2；原报告保留head 7aa8251 CI运行中快照；11-06已核对该head CI全通过，仍未合并/发布，用户/完整阶段待验 |
 
 R1–R5集成交付：保留PR #1的CI临时目录与路径别名失败、修复及复测记录，见[历史任务快照](../dev/archive/baseline-20261030/docs/task.md)与[黑盒总报告](../dev/archive/reports/blackbox-review-2026-10-29.md)。本地PR #2报告记载main已含该集成，远程最终状态本轮未核验；取消人工测试不补造历史通过。
@@ -66,6 +66,7 @@ LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人�
 | M2-05d / 恢复副本容量只读报告，实现/自审完成 | 已实现全部空间working/question-files的current/before/pending及未登记文件逻辑长度；离线显式确认、持锁、只读元数据与有界扫描 | 双Python全量各583及77子测试、最终专项26、静态/Schema、43模块干净冻结构建与原恢复/资源巡检链通过，版本边界见报告；自审完成，无独立批准。[独立草稿PR #11](https://github.com/surface-user/StudyWorkbench/pull/11)已创建，分支codex/recovery-storage-report依赖#10的af6fec7；最终head CI及切片交付结论见PR描述/实时检查，未确认前保持待交付；命令/旧失败继续[原报告](../dev/records/2026-11-06-library-integrity/report.md)。不含Office/下载等其他失败字节，不提供删除/覆盖或清理策略；人工测试已取消，未合并/发行，M2-05整体仍进行中 |
 | M2-05e / Office预览容量只读报告，实现/自审完成 | 已实现全部空间previews目录按六种持久任务状态/未登记分类；元数据、有界、独立离线CLI，不读正文或启动Office | 双Python最终全量各605及77子测试、专项48项（Office22/原Markdown26）、Ruff/Schema、43模块干净冻结构建、新Office与原恢复/合并/巡检及资源/文档/重启探针通过，旧夹具失败保留。分支codex/office-preview-storage-report依赖#11的bd9b4dd；自审完成，无独立批准。[独立草稿PR #12](https://github.com/surface-user/StudyWorkbench/pull/12)已创建，最终head CI及切片退出结论见PR描述/实时检查，未核实前待交付；命令/限制继续[原报告](../dev/records/2026-11-06-library-integrity/report.md)。ready缺PDF标不完整，其他状态缺PDF单计；profile/tmp/源副本均保留。不含下载，不提供删除/覆盖策略；人工测试已取消，未合并/发行，M2-05整体仍进行中 |
 | M2-05f / 下载attempt与媒体引用容量只读报告，实现/自审完成 | 已实现downloads固定范围、媒体声明路径优先及当前/低编号/其他文件互斥计长；无正文/URL列读取或清理建议 | 双Python最终全量各636及77子测试、容量专项79（新31+原48）、Ruff/Schema、43模块干净冻结及原恢复/Office/导入/文档/重启和新增引用探针通过；旧失败保留，自审完成，无独立批准。[独立草稿PR #13](https://github.com/surface-user/StudyWorkbench/pull/13)已创建，最终head CI及切片退出结论见PR描述/实时检查，未核实前待交付；命令/限制继续[原报告](../dev/records/2026-11-06-library-integrity/report.md)，分支codex/download-storage-report依赖#12的f141770。旧编号不证明历史状态，无媒体引用不代表可弃；不改下载/入库/恢复/原件或建议清理。人工测试已取消，不接模型，未合并/发行，M2-05/task.md整体未完成 |
+| M2-05g / 旧提取题目孤立目录巡检，实现/自动化/自审完成 | 补齐question-markdown-spec明确遗留的questions目录漏检；沿用现有候选警告、索引归属和只读保护 | 双Python全量各640项及77子测试、专项43、Ruff/Schema、43模块干净冻结与新增巡检/原恢复/导入/文档/重启探针通过；初轮夹具和权限失败保留。独立分支codex/extracted-question-integrity基于#13的edf8350，待独立草稿PR及最终head CI确认；只有自审，独立审查未取得，不销项。只补已有巡检缺口，不增加容量统计或自动恢复语义；人工测试已取消，未合并/发行，过程续[原报告](../dev/records/2026-11-06-library-integrity/report.md) |
 | M3-03 / R5 | 富内容作答扩展、科目知识体系、复习算法校准、更广规模性能综合回归 | 旧历史分页已有实现；规模读取回归不等于百万记录性能/学习效果验证 |
 | M4（由LW-07承接） | yt-dlp/FFmpeg下载队列、质量选择、取消/重试/断点恢复、转码、自动入库 | 依赖/许可/固定二进制审查及授权来源真实流程；本地媒体上传/播放不抵销此项 |
 | M4 / WebView媒体 | 音轨/编码矩阵、外站登录/DRM/休眠、安全导航/子资源/弹窗/下载/DNS/profile矩阵 | 实际站点/硬件及负面测试；容器后缀不证明解码能力 |

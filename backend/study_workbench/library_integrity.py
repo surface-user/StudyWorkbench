@@ -18,7 +18,7 @@ ROW_LIMIT = 50000
 BYTE_LIMIT = 512 * 1024 * 1024
 ISSUE_LIMIT = 200
 SECONDS = 30
-DERIVED = {'working', 'question-files', 'question-versions', 'previews'}
+DERIVED = {'working', 'question-files', 'question-versions', 'previews', 'questions'}
 
 
 class Incomplete(Exception):
