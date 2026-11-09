@@ -162,3 +162,22 @@ DocumentRecoveryDialog在同窗口冻结创建请求及已核对正文，正常�
 实现提交8e7142c5c63a56f67a778c462bbd873434af8fc2已本地commit，退出0。首次及重试git push，以及会话级OpenSSL/已有HTTP/SOCKS代理尝试均退出1（TLS握手失败）；GitHub连接工具也出现传输错误，不是CI失败。一次SOCKS调用的自动权限检查超时未执行，重试后正常执行仍TLS失败，未当成安全拒绝。用户明确确认当时本机网络异常并恢复后，git -c http.sslVersion=tlsv1.2 -c http.version=HTTP/1.1 push -u origin codex/recovery-note-copy退出0；未关闭证书校验/持久改网络配置，不将协议参数推断为故障根因。备用API上传仅准备本机临时JSON并已移除，未使用其创建远端代码对象，远端仍是原提交。
 
 [草稿PR #7](https://github.com/surface-user/StudyWorkbench/pull/7)已创建，base=#6的4686c8b；本节及task补实际链接后，最终文档head CI、检查时间及切片交付结论持续记录在该PR描述/实时检查，不以旧head替代，不为记录自身SHA循环提交。未合并/发行，用户未提交summary.md/.vscode保留，后端与Office未复制新包。
+
+
+## M2-05a：保守三方合并预览核心（2026-11-09）
+
+需求/拆分：在#7的a959b9f31d5f511eb785dea6b398ee7c10e262ff之上，先完成独立纯文本核心与测试。基线核验、空间鉴权、预览API、编辑器确认和保存竞态留给后续独立任务；本切片没有运行时入口，不把它记成完整三方合并。现行内部边界写入architecture的规划节，现有文档/保存接口及数据库均未改。
+
+设计/实现：仅Python标准库，输入/输出各限1MiB UTF-8；按LF拆分保留CR/尾换行/Unicode字面内容。每侧公共前后缀之间视作一个变更区间，线性扫描，无二次方diff。相同版本或单侧变化直接采用；不相交替换/删除/插入可组合；重叠和插入贴边均返回conflicted=true、text=None，不注入标记。不尝试猜测重复行语义；多处不连续编辑可能保守冲突，后续可扩展但不得自动覆盖。调用方必须验证基线并保留输入，以当前hash走既有保存，不修改确认版或历史。
+
+环境/实际命令：本轮是Linux云环境，Python3.12.14，不是原Windows工作目录。环境目录只列云电脑；git clone https://git.chatgpt-team.site/surface-user/StudyWorkbench.git StudyWorkbench退出128（无法取得用户名），未取得完整checkout。通过已连接GitHub工具按固定head读取规定文档、相关源码及工作流，局部落盘，仅发布明确列出的文件；不碰用户本机未提交文件。
+
+- 初始python -m pytest --version及python -m ruff --version均退出1（模块未安装）；随后python -m pip install --target .local/check-tools pytest==9.0.1 ruff==0.14.6退出0，未新增项目依赖。
+- 工作目录为本轮StudyWorkbench局部源码目录；PYTHONPATH=backend python -m unittest discover -s backend/tests -p test_markdown_merge.py -v退出0，8项；日志artifacts/merge-core/unittest.log。
+- PYTHONPATH=.local/check-tools:backend python -m pytest backend/tests/test_markdown_merge.py -q --junitxml=artifacts/merge-core/pytest.xml退出0，8项及77子测试通过（含另行穷举行区间组合断言，不按断言重复计测试数）。
+- PYTHONPATH=.local/check-tools python -m ruff check backend退出0；仅本轮两份Python文件，不是完整后端静态检查。python -m compileall -q backend退出0。
+- 覆盖等值/单侧、空稿、删除/插入、贴边冲突、重复行、中文、混合换行/尾换行、标记字面量、UTF-8及输入/结果预算和对称性。自审已逐项核对无I/O/新增依赖，保守拒绝不丢输入；独立人工审查未执行，按仓库约束未创建子Agent。
+
+本地未执行完整后端、Flutter、Windows构建及冻结；不得套用#7历史绿灯。本轮后续必须核对独立草稿PR当前head的双Python全量、ruff、R1–R5、桌面和冻结CI。既有打包--collect-submodules study_workbench会收集新核心，check_frozen_sources.py仍逐模块检查，未降低断言或改变工作流。人工测试/Computer Use按用户指令取消，不记通过。不合并/发行。
+
+交付：独立分支codex/markdown-merge-core，base为codex/recovery-note-copy。草稿PR URL、最终head及实时CI结论记录在对应PR描述，避免为记录自身SHA循环提交；未核验前本切片保持待交付。M2-05整体仍进行中。
