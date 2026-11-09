@@ -162,3 +162,45 @@ DocumentRecoveryDialog在同窗口冻结创建请求及已核对正文，正常�
 实现提交8e7142c5c63a56f67a778c462bbd873434af8fc2已本地commit，退出0。首次及重试git push，以及会话级OpenSSL/已有HTTP/SOCKS代理尝试均退出1（TLS握手失败）；GitHub连接工具也出现传输错误，不是CI失败。一次SOCKS调用的自动权限检查超时未执行，重试后正常执行仍TLS失败，未当成安全拒绝。用户明确确认当时本机网络异常并恢复后，git -c http.sslVersion=tlsv1.2 -c http.version=HTTP/1.1 push -u origin codex/recovery-note-copy退出0；未关闭证书校验/持久改网络配置，不将协议参数推断为故障根因。备用API上传仅准备本机临时JSON并已移除，未使用其创建远端代码对象，远端仍是原提交。
 
 [草稿PR #7](https://github.com/surface-user/StudyWorkbench/pull/7)已创建，base=#6的4686c8b；本节及task补实际链接后，最终文档head CI、检查时间及切片交付结论持续记录在该PR描述/实时检查，不以旧head替代，不为记录自身SHA循环提交。未合并/发行，用户未提交summary.md/.vscode保留，后端与Office未复制新包。
+
+
+## M2-05a：保守三方合并预览核心（2026-11-09）
+
+需求/拆分：在#7的a959b9f31d5f511eb785dea6b398ee7c10e262ff之上，先完成独立纯文本核心与测试。基线核验、空间鉴权、预览API、编辑器确认和保存竞态留给后续独立任务；本切片没有运行时入口，不把它记成完整三方合并。现行内部边界写入architecture的规划节，现有文档/保存接口及数据库均未改。
+
+设计/实现：仅Python标准库，输入/输出各限1MiB UTF-8；按LF拆分保留CR/尾换行/Unicode字面内容。每侧公共前后缀之间视作一个变更区间，线性扫描，无二次方diff。相同版本或单侧变化直接采用；不相交替换/删除/插入可组合；重叠和插入贴边均返回conflicted=true、text=None，不注入标记。不尝试猜测重复行语义；多处不连续编辑可能保守冲突，后续可扩展但不得自动覆盖。调用方必须验证基线并保留输入，以当前hash走既有保存，不修改确认版或历史。
+
+环境/实际命令：本轮是Linux云环境，Python3.12.14，不是原Windows工作目录。环境目录只列云电脑；git clone https://git.chatgpt-team.site/surface-user/StudyWorkbench.git StudyWorkbench退出128（无法取得用户名），未取得完整checkout。通过已连接GitHub工具按固定head读取规定文档、相关源码及工作流，局部落盘，仅发布明确列出的文件；不碰用户本机未提交文件。
+
+- 初始python -m pytest --version及python -m ruff --version均退出1（模块未安装）；随后python -m pip install --target .local/check-tools pytest==9.0.1 ruff==0.14.6退出0，未新增项目依赖。
+- 工作目录为本轮StudyWorkbench局部源码目录；PYTHONPATH=backend python -m unittest discover -s backend/tests -p test_markdown_merge.py -v退出0，8项；日志artifacts/merge-core/unittest.log。
+- PYTHONPATH=.local/check-tools:backend python -m pytest backend/tests/test_markdown_merge.py -q --junitxml=artifacts/merge-core/pytest.xml退出0，8项及77子测试通过（含另行穷举行区间组合断言，不按断言重复计测试数）。
+- PYTHONPATH=.local/check-tools python -m ruff check backend退出0；仅本轮两份Python文件，不是完整后端静态检查。python -m compileall -q backend退出0。
+- 覆盖等值/单侧、空稿、删除/插入、贴边冲突、重复行、中文、混合换行/尾换行、标记字面量、UTF-8及输入/结果预算和对称性。自审已逐项核对无I/O/新增依赖，保守拒绝不丢输入；独立人工审查未执行，按仓库约束未创建子Agent。
+
+本地未执行完整后端、Flutter、Windows构建及冻结；不得套用#7历史绿灯。本轮后续必须核对独立草稿PR当前head的双Python全量、ruff、R1–R5、桌面和冻结CI。既有打包--collect-submodules study_workbench会收集新核心，check_frozen_sources.py仍逐模块检查，未降低断言或改变工作流。人工测试/Computer Use按用户指令取消，不记通过。不合并/发行。
+
+交付：独立分支codex/markdown-merge-core，base为codex/recovery-note-copy。草稿PR URL、最终head及实时CI结论记录在对应PR描述，避免为记录自身SHA循环提交；未核验前本切片保持待交付。M2-05整体仍进行中。
+
+### M2-05a Windows打包跟进（2026-11-09）
+
+本轮通过GitHub连接器核对：#2→#3→#4→#5→#6→#7→#8依次堆叠，均open/未合并；除#3外均draft。#2–#7当前head分别为29f23d3、7aa8251、147198a、1357d44、4686c8b、a959b9f，对应PR运行40928912483、41559301426、42148998075、42233131907、42276748748、42563863313均completed/success。#2已有代理自审且三个线程resolved；#3–#8没有提交的GitHub review或未解决行内线程。以上不表示独立审查通过。
+
+#8原head e3dfed4的[CI #48](https://github.com/surface-user/StudyWorkbench/actions/runs/42569120398)实际失败：双Python/R1–R5成功，桌面格式/分析/167测试/Windows Release/COM成功，但冻结源码检查抛出`KeyError: No entry named 'study_workbench.markdown_merge' found in the archive!`，后续冻结探针未执行。上节“collect-submodules会收集新核心”被此实际结果纠正，旧失败保留，不重跑冒充通过。
+
+根因在本机固定PyInstaller源码与真实collect_submodules调用确认：生成spec的collect_submodules前导段先于Analysis的pathex设置执行；仅--paths backend不能让前导收集找到源码包，返回空列表。旧41模块因静态调用链进入包，新核心没有调用方而遗漏。修补只在build-backend.ps1调用期间将本仓库backend前置到PYTHONPATH，finally还原调用者原值；保留--clean、--collect-submodules、全部逐模块/嵌套代码/常量/异常表一致性检查及原CI，不手工导入核心或跳过检查。无新依赖或业务改动，继续原#8交付，不为同一任务修补另建PR。
+
+隔离环境：本机原工作区仍停在codex/recovery-note-copy；未跟踪的.vscode与阶段summary.md保留。git fetch退出1（原.git/FETCH_HEAD只读，未更新）；git clone --no-hardlinks --no-checkout . .local/markdown-merge-followup退出128（Git/MSYS命名对象权限失败，未取得checkout），未重试同一权限操作。改用只读git archive e3dfed4（退出0）及Expand-Archive（退出0）取得固定版本到.local/markdown-merge-followup-src；所有编辑/验证在此副本，远端仅更新明确文件并核对expected head，不改写他人工作。gh不可用，PR/CI均使用已连接GitHub工具。
+
+本轮cwd=.local/markdown-merge-followup-src，Q为原仓库.local/release-venv/Scripts/python.exe（独立CPython3.13.17）；原始输出写该副本artifacts/merge-core-followup/：
+
+- 未设置PYTHONPATH时，Q -c调用collect_submodules('study_workbench')退出0但返回[]，复现错误收集；前置本副本backend后同调用并断言markdown_merge在内，退出0，42模块。
+- Q -m pytest backend/tests/test_markdown_merge.py -q --junitxml=artifacts/merge-core-followup/target.xml：退出0，8项及77子测试通过。
+- Q -m ruff check backend tools：退出0，完整后端/工具静态检查通过。
+- ./packaging/windows/build-backend.ps1 -Python Q（PYTHONPATH预置restore-sentinel，返回后断言还原）：退出0；约140秒，42冻结模块全部与源码一致，包括新核心/嵌套代码/常量；调用者PYTHONPATH还原断言通过。原CI失效门禁未改变。完整输出build.log。最终head CI以#8实时检查/描述为准，不用原head后端或Flutter成功代替整条CI。
+- Q tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/merge-core-frozen：退出0，真实冻结HTTP/恢复点只读/陈旧保存拒绝/另存幂等/持锁/巡检及业务字节保持全部原断言通过，frozen-integrity.log。
+- Q tools/check_resource_explorer.py --exe dist/study_backend/study_backend.exe --test-root .local/merge-core-resource --documents：退出0，真实冻结统一导入/文档/布局/原件/作答/删除与重启保持通过，frozen-resources.log。新包仅作本轮验证，成功后清理副本产物，保留原工作区唯一当前包，不覆盖其构建目录。
+
+审查：自审覆盖打包参数、固定解释器、PYTHONPATH继承/异常还原、核心及其测试、全部业务模块源码检查和冻结探针调用链。没有独立审查批准；按用户规则不创建子Agent。人工测试/Computer Use已取消，未执行窗口测试。不合并/发行；修复本前置阻塞后下一独立任务为验证基线归属/hash的只读预览API，UI确认载入与普通保存另分切片，均不能将纯核心冒充编辑器功能。
+
+上传校验纠正：中间提交经本机Python默认GBK管道回传中文时乱码，且Windows git archive导出的CRLF与原始Git blob的LF不同。仅PR中的task/报告受影响，未合并/触及个人库。由保留的正确UTF-8副本重建，以Base64传输UTF-8/LF字节，逐文件核对Git blob SHA及回读内容；错误中间提交保留，不改写历史，最终head重新核实CI。

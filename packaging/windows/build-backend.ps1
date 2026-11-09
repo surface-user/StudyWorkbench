@@ -1,8 +1,11 @@
 param([string]$Python = '.local/release-venv/Scripts/python.exe')
 $ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+$previousPythonPath = $env:PYTHONPATH
 Push-Location $taskRoot
 try {
+    # Collection runs before Analysis applies --paths; include otherwise unreferenced modules.
+    $env:PYTHONPATH = (Join-Path $taskRoot 'backend') + [IO.Path]::PathSeparator + $previousPythonPath
     $env:TEMP = Join-Path $taskRoot '.local/tmp'
     $env:TMP = $env:TEMP
     & $Python -c 'import sys; assert "Anaconda" not in sys.version and "conda" not in sys.base_prefix.lower(), "Release requires independent CPython"'
@@ -11,4 +14,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'PyInstaller failed' }
     & $Python tools/check_frozen_sources.py --exe dist/study_backend/study_backend.exe
     if ($LASTEXITCODE -ne 0) { throw 'Frozen application code differs from current source' }
-} finally { Pop-Location }
+} finally {
+    $env:PYTHONPATH = $previousPythonPath
+    Pop-Location
+}
