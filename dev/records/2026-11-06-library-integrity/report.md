@@ -283,3 +283,5 @@ DocumentFiles新增严格MergeText请求与只读路由，复用已有路径/收
 自审已核对新增路由调用与所有受影响的DocumentPage load/edit/save/recovery/草稿布局、Backend实例及资源身份、空稿和异步失效、PopScope所有退出路径、关闭竞态先失败后通过、原普通expected hash保存以及QuestionFile/历史权威。无新表/迁移/依赖/Agent工具，不自动修复路径或发布确认版；旧恢复入口和失败证据保留。此次仅自审，无独立批准；不把CI当独立审查。人工测试/Computer Use按用户指令取消。独立草稿PR/最终head CI继续核实，未合并/发行；M2-05其他派生恢复与容量治理仍未完成。
 
 交付前附加检查：SDK dart.exe format --output=none --set-exit-if-changed apps/desktop/lib apps/desktop/test apps/desktop/integration_test退出0，87文件无变化；显式8文件UTF-8/替换字符/尾空白检查和49文档相对链接检查退出0，无缺失。原工作区分支及未提交文件未切换/覆盖；远端仅上传上述3份Dart实现/测试和4份现行文档及本报告，采用Base64/UTF-8和逐文件Git blob SHA/回读检查。最终head/CI另在PR描述维护，不为记录自身SHA循环提交。
+
+实际PR交付：[草稿PR #10](https://github.com/surface-user/StudyWorkbench/pull/10)，实现84b841e195784c828959fd860f2cca84c2322861，base为#9的37fa76e，独立分支codex/markdown-merge-desktop。8份明确文件上传后blob SHA逐项核对，本节/task补实际交付链接；最终head/CI运行/核对时间及切片退出结论继续PR描述，不记录自身SHA形成循环提交。没有独立批准，不合并/发行；task.md仍有其他未完成项，后续继续按依赖推进。
