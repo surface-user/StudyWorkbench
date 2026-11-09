@@ -279,3 +279,17 @@ context_sha256及payload_sha256由服务端按对应上下文/候选content计�
 仅通过32位小写hex任务ID、精确`workspaces/<workspace>/previews/<id>/output/source.pdf`、现存空间、资源节点及源资源同空间/绑定检查的任务，才用于整个任务目录的状态分类。未登记不等于可删除；坏引用不用于展开任意路径。任务目录中的源副本、profile/tmp和输出都按路径计长，不因扩展名、年龄或任务失败而排除。持久queued/running只是原记录，不推断仍有进程运行，也不借报告改为interrupted。
 
 只读元数据，不打开正文/PDF/profile或输出原件标题、错误文本、运行时指纹；不证明文件格式、hash、ready可用性或全库健康。data_modified/deletion_authorized/content_integrity_checked/library_health_checked/snapshot_atomic恒false，bytes_kind=observed_logical_lengths。非原子观测、hardlink重复计长、阻塞系统调用与部分小计限制沿用Markdown报告。原件目录、媒体、Markdown工作副本/恢复点、确认版、下载及操作暂存排除；报告不授权删除/覆盖任何学习数据或恢复证据，也没有保留/清理策略开关。
+
+## 离线下载attempt及媒体引用容量报告（M2-05f，当前已实现）
+
+`--data-dir <已有库绝对路径> --report-download-storage --confirm-all-workspaces`：独立互斥命令，仅扫描全部空间（含归档/墓碑）的`workspaces/*/downloads`。复用独占锁、SQLite只读事务、已有绝对本地库/旧schema/参数守卫；拒绝config/media/parent-pipe及其他离线操作。不启动HTTP/网络/下载worker/对账，不创建/迁移业务库或写配置；锁文件可创建/锁定。无桌面/Agent入口。
+
+result的schema_version=1、scope=download_attempt_files，沿用complete、entries_checked/rows_checked、file_count/logical_bytes、largest_files/limit/truncated、issues/limit_reason和原只读边界字段。records_by_status统计当前queued/running/ready/failed/interrupted/paused下载记录；未知状态计unknown并报不完整。categories依次优先media_referenced_file、current_attempt_file、lower_numbered_attempt_file、other_download_file，各含file_count/logical_bytes，互斥计长；任何分类均不是清理建议或丢弃许可。
+
+下载任务须32位小写hex ID、正整数attempt、空间存在及精确`workspaces/<space>/downloads/<id>/<attempt>.mp4/webm/m4a`路径；较低编号仅识别同有效任务目录、同后缀、标准正整数文件名，不推断其历史状态。MediaEntry按规范相对路径/同空间存在性核对，downloads范围内的所有状态引用均优先分类；未知媒体状态报不完整且仍保留引用，不能因当前下载失败或是旧编号而忽略它。媒体引用可没有对应下载记录，且可以指向非attempt命名路径。
+
+media_reference_rows/media_referenced_paths分别计有效范围内媒体声明行与不同路径；重复引用不重复累计文件字节。largest_files按逻辑长度降序/相对路径升序，含relative_path/logical_bytes/role及attempt_relation（current/lower_numbered/other）、current_job_status（目录所属当前任务的状态或null，不是该旧文件的历史状态）、media_reference_count（指向该路径的有效媒体行数）。任一ready任务当前路径、ready/未知状态媒体声明路径缺失，报missing_required_reference/complete=false；所有引用均非就绪时缺失按唯一预期路径计missing_optional_download_files，不修复或更改状态。不输出其他两类报告专属的save_status/preview_status/缺失计数。
+
+只读取任务ID/空间/attempt/路径/状态与媒体空间/路径/状态，不读取任务URL/名称列、媒体标题、progress/result/ETag、播放数据、正文或hash；文件相对路径/文件名属于显式统计输出。按路径表达引用，不重建内容去重结果或穷尽其他表、正文和文件系统alias。data_modified/deletion_authorized/content_integrity_checked/library_health_checked/snapshot_atomic/attempt_history_checked恒false，bytes_kind=observed_logical_lengths。无媒体引用、任务失败、较低编号或重复下载不代表文件可弃；没有删除/覆盖/保留策略或清理建议。
+
+预算为20000目录项、50000相关行（所有扫描的任务和媒体行合计，合法的其他命名空间媒体行只计行预算而不展开）、30秒协作期限、200问题与前20较大文件；超限只报不完整观测小计。完整退出0，不完整退出1，参数/取锁错误非零退出。重解析点不展开，hardlink不同路径重复计逻辑长度，不代表分配/可回收空间，非原子文件系统快照，阻塞系统调用无即时中断保证。原件、普通media目录、Markdown工作/恢复点、Office预览、确认版、未知根目录及操作暂存均不扫描；不改原下载/入库/断点恢复或DNS约束。

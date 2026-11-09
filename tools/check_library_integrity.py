@@ -46,9 +46,9 @@ def main():
         return {p.relative_to(data).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                 for p in data.rglob('*') if p.is_file() and p.name != '.study.lock'}
 
-    def capacity(*, office=False, expected=0):
+    def capacity(*, office=False, download=False, expected=0):
         before = snapshot()
-        flag = '--report-office-storage' if office else '--report-recovery-storage'
+        flag = '--report-download-storage' if download else '--report-office-storage' if office else '--report-recovery-storage'
         run = subprocess.run(command + [flag, '--confirm-all-workspaces'], env=env, cwd=root,
                              capture_output=True, text=True, encoding='utf-8', timeout=60,
                              creationflags=subprocess.CREATE_NO_WINDOW)
@@ -157,6 +157,9 @@ def main():
         blocked = subprocess.run(command + ['--report-office-storage', '--confirm-all-workspaces'], env=env, cwd=root,
                                  capture_output=True, timeout=30, creationflags=subprocess.CREATE_NO_WINDOW)
         assert blocked.returncode != 0, 'Office report bypassed the active application lock'
+        blocked = subprocess.run(command + ['--report-download-storage', '--confirm-all-workspaces'], env=env, cwd=root,
+                                 capture_output=True, timeout=30, creationflags=subprocess.CREATE_NO_WINDOW)
+        assert blocked.returncode != 0, 'Download report bypassed the active application lock'
         process.stdin.close()
         assert process.wait(timeout=20) == 0
         assert not process.stderr.read().strip()
@@ -218,6 +221,46 @@ def main():
             db.execute("UPDATE document_previews SET status='ready' WHERE id=?", (preview_id,))
         missing_ready = capacity(office=True, expected=1)
         assert any(i['code'] == 'missing_required_reference' for i in missing_ready['issues'])
+        assert capacity(download=True)['file_count'] == 0
+        # Local synthetic records only; this probe never initiates a download.
+        download_id, second_download = '1' * 32, '2' * 32
+        old_relative = f'workspaces/default/downloads/{download_id}/1.webm'
+        current_relative = f'workspaces/default/downloads/{download_id}/2.webm'
+        second_relative = f'workspaces/default/downloads/{second_download}/1.webm'
+        download_files = {old_relative: b'media authority retained from lower attempt',
+                          current_relative: b'current failed attempt', second_relative: b'completed duplicate-like bytes'}
+        for relative, content in download_files.items():
+            path = data / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+        with sqlite3.connect(data / 'study.db') as db:
+            for identifier, attempt, relative, status in [(download_id, 2, current_relative, 'failed'),
+                                                         (second_download, 1, second_relative, 'ready')]:
+                db.execute('INSERT INTO media_download_jobs '
+                           '(id,workspace_id,request_id,source_url,name,status,cancel_requested,attempt,relative_path, '
+                           'progress,result,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+                           (identifier, 'default', 'download-storage-probe-' + identifier,
+                            'https://media.example.com/no-request?signature=private-probe', 'private-download.webm',
+                            status, False, attempt, relative, '{}', '{}', '2026-11-10T00:00:00+08:00'))
+            for identifier, status, checksum in [('3' * 32, 'ready', hashlib.sha256(download_files[old_relative]).hexdigest()),
+                                                  ('4' * 32, 'failed', '0' * 64)]:
+                db.execute('INSERT INTO media_entries (id,workspace_id,title,relative_path,mime,size,sha256,status,playback) '
+                           'VALUES (?,?,?,?,?,?,?,?,?)', (identifier, 'default', 'private media title', old_relative,
+                           'video/webm', len(download_files[old_relative]), checksum, status, '{}'))
+        downloads = capacity(download=True)
+        assert downloads['scope'] == 'download_attempt_files' and not downloads['attempt_history_checked']
+        assert downloads['media_reference_rows'] == 2 and downloads['media_referenced_paths'] == 1
+        assert downloads['categories']['media_referenced_file'] == dict(file_count=1, logical_bytes=len(download_files[old_relative]))
+        assert downloads['categories']['current_attempt_file']['file_count'] == 2
+        authority = next(i for i in downloads['largest_files'] if i['relative_path'] == old_relative)
+        assert authority['media_reference_count'] == 2 and authority['attempt_relation'] == 'lower_numbered'
+        assert authority['current_job_status'] == 'failed'
+        assert 'private-probe' not in json.dumps(downloads) and 'example.com' not in json.dumps(downloads)
+        (data / current_relative).rename(root / 'retained-current-attempt.bin')
+        assert capacity(download=True)['missing_optional_download_files'] == 1
+        (data / old_relative).rename(root / 'retained-media-authority.bin')
+        missing_media = capacity(download=True, expected=1)
+        assert any(i == dict(code='missing_required_reference', relative_path=old_relative) for i in missing_media['issues'])
         summary = dict(frozen=True, active_lock_refused=True, healthy_case_verified=True, orphan_detected=True,
                        external_edit_detected=True, business_bytes_preserved=True, repair_performed=False,
                        recovery_preview_readonly=True, recovery_save_conflict_guard=True, recovery_explicit_save=True,
@@ -226,7 +269,9 @@ def main():
                        capacity_report_metadata_readonly=True, capacity_unregistered_bytes_accounted=True,
                        capacity_deletion_authorized=False, office_inventory_metadata_readonly=True,
                        office_failed_profile_bytes_accounted=True, office_missing_ready_refused=True,
-                       office_deletion_authorized=False)
+                       office_deletion_authorized=False, download_inventory_readonly=True,
+                       download_media_priority=True, download_alias_bytes_once=True,
+                       download_missing_ready_media_refused=True, download_deletion_authorized=False)
         (root / 'result.json').write_text(json.dumps(summary, indent=2) + '\n', encoding='utf-8')
         print(json.dumps(summary))
     finally:

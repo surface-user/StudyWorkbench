@@ -377,3 +377,50 @@ cwd仍为隔离副本.local/markdown-merge-followup-src；P=.venv/Scripts/python
 本地收尾：串行P/Q最终全量均605及77子测试通过，仅既有Starlette anyio别名弃用警告。全部本地验证成功、持有的冻结样本进程已退出后，以PowerShell Resolve-Path逐一验证隔离副本边界、Get-ChildItem检查无重解析点，再仅Remove-Item -LiteralPath -Recurse -Force清理本副本dist/study_backend、build/study_backend、.local/office-frozen01、.local/office-resources01，退出0；包SHA256、精确路径/数量/逻辑长度及样本结论先保存office-package-hash.json、office-generated-artifacts.json、office-frozen-result.json。原工作区当前包/Office组件、.venv junction、用户数据及所有失败现场未动；这不是容量报告删除功能。下一步独立PR/最终head全CI及补交链接；未确认前仍待交付，不把一个切片冒充整个M2-05/task.md完成。
 
 实际交付：[草稿PR #12](https://github.com/surface-user/StudyWorkbench/pull/12)，分支codex/office-preview-storage-report，base=#11的bd9b4ddcb1c755251bedbb601b8ae61de03192f8，实现30c09878a16a2bafebc5adca5af1e89955ec333a。创建前复核#11未变化；全部九文件规范UTF-8/LF经Base64上传/逐项Git blob SHA核对，远端实现commit完整差异恰为九份，无额外基线修改；分支用expected_sha推进，未强推。task/原报告补实际交付链接，最终head、CI运行/核对时间及切片退出结论另在PR描述维护，避免为记录自身SHA循环提交；未知/未完成时仍待交付。不把CI算作独立批准，不合并/发行，剩余下载统计/其他派生恢复与整个task.md继续保留。
+
+## M2-05f：下载attempt与媒体引用只读容量统计设计（2026-11-10）
+
+已重新核对#12仍open/draft，head f141770fca6daa1ce57508e3349db3262576d921、CI #78三组/每步success，无未解决行内线程，仅自审，不是独立批准。副本九份文件逐项与该head远端Git blob一致；原分支codex/recovery-note-copy、未提交.vscode/settings.json及summary.md保持原hash。新分支codex/download-storage-report从此head建立，继续隔离副本/连接器，不写原.git或覆盖他人工作。要求本切片独立草稿PR、相关自动化、自审及最终head全CI，不要求合并/发行；不接模型，不做人工测试，不创建子Agent。
+
+依据现有下载实现与LW-07契约：首次成功下载可直接成为MediaEntry原件路径；重复hash复用旧媒体身份，但本次完整下载文件仍保留；restart增加attempt，旧字节保留且没有逐attempt状态账。故本轮只描述实际路径和声明引用，不能把ready、failed、低编号或无MediaEntry引用解释为可清理。遵守本轮用户明确限制，不删除/覆盖或建议清理任何用户学习数据或恢复证据。
+
+新增独立互斥离线--report-download-storage --confirm-all-workspaces，仅统计全部空间（含归档/墓碑）的workspaces/*/downloads。复用既有锁/SQLite只读事务/元数据扫描/路径与预算，原Markdown和Office命令及schema保持；私有扫描只接受三个固定调用模式，不开放任意目录。下载表仅选ID/空间/attempt/relative_path/status，媒体表仅选空间/relative_path/status和空间存在性；不读URL、名称、progress/result/ETag、播放数据、正文或hash，不启动网络/下载worker/对账。既有DNS边界、下载/入库/重试算法不变。
+
+先严格核对32位任务ID、正整数attempt、现存空间以及固定workspaces/<space>/downloads/<job>/<attempt>.mp4/webm/m4a路径，再识别当前文件；同目录同后缀的较小正整数标准文件名只标lower_numbered，不猜测其历史状态。MediaEntry使用规范相对路径/同空间存在性核对，所有状态的有效引用均单独累计（重复行不重复计文件字节），ready引用优先作为必须存在；未知媒体状态标不完整且不把路径降为无引用。任何媒体引用文件优先归media_referenced_file；其他依次current_attempt_file/lower_numbered_attempt_file/other_download_file。顶层categories互斥计长，较大文件另外给attempt_relation/current_job_status/media_reference_count，以表达同一路径既是attempt又是媒体原件。current_job_status不是旧attempt历史状态。
+
+所有有效ready下载当前路径或ready/未知状态的媒体路径缺失，报告不完整；所有引用均非就绪时缺失只计missing_optional_download_files，按不同预期路径去重，不对账/修复。media_reference_rows/media_referenced_paths分别是范围内有效声明引用行/路径数，不是内容验证。按路径匹配，不比较hash或读取job.result以重建去重结果，不穷尽其他表、正文或文件系统alias引用；缺少本报告引用不代表没有价值/可弃。attempt_history_checked=false，任何分类均无清理建议或删除授权。
+
+预算沿用20000目录项、50000相关行（下载任务及扫描的媒体行合计）、30秒协作期限、200问题、前20较大文件；超限返回不完整观测小计，不推算全库容量。仅逻辑长度，hardlink不同路径可重复计长，非磁盘分配/可回收字节，非原子文件系统快照；重解析点不展开。其他命名空间/未知根目录/备份恢复暂存排除，不提供HTTP/UI/Agent/保留策略。无新表、迁移或依赖。
+
+拆分：必要的固定模式扩展与只读引用合并→真实API的首次入库/去重/restart保留关系、各状态/归档墓碑/重复引用/旧编号及未知文件、坏元数据/缺失/预算/锁/重解析点/无正文URL与字节保持，回归原48项→原冻结探针追加合成下载/媒体引用及缺失场景且保持旧断言→串行双Python全量/Ruff/Schema/干净冻结→自审/现行契约/task/原报告→独立草稿PR及最终head CI。整个M2-05/task.md仍有其他未完成项，不以本切片代替全部开发完成。
+
+### M2-05f 实施与验证
+
+在既有recovery_storage.py内增加固定downloads调用模式与report_download_storage/互斥CLI，无新模块/依赖/表/迁移。任务与媒体独立验证，媒体有效路径不会因任务元数据损坏而被忽略；重复媒体引用以required逻辑或合并，同路径字节只计一次，任一ready要求存在。较大文件给声明引用数及当前任务上下文，不猜测旧文件状态。原MD/Office返回字段与命名空间保持；下载/worker/入库算法及DNS边界未改，没有HTTP/UI/Agent入口。
+
+自动化保留：首次Ruff退出1（新增测试未使用hashlib导入），移除后完整backend/tools退出0，pytest当时未执行。download-target01随后退出1，3失败/76通过、108.27秒，失败均是注入attempt=0/未知状态的夹具先被0015 CHECK挡住，报告未执行；已在这些一次性坏库fixture的独立SQLite连接中显式ignore_check_constraints=ON以构造需检查的损坏，不改变业务/报告连接的约束或断言。初轮测试函数在导入后不会因磁盘修补而变化，旧失败日志/XML和.local/dl-t01现场保留。最终download-target02退出0，79项、110.15秒。
+
+新31项包括：stub网络但执行真实本地API的首次入库、重复hash复用同MediaEntry、独立节点/墓碑、两次restart保留低编号文件及当前queued不对账；媒体ready/failed路径优先、重复引用不重复计字节/缺失、缺少下载记录的媒体权威；六持久状态、归档空间、低编号/未来编号/非标准名/后缀及嵌套未知文件、hardlink/前20截断、8种坏任务及2种坏媒体引用、4预算及媒体行共用预算、缺库/旧schema/损坏/锁、真实Windows junction和CLI互斥/全空间确认。Path.open guard拒绝读取正文，SQLite authorizer拒绝读取URL/名称/progress/result/error/播放数据/hash/大小等非必要列；数据库及所有业务文件前后字节一致，输出无签名query/主机/标题/绝对路径。不是实际公网下载或内容格式健康证明，旧公网来源限制本轮不绕过。
+
+cwd=.local/markdown-merge-followup-src，P=.venv/Scripts/python.exe（原3.12.7环境junction），Q=D:/computer_work/project/StudyWorkbench/.local/release-venv/Scripts/python.exe（独立3.13.17）。实际命令及退出：
+
+| 命令 | 退出/结果 | 副本artifacts/ |
+|---|---|---|
+| Q -m ruff check backend tools | 0；完整静态 | 实际输出，旧未用导入失败保留于本节 |
+| Q tools/export_question_schema.py --check | 0；协议无漂移 | 实际输出 |
+| Q -m pytest backend/tests/test_download_storage.py backend/tests/test_office_storage.py backend/tests/test_recovery_storage.py -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/dl-t02 --junitxml=artifacts/download-target02.xml | 0；新31+原48共79项，110.15秒 | download-target02.log/xml |
+| P -m pytest -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/dl-pfull01 --junitxml=artifacts/download-pfull01.xml | 0；最终版本636项及77子测试，463.00秒 | download-pfull01.log/xml |
+| Q -m pytest -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/dl-qfull01 --junitxml=artifacts/download-qfull01.xml | 0；最终版本636项及77子测试，402.19秒；在P结束后串行 | download-qfull01.log/xml |
+| ./packaging/windows/build-backend.ps1 -Python Q | 0；43模块与最终源码/嵌套代码/常量一致，约155秒 | download-build01.log |
+| Q tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/download-frozen01 | 0；原全部恢复/另存/合并/Office/持锁/巡检保持；新增下载CLI持锁拒绝、媒体旧编号路径优先、重复引用字节只计一次、可选缺失计数和缺失ready媒体不完整、私有URL不输出及逐字节保持 | download-frozen01.log，.local/download-frozen01/result.json |
+| Q tools/check_resource_explorer.py --exe dist/study_backend/study_backend.exe --test-root .local/download-resources01 --documents | 0；原导入/文档/布局/原件/作答/删除与重启保持，schema0016 | download-resources01.log |
+
+串行P/Q全量与原冻结/资源探针继续独立记录；不把本地专项当作全量或最终head CI。实现自审核对三固定模式所有调用方、严格路径/空间/attempt类型、所有状态媒体引用保护与required合并、部分小计/预算、互斥分类/引用数/逻辑长度/未知历史、SQL私有列及无网络/内容调用、旧MD/Office分支和原冻结断言。当前仅自审，无独立批准，CI不计作独立审查；最终全量/CI及独立PR未确认前待交付。人工测试已取消，未合并/发行；剩余其他派生恢复与task.md其他项继续，任何统计不作清理建议。
+
+补交检查：首次临时脚本生成命令因PowerShell引号解析失败，未写出download_validate.py，未执行验证；改为读取既有模板后定向生成独立辅助文件，Q -X utf8 artifacts/download_validate.py退出0。只九份明确文件，其余429份#12基线文件逐项保持；48文档相对链接无缺失、UTF-8/替换字符/尾空白与规范上传字节的git diff --no-index --check通过（正常非空差异退出1但无告警，辅助脚本0），逐项结果download-diffcheck.json。辅助脚本与所有原始日志/JUnit仅在artifacts，不进Git。
+
+本地收尾：最终串行P/Q均636及77子测试通过，仅既有Starlette anyio别名弃用警告；两冻结探针均0。先记录新临时包SHA256和精确构建路径/文件数/逻辑长度（download-package-hash.json、download-generated-builds.json），以Resolve-Path核对隔离副本范围并确认无重解析点，再仅Remove-Item -LiteralPath -Recurse -Force移除本副本dist/study_backend与build/study_backend，退出0，原工作区唯一当前包/Office组件不动。按本轮保留恢复证据限制，.local/download-frozen01（含retained-current-attempt.bin/retained-media-authority.bin）与download-resources01作为小型隔离复现保留，结论另存download-frozen-result.json；没有删除或覆盖用户数据、恢复/失败现场，也不提出清理建议。
+
+实现/相关本地自动化/自审完成，独立批准仍没有；下一步仅本切片独立PR与最终head全CI，不用父PR或本地通过代替它。现行API/架构/数据模型/task已写清范围与当前/后续状态，业务UI和依赖未变，本地不重复Flutter/Windows大包，最终head CI仍跑全部原流程。人工测试已取消，不接模型，不合并/发行；M2-05及task.md整体仍有未完成项。
+
+实际交付：[草稿PR #13](https://github.com/surface-user/StudyWorkbench/pull/13)，分支codex/download-storage-report，base=#12的f141770fca6daa1ce57508e3349db3262576d921，实现e1c40532db979d31543eb7019027f6863779a1e0。创建前复核父PR未变化，九份文件按规范UTF-8/LF Base64上传并校验Git blob SHA，远端实现commit完整差异恰为九份，其余429基线文件保持；以expected_sha推进分支，未强推。task/原报告补实际链接，最终head、CI运行/检查时间和切片交付结论另在PR描述维护，不为记录自身SHA循环提交；未核实前待交付。只有自审，不将CI计作独立批准；原分支/未提交改动及所有用户数据/恢复证据保留，不合并/发行。其他派生恢复及task.md剩余项未因本切片销项。
