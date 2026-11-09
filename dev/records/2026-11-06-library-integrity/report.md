@@ -1,183 +1,204 @@
-# M2-05 资料完整性与孤立派生目录巡检
+# M2-05 �������������������Ŀ¼Ѳ��
 
-2026-11-06，用户要求继续推进数据可靠性。依现行规则不执行人工/Computer Use，不接模型，不删除学习资料；沿用ponytail最小完整实现，不增加依赖。
+2026-11-06���û�Ҫ������ƽ����ݿɿ��ԡ������й���ִ���˹�/Computer Use������ģ�ͣ���ɾ��ѧϰ���ϣ�����ponytail��С����ʵ�֣�������������
 
-## 设计与本轮任务
+## ����뱾������
 
-首个交付切片为离线维护CLI --check-library，配合--data-dir及显式--confirm-all-workspaces。仅检查已有当前schema资料库，不启动HTTP、不迁移/创建业务库、不激活配置；复用DataLock与SQLite只读连接。数据锁文件可创建，业务数据库和学习文件不改写。正在运行的库拒绝检查。
+�׸�������ƬΪ����ά��CLI --check-library�����--data-dir����ʽ--confirm-all-workspaces����������е�ǰschema���Ͽ⣬������HTTP����Ǩ��/����ҵ��⡢���������ã�����DataLock��SQLiteֻ�����ӡ��������ļ��ɴ�����ҵ�����ݿ��ѧϰ�ļ�����д���������еĿ�ܾ���顣
 
-检查SQLite完整性/FK、当前schema，核对原件/就绪媒体/确认版正文附件/就绪Office PDF的大小与hash；工作副本hash变化只报告索引差异，不覆盖。保存收据保留before/pending，已提交后pending缺失是正常情况。预览失败/中断任务的source/profile/output和已登记确认版receipt均属于保留材料，不误判为可删除文件。
+���SQLite������/FK����ǰschema���˶�ԭ��/����ý��/ȷ�ϰ����ĸ���/����Office PDF�Ĵ�С��hash����������hash�仯ֻ�����������죬�����ǡ������վݱ���before/pending�����ύ��pendingȱʧ�����������Ԥ��ʧ��/�ж������source/profile/output���ѵǼ�ȷ�ϰ�receipt�����ڱ������ϣ�������Ϊ��ɾ���ļ���
 
-孤立候选仅覆盖working、question-files、question-versions、previews四类受管目录：按数据库路径/预览任务建立所属集合，发现无登记归属的目录只提示，绝不推断可删除；其他未知目录保留不猜测。覆盖全部空间及归档，墓碑仍是有效引用。无新表/API/Agent工具，本轮不增加桌面入口，不声称完成自动恢复、三方合并或全部派生类型。
+������ѡ������working��question-files��question-versions��previews�����ܹ�Ŀ¼�������ݿ�·��/Ԥ���������������ϣ������޵Ǽǹ�����Ŀ¼ֻ��ʾ�������ƶϿ�ɾ��������δ֪Ŀ¼�������²⡣����ȫ���ռ估�鵵��Ĺ��������Ч���á����±�/API/Agent���ߣ����ֲ�����������ڣ�����������Զ��ָ��������ϲ���ȫ���������͡�
 
-资源预算：最多20000文件/目录项、50000引用行、512MiB读取、30秒、200条问题；超过或无法读取返回complete=false，不能表示健康。报告只含相对路径、类别和计数，不输出正文/会话信息；结果不自动持久化。
+��ԴԤ�㣺���20000�ļ�/Ŀ¼�50000�����С�512MiB��ȡ��30�롢200�����⣻�������޷���ȡ����complete=false�����ܱ�ʾ����������ֻ�����·�������ͼ��������������/�Ự��Ϣ��������Զ��־û���
 
-顺序：实现扫描与CLI→只读/坏输入/路径/预算/锁/CLI自动回归→恢复故障注入→全量/冻结入口验证→代码自审、契约和任务更新。独立阶段草稿PR以#4分支为base，要求提交/当前head CI，不要求合并。保留既有未提交summary.md及本机.vscode。
-
-
-## 实施与自审补充
-
-实现library_integrity.py及固定离线CLI，不增加HTTP/Agent接口或数据库表。复用备份的只读连接、安全路径与数据锁；覆盖墓碑和归档记录。working按node及生成目录两级归属，避免已登记node掩盖未登记的旧generation；版本receipt、预览任务source/profile/tmp按已登记所有者保留。保存prepared与笔记创建中断、根部恢复/迁移暂存目录独立提示，不改写收据。相对路径先检查Windows安全名称、重解析点及所属空间；锁文件本身的junction也在取锁前拒绝。
-
-healthy仅表示checked_scope=managed_files_and_derived_directories本次范围未发现问题，不证明任意格式语义、所有历史业务JSON或外部编辑原子性。哈希读取最多512MiB，SQLite另受30秒进度期限与既有限值约束；不会自动恢复、迁移或删除，其他派生类型/桌面入口/三方合并继续后续。时间限制为协作式检查点，不能保证中断单次阻塞文件系统调用。
-
-已新增4项恢复故障注入：提升后目标被外部修改、提升阶段磁盘耗尽、激活后暂存清理拒绝、备份打包期间源修改。均核旧库/旧配置保持；清理拒绝允许已完整校验的新库激活并cleanup_pending=true，保留暂存，不能误报成恢复未完成。
-
-已执行：target-01为19通过24.40秒，target-02为24通过29.23秒；fault-01为4通过8.97秒，均退出0。target-03退出1（27通过1失败）：新junction锁用例第一次巡检已创建.study.lock，随后rename准备锁junction时目标已存在；改为先保留旧锁文件再移动测试junction，原路径保护断言保留。target-04退出1（29通过1失败）：跨空间读监控正确阻止扫描读取，但测试事后snapshot也被同一监控拦住；将监控限定于扫描调用后，保留全文件字节不变断言。原日志/JUnit/失败现场保留，不能将这些夹具问题归为产品回归通过。后续target-05/完整验证另列。
+˳��ʵ��ɨ����CLI��ֻ��/������/·��/Ԥ��/��/CLI�Զ��ع���ָ�����ע���ȫ��/���������֤������������Լ��������¡������׶βݸ�PR��#4��֧Ϊbase��Ҫ���ύ/��ǰhead CI����Ҫ��ϲ�����������δ�ύsummary.md������.vscode��
 
 
-target-05退出0，31通过38.44秒；后续补ready预览元数据/旧schema/递归损坏元数据，target-06退出1（33通过1失败）：旧库夹具make_0006要求不存在的目录，改为tmp_path内新old-library子目录，保护断言不变。target-07巡检专项退出0，30通过35.49秒，另4项故障已通过。最初开发/发行全量backend312/backend313分别508通过（306.78/283.02秒），此时后补两项测试尚未纳入计数，不能报510；最终final312/final313另记。
+## ʵʩ�����󲹳�
 
-冻结首构frozen.log退出0，136.6秒；自审异常处理补丁后再增量构建frozen-final.log退出0、6.8秒，但真正PYZ源一致性断言退出1：打包check_library的co_names缺RecursionError，证明增量包未包含最新安全降级。尚未在该包执行业务探针，没有把构建成功当代码一致。新增tools/check_frozen_sources.py，以固定CPython3.13.17读取PYZ，比较所有本项目业务模块的字节码、常量、嵌套代码、参数/作用域及异常表，忽略构建路径/调试行号；不执行打包代码。frozen-source-before.log退出1成功拦截旧包。标准build-backend.ps1加入--clean，并在每次打包后强制调用该一致性检查，失败则构建失败；无新依赖。干净构建、真实冻结及最终回归继续验证，不提交不一致包。
+ʵ��library_integrity.py���̶�����CLI��������HTTP/Agent�ӿڻ����ݿ�������ñ��ݵ�ֻ�����ӡ���ȫ·����������������Ĺ���͹鵵��¼��working��node������Ŀ¼���������������ѵǼ�node�ڸ�δ�Ǽǵľ�generation���汾receipt��Ԥ������source/profile/tmp���ѵǼ������߱���������prepared��ʼǴ����жϡ������ָ�/Ǩ���ݴ�Ŀ¼������ʾ������д�վݡ����·���ȼ��Windows��ȫ���ơ��ؽ����㼰�����ռ䣻���ļ�������junctionҲ��ȡ��ǰ�ܾ���
 
-本轮分支codex/library-integrity，base=147198a（PR #4），保持原分支及未提交summary.md/.vscode；独立阶段草稿PR交付，不合并/发行。Windows前端源未改，人工测试已取消，本轮不制作窗口验收包。
+healthy����ʾchecked_scope=managed_files_and_derived_directories���η�Χδ�������⣬��֤�������ʽ���塢������ʷҵ��JSON���ⲿ�༭ԭ���ԡ���ϣ��ȡ���512MiB��SQLite����30����������������ֵԼ���������Զ��ָ���Ǩ�ƻ�ɾ����������������/�������/�����ϲ�����������ʱ������ΪЭ��ʽ���㣬���ܱ�֤�жϵ��������ļ�ϵͳ���á�
+
+������4��ָ�����ע�룺������Ŀ�걻�ⲿ�޸ġ������׶δ��̺ľ���������ݴ������ܾ������ݴ���ڼ�Դ�޸ġ����˾ɿ�/�����ñ��֣������ܾ�����������У����¿⼤�cleanup_pending=true�������ݴ棬�����󱨳ɻָ�δ��ɡ�
+
+��ִ�У�target-01Ϊ19ͨ��24.40�룬target-02Ϊ24ͨ��29.23�룻fault-01Ϊ4ͨ��8.97�룬���˳�0��target-03�˳�1��27ͨ��1ʧ�ܣ�����junction��������һ��Ѳ���Ѵ���.study.lock�����rename׼����junctionʱĿ���Ѵ��ڣ���Ϊ�ȱ��������ļ����ƶ�����junction��ԭ·���������Ա�����target-04�˳�1��29ͨ��1ʧ�ܣ�����ռ�������ȷ��ֹɨ���ȡ���������º�snapshotҲ��ͬһ�����ס��������޶���ɨ����ú󣬱���ȫ�ļ��ֽڲ�����ԡ�ԭ��־/JUnit/ʧ���ֳ����������ܽ���Щ�о������Ϊ��Ʒ�ع�ͨ��������target-05/������֤���С�
 
 
-## 最终固定版本验证
+target-05�˳�0��31ͨ��38.44�룻������readyԤ��Ԫ����/��schema/�ݹ���Ԫ���ݣ�target-06�˳�1��33ͨ��1ʧ�ܣ����ɿ�о�make_0006Ҫ�󲻴��ڵ�Ŀ¼����Ϊtmp_path����old-library��Ŀ¼���������Բ��䡣target-07Ѳ��ר���˳�0��30ͨ��35.49�룬��4�������ͨ�����������/����ȫ��backend312/backend313�ֱ�508ͨ����306.78/283.02�룩����ʱ�����������δ������������ܱ�510������final312/final313���ǡ�
 
-本节P=.venv/Scripts/python.exe（3.12.7）、Q=.local/release-venv/Scripts/python.exe（3.13.17），cwd仓库根，原始日志/JUnit均artifacts/integrity-20261106/，以下退出码实际收取：
+�����׹�frozen.log�˳�0��136.6�룻�����쳣��������������������frozen-final.log�˳�0��6.8�룬������PYZԴһ���Զ����˳�1�����check_library��co_namesȱRecursionError��֤��������δ�������°�ȫ��������δ�ڸð�ִ��ҵ��̽�룬û�аѹ����ɹ�������һ�¡�����tools/check_frozen_sources.py���Թ̶�CPython3.13.17��ȡPYZ���Ƚ����б���Ŀҵ��ģ����ֽ��롢������Ƕ�״��롢����/�������쳣�������Թ���·��/�����кţ���ִ�д�����롣frozen-source-before.log�˳�1�ɹ����ؾɰ�����׼build-backend.ps1����--clean������ÿ�δ����ǿ�Ƶ��ø�һ���Լ�飬ʧ���򹹽�ʧ�ܣ������������ɾ���������ʵ���ἰ���ջع������֤�����ύ��һ�°���
 
-| 命令/验证 | 结果 | 原始记录 |
+���ַ�֧codex/library-integrity��base=147198a��PR #4��������ԭ��֧��δ�ύsummary.md/.vscode�������׶βݸ�PR���������ϲ�/���С�Windowsǰ��Դδ�ģ��˹�������ȡ�������ֲ������������հ���
+
+
+## ���չ̶��汾��֤
+
+����P=.venv/Scripts/python.exe��3.12.7����Q=.local/release-venv/Scripts/python.exe��3.13.17����cwd�ֿ����ԭʼ��־/JUnit��artifacts/integrity-20261106/�������˳���ʵ����ȡ��
+
+| ����/��֤ | ��� | ԭʼ��¼ |
 |---|---|---|
-| P -m pytest backend/tests -q --basetemp=.local/integrity-final312 --junitxml=artifacts/integrity-20261106/final312.xml | 0，510通过，295.00秒 | final312.log/xml |
-| Q -m pytest backend/tests -q --basetemp=.local/integrity-final313 --junitxml=artifacts/integrity-20261106/final313.xml | 0，510通过，291.06秒 | final313.log/xml |
-| packaging/windows/build-backend.ps1（--clean及强制源码一致性检查） | 0，88.3秒；41业务模块全部匹配，含嵌套代码/常量/异常表 | frozen-clean.log |
-| P tools/check_resource_explorer.py --exe dist/study_backend/study_backend.exe --test-root .local/integrity-frozen-resource --documents | 0，原CI资料/文档/移除/重启与schema严格校验 | resource.log |
-| 冻结exe --data-dir该样本库绝对路径 --check-library --confirm-all-workspaces（PATH仅System32） | 1，正确发现原探针故意制造的workfile_index_changed；不能把该冲突样本当健康库 | frozen-scan.log |
-| P tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/integrity-frozen-final | 0，纯黑盒新库：持锁拒绝、正常健康、未登记旧generation与外部编辑诊断；每次扫描前后业务DB/文件hash相等，不修复 | frozen-check-final.log、隔离result.json |
-| 新TEMP/TMP junction .local/integrity-lifecycle-alias→integrity-lifecycle-real；P tools/check_backend_lifecycle.py --exe同包 | 0，正常退出/EOF/重启/崩溃/两次迁移/父EOF取消，原CI整链 | lifecycle.log |
-| P tools/check_document_workers.py --exe同包 | 0，真实DOCX/PDF文字/图片/公式/页与分题 | document-workers.log |
-| P tools/check_learning_workbench.py --exe同包 --test-root .local/integrity-workbench | 0，笔记/标记/链接/检索、授权审核与收据、重启/整库恢复、源hash一致 | workbench.log/result.json |
-| Q tools/check_rN_blackbox.py .local/integrity-rN，N顺序1..5，失败即退出 | 0，既有公开HTTP完整回归 | r1至r5.log |
+| P -m pytest backend/tests -q --basetemp=.local/integrity-final312 --junitxml=artifacts/integrity-20261106/final312.xml | 0��510ͨ����295.00�� | final312.log/xml |
+| Q -m pytest backend/tests -q --basetemp=.local/integrity-final313 --junitxml=artifacts/integrity-20261106/final313.xml | 0��510ͨ����291.06�� | final313.log/xml |
+| packaging/windows/build-backend.ps1��--clean��ǿ��Դ��һ���Լ�飩 | 0��88.3�룻41ҵ��ģ��ȫ��ƥ�䣬��Ƕ�״���/����/�쳣�� | frozen-clean.log |
+| P tools/check_resource_explorer.py --exe dist/study_backend/study_backend.exe --test-root .local/integrity-frozen-resource --documents | 0��ԭCI����/�ĵ�/�Ƴ�/������schema�ϸ�У�� | resource.log |
+| ����exe --data-dir�����������·�� --check-library --confirm-all-workspaces��PATH��System32�� | 1����ȷ����ԭ̽����������workfile_index_changed�����ܰѸó�ͻ������������ | frozen-scan.log |
+| P tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/integrity-frozen-final | 0�����ں��¿⣺�����ܾ�������������δ�ǼǾ�generation���ⲿ�༭��ϣ�ÿ��ɨ��ǰ��ҵ��DB/�ļ�hash��ȣ����޸� | frozen-check-final.log������result.json |
+| ��TEMP/TMP junction .local/integrity-lifecycle-alias��integrity-lifecycle-real��P tools/check_backend_lifecycle.py --exeͬ�� | 0�������˳�/EOF/����/����/����Ǩ��/��EOFȡ����ԭCI���� | lifecycle.log |
+| P tools/check_document_workers.py --exeͬ�� | 0����ʵDOCX/PDF����/ͼƬ/��ʽ/ҳ����� | document-workers.log |
+| P tools/check_learning_workbench.py --exeͬ�� --test-root .local/integrity-workbench | 0���ʼ�/���/����/��������Ȩ������վݡ�����/����ָ���Դhashһ�� | workbench.log/result.json |
+| Q tools/check_rN_blackbox.py .local/integrity-rN��N˳��1..5��ʧ�ܼ��˳� | 0�����й���HTTP�����ع� | r1��r5.log |
 
-新CI巡检步骤改用独立全新黑盒样本，不修改既有资源探针的冲突场景，不把警告改为健康来放行；同时断言真正持锁拒绝与扫描前后字节保持。初次冲突样本退出1保留。测试新增失败均保留，未删测试或降低断言，原Starlette/anyio弃用及PyInstaller既有hidden-import警告仍记录。
+��CIѲ�첽����ö���ȫ�ºں����������޸ļ�����Դ̽��ĳ�ͻ���������Ѿ����Ϊ���������У�ͬʱ�������������ܾ���ɨ��ǰ���ֽڱ��֡����γ�ͻ�����˳�1��������������ʧ�ܾ�������δɾ���Ի򽵵Ͷ��ԣ�ԭStarlette/anyio���ü�PyInstaller����hidden-import�����Լ�¼��
 
-自审完成：CLI互斥/全部空间确认、锁与只读SQL、不隐式迁移、档案/墓碑引用、注册失败任务与创建/保存收据、working两级归属、路径/跨空间/锁junction、预算/部分结果、损坏/深层JSON、真实冻结源码一致性与无开发PATH运行。非独立批准；人工测试已取消。前端未改，不制作UI候选；远端阶段PR仍需当前head CI实查。
-
-
-CI新增探针原命令最终复核：P tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/ci-library-integrity退出0（frozen-ci-exact.log），输出healthy_case_verified、持锁拒绝、孤立/外部编辑发现及业务字节保持均true。该探针只使用标准库和全新自编HTTP样本，不修改既有冲突样本或个人库。
-
-Ruff、Question Schema --check及git diff --check均退出0；本地Markdown检查56份/277链接无缺失（docs.json，包含用户先前未提交的summary）。报告链接/任务入口按当前目录检查，无新doc平行入口。--check-library无前端改动，本轮本地不重复构建Flutter；远端CI保留原桌面检查/Release/COM/全部冻结链，并新增真正冻结CLI探针和构建时41模块一致性门禁。
-
-新冻结包完成验证后，先核旧a541候选特定SHA256、两个目标的workspace绝对路径及无重解析点，再用原生PowerShell删除旧artifacts/lw06-native-20261106/frozen-alias/dist和build/study_backend，退出0；保留本轮dist/study_backend一份当前包，原始日志/失败/JUnit/转储/源码快照不删，无人工窗口包或新组件副本。
+������ɣ�CLI����/ȫ���ռ�ȷ�ϡ�����ֻ��SQL������ʽǨ�ơ�����/Ĺ�����á�ע��ʧ�������봴��/�����վݡ�working����������·��/��ռ�/��junction��Ԥ��/���ֽ������/���JSON����ʵ����Դ��һ�������޿���PATH���С��Ƕ�����׼���˹�������ȡ����ǰ��δ�ģ�������UI��ѡ��Զ�˽׶�PR���赱ǰhead CIʵ�顣
 
 
-## 阶段PR交付
+CI����̽��ԭ�������ո��ˣ�P tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/ci-library-integrity�˳�0��frozen-ci-exact.log�������healthy_case_verified�������ܾ�������/�ⲿ�༭���ּ�ҵ���ֽڱ��־�true����̽��ֻʹ�ñ�׼���ȫ���Ա�HTTP���������޸ļ��г�ͻ��������˿⡣
 
-实现提交434d4921d939d40c5c1128518f537da651baa720已commit/push，退出0；创建[草稿PR #5](https://github.com/surface-user/StudyWorkbench/pull/5)，base=codex/learning-workbench-20261106（#4、147198a），未合并/发行。该阶段实现/本地自动化/自审已完成，当前head CI继续实查；M2-05其他恢复范围仍进行中，不以本切片退出整个任务。
+Ruff��Question Schema --check��git diff --check���˳�0������Markdown���56��/277������ȱʧ��docs.json�������û���ǰδ�ύ��summary������������/������ڰ���ǰĿ¼��飬����docƽ����ڡ�--check-library��ǰ�˸Ķ������ֱ��ز��ظ�����Flutter��Զ��CI����ԭ������/Release/COM/ȫ������������������������CLI̽��͹���ʱ41ģ��һ�����Ž���
 
-本节及task仅补实际PR链接，为文档增量，不再改产品/测试代码。文档提交后的最终head CI以PR实时检查及描述为准，不将先前head绿灯套用到后续提交，不为记录自身SHA循环提交。用户未提交summary.md及.vscode仍保留未纳入本PR，旧分支不改写。原始数据/失败记录不上传，报告命令/源码快照及筛选边界按前述执行。
+�¶���������֤���Ⱥ˾�a541��ѡ�ض�SHA256������Ŀ���workspace����·�������ؽ����㣬����ԭ��PowerShellɾ����artifacts/lw06-native-20261106/frozen-alias/dist��build/study_backend���˳�0����������dist/study_backendһ�ݵ�ǰ����ԭʼ��־/ʧ��/JUnit/ת��/Դ����ղ�ɾ�����˹����ڰ��������������
 
-## 保存恢复点切片设计（2026-11-07）
 
-首切片PR #5最终1357d44的三组CI全通过（run 42233131907）；本轮从该提交创建codex/document-recovery，不改旧PR分支、不合并/发行。继续同一M2-05报告，不另建流水目录。
+## �׶�PR����
 
-问题：保存中断虽保留before/pending和收据，普通用户尚无查看/找回入口。新增同空间节点的只读收据分页及指定before/pending内容读取，严格验证受管路径、收据归属、UTF-8/1MiB及记录hash。无路径输入/路径输出，不枚举磁盘推测记录，不写文件/数据库。pending经replace消耗后不可读属于正常情况，不能回退成其他正文。
+ʵ���ύ434d4921d939d40c5c1128518f537da651baa720��commit/push���˳�0������[�ݸ�PR #5](https://github.com/surface-user/StudyWorkbench/pull/5)��base=codex/learning-workbench-20261106��#4��147198a����δ�ϲ�/���С��ý׶�ʵ��/�����Զ���/��������ɣ���ǰhead CI����ʵ�飻M2-05�����ָ���Χ�Խ����У����Ա���Ƭ�˳���������
 
-桌面MD工作副本增加“保存恢复点”：选择收据及旧稿/待写稿，字面预览；当前可读且无prepared保存时，用户另行确认才放入编辑草稿。已有未保存草稿时要求先处理，避免丢弃。载入只改既有layout草稿，记录预览时当前hash；随后用户点击原“保存工作文件”，仍经旧的expected hash/恢复点/收据流程，不修改原件、确认版或历史作答。预览后外部修改仍409。当前缺失/坏编码/超限或待启动对账时只预览，不能借恢复点覆盖。无自动写回/删除/三方合并/新表/依赖/模型。
+���ڼ�task����ʵ��PR���ӣ�Ϊ�ĵ����������ٸĲ�Ʒ/���Դ��롣�ĵ��ύ�������head CI��PRʵʱ��鼰����Ϊ׼��������ǰhead�̵����õ������ύ����Ϊ��¼����SHAѭ���ύ���û�δ�ύsummary.md��.vscode�Ա���δ���뱾PR���ɷ�֧����д��ԭʼ����/ʧ�ܼ�¼���ϴ�����������/Դ����ռ�ɸѡ�߽簴ǰ��ִ�С�
 
-任务：服务与API→路径/归属/损坏/分页/字节不变/重启及冲突回归→普通UI及取消/脏稿/失败/保存守卫组件测试→双Python/Flutter自动化及冻结链→自审/契约/task/同报告更新→阶段草稿PR与当前head CI。人工及Computer Use已取消。原失败记录和用户未提交文件保留；仅保留一份当前后端包。
+## ����ָ�����Ƭ��ƣ�2026-11-07��
 
-### 保存恢复点实施、失败与复测
+����ƬPR #5����1357d44������CIȫͨ����run 42233131907�������ִӸ��ύ����codex/document-recovery�����ľ�PR��֧�����ϲ�/���С�����ͬһM2-05���棬��������ˮĿ¼��
 
-新增DocumentFiles两个GET入口及DocumentRecoveryDialog，复用TEXT_LIMIT、text_bytes/resource_path、archive_path和既有会话鉴权；只读正文受既有2并发门禁。working物理目录按空间/节点/层级核对，question-files兼容现有独立目录；收据before/pending必须在当前工作文件同目录且名称严格匹配记录ID/版本，不能通过修改收据路径读取其他文件。数据锁/启动对账/普通保存流程未改，无数据库迁移或新Agent工具。
+���⣺�����ж��䱣��before/pending���վݣ���ͨ�û����޲鿴/�һ���ڡ�����ͬ�ռ�ڵ��ֻ���վݷ�ҳ��ָ��before/pending���ݶ�ȡ���ϸ���֤�ܹ�·�����վݹ�����UTF-8/1MiB����¼hash����·������/·���������ö�ٴ����Ʋ��¼����д�ļ�/���ݿ⡣pending��replace���ĺ󲻿ɶ�����������������ܻ��˳��������ġ�
 
-原始记录写artifacts/recovery-20261107/。cwd根，P=.venv/Scripts/python.exe，Q=.local/release-venv/Scripts/python.exe，均仅新建.local隔离样本；测试成功目录按现行pytest策略回收，失败日志/JUnit/现场保留。
+����MD�����������ӡ�����ָ��㡱��ѡ���վݼ��ɸ�/��д�壬����Ԥ������ǰ�ɶ�����prepared����ʱ���û�����ȷ�ϲŷ���༭�ݸ塣����δ����ݸ�ʱҪ���ȴ��������ⶪ��������ֻ�ļ���layout�ݸ壬��¼Ԥ��ʱ��ǰhash������û����ԭ�����湤���ļ������Ծ��ɵ�expected hash/�ָ���/�վ����̣����޸�ԭ����ȷ�ϰ����ʷ����Ԥ�����ⲿ�޸���409����ǰȱʧ/������/���޻����������ʱֻԤ�������ܽ�ָ��㸲�ǡ����Զ�д��/ɾ��/�����ϲ�/�±�/����/ģ�͡�
 
-- P -m pytest backend/tests/test_document_recovery.py backend/tests/test_document_files.py -q --basetemp=.local/recovery-target01 --junitxml=artifacts/recovery-20261107/target01.xml：退出1，18通过2失败，35.68秒。损坏workspace归属被FK在注入时拦截，另mklink在受限执行环境创建失败。target02同命令替换批次名退出1，18通过2失败，33.21秒：先建另一空间仍不能破坏节点复合FK，链接仍创建失败。损坏归属用独立sqlite3连接明确构造坏库（该连接不启用FK），保护断言不变；Windows链接用正常测试执行权限，不跳过或mock真实重解析点。
-- target03同命令替换批次名退出0，20通过，30.21秒。随后补物理foreign-node目录守卫和真实QuestionFile/确认版/作答/墓碑只读回归；P -m pytest backend/tests/test_document_recovery.py -q --basetemp=.local/recovery-target04 --junitxml=artifacts/recovery-20261107/target04.xml退出0，14通过，9.12秒。仅夹具缩短链接路径并保留原目录，未删除保护断言。
-- 初次dart.bat format等待未结束，终止本次调用退出1；改用现有SDK的dart.exe直接format，退出0，不修改SDK。一次新增测试静态检查指出未用Path导入，另一次指出工具urllib导入顺序，均修正后Ruff退出0；没有删测试。一次format使用桌面cwd却传仓库相对路径导致未找到文件，随后从正确根路径实际format退出0。
-- cwd=apps/desktop，flutter test test/document_recovery_test.dart test/document_page_test.dart首轮退出1，8通过3失败，约8秒：父页面把整个用户选择对话框当文件处理而保持busy，持续进度动画令pumpAndSettle超时。改为沿用现有marks/insertLink模态交互模式，由对话框自身维护网络busy，不给等待用户选择展示文件处理进度，未增加等待上限或削弱断言。flutter-target02.log同命令退出0，11通过，约2秒；补400×800窄视图/50+1分页后flutter test test/document_recovery_test.dart退出0，5通过，约2秒（flutter-target03.log）。
+���񣺷�����API��·��/����/��/��ҳ/�ֽڲ���/��������ͻ�ع����ͨUI��ȡ��/���/ʧ��/��������������ԡ�˫Python/Flutter�Զ�����������������/��Լ/task/ͬ������¡��׶βݸ�PR�뵱ǰhead CI���˹���Computer Use��ȡ����ԭʧ�ܼ�¼���û�δ�ύ�ļ�������������һ�ݵ�ǰ��˰���
 
-新后端回归逐项检查收据/MD字节及所有业务表不变、pending已消耗明确失败、坏编码/超限/hash不符/路径/空间/节点/junction、prepared只读、缺失当前仅预览、重启冲突状态、普通保存拒绝预览后的外改，并在显式重试保存时追加新恢复点保留外改字节。题目确认快照、旧作答和墓碑访问语义保留。
+### ����ָ���ʵʩ��ʧ���븴��
 
-冻结CI复用原tools/check_library_integrity.py步骤扩展真实HTTP：保存→查看before/已消耗pending拒绝→MD字节不变→预览后外改→旧hash保存409→重新核对后普通保存→旧恢复点保留；随后原持锁/离线健康/孤立/外改/业务字节保持全部断言仍执行。无新工具层、组件或窗口测试。
+����DocumentFiles����GET��ڼ�DocumentRecoveryDialog������TEXT_LIMIT��text_bytes/resource_path��archive_path�ͼ��лỰ��Ȩ��ֻ�������ܼ���2�����Ž���working����Ŀ¼���ռ�/�ڵ�/�㼶�˶ԣ�question-files�������ж���Ŀ¼���վ�before/pending�����ڵ�ǰ�����ļ�ͬĿ¼�������ϸ�ƥ���¼ID/�汾������ͨ���޸��վ�·����ȡ�����ļ���������/��������/��ͨ��������δ�ģ������ݿ�Ǩ�ƻ���Agent���ߡ�
 
-### 保存恢复点最终本地验证
+ԭʼ��¼дartifacts/recovery-20261107/��cwd����P=.venv/Scripts/python.exe��Q=.local/release-venv/Scripts/python.exe�������½�.local�������������Գɹ�Ŀ¼������pytest���Ի��գ�ʧ����־/JUnit/�ֳ�������
 
-cwd仓库根，P/Q及原始目录同上。所有下列退出码实际收取，完整回归后的产品/测试源码未再改：
+- P -m pytest backend/tests/test_document_recovery.py backend/tests/test_document_files.py -q --basetemp=.local/recovery-target01 --junitxml=artifacts/recovery-20261107/target01.xml���˳�1��18ͨ��2ʧ�ܣ�35.68�롣��workspace������FK��ע��ʱ���أ���mklink������ִ�л�������ʧ�ܡ�target02ͬ�����滻�������˳�1��18ͨ��2ʧ�ܣ�33.21�룺�Ƚ���һ�ռ��Բ����ƻ��ڵ㸴��FK�������Դ���ʧ�ܡ��𻵹����ö���sqlite3������ȷ���컵�⣨�����Ӳ�����FK�����������Բ��䣻Windows��������������ִ��Ȩ�ޣ���������mock��ʵ�ؽ����㡣
+- target03ͬ�����滻�������˳�0��20ͨ����30.21�롣�������foreign-nodeĿ¼��������ʵQuestionFile/ȷ�ϰ�/����/Ĺ��ֻ���ع飻P -m pytest backend/tests/test_document_recovery.py -q --basetemp=.local/recovery-target04 --junitxml=artifacts/recovery-20261107/target04.xml�˳�0��14ͨ����9.12�롣���о���������·��������ԭĿ¼��δɾ���������ԡ�
+- ����dart.bat format�ȴ�δ��������ֹ���ε����˳�1����������SDK��dart.exeֱ��format���˳�0�����޸�SDK��һ���������Ծ�̬���ָ��δ��Path���룬��һ��ָ������urllib����˳�򣬾�������Ruff�˳�0��û��ɾ���ԡ�һ��formatʹ������cwdȴ���ֿ����·������δ�ҵ��ļ���������ȷ��·��ʵ��format�˳�0��
+- cwd=apps/desktop��flutter test test/document_recovery_test.dart test/document_page_test.dart�����˳�1��8ͨ��3ʧ�ܣ�Լ8�룺��ҳ��������û�ѡ��Ի����ļ�����������busy���������ȶ�����pumpAndSettle��ʱ����Ϊ��������marks/insertLinkģ̬����ģʽ���ɶԻ�������ά������busy�������ȴ��û�ѡ��չʾ�ļ��������ȣ�δ���ӵȴ����޻��������ԡ�flutter-target02.logͬ�����˳�0��11ͨ����Լ2�룻��400��800խ��ͼ/50+1��ҳ��flutter test test/document_recovery_test.dart�˳�0��5ͨ����Լ2�루flutter-target03.log����
 
-| 实际命令（相对仓库根，另注明cwd） | 退出/结果 | 原始记录 |
+�º�˻ع��������վ�/MD�ֽڼ�����ҵ������䡢pending��������ȷʧ�ܡ�������/����/hash����/·��/�ռ�/�ڵ�/junction��preparedֻ����ȱʧ��ǰ��Ԥ����������ͻ״̬����ͨ����ܾ�Ԥ�������ģ�������ʽ���Ա���ʱ׷���»ָ��㱣������ֽڡ���Ŀȷ�Ͽ��ա��������Ĺ���������屣����
+
+����CI����ԭtools/check_library_integrity.py������չ��ʵHTTP��������鿴before/������pending�ܾ���MD�ֽڲ����Ԥ������ġ���hash����409�����º˶Ժ���ͨ������ɻָ��㱣�������ԭ����/���߽���/����/���/ҵ���ֽڱ���ȫ��������ִ�С����¹��߲㡢����򴰿ڲ��ԡ�
+
+### ����ָ������ձ�����֤
+
+cwd�ֿ����P/Q��ԭʼĿ¼ͬ�ϡ����������˳���ʵ����ȡ�������ع��Ĳ�Ʒ/����Դ��δ�ٸģ�
+
+| ʵ�������Բֿ������ע��cwd�� | �˳�/��� | ԭʼ��¼ |
 |---|---|---|
-| P -m pytest backend/tests -q --basetemp=.local/recovery-full312 --junitxml=artifacts/recovery-20261107/full312.xml | 0；524通过，354.42秒 | full312.log/xml |
-| Q -m pytest backend/tests -q --basetemp=.local/recovery-full313 --junitxml=artifacts/recovery-20261107/full313.xml | 0；524通过，329.63秒 | full313.log/xml |
-| cwd=apps/desktop；SDK dart.exe format lib/document_page.dart lib/document_recovery_dialog.dart test/document_recovery_test.dart；flutter analyze | 0；格式无变化，静态无问题 | format-final.log、analyze-final.log |
-| 同cwd；flutter test --dart-define=STUDY_ROOT=D:/computer_work/project/StudyWorkbench --dart-define=STUDY_DATA_DIR=D:/computer_work/project/StudyWorkbench/.local/recovery-flutter | 0；158通过，约52秒 | flutter-full.log |
-| ./packaging/windows/build-backend.ps1（默认Q，干净构建） | 0；约147秒，41业务模块全部与源码匹配 | build.log |
-| P tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/recovery-frozen | 0；新增恢复点三项及全部旧巡检断言通过 | frozen-recovery.log、隔离result.json |
-| P tools/check_resource_explorer.py --exe同包 --test-root .local/recovery-frozen-resources --documents | 0；原冻结CI导入/文档/移除/重启链 | frozen-resources.log |
-| 新TEMP/TMP junction .local/recovery-lifecycle-alias→recovery-lifecycle-real；P tools/check_backend_lifecycle.py --exe同包 | 0；EOF/崩溃/重启/两次迁移/取消及旧字节/收据/记录保持 | frozen-lifecycle.log |
-| P tools/check_document_workers.py --exe同包（继承上述TEMP/TMP） | 0；DOCX/PDF真实文字/图像/公式/分题 | frozen-workers.log |
-| P -m ruff check backend tools；P tools/export_question_schema.py --check；git diff --check | 各0，无新增依赖或Schema漂移 | 工具返回，原警告保留 |
+| P -m pytest backend/tests -q --basetemp=.local/recovery-full312 --junitxml=artifacts/recovery-20261107/full312.xml | 0��524ͨ����354.42�� | full312.log/xml |
+| Q -m pytest backend/tests -q --basetemp=.local/recovery-full313 --junitxml=artifacts/recovery-20261107/full313.xml | 0��524ͨ����329.63�� | full313.log/xml |
+| cwd=apps/desktop��SDK dart.exe format lib/document_page.dart lib/document_recovery_dialog.dart test/document_recovery_test.dart��flutter analyze | 0����ʽ�ޱ仯����̬������ | format-final.log��analyze-final.log |
+| ͬcwd��flutter test --dart-define=STUDY_ROOT=D:/computer_work/project/StudyWorkbench --dart-define=STUDY_DATA_DIR=D:/computer_work/project/StudyWorkbench/.local/recovery-flutter | 0��158ͨ����Լ52�� | flutter-full.log |
+| ./packaging/windows/build-backend.ps1��Ĭ��Q���ɾ������� | 0��Լ147�룬41ҵ��ģ��ȫ����Դ��ƥ�� | build.log |
+| P tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/recovery-frozen | 0�������ָ������ȫ����Ѳ�����ͨ�� | frozen-recovery.log������result.json |
+| P tools/check_resource_explorer.py --exeͬ�� --test-root .local/recovery-frozen-resources --documents | 0��ԭ����CI����/�ĵ�/�Ƴ�/������ | frozen-resources.log |
+| ��TEMP/TMP junction .local/recovery-lifecycle-alias��recovery-lifecycle-real��P tools/check_backend_lifecycle.py --exeͬ�� | 0��EOF/����/����/����Ǩ��/ȡ�������ֽ�/�վ�/��¼���� | frozen-lifecycle.log |
+| P tools/check_document_workers.py --exeͬ�����̳�����TEMP/TMP�� | 0��DOCX/PDF��ʵ����/ͼ��/��ʽ/���� | frozen-workers.log |
+| P -m ruff check backend tools��P tools/export_question_schema.py --check��git diff --check | ��0��������������SchemaƯ�� | ���߷��أ�ԭ���汣�� |
 
-首轮flutter analyze退出1，3处跨行if缺大括号；修复后上述最终静态/全套通过。初次format --output=none --set-exit-if-changed lib test integration_test退出0；最终新增三文件format无变化，其余文件未修改。包内/源码快照46文件及exe SHA256保存在source-snapshot.json，不含令牌、个人库或原件。Starlette/anyio弃用、固定依赖可更新和PyInstaller既有hidden-import警告仍保留，没有升级依赖或屏蔽警告。文档相对链接检查54份/269链接无缺失（后续PR链接补交再校验）。
+����flutter analyze�˳�1��3������ifȱ�����ţ��޸����������վ�̬/ȫ��ͨ��������format --output=none --set-exit-if-changed lib test integration_test�˳�0�������������ļ�format�ޱ仯�������ļ�δ�޸ġ�����/Դ�����46�ļ���exe SHA256������source-snapshot.json���������ơ����˿��ԭ����Starlette/anyio���á��̶������ɸ��º�PyInstaller����hidden-import�����Ա�����û���������������ξ��档�ĵ�������Ӽ��54��/269������ȱʧ������PR���Ӳ�����У�飩��
 
-自审完成：全调用方/路由、原SaveText和启动recover未改、受控路径/节点/空间和hash、只读GET/正文预算、pending消耗、prepared/当前缺失降级、模态等待/取消/异步mounted、脏稿不覆盖、确认后草稿基线hash与普通保存冲突、QuestionFile/旧作答保护及冻结CI保留原断言。此次为自审，非独立批准；本地不重复生成Windows UI候选，Windows Release/COM及全量R1–R5由本阶段当前head CI执行并另核。人工测试及Computer Use已取消。无自动修复/删除/三方合并；当前文件缺失的写回仍未实现。提交/阶段草稿PR及最终head CI继续跟进，不合并/发行。
+������ɣ�ȫ���÷�/·�ɡ�ԭSaveText������recoverδ�ġ��ܿ�·��/�ڵ�/�ռ��hash��ֻ��GET/����Ԥ�㡢pending���ġ�prepared/��ǰȱʧ������ģ̬�ȴ�/ȡ��/�첽mounted����岻���ǡ�ȷ�Ϻ�ݸ����hash����ͨ�����ͻ��QuestionFile/�����𱣻�������CI����ԭ���ԡ��˴�Ϊ���󣬷Ƕ�����׼�����ز��ظ�����Windows UI��ѡ��Windows Release/COM��ȫ��R1�CR5�ɱ��׶ε�ǰhead CIִ�в����ˡ��˹����Լ�Computer Use��ȡ�������Զ��޸�/ɾ��/�����ϲ�����ǰ�ļ�ȱʧ��д����δʵ�֡��ύ/�׶βݸ�PR������head CI�������������ϲ�/���С�
 
-实现提交a272b4f94de8de9475b32b51313d467802e34cde已commit/push，均退出0；[草稿PR #6](https://github.com/surface-user/StudyWorkbench/pull/6)已创建，以未合并#5的1357d44为base。本节及task仅补真实交付链接；文档补交后的最终head CI、检查时间及交付结论以该PR描述/实时检查为准，不以旧head替代，也不为记录自身SHA循环提交。仍保留用户未提交summary.md及.vscode，旧分支不改写，未合并/发行。
+ʵ���ύa272b4f94de8de9475b32b51313d467802e34cde��commit/push�����˳�0��[�ݸ�PR #6](https://github.com/surface-user/StudyWorkbench/pull/6)�Ѵ�������δ�ϲ�#5��1357d44Ϊbase�����ڼ�task������ʵ�������ӣ��ĵ������������head CI�����ʱ�估���������Ը�PR����/ʵʱ���Ϊ׼�����Ծ�head�����Ҳ��Ϊ��¼����SHAѭ���ύ���Ա����û�δ�ύsummary.md��.vscode���ɷ�֧����д��δ�ϲ�/���С�
 
-## 恢复点另存笔记切片设计（2026-11-09）
+## �ָ�������ʼ���Ƭ��ƣ�2026-11-09��
 
-PR #6最终4686c8b的三组CI通过记录保留；本轮从该提交建立codex/recovery-note-copy，按用户要求继续M2-05并提交独立草稿PR、核实最终head CI，不合并/发行。继续同一任务报告，不接模型、不做人工测试。
+PR #6����4686c8b������CIͨ����¼���������ִӸ��ύ����codex/recovery-note-copy�����û�Ҫ�����M2-05���ύ�����ݸ�PR����ʵ����head CI�����ϲ�/���С�����ͬһ���񱨸棬����ģ�͡������˹����ԡ�
 
-问题：当前工作文件缺失时，恢复点已有只读API，但重启后的页面无法打开恢复入口，也不能将所选内容变成可继续使用的文件。首批补“另存为新笔记”：错误页也可打开MD保存恢复点；明确选择/字面预览及填写新名称后，复用现有新建笔记收据和普通expected hash保存接口创建独立副本，不修复或覆盖原缺失路径，不发布题目版本。
+���⣺��ǰ�����ļ�ȱʧʱ���ָ�������ֻ��API�����������ҳ���޷��򿪻ָ���ڣ�Ҳ���ܽ���ѡ���ݱ�ɿɼ���ʹ�õ��ļ���������������Ϊ�±ʼǡ�������ҳҲ�ɴ�MD����ָ��㣻��ȷѡ��/����Ԥ������д�����ƺ󣬸��������½��ʼ��վݺ���ͨexpected hash����ӿڴ����������������޸��򸲸�ԭȱʧ·������������Ŀ�汾��
 
-设计：创建前重读所选恢复点核对hash/正文；同一窗口失败重试固定request_id和名称/正文，创建响应丢失不重复建笔记。新笔记初始hash来自既有创建响应；保存前回读目标，已是所选正文则对账成功，仍为初始hash才保存，其他内容拒绝覆盖。保存响应丢失可重试对账；失败保留新笔记、源恢复点和原文件。关闭后创建收据及原恢复点仍可查，不承诺跨关闭自动续写。成功返回普通新节点，由既有导航打开；打开失败时新文件保留并明确提示。不新增后端写接口、表、依赖、原地修复/三方合并或Agent工具。
+��ƣ�����ǰ�ض���ѡ�ָ���˶�hash/���ģ�ͬһ����ʧ�����Թ̶�request_id������/���ģ�������Ӧ��ʧ���ظ����ʼǡ��±ʼǳ�ʼhash���Լ��д�����Ӧ������ǰ�ض�Ŀ�꣬������ѡ��������˳ɹ�����Ϊ��ʼhash�ű��棬�������ݾܾ����ǡ�������Ӧ��ʧ�����Զ��ˣ�ʧ�ܱ����±ʼǡ�Դ�ָ����ԭ�ļ����رպ󴴽��վݼ�ԭ�ָ����Կɲ飬����ŵ��ر��Զ���д���ɹ�������ͨ�½ڵ㣬�ɼ��е����򿪣���ʧ��ʱ���ļ���������ȷ��ʾ�����������д�ӿڡ�����������ԭ���޸�/�����ϲ���Agent���ߡ�
 
-实施顺序：入口/受控另存交互→响应丢失/冲突/取消/失败/重启/空稿与字面内容自动回归→冻结HTTP串联及源/历史保持→全量/自审→契约、task、原报告→PR与当前head CI。仅一份当前后端构建；不改用户未提交summary.md/.vscode，不清除历史失败。
+ʵʩ˳�����/�ܿ����潻������Ӧ��ʧ/��ͻ/ȡ��/ʧ��/����/�ո������������Զ��ع������HTTP������Դ/��ʷ���֡�ȫ��/�������Լ��task��ԭ�����PR�뵱ǰhead CI����һ�ݵ�ǰ��˹����������û�δ�ύsummary.md/.vscode���������ʷʧ�ܡ�
 
-### 另存副本实施与专项验证
+### ���渱��ʵʩ��ר����֤
 
-DocumentRecoveryDialog在同窗口冻结创建请求及已核对正文，正常创建/回读/保存均复用现有接口；PUT只向新节点，expected hash为创建返回的初始值。目标已是预期hash和正文时对账，不重复保存；其他改动拒绝覆盖。错误名在创建前仍可编辑。保存中禁用关闭及系统返回，异步卸载后不继续后续请求；成功后普通导航失败也明确文件已保存。原草稿恢复操作保持原确认与hash守卫；读取失败页不以树名称后缀猜格式，交服务校验恢复资格。
+DocumentRecoveryDialog��ͬ���ڶ��ᴴ�������Ѻ˶����ģ���������/�ض�/������������нӿڣ�PUTֻ���½ڵ㣬expected hashΪ�������صĳ�ʼֵ��Ŀ������Ԥ��hash������ʱ���ˣ����ظ����棻�����Ķ��ܾ����ǡ��������ڴ���ǰ�Կɱ༭�������н��ùرռ�ϵͳ���أ��첽ж�غ󲻼����������󣻳ɹ�����ͨ����ʧ��Ҳ��ȷ�ļ��ѱ��档ԭ�ݸ�ָ���������ԭȷ����hash��������ȡʧ��ҳ���������ƺ�׺�¸�ʽ��������У��ָ��ʸ�
 
-原始产物artifacts/recovery-copy-20261109/，P/Q、cwd约定同前，只用新.local隔离样本。本轮未改backend/study_workbench业务源码或后端契约字段，无需新迁移/依赖或重复冻结大包；Q tools/check_frozen_sources.py --exe dist/study_backend/study_backend.exe实际退出0，41模块仍匹配当前源码，使用唯一当前包。当前PR的远端CI仍执行全新Windows Release/后端构建/源码一致性及整条冻结链，不用旧CI代替。
+ԭʼ����artifacts/recovery-copy-20261109/��P/Q��cwdԼ��ͬǰ��ֻ����.local��������������δ��backend/study_workbenchҵ��Դ�������Լ�ֶΣ�������Ǩ��/�������ظ���������Q tools/check_frozen_sources.py --exe dist/study_backend/study_backend.exeʵ���˳�0��41ģ����ƥ�䵱ǰԴ�룬ʹ��Ψһ��ǰ������ǰPR��Զ��CI��ִ��ȫ��Windows Release/��˹���/Դ��һ���Լ����������������þ�CI���档
 
-- 首次format报告导入指令错误放到声明之后；修正导入位置后实际format通过。最初复合命令末尾读取文件使整体返回0，不能用该0宣称format通过。未执行有语法问题的组件测试；后续独立format退出0。
-- cwd=apps/desktop；flutter test test/recovery_note_copy_test.dart test/document_recovery_test.dart test/document_page_test.dart退出0，19项通过，约2秒（flutter-target01.log）。覆盖新入口、空/字面内容、创建/保存响应丢失同请求重试、改后目标不覆盖、导航失败保留、取消和异步卸载；后补无后缀改名、名称校验纳入最终全量。
-- P -m pytest backend/tests/test_document_recovery.py backend/tests/test_markdown_notes.py -q --basetemp=.local/recovery-copy-target01 --junitxml=artifacts/recovery-copy-20261109/backend-target01.xml退出0，27通过，18.97秒（backend-target01.log/xml）。新增真实HTTP缺失源→读取pending→新建/保存→重复请求/陈旧覆盖拒绝→重启，原件/源恢复点保持，空稿与字面正文均覆盖。
-- P tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/recovery-copy-frozen退出0（frozen-copy.log/result.json），新增missing_source_copy/copy_creation_idempotent/original_missing_not_repaired均true，原恢复点/持锁/健康/孤立/索引变化/业务字节保持断言仍通过。只在完成缺失源不被修复的断言后，重置本探针自编的缺失夹具以继续原健康巡检，不改产品、不清除故障证据。
-- 首轮flutter analyze退出1，测试内2处跨行if缺大括号（analyze01.log）；修正后最终analyze无问题，退出0（analyze-final.log）。无忽略规则、删测试或降断言。原依赖可更新/Starlette警告继续保留，未升级依赖。
+- �״�format���浼��ָ�����ŵ�����֮����������λ�ú�ʵ��formatͨ���������������ĩβ��ȡ�ļ�ʹ���巵��0�������ø�0����formatͨ����δִ�����﷨�����������ԣ���������format�˳�0��
+- cwd=apps/desktop��flutter test test/recovery_note_copy_test.dart test/document_recovery_test.dart test/document_page_test.dart�˳�0��19��ͨ����Լ2�루flutter-target01.log������������ڡ���/�������ݡ�����/������Ӧ��ʧͬ�������ԡ��ĺ�Ŀ�겻���ǡ�����ʧ�ܱ�����ȡ�����첽ж�أ����޺�׺����������У����������ȫ����
+- P -m pytest backend/tests/test_document_recovery.py backend/tests/test_markdown_notes.py -q --basetemp=.local/recovery-copy-target01 --junitxml=artifacts/recovery-copy-20261109/backend-target01.xml�˳�0��27ͨ����18.97�루backend-target01.log/xml����������ʵHTTPȱʧԴ����ȡpending���½�/������ظ�����/�¾ɸ��Ǿܾ���������ԭ��/Դ�ָ��㱣�֣��ո����������ľ����ǡ�
+- P tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/recovery-copy-frozen�˳�0��frozen-copy.log/result.json��������missing_source_copy/copy_creation_idempotent/original_missing_not_repaired��true��ԭ�ָ���/����/����/����/�����仯/ҵ���ֽڱ��ֶ�����ͨ����ֻ�����ȱʧԴ�����޸��Ķ��Ժ����ñ�̽���Ա��ȱʧ�о��Լ���ԭ����Ѳ�죬���Ĳ�Ʒ�����������֤�ݡ�
+- ����flutter analyze�˳�1��������2������ifȱ�����ţ�analyze01.log��������������analyze�����⣬�˳�0��analyze-final.log�����޺��Թ���ɾ���Ի򽵶��ԡ�ԭ�����ɸ���/Starlette�������������δ����������
 
-自审边界：源码调用方仅DocumentPage/恢复对话框及其测试，导航沿用现有回调，创建收据和保存语义未改；保存先核目标初始hash，重复请求不覆盖外部编辑；同窗口重试固定内容/名称，跨关闭不自动重放。不自动绑定来源标记，不把正文里的旧ID注释解释为新笔记身份或自动发布QuestionFile。另存不恢复原缺失路径，不将有缺失的源库标为健康，原完整性/备份规则不放宽。三方合并、原地修复及其他派生类型仍在M2-05。
+����߽磺Դ����÷���DocumentPage/�ָ��Ի�������ԣ������������лص��������վݺͱ�������δ�ģ������Ⱥ�Ŀ���ʼhash���ظ����󲻸����ⲿ�༭��ͬ�������Թ̶�����/���ƣ���رղ��Զ��طš����Զ�����Դ��ǣ�����������ľ�IDע�ͽ���Ϊ�±ʼ����ݻ��Զ�����QuestionFile�����治�ָ�ԭȱʧ·����������ȱʧ��Դ���Ϊ������ԭ������/���ݹ��򲻷ſ��������ϲ���ԭ���޸�������������������M2-05��
 
-自审发现实际_WorkspacePages._openResource会拦截导航异常，不能仅依靠DocumentPage的catch提示副本已保存。补在调用导航前明确显示保存成功，即使标签上限等错误被导航层处理也不会误报成保存失败；相应断言纳入最终回归。修补前全量flutter-full.log为167项通过，不能直接套用至补丁后；补丁后另记flutter-final.log/analyze-navigation.log。后端业务源码仍未改变，双Python本轮结果不受该纯UI提示修改影响。
+������ʵ��_WorkspacePages._openResource�����ص����쳣�����ܽ�����DocumentPage��catch��ʾ�����ѱ��档���ڵ��õ���ǰ��ȷ��ʾ����ɹ�����ʹ��ǩ���޵ȴ��󱻵����㴦��Ҳ�����󱨳ɱ���ʧ�ܣ���Ӧ�����������ջع顣�޲�ǰȫ��flutter-full.logΪ167��ͨ��������ֱ�������������󣻲���������flutter-final.log/analyze-navigation.log�����ҵ��Դ����δ�ı䣬˫Python���ֽ�����ܸô�UI��ʾ�޸�Ӱ�졣
 
-### 另存切片最终验证与交付要求
+### ������Ƭ������֤�뽻��Ҫ��
 
-| 命令（cwd根，除另注明） | 实际退出与覆盖 | 原始记录 |
+| ���cwd��������ע���� | ʵ���˳��븲�� | ԭʼ��¼ |
 |---|---|---|
-| P -m pytest backend/tests -q --basetemp=.local/recovery-copy-full312 --junitxml=artifacts/recovery-copy-20261109/full312.xml | 0；526通过，321.55秒 | full312.log/xml |
-| Q -m pytest backend/tests -q --basetemp=.local/recovery-copy-full313 --junitxml=artifacts/recovery-copy-20261109/full313.xml | 0；526通过，297.74秒 | full313.log/xml |
-| cwd=apps/desktop；SDK dart.exe format lib test integration_test | 0；85文件，无变化 | format-final.log |
-| 同cwd；SDK dart.exe format lib/document_page.dart test/recovery_note_copy_test.dart；flutter analyze（导航提示补丁后） | 各0；格式及静态无问题 | format-navigation.log、analyze-navigation.log |
-| 同cwd；flutter test --dart-define=STUDY_ROOT=D:/computer_work/project/StudyWorkbench --dart-define=STUDY_DATA_DIR=D:/computer_work/project/StudyWorkbench/.local/recovery-copy-final-flutter | 0；167通过，约45秒 | flutter-final.log |
-| Q tools/check_frozen_sources.py --exe dist/study_backend/study_backend.exe | 0；41业务模块匹配，当前唯一包复用未变化的后端 | 工具实际返回及source-snapshot.json |
-| P tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/recovery-copy-frozen | 0；新增另存及全部既有冻结巡检/恢复守卫 | frozen-copy.log/result.json |
-| P -m ruff check backend tools；P tools/export_question_schema.py --check；git diff --check | 各0 | 实际工具返回，旧警告保留 |
+| P -m pytest backend/tests -q --basetemp=.local/recovery-copy-full312 --junitxml=artifacts/recovery-copy-20261109/full312.xml | 0��526ͨ����321.55�� | full312.log/xml |
+| Q -m pytest backend/tests -q --basetemp=.local/recovery-copy-full313 --junitxml=artifacts/recovery-copy-20261109/full313.xml | 0��526ͨ����297.74�� | full313.log/xml |
+| cwd=apps/desktop��SDK dart.exe format lib test integration_test | 0��85�ļ����ޱ仯 | format-final.log |
+| ͬcwd��SDK dart.exe format lib/document_page.dart test/recovery_note_copy_test.dart��flutter analyze��������ʾ������ | ��0����ʽ����̬������ | format-navigation.log��analyze-navigation.log |
+| ͬcwd��flutter test --dart-define=STUDY_ROOT=D:/computer_work/project/StudyWorkbench --dart-define=STUDY_DATA_DIR=D:/computer_work/project/StudyWorkbench/.local/recovery-copy-final-flutter | 0��167ͨ����Լ45�� | flutter-final.log |
+| Q tools/check_frozen_sources.py --exe dist/study_backend/study_backend.exe | 0��41ҵ��ģ��ƥ�䣬��ǰΨһ������δ�仯�ĺ�� | ����ʵ�ʷ��ؼ�source-snapshot.json |
+| P tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/recovery-copy-frozen | 0���������漰ȫ�����ж���Ѳ��/�ָ����� | frozen-copy.log/result.json |
+| P -m ruff check backend tools��P tools/export_question_schema.py --check��git diff --check | ��0 | ʵ�ʹ��߷��أ��ɾ��汣�� |
 
-当前产品/测试源码47文件hash及复用exe hash记录于source-snapshot.json；导航补丁前快照另保留，不将旧UI版本结果冒充最终版本。后端41模块及exe与11-07已验证包hash一致，本轮未新建重复二进制、Office组件或UI验收包。相对文档链接54份/269链接无缺失（docs.json，交付链接补交另核）。全量后临时测试文件已由原流程清理，用户未提交文件未处理。
+��ǰ��Ʒ/����Դ��47�ļ�hash������exe hash��¼��source-snapshot.json����������ǰ������������������UI�汾���ð�����հ汾�����41ģ�鼰exe��11-07����֤��hashһ�£�����δ�½��ظ������ơ�Office�����UI���հ�������ĵ�����54��/269������ȱʧ��docs.json���������Ӳ������ˣ���ȫ������ʱ�����ļ�����ԭ�����������û�δ�ύ�ļ�δ������
 
-本地自审已完成，未执行独立人工批准；人工测试/Computer Use明确取消。当前head CI须包含Windows Release、COM、全量R1–R5和全新冻结包整条原有链；本地不重复Windows/原冻结其他专项，不把旧包模块一致性当作新UI构建证明。阶段草稿PR依赖#6，要求提交/PR/当前head CI，不要求合并。整体M2-05仍进行中，原地缺失恢复、三方合并等不退出。
+������������ɣ�δִ�ж����˹���׼���˹�����/Computer Use��ȷȡ������ǰhead CI�����Windows Release��COM��ȫ��R1�CR5��ȫ�¶��������ԭ���������ز��ظ�Windows/ԭ��������ר����Ѿɰ�ģ��һ���Ե�����UI����֤�����׶βݸ�PR����#6��Ҫ���ύ/PR/��ǰhead CI����Ҫ��ϲ�������M2-05�Խ����У�ԭ��ȱʧ�ָ��������ϲ��Ȳ��˳���
 
-实现提交8e7142c5c63a56f67a778c462bbd873434af8fc2已本地commit，退出0。首次及重试git push，以及会话级OpenSSL/已有HTTP/SOCKS代理尝试均退出1（TLS握手失败）；GitHub连接工具也出现传输错误，不是CI失败。一次SOCKS调用的自动权限检查超时未执行，重试后正常执行仍TLS失败，未当成安全拒绝。用户明确确认当时本机网络异常并恢复后，git -c http.sslVersion=tlsv1.2 -c http.version=HTTP/1.1 push -u origin codex/recovery-note-copy退出0；未关闭证书校验/持久改网络配置，不将协议参数推断为故障根因。备用API上传仅准备本机临时JSON并已移除，未使用其创建远端代码对象，远端仍是原提交。
+ʵ���ύ8e7142c5c63a56f67a778c462bbd873434af8fc2�ѱ���commit���˳�0���״μ�����git push���Լ��Ự��OpenSSL/����HTTP/SOCKS�������Ծ��˳�1��TLS����ʧ�ܣ���GitHub���ӹ���Ҳ���ִ�����󣬲���CIʧ�ܡ�һ��SOCKS���õ��Զ�Ȩ�޼�鳬ʱδִ�У����Ժ�����ִ����TLSʧ�ܣ�δ���ɰ�ȫ�ܾ����û���ȷȷ�ϵ�ʱ���������쳣���ָ���git -c http.sslVersion=tlsv1.2 -c http.version=HTTP/1.1 push -u origin codex/recovery-note-copy�˳�0��δ�ر�֤��У��/�־ø��������ã�����Э������ƶ�Ϊ���ϸ��򡣱���API�ϴ���׼��������ʱJSON�����Ƴ���δʹ���䴴��Զ�˴������Զ������ԭ�ύ��
 
-[草稿PR #7](https://github.com/surface-user/StudyWorkbench/pull/7)已创建，base=#6的4686c8b；本节及task补实际链接后，最终文档head CI、检查时间及切片交付结论持续记录在该PR描述/实时检查，不以旧head替代，不为记录自身SHA循环提交。未合并/发行，用户未提交summary.md/.vscode保留，后端与Office未复制新包。
+[�ݸ�PR #7](https://github.com/surface-user/StudyWorkbench/pull/7)�Ѵ�����base=#6��4686c8b�����ڼ�task��ʵ�����Ӻ������ĵ�head CI�����ʱ�估��Ƭ�������۳�����¼�ڸ�PR����/ʵʱ��飬���Ծ�head�������Ϊ��¼����SHAѭ���ύ��δ�ϲ�/���У��û�δ�ύsummary.md/.vscode�����������Officeδ�����°���
 
 
-## M2-05a：保守三方合并预览核心（2026-11-09）
+## M2-05a�����������ϲ�Ԥ�����ģ�2026-11-09��
 
-需求/拆分：在#7的a959b9f31d5f511eb785dea6b398ee7c10e262ff之上，先完成独立纯文本核心与测试。基线核验、空间鉴权、预览API、编辑器确认和保存竞态留给后续独立任务；本切片没有运行时入口，不把它记成完整三方合并。现行内部边界写入architecture的规划节，现有文档/保存接口及数据库均未改。
+����/��֣���#7��a959b9f31d5f511eb785dea6b398ee7c10e262ff֮�ϣ�����ɶ������ı���������ԡ����ߺ��顢�ռ��Ȩ��Ԥ��API���༭��ȷ�Ϻͱ��澺̬���������������񣻱���Ƭû������ʱ��ڣ��������ǳ����������ϲ��������ڲ��߽�д��architecture�Ĺ滮�ڣ������ĵ�/����ӿڼ����ݿ��δ�ġ�
 
-设计/实现：仅Python标准库，输入/输出各限1MiB UTF-8；按LF拆分保留CR/尾换行/Unicode字面内容。每侧公共前后缀之间视作一个变更区间，线性扫描，无二次方diff。相同版本或单侧变化直接采用；不相交替换/删除/插入可组合；重叠和插入贴边均返回conflicted=true、text=None，不注入标记。不尝试猜测重复行语义；多处不连续编辑可能保守冲突，后续可扩展但不得自动覆盖。调用方必须验证基线并保留输入，以当前hash走既有保存，不修改确认版或历史。
+���/ʵ�֣���Python��׼�⣬����/�������1MiB UTF-8����LF��ֱ���CR/β����/Unicode�������ݡ�ÿ�๫��ǰ��׺֮������һ��������䣬����ɨ�裬�޶��η�diff����ͬ�汾�򵥲�仯ֱ�Ӳ��ã����ཻ�滻/ɾ��/�������ϣ��ص��Ͳ������߾�����conflicted=true��text=None����ע���ǡ������Բ²��ظ������壻�ദ�������༭���ܱ��س�ͻ����������չ�������Զ����ǡ����÷�������֤���߲��������룬�Ե�ǰhash�߼��б��棬���޸�ȷ�ϰ����ʷ��
 
-环境/实际命令：本轮是Linux云环境，Python3.12.14，不是原Windows工作目录。环境目录只列云电脑；git clone https://git.chatgpt-team.site/surface-user/StudyWorkbench.git StudyWorkbench退出128（无法取得用户名），未取得完整checkout。通过已连接GitHub工具按固定head读取规定文档、相关源码及工作流，局部落盘，仅发布明确列出的文件；不碰用户本机未提交文件。
+����/ʵ�����������Linux�ƻ�����Python3.12.14������ԭWindows����Ŀ¼������Ŀ¼ֻ���Ƶ��ԣ�git clone https://git.chatgpt-team.site/surface-user/StudyWorkbench.git StudyWorkbench�˳�128���޷�ȡ���û�������δȡ������checkout��ͨ��������GitHub���߰��̶�head��ȡ�涨�ĵ������Դ�뼰���������ֲ����̣���������ȷ�г����ļ��������û�����δ�ύ�ļ���
 
-- 初始python -m pytest --version及python -m ruff --version均退出1（模块未安装）；随后python -m pip install --target .local/check-tools pytest==9.0.1 ruff==0.14.6退出0，未新增项目依赖。
-- 工作目录为本轮StudyWorkbench局部源码目录；PYTHONPATH=backend python -m unittest discover -s backend/tests -p test_markdown_merge.py -v退出0，8项；日志artifacts/merge-core/unittest.log。
-- PYTHONPATH=.local/check-tools:backend python -m pytest backend/tests/test_markdown_merge.py -q --junitxml=artifacts/merge-core/pytest.xml退出0，8项及77子测试通过（含另行穷举行区间组合断言，不按断言重复计测试数）。
-- PYTHONPATH=.local/check-tools python -m ruff check backend退出0；仅本轮两份Python文件，不是完整后端静态检查。python -m compileall -q backend退出0。
-- 覆盖等值/单侧、空稿、删除/插入、贴边冲突、重复行、中文、混合换行/尾换行、标记字面量、UTF-8及输入/结果预算和对称性。自审已逐项核对无I/O/新增依赖，保守拒绝不丢输入；独立人工审查未执行，按仓库约束未创建子Agent。
+- ��ʼpython -m pytest --version��python -m ruff --version���˳�1��ģ��δ��װ�������python -m pip install --target .local/check-tools pytest==9.0.1 ruff==0.14.6�˳�0��δ������Ŀ������
+- ����Ŀ¼Ϊ����StudyWorkbench�ֲ�Դ��Ŀ¼��PYTHONPATH=backend python -m unittest discover -s backend/tests -p test_markdown_merge.py -v�˳�0��8���־artifacts/merge-core/unittest.log��
+- PYTHONPATH=.local/check-tools:backend python -m pytest backend/tests/test_markdown_merge.py -q --junitxml=artifacts/merge-core/pytest.xml�˳�0��8�77�Ӳ���ͨ���������������������϶��ԣ����������ظ��Ʋ���������
+- PYTHONPATH=.local/check-tools python -m ruff check backend�˳�0������������Python�ļ�������������˾�̬��顣python -m compileall -q backend�˳�0��
+- ���ǵ�ֵ/���ࡢ�ո塢ɾ��/���롢���߳�ͻ���ظ��С����ġ���ϻ���/β���С������������UTF-8������/���Ԥ��ͶԳ��ԡ�����������˶���I/O/�������������ؾܾ��������룻�����˹����δִ�У����ֿ�Լ��δ������Agent��
 
-本地未执行完整后端、Flutter、Windows构建及冻结；不得套用#7历史绿灯。本轮后续必须核对独立草稿PR当前head的双Python全量、ruff、R1–R5、桌面和冻结CI。既有打包--collect-submodules study_workbench会收集新核心，check_frozen_sources.py仍逐模块检查，未降低断言或改变工作流。人工测试/Computer Use按用户指令取消，不记通过。不合并/发行。
+����δִ��������ˡ�Flutter��Windows���������᣻��������#7��ʷ�̵ơ����ֺ�������˶Զ����ݸ�PR��ǰhead��˫Pythonȫ����ruff��R1�CR5������Ͷ���CI�����д��--collect-submodules study_workbench���ռ��º��ģ�check_frozen_sources.py����ģ���飬δ���Ͷ��Ի�ı乤�������˹�����/Computer Use���û�ָ��ȡ��������ͨ�������ϲ�/���С�
 
-交付：独立分支codex/markdown-merge-core，base为codex/recovery-note-copy。草稿PR URL、最终head及实时CI结论记录在对应PR描述，避免为记录自身SHA循环提交；未核验前本切片保持待交付。M2-05整体仍进行中。
+������������֧codex/markdown-merge-core��baseΪcodex/recovery-note-copy���ݸ�PR URL������head��ʵʱCI���ۼ�¼�ڶ�ӦPR����������Ϊ��¼����SHAѭ���ύ��δ����ǰ����Ƭ���ִ�������M2-05�����Խ����С�
+
+### M2-05a Windows���������2026-11-09��
+
+����ͨ��GitHub�������˶ԣ�#2��#3��#4��#5��#6��#7��#8���ζѵ�����open/δ�ϲ�����#3���draft��#2�C#7��ǰhead�ֱ�Ϊ29f23d3��7aa8251��147198a��1357d44��4686c8b��a959b9f����ӦPR����40928912483��41559301426��42148998075��42233131907��42276748748��42563863313��completed/success��#2���д��������������߳�resolved��#3�C#8û���ύ��GitHub review��δ��������̡߳����ϲ���ʾ�������ͨ����
+
+#8ԭhead e3dfed4��[CI #48](https://github.com/surface-user/StudyWorkbench/actions/runs/42569120398)ʵ��ʧ�ܣ�˫Python/R1�CR5�ɹ��������ʽ/����/167����/Windows Release/COM�ɹ���������Դ�����׳�`KeyError: No entry named 'study_workbench.markdown_merge' found in the archive!`����������̽��δִ�С��Ͻڡ�collect-submodules���ռ��º��ġ�����ʵ�ʽ����������ʧ�ܱ�����������ð��ͨ����
+
+�����ڱ����̶�PyInstallerԴ������ʵcollect_submodules����ȷ�ϣ�����spec��collect_submodulesǰ��������Analysis��pathex����ִ�У���--paths backend������ǰ���ռ��ҵ�Դ��������ؿ��б�����41ģ����̬��������������º���û�е��÷�����©���޲�ֻ��build-backend.ps1�����ڼ佫���ֿ�backendǰ�õ�PYTHONPATH��finally��ԭ������ԭֵ������--clean��--collect-submodules��ȫ����ģ��/Ƕ�״���/����/�쳣��һ���Լ�鼰ԭCI�����ֹ�������Ļ�������顣����������ҵ��Ķ�������ԭ#8��������Ϊͬһ�����޲�����PR��
+
+���뻷��������ԭ��������ͣ��codex/recovery-note-copy��δ���ٵ�.vscode��׶�summary.md������git fetch�˳�1��ԭ.git/FETCH_HEADֻ����δ���£���git clone --no-hardlinks --no-checkout . .local/markdown-merge-followup�˳�128��Git/MSYS��������Ȩ��ʧ�ܣ�δȡ��checkout����δ����ͬһȨ�޲���������ֻ��git archive e3dfed4���˳�0����Expand-Archive���˳�0��ȡ�ù̶��汾��.local/markdown-merge-followup-src�����б༭/��֤�ڴ˸�����Զ�˽�������ȷ�ļ����˶�expected head������д���˹�����gh�����ã�PR/CI��ʹ��������GitHub���ߡ�
+
+����cwd=.local/markdown-merge-followup-src��QΪԭ�ֿ�.local/release-venv/Scripts/python.exe������CPython3.13.17����ԭʼ���д�ø���artifacts/merge-core-followup/��
+
+- δ����PYTHONPATHʱ��Q -c����collect_submodules('study_workbench')�˳�0������[]�����ִ����ռ���ǰ�ñ�����backend��ͬ���ò�����markdown_merge���ڣ��˳�0��42ģ�顣
+- Q -m pytest backend/tests/test_markdown_merge.py -q --junitxml=artifacts/merge-core-followup/target.xml���˳�0��8�77�Ӳ���ͨ����
+- Q -m ruff check backend tools���˳�0���������/���߾�̬���ͨ����
+- ./packaging/windows/build-backend.ps1 -Python Q��PYTHONPATHԤ��restore-sentinel�����غ���Ի�ԭ�����˳�0��Լ140�룬42����ģ��ȫ����Դ��һ�£������º���/Ƕ�״���/������������PYTHONPATH��ԭ����ͨ����ԭCIʧЧ�Ž�δ�ı䡣�������build.log������head CI��#8ʵʱ���/����Ϊ׼������ԭhead��˻�Flutter�ɹ���������CI��
+- Q tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/merge-core-frozen���˳�0����ʵ����HTTP/�ָ���ֻ��/�¾ɱ���ܾ�/�����ݵ�/����/Ѳ�켰ҵ���ֽڱ���ȫ��ԭ����ͨ����frozen-integrity.log��
+- Q tools/check_resource_explorer.py --exe dist/study_backend/study_backend.exe --test-root .local/merge-core-resource --documents���˳�0����ʵ����ͳһ����/�ĵ�/����/ԭ��/����/ɾ������������ͨ����frozen-resources.log���°�����������֤���ɹ������������������ԭ������Ψһ��ǰ�����������乹��Ŀ¼��
+
+��飺���󸲸Ǵ���������̶���������PYTHONPATH�̳�/�쳣��ԭ�����ļ�����ԡ�ȫ��ҵ��ģ��Դ����Ͷ���̽���������û�ж��������׼�����û����򲻴�����Agent���˹�����/Computer Use��ȡ����δִ�д��ڲ��ԡ����ϲ�/���У��޸���ǰ����������һ��������Ϊ��֤���߹���/hash��ֻ��Ԥ��API��UIȷ����������ͨ����������Ƭ�������ܽ�������ð��༭�����ܡ�
