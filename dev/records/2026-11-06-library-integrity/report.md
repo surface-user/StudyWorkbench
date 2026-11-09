@@ -158,3 +158,7 @@ DocumentRecoveryDialog在同窗口冻结创建请求及已核对正文，正常�
 当前产品/测试源码47文件hash及复用exe hash记录于source-snapshot.json；导航补丁前快照另保留，不将旧UI版本结果冒充最终版本。后端41模块及exe与11-07已验证包hash一致，本轮未新建重复二进制、Office组件或UI验收包。相对文档链接54份/269链接无缺失（docs.json，交付链接补交另核）。全量后临时测试文件已由原流程清理，用户未提交文件未处理。
 
 本地自审已完成，未执行独立人工批准；人工测试/Computer Use明确取消。当前head CI须包含Windows Release、COM、全量R1–R5和全新冻结包整条原有链；本地不重复Windows/原冻结其他专项，不把旧包模块一致性当作新UI构建证明。阶段草稿PR依赖#6，要求提交/PR/当前head CI，不要求合并。整体M2-05仍进行中，原地缺失恢复、三方合并等不退出。
+
+实现提交8e7142c5c63a56f67a778c462bbd873434af8fc2已本地commit，退出0。首次及重试git push，以及会话级OpenSSL/已有HTTP/SOCKS代理尝试均退出1（TLS握手失败）；GitHub连接工具也出现传输错误，不是CI失败。一次SOCKS调用的自动权限检查超时未执行，重试后正常执行仍TLS失败，未当成安全拒绝。用户明确确认当时本机网络异常并恢复后，git -c http.sslVersion=tlsv1.2 -c http.version=HTTP/1.1 push -u origin codex/recovery-note-copy退出0；未关闭证书校验/持久改网络配置，不将协议参数推断为故障根因。备用API上传仅准备本机临时JSON并已移除，未使用其创建远端代码对象，远端仍是原提交。
+
+[草稿PR #7](https://github.com/surface-user/StudyWorkbench/pull/7)已创建，base=#6的4686c8b；本节及task补实际链接后，最终文档head CI、检查时间及切片交付结论持续记录在该PR描述/实时检查，不以旧head替代，不为记录自身SHA循环提交。未合并/发行，用户未提交summary.md/.vscode保留，后端与Office未复制新包。
