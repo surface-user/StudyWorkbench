@@ -472,3 +472,17 @@ M2-05剩余有明确区分：三方合并核心/API/UI由05a/b/c交付；三种�
 P结束后才启动Q全量；构建/冻结探针与P后半段并行，事先确认backend测试不读取dist/build产物，两者使用独立数据根，未并行两个全量。包SHA256记录extracted-package-hash.json；本轮不删除或覆盖现有旧包、失败目录、恢复字节或样本。仅既有Starlette anyio别名弃用警告，不改依赖掩盖。双Python全量最终均通过，独立PR/最终head CI仍待完成；本地未重复Flutter/Windows UI构建（无前端改动，最终head CI仍执行原完整桌面流程）。
 
 提交前Q -X utf8 artifacts/extracted_validate.py退出0：九份明确文件，其余429份#13基线保持，48份文档相对链接、UTF-8/替换字符/尾空白及规范上传字节git diff --no-index --check无告警（有差异返回1为该命令正常语义；检查辅助程序退出0）。初次文档补丁因误写旧行文本而校验失败、未应用，改为读取精确原行后定向更新，未覆盖他人内容。原根git status --short仍仅两项未提交工作；.vscode/settings.json与summary.md SHA256继续等于942934E3BE65634E50D53860B51F8D5DC5FFF5C757A73B37A13FFA0565C4BC9F及B4BD7245DE809C01266F4F590C56BAFBB3395B849D83C4705C65D69E057ED9AB。本项仅实现/本地自动化/自审完成，无独立审查，PR/最终head CI确认前保持待交付；不接模型/人工测试，不合并/发行，整体任务未完成。
+
+实际交付：[独立草稿PR #14](https://github.com/surface-user/StudyWorkbench/pull/14)，分支codex/extracted-question-integrity，base=#13的edf835000f49ec1cbfa59794f74a2a153e14ce07，实现003dd1bde1e0530a6e95171764fffeff8b390dbd。创建前再次核对父PR未变化，九份文件按规范UTF-8/LF Base64上传并逐项匹配Git blob SHA，远端实现commit完整差异仅九份。以expected_sha推进独立分支，未强推或改原工作区；task/本报告补实际链接，最终head/CI运行/核对时间及交付结论在PR描述维护，不为记录自身SHA循环提交。最终head全CI未核实前待交付；只有自审，独立审查/批准尚未取得，CI不替代它。其余M2-05恢复语义及task.md未完成项继续保留，不合并/发行，不自动改写/删除学习数据、失败或恢复证据。
+
+### PR跟进报告上传阻断（补交前历史记录，后续授权处理见下）
+
+实现/需求/测试与自审报告已随003dd1b提交。随后补PR链接时，task blob创建成功，report blob校验失败，未创建或推进最终commit。已先核查PR head仍为003dd1b、最终tree/commit未生成；按预期blob SHA查询，task存在、report返回404，确认报告对象缺失后仅重试一次。该重试被自动审批明确拒绝：同一超大内部报告包含本地路径、历史命令及未审查内容，缺少对具体payload外传的授权。现已停止此上传，不通过拆分、换工具或间接写入绕过；PR链接/跟进段落留本地，待用户对具体文件明确授权。继续不受影响的task链接补交、自审与最终head CI，报告补交阻断单独保留，不销项。任何“本报告补实际链接”仅指本地新增段落，不能声称远端同步完成。
+
+### 2026-11-10 用户明确授权后的PR跟进
+
+用户明确授权“将这份包含项目路径和测试命令的M2-05开发报告补交到PR #14，补齐任务记录并核对最终提交的CI，然后继续推进docs/task.md”。这是此前拒绝之后新增的具体文件外传授权，不是对原拒绝的无条件重试；不合并/发行、保留现有改动及失败证据、自审与独立审查分别记录的限制继续。
+
+补交前再次核对：PR #14仍open/draft/unmerged、head=003dd1bde1e0530a6e95171764fffeff8b390dbd，base仍#13的edf8350；无审查提交或未解决线程。该head的CI #86（42689341856）三job、43步骤全部completed/success，核对时间2026-11-10 04:22:25 UTC；这只是原实现head的CI，不替代下面补交后的最终head。根工作区仍codex/recovery-note-copy/a959b9f，.vscode/settings.json及summary.md的原SHA256未变；补交前两份本地待提交文档另存artifacts/pr14-authorized-followup-base，旧失败/恢复样本不动。
+
+本次仅补本报告的PR跟进/授权历史及task条目，不改业务代码、测试、协议或依赖。仍执行九份范围与其余429份基线保持、UTF-8/LF、尾空白、相对链接及差异检查；不为纯记录修改重复本地640项回归，补交最终head的CI仍执行项目原完整双Python/桌面/冻结流程。新增提交SHA、正式自审COMMENT、最终CI运行/核对时间/交付状态记PR描述，避免文档为记录自身SHA循环提交。当前仅自审，独立审查未取得；报告上传/最终head CI未核实前待交付，M2-05及整个task仍未完成。
