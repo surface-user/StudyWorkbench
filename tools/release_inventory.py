@@ -5,9 +5,28 @@ import importlib.metadata
 import json
 import platform
 import shutil
+import stat
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 from urllib.request import url2pathname
+
+
+def stage_files(stage):
+    files = {}
+    pending = [stage]
+    while pending:
+        for path in pending.pop().iterdir():
+            info = path.lstat()
+            if stat.S_ISLNK(info.st_mode) or getattr(info, 'st_file_attributes', 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT:
+                raise ValueError('Release staging contains a link or reparse point')
+            if stat.S_ISDIR(info.st_mode):
+                pending.append(path)
+            elif stat.S_ISREG(info.st_mode):
+                if path != stage / 'build-inventory.json':
+                    files[path.relative_to(stage).as_posix()] = path
+            else:
+                raise ValueError('Release staging contains a non-regular payload')
+    return dict(sorted(files.items()))
 
 
 def main():
@@ -15,6 +34,7 @@ def main():
     parser.add_argument("--stage", type=Path, required=True)
     args = parser.parse_args()
     stage = args.stage.resolve()
+    stage_files(stage)
     licenses = stage / "licenses"
     licenses.mkdir(exist_ok=True)
     packages = []
@@ -65,15 +85,14 @@ def main():
     destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(json_license, destination)
     files = {}
-    for path in sorted(stage.rglob("*")):
-        if path.is_file() and path.name != "build-inventory.json":
-            with path.open("rb") as handle:
-                files[path.relative_to(stage).as_posix()] = hashlib.file_digest(handle, "sha256").hexdigest()
+    for relative, path in stage_files(stage).items():
+        with path.open("rb") as handle:
+            files[relative] = hashlib.file_digest(handle, "sha256").hexdigest()
     (stage / "build-inventory.json").write_text(json.dumps({
         "python": platform.python_version(), "flutter": flutter["flutterVersion"], "build_environment_packages": packages,
         "files": files, "note": "Build environment list is not the frozen module set. Native/Flutter license review and clean-machine acceptance remain separate.",
     }, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"Inventory: {len(files)} files, {len(packages)} build packages; no personal data included")
+    print(f"Inventory: {len(files)} files, {len(packages)} build packages; staged hashes and build metadata only")
 
 
 if __name__ == "__main__":

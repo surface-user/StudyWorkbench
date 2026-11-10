@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 import pefile
+from release_inventory import stage_files
 
 
 def main():
@@ -13,17 +14,22 @@ def main():
     parser.add_argument("stage", type=Path)
     args = parser.parse_args()
     stage = args.stage.resolve()
+    payload = stage_files(stage)
     inventory = json.loads((stage / "build-inventory.json").read_text(encoding="utf-8"))
     assert inventory["python"] == "3.13.17"
+    expected = set(inventory["files"])
+    if set(payload) != expected:
+        raise ValueError(f"Release inventory mismatch: {len(expected - payload.keys())} missing, "
+                         f"{len(payload.keys() - expected)} unlisted")
+    assert not any(path.suffix.lower() == '.db' for path in payload.values()), "Personal database must not be shipped"
     for relative, expected in inventory["files"].items():
-        path = stage / relative
+        path = payload[relative]
         with path.open("rb") as handle:
             assert hashlib.file_digest(handle, "sha256").hexdigest() == expected, relative
-    assert not list(stage.rglob("*.db")), "Personal database must not be shipped"
-    files = {path.name.lower() for path in stage.rglob("*") if path.is_file()}
+    files = {path.name.lower() for path in payload.values()}
     assert "python313.dll" in files and "python312.dll" not in files
     missing = set()
-    for path in stage.rglob("*"):
+    for path in payload.values():
         if path.suffix.lower() not in {".exe", ".dll", ".pyd"}:
             continue
         pe = pefile.PE(str(path), fast_load=True)
