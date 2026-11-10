@@ -60,7 +60,7 @@ LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人�
 
 | 编号/顺序 | 小任务及依赖 | 当前状态与退出证据 |
 |---|---|---|
-| PLAN-03 / 首项 | 现状分析、拆分及新安排落地 | 文档已形成；独立草稿PR/当前head CI待交付，代码审查暂缓、人工暂停；本项不实现以下功能 |
+| PLAN-03 / 首项 | 现状分析、拆分及新安排落地 | 文档自动化通过；已提交[独立草稿PR #20](https://github.com/surface-user/StudyWorkbench/pull/20)，依赖#19，最终head CI与开发交付结论见该PR实时记录；代码审查暂缓、人工暂停，本项不实现以下功能 |
 | OFF-01 / P0，属R3/发行 | Office Java/原生加载闭合设计与诊断；先于整包发行 | 已只读核固定officebean.dll导入jawt.dll，组件内无jawt/jvm；需核真实加载根、延迟导入/动态加载及递归依赖，输出明确分发决策；不删DLL/白名单绕过 |
 | OFF-02 / P0，依赖OFF-01 | 落实固定离线Java运行时或明确新的非Java组件方案 | 待依赖方案；完整Office整包须闭合实际加载及许可证，复测冻结DOCX/PPTX/Calc、取消/重启/源hash；基础包+独立Office现状不抵销本项 |
 | REL-01 / P0，属M0-02/M1-04 | 标准SBOM与源码/最终包对照；最终版依赖OFF-02及所选可选组件 | 待实施；固定工具/版本/hash/许可；分别覆盖Python冻结/native、Flutter/Dart、NuGet、CRT/WebView2、Office/Java及安装器payload；未知组件显式列出，不把构建环境列表当全产品SBOM |
