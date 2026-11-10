@@ -4,6 +4,7 @@ import hashlib
 import importlib.metadata
 import json
 import platform
+import re
 import shutil
 import stat
 from pathlib import Path
@@ -29,6 +30,19 @@ def stage_files(stage):
     return dict(sorted(files.items()))
 
 
+def license_destination(root, name, file):
+    if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?', name):
+        raise ValueError('Invalid license package directory')
+    relative = Path(file)
+    directory = root / name
+    destination = directory / relative
+    if (relative.drive or relative.root or ':' in str(relative)
+            or any(part.rstrip(' .') != part for part in relative.parts)
+            or not destination.resolve().is_relative_to(directory.resolve())):
+        raise ValueError('Invalid license file destination')
+    return destination
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", type=Path, required=True)
@@ -50,9 +64,9 @@ def main():
                 continue
             if ".." in file.parts:
                 continue
+            destination = license_destination(licenses, name, file)
             source = Path(dist.locate_file(file))
             if source.is_file():
-                destination = licenses / name / file
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(source, destination)
     python_license = Path(__import__("sys").base_prefix) / "LICENSE.txt"
@@ -66,7 +80,7 @@ def main():
         package_root = Path(url2pathname(urlsplit(uri).path))
         for path in package_root.iterdir():
             if path.is_file() and path.name.lower().startswith(("license", "notice", "copying")):
-                destination = licenses / "dart" / package["name"] / path.name
+                destination = license_destination(licenses / "dart", package["name"], path.name)
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(path, destination)
     sdk = Path(url2pathname(urlsplit(flutter["flutterRoot"]).path))
@@ -77,7 +91,7 @@ def main():
             continue
         for path in package.iterdir():
             if path.is_file() and path.name.lower().startswith(("license", "notice")):
-                destination = licenses / "native" / package.name / path.name
+                destination = license_destination(licenses / "native", package.name, path.name)
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(path, destination)
     json_license = repository / ".local/release-tools/nlohmann-json-3.11.2-LICENSE.MIT"
