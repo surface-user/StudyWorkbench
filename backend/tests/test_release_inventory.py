@@ -38,12 +38,15 @@ def staged(tmp_path, monkeypatch):
         path.write_bytes(data)
         files[relative] = hashlib.sha256(data).hexdigest()
     save_manifest(stage, {'python': '3.13.17', 'files': files})
-    calls = {'opened': [], 'closed': [], 'imports': []}
+    calls = {'opened': [], 'closed': [], 'imports': [], 'headers': {}, 'parsed': []}
     def pe(path, fast_load):
         assert fast_load
         calls['opened'].append(path)
+        machine, magic = calls['headers'].get(Path(path).relative_to(stage).as_posix(), (0x8664, 0x20b))
         return SimpleNamespace(
-            parse_data_directories=lambda **kwargs: None,
+            FILE_HEADER=SimpleNamespace(Machine=machine),
+            OPTIONAL_HEADER=SimpleNamespace(Magic=magic),
+            parse_data_directories=lambda **kwargs: calls['parsed'].append(path),
             DIRECTORY_ENTRY_IMPORT=[SimpleNamespace(dll=name) for name in calls['imports']],
             close=lambda: calls['closed'].append(path))
     monkeypatch.setattr(checker.pefile, 'PE', pe)
@@ -228,3 +231,62 @@ def test_collection_includes_nested_inventory_but_excludes_only_root_manifest(st
     assert 'build-inventory.json' not in files
     assert files['data/build-inventory.json'] == hashlib.sha256(nested.read_bytes()).hexdigest()
     assert set(files) == set(snapshot(stage)) - {'build-inventory.json'}
+
+
+X64_TARGETS = [
+    'study_workbench.exe', 'flutter_windows.dll', 'python313.dll',
+    'backend/study_backend.exe', 'backend/_internal/pkg/native.pyd',
+    'backend/_internal/pkg/dependency.dll',
+]
+
+
+@pytest.mark.parametrize('relative', X64_TARGETS)
+@pytest.mark.parametrize('header', [(0x14c, 0x10b), (0xaa64, 0x20b), (0x8664, 0x10b)],
+                         ids=['x86', 'arm64', 'wrong-magic'])
+def test_wrong_architecture_is_refused_before_imports_without_writes(staged, relative, header):
+    stage, checker, _, calls = staged
+    path = stage / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(b'self-authored PE stub fixture')
+    value = manifest(stage)
+    value['files'][relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+    save_manifest(stage, value)
+    calls['headers'][relative] = header
+    before = snapshot(stage)
+    with pytest.raises(ValueError, match='x64 PE32'):
+        checker.main()
+    assert snapshot(stage) == before
+    assert calls['opened'] == calls['closed']
+    assert str(path) not in calls['parsed']
+
+
+def test_x64_pe32_plus_targets_remain_accepted(staged):
+    stage, checker, _, calls = staged
+    value = manifest(stage)
+    for relative in X64_TARGETS:
+        path = stage / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b'self-authored x64 PE stub fixture')
+        value['files'][relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+    save_manifest(stage, value)
+    before = snapshot(stage)
+    checker.main()
+    assert snapshot(stage) == before
+    assert calls['opened'] == calls['closed'] == calls['parsed']
+
+
+@pytest.mark.parametrize('relative', ['converters/libreoffice/program/helper.exe', 'backend/_internal/pkg/helper.exe'])
+def test_separate_helper_architecture_is_outside_main_process_gate(staged, relative):
+    stage, checker, _, calls = staged
+    path = stage / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(b'self-authored separate helper fixture')
+    value = manifest(stage)
+    value['files'][relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+    save_manifest(stage, value)
+    calls['headers'][relative] = (0x14c, 0x10b)
+    before = snapshot(stage)
+    checker.main()
+    assert snapshot(stage) == before
+    assert str(path) in calls['parsed']
+    assert calls['opened'] == calls['closed']
