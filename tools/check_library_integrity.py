@@ -183,6 +183,17 @@ def main():
         changed = inspect(1)
         assert {item['code'] for item in changed['issues']} == {
             'unreferenced_derived_candidate', 'workfile_index_changed'}
+        question_partial = data / 'workspaces/default/questions/interrupted-assets'
+        (question_partial / 'assets').mkdir(parents=True)
+        (question_partial / 'assets/keep.png').write_bytes(b'retained incomplete question asset')
+        question_empty = question_partial.with_name('interrupted-empty')
+        question_empty.mkdir()
+        questions = inspect(1)
+        assert sorted((item['code'], item.get('relative_path')) for item in questions['issues']) == sorted(
+            [(item['code'], item.get('relative_path')) for item in changed['issues']] +
+            [('unreferenced_derived_candidate', path.relative_to(data).as_posix())
+             for path in (question_partial, question_empty)])
+        assert question_empty.is_dir()
         assert capacity(office=True)['file_count'] == 0
         # Synthetic offline metadata exercises the CLI without requiring an Office runtime.
         resource_id, office_node, preview_id = 'd' * 32, 'e' * 32, 'f' * 32
@@ -262,6 +273,7 @@ def main():
         missing_media = capacity(download=True, expected=1)
         assert any(i == dict(code='missing_required_reference', relative_path=old_relative) for i in missing_media['issues'])
         summary = dict(frozen=True, active_lock_refused=True, healthy_case_verified=True, orphan_detected=True,
+                       extracted_question_orphans_detected=True, extracted_question_bytes_preserved=True,
                        external_edit_detected=True, business_bytes_preserved=True, repair_performed=False,
                        recovery_preview_readonly=True, recovery_save_conflict_guard=True, recovery_explicit_save=True,
                        missing_source_copy=True, copy_creation_idempotent=True, original_missing_not_repaired=True,

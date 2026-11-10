@@ -27,7 +27,7 @@ def test_clean_all_spaces_history_receipts_and_runtime_profiles_are_read_only(tm
     assert snapshot(tmp_path) == before
 
 
-@pytest.mark.parametrize('kind', ['working', 'question-files', 'question-versions', 'previews'])
+@pytest.mark.parametrize('kind', ['working', 'question-files', 'question-versions', 'previews', 'questions'])
 @pytest.mark.parametrize('empty', [False, True])
 def test_unregistered_derived_directory_is_only_a_candidate_never_removed(tmp_path, kind, empty):
     library(tmp_path)

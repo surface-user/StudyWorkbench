@@ -256,7 +256,7 @@ context_sha256及payload_sha256由服务端按对应上下文/候选content计�
 
 输出单行JSON的result：schema_version=1、checked_scope=managed_files_and_derived_directories、complete、healthy、data_modified=false、repair_performed=false、entries_checked、rows_checked、bytes_hashed、retained_preview_tasks及issues（code/severity、可选relative_path）；预算中止另含limit_reason。健康且完整退出0，发现问题/不完整退出1；参数或取锁错误非零退出。只报告相对路径与类别，不输出正文或原始SQL异常。
 
-核对当前schema、SQLite完整性/FK、原件/就绪媒体/确认版及附件/就绪派生PDF的大小/hash，工作文件对索引变化报告警告；保留保存恢复点、创建收据和失败预览任务。working、question-files、question-versions、previews目录按数据库归属巡检，包含空目录及working旧generation；无归属只表示候选，不表示可删除。根部未完成迁移/备份/恢复暂存目录提示后不展开；运行profile排除。未知其他目录不猜测归属。
+核对当前schema、SQLite完整性/FK、原件/就绪媒体/确认版及附件/就绪派生PDF的大小/hash，工作文件对索引变化报告警告；保留保存恢复点、创建收据和失败预览任务。working、question-files、question-versions、previews、旧提取题目questions目录按数据库归属巡检，包含空目录、questions仅图片中断及working旧generation；已登记questions目录由其资源路径确认归属，MD沿用资源大小/hash核验，同目录图片副本无独立核验。无归属只表示候选，不表示可删除、可补登记或已恢复。根部未完成迁移/备份/恢复暂存目录提示后不展开；运行profile排除。未知其他目录不猜测归属。
 
 最多20000目录项、50000引用行、512MiB文件哈希、30秒协作式期限、200条问题；超限complete=false/healthy=false，不返回虚假的全库健康。healthy仅针对上述检查范围，不替代所有业务JSON/格式语义验证，数据锁不排斥外部编辑器；单次阻塞文件系统操作不保证可立即中断。旧schema只报告不支持，不借巡检自动升级。
 
