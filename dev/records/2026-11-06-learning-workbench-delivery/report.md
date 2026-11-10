@@ -70,3 +70,19 @@ R6原报告追加时，文档保护初检退出1：该活动报告处于旧快�
 ## 用户取消人工测试后的维护提交
 
 用户明确取消人工测试并要求继续开发/治理近30GB占用；不再执行Computer Use或把人工窗口测试作为阻塞。现行规则由ADR0013覆盖旧延后安排，产品内用户授权与候选审核确认仍保留。清理及防复发实现继续[原DOC-01报告](../2026-10-30-documentation/report.md)，不新增清理报告：238项已核生成目录移除，27.190→4.912GiB，保留当前后端与一份可用组件并核验hash。pytest内置failed策略启用，相关21项及全量476通过；故意失败探针用于核验现场保留，非产品失败。本轮修改的CI须按新head查询，不能沿用1e22cd2绿灯；不重建人工测试包、不合并/发行。
+
+## 2026-11-10 用户领取当前Release构建进行人工测试
+
+用户明确要求“给个目前的正式版exe我人工测试一下，列出待测试的内容，我人工做汇报”。本轮生成Release模式本地交付包及[人工测试清单/反馈模板](manual-test-20261110.md)，由用户自行执行并反馈；只覆盖此次安排，不恢复所有任务人工门禁，不把旧取消或当前CI算成人工通过。仍不执行Agent窗口/Computer Use、不接模型、不合并/公开发行。产品代码基线#18最终2a884fe4f665b3ce50152914e32ee60314af60c9，CI #108三组43步成功已再核，独立审查没有；原根#7和原两份未提交改动保留。
+
+先检查旧包：原根dist/StudyWorkbench-M1-setup.exe为10-24旧产物，不能冒充当前版本。固定CPython3.13.17、Flutter3.47.1/Dart3.13.1、签名Valid的NuGet6.14/Inno7.1/WebView2离线安装器、固定Office26.8.1及28.4GB剩余空间已核。只在.local/markdown-merge-followup-src写新生成文件；原安装目录/数据目录未操作。Get-CimInstance只读进程查询权限不可用，未重试该接口，后续未依靠它执行操作；flutter --version无输出阻塞后只中止本代理查询，版本改由已观察SDK缓存元数据核实，未启动用户应用。
+
+本机首次原build-release命令使用已验证工具与-OfficeRuntime，退出1，Flutter的NuGet依赖target报MSB3073，尚未生成新安装器/完整stage。只读nuget help暴露默认TEMP/NuGetScratch对项目.local/NuGet.Config的锁不可用；未删除该锁、未改全局NuGet配置。用新项目私有TEMP/NUGET_SCRATCH运行带20秒超时help诊断，退出0；据此仅进行一次私有scratch的本机构建复验，仍退出1于同一NuGet依赖步骤，停止这条构建操作，不再反复尝试或降低原门禁。两轮构建日志、help输出、诊断JSON和驱动副本保留artifacts/manual-*；不能从help成功推断install或构建通过。
+
+本地实际命令（cwd=隔离源码）：packaging/windows/build-release.ps1 -Iscc <原根固定ISCC.exe> -WebViewInstaller <原根固定安装器> -OfficeRuntime <原根固定Office目录>，退出1（manual-release-build01.log）；artifacts/manual-release-driver02.ps1同参数，退出1（manual-release-build02.log）。第二驱动仅改脚本副本的源根与进程私有scratch，保留原Flutter/冻结/许可/hash/PE/Office/ISCC全部门禁，原生产脚本无变化。artifacts/manual-nuget-diagnostic01.json记录私有目录help退出0。原CIM权限失败不参与构建通过证明。
+
+已通过的现行GitHub CI环境可以正常编译该产品基线，但desktop job原先没有可领取的构建产物。本切片只在现有全部桌面/冻结/worker检查之后复用已采用的actions/upload-artifact@v4，保留Release前端、配套冻结后端及该次NuGet包目录三天；排除仅供COM检查的resource_drop_check.exe，不上传测试profile、学习数据库、用户原件、会话令牌或源码工作区。此为仓库内短期构建交付，不创建GitHub Release或公开发行。已有所有检查及失败行为不变，无新运行依赖/产品逻辑。
+
+独立分支codex/manual-release-handoff基于#18；本轮四份明确文件（工作流、task、原批次报告及一份清单），修改前副本在artifacts/manual-handoff-base。不把新的清单另当一份交付报告，后续用户反馈继续本原报告。本地校验会核YAML可解析、旧全部steps原样保留、仅增加末尾产物步骤、限定路径/三天保留/缺文件报错、文档链接/UTF-8/空白及其余父基线保持。无需为纯工作流出口另写镜像断言单元测试；当前head完整CI仍须通过并实查新artifact。
+
+待该构建成功后，仅下载指定运行的构建ZIP并核artifact来源/摘要，安全解压到全新本地目录；组装app-local已签名CRT和已核Office组件，运行现有release_inventory/check_release与冻结源码/业务/Office探针，再用原ISCC编译本地安装器。产品版本1.0.0+1，不注入开发STUDY_ROOT或固定个人数据路径，不启动真实用户库/窗口。实际退出码、运行/下载来源、最终包路径/hash、构建元数据和交付结论在本PR描述及交付目录build-info.json记录，不把尚未执行项目记通过。当前仍待构建/PR及最终head CI核实；自审与独立审查分开，用户人工结果待反馈。旧题目目录恢复继续规划，不修改原目录，保留全部旧失败证据。

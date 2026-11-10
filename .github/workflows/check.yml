@@ -82,4 +82,15 @@ jobs:
         working-directory: .
       - run: .venv/Scripts/python.exe tools/check_document_workers.py --exe dist/study_backend/study_backend.exe
         working-directory: .
+      - name: Retain Windows Release inputs for local manual-test packaging
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-release-inputs-${{ github.event.pull_request.head.sha || github.sha }}
+          retention-days: 3
+          if-no-files-found: error
+          path: |
+            apps/desktop/build/windows/x64/runner/Release/
+            !apps/desktop/build/windows/x64/runner/Release/resource_drop_check.exe
+            apps/desktop/build/windows/x64/packages/
+            dist/study_backend/
 
