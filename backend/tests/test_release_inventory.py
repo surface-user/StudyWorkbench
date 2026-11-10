@@ -5,6 +5,7 @@ import os
 import stat
 import subprocess
 import sys
+from importlib.metadata import PackagePath
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -208,10 +209,9 @@ def test_collector_refuses_license_directory_junction_before_copying(staged, mon
     assert snapshot(external) == before
 
 
-def test_collection_includes_nested_inventory_but_excludes_only_root_manifest(staged, tmp_path, monkeypatch):
+@pytest.fixture
+def collection(staged, tmp_path, monkeypatch):
     stage, _, collector, _ = staged
-    nested = stage / 'data/build-inventory.json'
-    nested.write_bytes(b'legitimate nested payload')
     repository = tmp_path / 'fixture-repository'
     sdk = tmp_path / 'fixture-sdk'
     sdk.mkdir()
@@ -226,6 +226,13 @@ def test_collection_includes_nested_inventory_but_excludes_only_root_manifest(st
     monkeypatch.setattr(collector, '__file__', str(repository / 'tools/release_inventory.py'))
     monkeypatch.setattr(collector.importlib.metadata, 'distributions', lambda: [])
     monkeypatch.setattr(sys, 'argv', ['release_inventory.py', '--stage', str(stage)])
+    return stage, collector, repository, config
+
+
+def test_collection_includes_nested_inventory_but_excludes_only_root_manifest(collection):
+    stage, collector, _, _ = collection
+    nested = stage / 'data/build-inventory.json'
+    nested.write_bytes(b'legitimate nested payload')
     collector.main()
     files = manifest(stage)['files']
     assert 'build-inventory.json' not in files
@@ -258,6 +265,94 @@ def test_wrong_architecture_is_refused_before_imports_without_writes(staged, rel
     assert snapshot(stage) == before
     assert calls['opened'] == calls['closed']
     assert str(path) not in calls['parsed']
+
+
+@pytest.mark.parametrize('ecosystem', ['python', 'dart'])
+@pytest.mark.parametrize('damage', ['parent', 'absolute', 'nested', 'backslash', 'dot'])
+def test_license_package_name_cannot_choose_another_directory(collection, tmp_path, monkeypatch, ecosystem, damage):
+    stage, collector, _, config = collection
+    source = tmp_path / 'dependency-source'
+    source.mkdir()
+    (source / 'LICENSE').write_bytes(b'self-authored license')
+    escaped = tmp_path / 'escaped'
+    escaped.mkdir()
+    (escaped / 'LICENSE').write_bytes(b'fixture sentinel must never be overwritten')
+    name = {'parent': '../../escaped', 'absolute': str(escaped), 'nested': 'nested/package',
+            'backslash': 'nested\\package', 'dot': '.'}[damage]
+    if ecosystem == 'python':
+        dist = SimpleNamespace(metadata={'Name': name}, version='1.0', files=[PackagePath('LICENSE')],
+                               locate_file=lambda file: source / file)
+        monkeypatch.setattr(collector.importlib.metadata, 'distributions', lambda: [dist])
+    else:
+        value = json.loads(config.read_text(encoding='utf-8'))
+        value['packages'] = [{'name': name, 'rootUri': source.as_uri()}]
+        config.write_text(json.dumps(value), encoding='utf-8')
+    before = snapshot(tmp_path)
+    with pytest.raises(ValueError, match='license'):
+        collector.main()
+    after = snapshot(tmp_path)
+    assert all(after[path] == data for path, data in before.items())
+    assert {p: data for p, data in after.items() if not p.startswith('stage/')} == {
+        p: data for p, data in before.items() if not p.startswith('stage/')}
+
+
+@pytest.mark.parametrize('location', ['outside', 'inside'])
+def test_absolute_license_record_is_rejected_without_overwriting(collection, tmp_path, monkeypatch, location):
+    stage, collector, _, _ = collection
+    source = tmp_path / 'license-source'
+    source.write_bytes(b'self-authored license bytes')
+    target = (tmp_path if location == 'outside' else stage / 'licenses/sample') / 'LICENSE'
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(b'fixture sentinel must never be overwritten')
+    dist = SimpleNamespace(metadata={'Name': 'sample'}, version='1.0', files=[PackagePath(target.as_posix())],
+                           locate_file=lambda file: source)
+    monkeypatch.setattr(collector.importlib.metadata, 'distributions', lambda: [dist])
+    before = snapshot(tmp_path)
+    with pytest.raises(ValueError, match='license'):
+        collector.main()
+    assert snapshot(tmp_path) == before
+
+
+def test_valid_nested_python_dart_and_native_licenses_remain_collected(collection, tmp_path, monkeypatch):
+    stage, collector, repository, config = collection
+    source = tmp_path / 'dependency-source'
+    relative = PackagePath('sample-1.0.dist-info/licenses/LICENSE')
+    (source / relative).parent.mkdir(parents=True)
+    (source / relative).write_bytes(b'self-authored Python license')
+    dist = SimpleNamespace(metadata={'Name': 'sample-pkg_1'}, version='1.0', files=[relative],
+                           locate_file=lambda file: source / file)
+    monkeypatch.setattr(collector.importlib.metadata, 'distributions', lambda: [dist])
+    dart = tmp_path / 'dart-source'
+    dart.mkdir()
+    (dart / 'NOTICE').write_bytes(b'self-authored Dart notice')
+    value = json.loads(config.read_text(encoding='utf-8'))
+    value['packages'] = [{'name': 'dart_pkg', 'rootUri': dart.as_uri()}]
+    config.write_text(json.dumps(value), encoding='utf-8')
+    native = repository / 'apps/desktop/build/windows/x64/packages/Sample.Native.1.0'
+    native.mkdir()
+    (native / 'LICENSE.txt').write_bytes(b'self-authored native license')
+    before = [snapshot(directory) for directory in [source, dart, repository]]
+    collector.main()
+    assert [snapshot(directory) for directory in [source, dart, repository]] == before
+    assert (stage / 'licenses/sample-pkg_1' / relative).read_bytes() == (source / relative).read_bytes()
+    assert (stage / 'licenses/dart/dart_pkg/NOTICE').read_bytes() == (dart / 'NOTICE').read_bytes()
+    assert (stage / 'licenses/native/Sample.Native.1.0/LICENSE.txt').read_bytes() == (native / 'LICENSE.txt').read_bytes()
+    for relative, digest in manifest(stage)['files'].items():
+        assert hashlib.sha256((stage / relative).read_bytes()).hexdigest() == digest
+
+
+@pytest.mark.parametrize('relative', ['LICENSE:stream', 'ambiguous. /LICENSE', 'LICENSE.'])
+def test_ambiguous_windows_license_paths_are_rejected_before_copy(collection, tmp_path, monkeypatch, relative):
+    stage, collector, _, _ = collection
+    source = tmp_path / 'license-source'
+    source.write_bytes(b'self-authored license bytes')
+    dist = SimpleNamespace(metadata={'Name': 'sample'}, version='1.0', files=[PackagePath(relative)],
+                           locate_file=lambda file: source)
+    monkeypatch.setattr(collector.importlib.metadata, 'distributions', lambda: [dist])
+    before = snapshot(tmp_path)
+    with pytest.raises(ValueError, match='license'):
+        collector.main()
+    assert snapshot(tmp_path) == before
 
 
 def test_x64_pe32_plus_targets_remain_accepted(staged):
