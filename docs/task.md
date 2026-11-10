@@ -56,7 +56,7 @@ LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人�
 |---|---|---|
 | M0-08 / M0、M1历史 | 原默认目录历史mkdir/500故障记录保留，人工现场测试已取消 | 继续自动化启动/恢复回归，不操作个人旧库；见[默认启动记录](../dev/archive/reports/default-startup-2026-10-25.md) |
 | M0/M1硬件与交互 | 中文IME、浏览器回退最终URL、最终原生退出、原生焦点快捷键、真实DPI/性能、无障碍 | 人工硬件/交互测试已取消；可自动化部分继续覆盖，旧工具失败保留 |
-| M0-02 / M1-04发行 | setup实际安装/自选路径/升级/卸载保留、无Python/无WebView2干净机、签名、SBOM/传递许可/漏洞 | 人工安装/干净机测试已取消；签名、SBOM及传递许可等自动检查继续，发行未授权；完整文件集合/hash校验与编译前门禁已实现，双Python相关16项、真实DLL CLI、静态/协议及PowerShell语法通过，自审完成；独立草稿PR/最终head CI待核实，独立审查未取得，整体仍进行中；[原报告](../dev/records/2026-11-10-release-integrity/report.md) |
+| M0-02 / M1-04发行 | setup实际安装/自选路径/升级/卸载保留、无Python/无WebView2干净机、签名、SBOM/传递许可/漏洞 | 人工安装/干净机测试已取消；签名、SBOM及传递许可等自动检查继续，发行未授权；完整文件集合/hash校验与编译前门禁已实现，双Python相关16项、真实DLL CLI、静态/协议及PowerShell语法通过，自审完成；已创建[独立草稿PR #16](https://github.com/surface-user/StudyWorkbench/pull/16)，最终head CI及本项交付结论见PR描述/实时检查；未核实前待交付，独立审查未取得，整体仍进行中；[原报告](../dev/records/2026-11-10-release-integrity/report.md) |
 | M2-03 / 数据保护（由LW-05承接） | 完整作答/任务/媒体/事件/关系备份恢复，ZIP整包重导 | 还原后逐项一致性与故障回滚；现有export v1/v2仍非完整恢复包 |
 | M2-04 / R3/R4 | OCR、多栏/复杂编号、自动共享材料归组、更大原件/分块/格式保真、复杂表格/图表编辑 | 自编真实格式矩阵；旧提取MD与QuestionFile明确区别；版本编辑仅覆盖显式转换后的QuestionFile，不冒充全部旧编辑器完成 |
 | M2-05 / R3/R4，进行中 | 完整性/孤立派生巡检、保存恢复点与故障保护；三方合并等后续 | 原巡检及保存恢复点浏览已交付[草稿PR #5](https://github.com/surface-user/StudyWorkbench/pull/5)、[草稿PR #6](https://github.com/surface-user/StudyWorkbench/pull/6)，当时最终head CI均通过、未合并，原计数/失败保留于[同报告](../dev/records/2026-11-06-library-integrity/report.md)。11-09缺失工作文件的恢复点另存独立笔记已实现；创建/保存响应丢失同请求重试、改后副本不覆盖、源字节及重启保持已验证，双Python各526、Flutter167、静态/冻结检查通过，自审完成，已提交[草稿PR #7](https://github.com/surface-user/StudyWorkbench/pull/7)，依赖#6，最终head CI及切片交付结论以PR实时检查为准，未合并/发行。不接模型/人工测试，不自动修复原路径或删除；三方合并分为下方M2-05a/b/c切片；其他派生恢复与失败副本容量治理仍未完成，不将切片冒充全部恢复完成 |
