@@ -88,3 +88,29 @@ R6原报告追加时，文档保护初检退出1：该活动报告处于旧快�
 待该构建成功后，仅下载指定运行的构建ZIP并核artifact来源/摘要，安全解压到全新本地目录；组装app-local已签名CRT和已核Office组件，运行现有release_inventory/check_release与冻结源码/业务/Office探针，再用原ISCC编译本地安装器。产品版本1.0.0+1，不注入开发STUDY_ROOT或固定个人数据路径，不启动真实用户库/窗口。实际退出码、运行/下载来源、最终包路径/hash、构建元数据和交付结论在本PR描述及交付目录build-info.json记录，不把尚未执行项目记通过。当前仍待构建/PR及最终head CI核实；自审与独立审查分开，用户人工结果待反馈。旧题目目录恢复继续规划，不修改原目录，保留全部旧失败证据。
 
 实际交付跟进：[独立草稿PR #19](https://github.com/surface-user/StudyWorkbench/pull/19)，分支codex/manual-release-handoff，基于#18最终2a884fe，实现6806a70ecdcb9538cf96d5a8444d49fc24e9e0a7。四份规范文本上传并核Git blob SHA，远端实现差异仅四份；首次推进ref网络异常导致创建PR返回422无差异，先只读核分支仍为父head且PR未创建，再仅重试一次expected_sha推进并创建成功；非权限绕过，无强推或重复PR。task/原报告补实际链接，文档最终差异与远端回读继续核实；最终head/全部CI步骤、artifact来源/下载校验、本地组装/打包/探针实际命令退出码与包hash在PR描述及交付build-info.json记录，不循环提交自身SHA。当前包/最终head CI尚未交付，不先记成功；自审完成，独立审查未取得，用户人工结果待反馈，不合并或公开发行。
+
+### 本轮实际构建、打包结果与交付限制
+
+37a8d553e56c34ea901269a01e3022d934215d45的CI #113（42788216714）三job/44步骤全部success，双后端各707、Flutter193/格式/分析、Windows Release/COM、43模块冻结、原资源/文档/恢复/合并/容量/生命周期/worker及新artifact步骤通过。四份远端文本回读匹配规范blob SHA，自审COMMENT锚定该head，无独立批准/线程。构建产物windows-release-inputs-37a8d55...，artifact ID13750752076，96017537字节；SHA256=928460703ec9ae29e5989b62a57b1db88fb9b69a7232c9c84d8da78b213b0ec7。本地流式下载逐字节匹配GitHub digest，先拒绝越界/重复大小写路径、符号链接和超预算ZIP再安全解压，1151个条目。没有下载/上传个人学习库或原件。只将CI生成的三个NuGet目录放入当前隔离源码的空构建目录，未改上游缓存或安装版本。
+
+以下Q为D:/computer_work/project/StudyWorkbench/.local/release-venv/Scripts/python.exe，cwd为隔离源码；stage=.local/manual-delivery-output01/app。相同可选Office组件先通过19417文件源/目标清单与hash核验。首个暂存进程无输出且未生成组件目录，停止后使用真实Q路径/构建权限进行一次原命令，退出0；未删除或修改组件/清单。首个空日志和第二次日志保留，不把中止记作通过。
+
+| 实际命令/步骤 | 退出及结果 | artifacts/日志 |
+|---|---|---|
+| Q tools/stage_office_runtime.py --runtime <原根已锁Office26.8.1目录> --stage stage | 0；19417文件完整核验并复制，源保持 | manual-office-stage02.log |
+| Q tools/check_frozen_sources.py --exe stage/backend/study_backend.exe | 0；43模块/嵌套代码/常量匹配当前产品源码 | manual-frozen-sources01.log |
+| Q tools/check_resource_explorer.py --exe stage/backend/study_backend.exe --test-root .local/manual-package-resources01 --documents --without-office | 0；导入/文档/布局/作答/删除/重启/0016保持，无组件分支 | manual-package-resources01.log |
+| Q tools/check_library_integrity.py --exe stage/backend/study_backend.exe --test-root .local/manual-package-library01 | 0；锁/健康/孤立/只读/恢复另存/合并/三类容量及旧题图片核验等原链保持 | manual-package-library01.log |
+| Q tools/check_office_previews.py --exe stage/backend/study_backend.exe --test-root .local/manual-package-office01 --runtime stage/converters/libreoffice --docx <交付自编中文公式.docx> --pptx <交付自编中文图表.pptx> | 0；DOCX/PPTX各2页、PDF67520/46266字节，原件hash/取消重试/缓存/重启/XML预算/公式图表通过 | manual-package-office01.log |
+| Q tools/release_inventory.py --stage stage，随后Q tools/check_release.py stage（整包Office） | 生成0/20722文件，门禁1；officebean.dll导入jawt.dll缺失。此失败保留，不运行该分支的ISCC，不清除或忽略DLL | manual-release-inventory01.log；manual-check-release01.log |
+| 将完整已核Office目录移至同一新交付根optional/libreoffice；Q tools/release_inventory.py --stage stage；Q tools/check_release.py stage | 均0；基础包1304文件集合/hash、x64/PE导入/CRT/CPython/无.db均通过。没有改检查器或Office固定清单 | manual-release-inventory02.log；manual-check-release02.log |
+| 原ISCC.exe --define=BuildRoot=<stage绝对路径> --define=WebViewInstaller=<固定已签名离线安装器> --define=AppVersion=1.0.0 packaging/windows/setup.iss | 0；95.094秒，生成新的274385377字节安装器。只编译，未执行安装/卸载 | manual-installer-compile02.log |
+| Q tools/check_office_previews.py同上，--test-root .local/manual-package-office02，--runtime .local/manual-delivery-output01/optional/libreoffice | 0；独立组件新位置同样DOCX/PPTX各2页，取消/重试/源hash/缓存/重启/预算全部保持 | manual-package-office02.log |
+
+Java桥接缺口仅阻断完整Office并入基础安装器；不据真实Word/PPTX成功推断所有Office子库依赖闭合。按项目默认分发方式交付基础安装器，保留未经裁剪的独立Office组件与仅对子进程设置STUDY_OFFICE_RUNTIME的“启用Office分页.cmd”。未引入Java，不删officebean.dll、不改runtime-lock或放宽PE断言；基础包的完整门禁照常通过。扩展入口运行免安装版，先退出已有实例，Java桥接不在支持测试范围。完整Office整包依赖/SBOM/发行仍未完成，已在task保留。
+
+最终本地目录为D:/computer_work/project/StudyWorkbench/dist/StudyWorkbench-Release-20261110-37a8d55/，含setup.exe、app/study_workbench.exe、optional/libreoffice、启用Office分页.cmd、自编测试样本、人工测试清单、启动说明、build-info.json及SHA256SUMS.txt。仅移动本代理新建暂存目录/新安装器，移动前逐项解析绝对路径并核在预期workspace/dist/暂存范围，目标存在则拒绝，不覆盖旧10-24安装器或个人数据；用户可填写的清单/样本先行复制，后续不覆盖其反馈。
+
+安装器SHA256=a57847b7a9b99fafd7f123296b26cb21664bd994329eebdfe6a1f5a1a84f0361；主exe SHA256=873f7c560bb9b0a302ca99c370ddc20ce87772e9527a8c4fde8f4a0d2330e44f，版本1.0.0+1/Release。编译器、NuGet、app-local CRT和离线WebView安装器签名已核；本项目主exe/新安装器未签名，不称签名正式发行。基础安装包不含独立Office，免安装入口需系统已有WebView2，缺少时先使用安装版。build-info记录产物/源码/CI/artifact/实测退出码、失败和人工待反馈状态；原日志/JUnit/隔离库不进Git。
+
+已向用户提供当前安装器和清单链接；用户人工结果尚未收取，没有代替用户启动应用、选择/迁移个人库、安装或窗口验收。产品代码仍为#18基线；本次后续提交只补task/本原报告的真实结果和未闭合项，不替换已交付二进制，打包输入继续明确标为37a8d55/CI #113。最终文档head仍需完整CI，构建来源CI和最终记录CI分别说明；自审与独立审查分开，未合并/公开发行，旧题目目录恢复仍规划。
