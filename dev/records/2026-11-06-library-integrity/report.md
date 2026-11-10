@@ -486,3 +486,52 @@ P结束后才启动Q全量；构建/冻结探针与P后半段并行，事先确�
 补交前再次核对：PR #14仍open/draft/unmerged、head=003dd1bde1e0530a6e95171764fffeff8b390dbd，base仍#13的edf8350；无审查提交或未解决线程。该head的CI #86（42689341856）三job、43步骤全部completed/success，核对时间2026-11-10 04:22:25 UTC；这只是原实现head的CI，不替代下面补交后的最终head。根工作区仍codex/recovery-note-copy/a959b9f，.vscode/settings.json及summary.md的原SHA256未变；补交前两份本地待提交文档另存artifacts/pr14-authorized-followup-base，旧失败/恢复样本不动。
 
 本次仅补本报告的PR跟进/授权历史及task条目，不改业务代码、测试、协议或依赖。仍执行九份范围与其余429份基线保持、UTF-8/LF、尾空白、相对链接及差异检查；不为纯记录修改重复本地640项回归，补交最终head的CI仍执行项目原完整双Python/桌面/冻结流程。新增提交SHA、正式自审COMMENT、最终CI运行/核对时间/交付状态记PR描述，避免文档为记录自身SHA循环提交。当前仅自审，独立审查未取得；报告上传/最终head CI未核实前待交付，M2-05及整个task仍未完成。
+
+## 2026-11-10 M2-05h：已登记旧题目图片副本完整性
+
+### 需求、实证与设计
+
+#14授权补交已完成，最终9336d2f5728edb76529ee0178b3694fd2c119d40的CI #88（42756040546）三job、43步骤全部成功；正式COMMENT明确是自审，未取得独立审查/批准。报告/task补交、上传超时核查后一次成功重试及最终核对时间已写PR描述；旧风险拒绝与失败证据保留，不合并/发行。
+
+现行requirements要求一题Markdown及相对附件可携带，question-markdown-spec规定题目目录保存独立图片副本；markdown_questions.confirm按原Resource字节复制到questions/<id>/assets/<resource-id>.png。#14已补目录归属，但扫描仍只核原Resource和question.md，没有核这些已登记图片副本。Q -X utf8 artifacts/legacy-assets-gap-repro.py退出0：真实自编DOCX经API入库，只改变图片副本最后一字节，源图片不变，扫描仍complete=true/healthy=true/issues=[]；扫描自身逐字节不变。结论与自编损坏现场保留于artifacts/legacy-assets-gap-repro01.log/json及.local/legacy-assets-gap-repro01，不打开个人库。本项是明确完整性假阴性，不是新增容量统计或恢复策略。
+
+独立分支codex/extracted-question-assets-integrity基于#14最终9336d2f；当前源码副本其余代码与父head已核对，原根工作区不变。设计：沿用只读connect的64MiB SQLite值限制与现有行/时间/文件哈希预算，缓存已扫描Resource元数据；读取旧MarkdownQuestion的blocks和shared_materials，仅对旧写入器实际复制的image块，核验同空间MD资源/固定题目路径及原附件Resource归属，再使用现有verify核副本size/hash。未知引用明确报错，坏JSON不完整；路径仍经archive_path/no_links/空间守卫，不新增任意路径入口。不补登记、修复、覆盖或删除，不改变旧格式或新QuestionFile，无依赖/表/迁移/API/UI/Agent新增。
+
+任务顺序：真实破坏/错误引用/共享材料/只读/预算回归先红→最小共享扫描修补→专项/双Python全量/干净冻结与新增真实题目副本探针→自审、文档/独立草稿PR及最终head全CI。独立审查状态单列，不因CI成功自动通过；人工测试已取消，不接模型，失败/恢复数据保留。
+
+### 实施与验证记录
+
+生产变更只在library_integrity复用已有Resource行元数据、all_blocks和verify；新增两个明确无效引用错误码，不改变CLI/JSON形状。原哈希缓存保证重复引用不重复计字节；仍逐引用保留错误，不放松问题预算。新增14项真实API自编DOCX回归覆盖副本缺失/等长篡改/截断、失效/跨空间附件、错误MD路径/空间、共享材料与重复引用、坏JSON/结构、恶意附件ID路径、行/字节共用预算和归档空间；扫描前后所有库文件字节保持，源图片不变。仅本次自建损坏fixture有显式修改，个人库不操作。
+
+冻结探针先经原imports/question-markdown接口登记真实自编DOCX，原健康断言保持；随后仅篡改副本再保留为retained-corrupt-legacy-image.png，断言hash_mismatch及随后missing_file，原图不变。继承原inspect逐字节不变与全部恢复/合并/容量断言，不放宽旧断言，不自动补回副本。新module/依赖/表均无，仍应43模块。
+
+cwd=.local/markdown-merge-followup-src，P=.venv/Scripts/python.exe（3.12.7）、Q=D:/computer_work/project/StudyWorkbench/.local/release-venv/Scripts/python.exe（3.13.17）。初轮实际命令：
+
+| 命令 | 退出/结果 | 副本artifacts/ |
+|---|---|---|
+| Q -X utf8 -m pytest backend/tests/test_legacy_asset_integrity.py -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/la-red01 --junitxml=artifacts/legacy-assets-red01.xml | 1；14项均失败、86.49秒，旧实现对新核验范围漏报；全部原日志/XML/损坏现场保留 | legacy-assets-red01.log/xml |
+| Q -m ruff check backend tools | 0；完整静态通过 | legacy-assets-ruff01.log |
+| Q tools/export_question_schema.py --check | 0；协议无漂移 | legacy-assets-schema01.log |
+| Q -X utf8 artifacts/legacy_assets_validate.py | 0；仅七份明确文件，其余432份#14基线保持；48文档链接/UTF-8/LF/尾空白及git diff --no-index --check无告警，非空差异退出1为正常语义，辅助检查0 | legacy-assets-diffcheck.json |
+
+组合专项仍运行，不能先记通过；原Windows junction用例沿用已核实的提升权限执行，不跳过。其后双Python全量、干净冻结、新旧探针、自审、独立草稿PR及最终head全CI继续。只有自审，独立审查未取得，不接模型，不合并/发行。
+
+组合专项最终：Q -X utf8 -m pytest backend/tests/test_legacy_asset_integrity.py backend/tests/test_library_integrity.py backend/tests/test_markdown_questions.py backend/tests/test_integrity_recovery_faults.py -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/la-t01 --junitxml=artifacts/legacy-assets-target01.xml，退出0、57项/169.12秒，legacy-assets-target01.log/xml。原副本缺失/冲突、资源路径/锁/预算、旧schema和故障注入断言均保留。P/Q全量现按P后Q串行运行；并行构建只重建本代理隔离源码副本的派生产物，不覆盖原工作区包，不动旧失败/恢复数据。
+
+自审核对唯一CLI调用方及两个派生目录归属使用处、新旧资源/旧题目/确认版扫描顺序、块枚举与旧写入器一致性、精确MD资源路径/同空间资源绑定、重复引用哈希缓存、全部既有预算和重解析点/路径校验。只核旧写入器实际复制的image（含shared_materials），不猜测原稿中未生成的附件；不解析MD来推断新权限，也不声称验证全部业务JSON与图片解码语义。坏JSON或结构返回不完整，错误引用只报告错误，不暴露原始JSON/SQL异常。当前自审未发现阻断代码问题；完整回归/冻结/最终head CI另行核实，自审不代替独立审查。
+
+冻结构建与探针已通过（仍等待本地P/Q全量，不冒充最终head CI）：
+
+| 命令（cwd/P/Q同上） | 退出/结果 | 副本artifacts/ |
+|---|---|---|
+| ./packaging/windows/build-backend.ps1 -Python Q | 0；43模块及嵌套代码/常量与当前源码一致，约154秒 | legacy-assets-build01.log |
+| Q tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/legacy-assets-frozen01 | 0；真实DOCX旧题正常登记/健康，随后副本等长篡改报hash_mismatch、保留坏副本后缺失报missing_file，原图片不变；原全部恢复/合并/容量/路径/锁/孤立巡检探针保持 | legacy-assets-frozen01.log，.local/legacy-assets-frozen01/result.json |
+| Q tools/check_resource_explorer.py --exe dist/study_backend/study_backend.exe --test-root .local/legacy-assets-resources01 --documents | 0；原导入/文档/布局/作答/删除与重启保持，schema0016 | legacy-assets-resources01.log |
+
+包SHA256记录legacy-assets-package-hash.json。原根旧包、既有未提交改动和全部失败/恢复证据保留；新增冻结样本中的retained-corrupt-legacy-image.png及损坏/缺失状态保留，不自动补回或清理。最终P/Q结果、独立PR及最终head CI继续下记，无独立批准，不接模型/人工测试，不合并/发行。
+
+P最终全量：P -X utf8 -m pytest -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/la-pfull01 --junitxml=artifacts/legacy-assets-pfull01.xml，退出0、654项及77子测试，614.42秒，legacy-assets-pfull01.log/xml；随后才启动Q同全量，当前未结束，不先记通过。仅既有Starlette anyio别名弃用警告；没有跳过或降低原断言。
+
+Q最终全量：Q -X utf8 -m pytest -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/la-qfull01 --junitxml=artifacts/legacy-assets-qfull01.xml，退出0、654项及77子测试，509.02秒，legacy-assets-qfull01.log/xml。最终双Python均通过，仅既有弃用警告；相关实现、本地自动化和代码自审已完成，独立审查未取得。无前端/原生变更，本地未重复桌面构建；最终head CI仍执行原完整桌面/Windows/双Python流程，不能以父#14或本地绿灯代替。
+
+提交前Q -X utf8 artifacts/legacy_assets_validate.py再次核对新记录改动：七份明确文件，其余432份#14基线保持，48文档相对链接、规范UTF-8/LF、尾空白及git diff --no-index --check无告警，辅助检查退出0。独立草稿PR及其最终head CI未核实前保持待交付；原根工作区未提交内容和失败/恢复证据不改，不接模型、人工测试、合并或发行，M2-05/task.md整体未完成。后续未登记目录恢复/重新登记尚缺目标身份/关联/确认规则，不从本项检查结果推断恢复授权，不继续编造容量统计切片。
