@@ -47,6 +47,8 @@ try {
     }
     & .local/release-venv/Scripts/python.exe tools/release_inventory.py --stage $stage
     if ($LASTEXITCODE -ne 0) { throw 'Inventory failed' }
+    & .local/release-venv/Scripts/python.exe tools/check_release.py $stage
+    if ($LASTEXITCODE -ne 0) { throw 'Release validation failed; incomplete stage preserved' }
     & $compiler "--define=BuildRoot=$stage" "--define=WebViewInstaller=$runtime" "--define=AppVersion=$appVersion" packaging/windows/setup.iss
     if ($LASTEXITCODE -ne 0) { throw 'Installer build failed' }
     Get-FileHash -LiteralPath 'dist/StudyWorkbench-M1-setup.exe' -Algorithm SHA256
