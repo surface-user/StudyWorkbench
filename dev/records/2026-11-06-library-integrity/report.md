@@ -535,3 +535,5 @@ P最终全量：P -X utf8 -m pytest -q --basetemp=D:/computer_work/project/Study
 Q最终全量：Q -X utf8 -m pytest -q --basetemp=D:/computer_work/project/StudyWorkbench/.local/la-qfull01 --junitxml=artifacts/legacy-assets-qfull01.xml，退出0、654项及77子测试，509.02秒，legacy-assets-qfull01.log/xml。最终双Python均通过，仅既有弃用警告；相关实现、本地自动化和代码自审已完成，独立审查未取得。无前端/原生变更，本地未重复桌面构建；最终head CI仍执行原完整桌面/Windows/双Python流程，不能以父#14或本地绿灯代替。
 
 提交前Q -X utf8 artifacts/legacy_assets_validate.py再次核对新记录改动：七份明确文件，其余432份#14基线保持，48文档相对链接、规范UTF-8/LF、尾空白及git diff --no-index --check无告警，辅助检查退出0。独立草稿PR及其最终head CI未核实前保持待交付；原根工作区未提交内容和失败/恢复证据不改，不接模型、人工测试、合并或发行，M2-05/task.md整体未完成。后续未登记目录恢复/重新登记尚缺目标身份/关联/确认规则，不从本项检查结果推断恢复授权，不继续编造容量统计切片。
+
+实际交付：[独立草稿PR #15](https://github.com/surface-user/StudyWorkbench/pull/15)，分支codex/extracted-question-assets-integrity，base=#14最终9336d2f5728edb76529ee0178b3694fd2c119d40，实现3f1391bf4fd5ad0a70fba8fb4658dd6af5221d2f。推送前再次核对父PR未变；七份源文件按规范UTF-8/LF Base64上传并逐一核对Git blob SHA，远端实现commit差异仅七份，其余432份基线保持。以expected_sha推进独立分支，未强推，不改原根工作区；按用户持续开发/独立PR及原报告授权补本链接与task状态。最终head/正式自审COMMENT/完整CI运行及核对时间和交付结论在PR描述维护，不为记录自身SHA循环提交。当前只有自审，无独立审查；最终head全CI未核实前待交付，不沿用#14或实现提交绿灯，不合并/发行，整个M2-05/task.md仍未完成。
