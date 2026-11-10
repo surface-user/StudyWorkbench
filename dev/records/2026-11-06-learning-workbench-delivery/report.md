@@ -86,3 +86,5 @@ R6原报告追加时，文档保护初检退出1：该活动报告处于旧快�
 独立分支codex/manual-release-handoff基于#18；本轮四份明确文件（工作流、task、原批次报告及一份清单），修改前副本在artifacts/manual-handoff-base。不把新的清单另当一份交付报告，后续用户反馈继续本原报告。本地校验会核YAML可解析、旧全部steps原样保留、仅增加末尾产物步骤、限定路径/三天保留/缺文件报错、文档链接/UTF-8/空白及其余父基线保持。无需为纯工作流出口另写镜像断言单元测试；当前head完整CI仍须通过并实查新artifact。
 
 待该构建成功后，仅下载指定运行的构建ZIP并核artifact来源/摘要，安全解压到全新本地目录；组装app-local已签名CRT和已核Office组件，运行现有release_inventory/check_release与冻结源码/业务/Office探针，再用原ISCC编译本地安装器。产品版本1.0.0+1，不注入开发STUDY_ROOT或固定个人数据路径，不启动真实用户库/窗口。实际退出码、运行/下载来源、最终包路径/hash、构建元数据和交付结论在本PR描述及交付目录build-info.json记录，不把尚未执行项目记通过。当前仍待构建/PR及最终head CI核实；自审与独立审查分开，用户人工结果待反馈。旧题目目录恢复继续规划，不修改原目录，保留全部旧失败证据。
+
+实际交付跟进：[独立草稿PR #19](https://github.com/surface-user/StudyWorkbench/pull/19)，分支codex/manual-release-handoff，基于#18最终2a884fe，实现6806a70ecdcb9538cf96d5a8444d49fc24e9e0a7。四份规范文本上传并核Git blob SHA，远端实现差异仅四份；首次推进ref网络异常导致创建PR返回422无差异，先只读核分支仍为父head且PR未创建，再仅重试一次expected_sha推进并创建成功；非权限绕过，无强推或重复PR。task/原报告补实际链接，文档最终差异与远端回读继续核实；最终head/全部CI步骤、artifact来源/下载校验、本地组装/打包/探针实际命令退出码与包hash在PR描述及交付build-info.json记录，不循环提交自身SHA。当前包/最终head CI尚未交付，不先记成功；自审完成，独立审查未取得，用户人工结果待反馈，不合并或公开发行。
