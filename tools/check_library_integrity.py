@@ -148,6 +148,16 @@ def main():
         assert not current.exists() and retained.read_text(encoding='utf-8') == initial['text']
         assert request_json('GET', f'/document-saves/{receipt}?version=before')['text'] == initial['text']
         retained.rename(current)  # Reset only this deliberate missing-file fixture for the healthy CLI case below.
+        fixture = Path(__file__).resolve().parents[1] / 'contracts/samples/numbered-questions.docx'
+        req = urllib.request.Request(f'http://127.0.0.1:{port}/api/workspaces/default/imports?filename=fixture.docx',
+            data=fixture.read_bytes(), headers={'Authorization': 'Bearer ' + token,
+                                               'Content-Type': 'application/octet-stream'})
+        with opener.open(req, timeout=30) as response:
+            imported = json.load(response)
+        assert imported['status'] == 'preview'
+        extracted = request_json('POST', f"/api/workspaces/default/imports/{imported['id']}/question-markdown",
+                                 dict(expected_revision=imported['draft_revision'], selected=[0], confirm=True))[0]
+        assert re.fullmatch('[a-f0-9]{32}', extracted['id'])
         blocked = subprocess.run(command + ['--check-library', '--confirm-all-workspaces'], env=env, cwd=root,
                                  capture_output=True, timeout=30, creationflags=subprocess.CREATE_NO_WINDOW)
         assert blocked.returncode != 0, 'Diagnostics bypassed the active application lock'
@@ -194,6 +204,21 @@ def main():
             [('unreferenced_derived_candidate', path.relative_to(data).as_posix())
              for path in (question_partial, question_empty)])
         assert question_empty.is_dir()
+        image_copy = next((data / 'workspaces/default/questions' / extracted['id'] / 'assets').glob('*.png'))
+        with sqlite3.connect(data / 'study.db') as db:
+            original_relative = db.execute('SELECT relative_path FROM resources WHERE id=?', (image_copy.stem,)).fetchone()[0]
+        image_original = data / original_relative
+        raw = image_copy.read_bytes()
+        assert image_original.read_bytes() == raw
+        image_copy.write_bytes(raw[:-1] + bytes([raw[-1] ^ 1]))
+        damaged_image = inspect(1)
+        assert dict(code='hash_mismatch', severity='error',
+                    relative_path=image_copy.relative_to(data).as_posix()) in damaged_image['issues']
+        image_copy.rename(root / 'retained-corrupt-legacy-image.png')
+        missing_image = inspect(1)
+        assert dict(code='missing_file', severity='error',
+                    relative_path=image_copy.relative_to(data).as_posix()) in missing_image['issues']
+        assert image_original.read_bytes() == raw
         assert capacity(office=True)['file_count'] == 0
         # Synthetic offline metadata exercises the CLI without requiring an Office runtime.
         resource_id, office_node, preview_id = 'd' * 32, 'e' * 32, 'f' * 32
@@ -274,6 +299,8 @@ def main():
         assert any(i == dict(code='missing_required_reference', relative_path=old_relative) for i in missing_media['issues'])
         summary = dict(frozen=True, active_lock_refused=True, healthy_case_verified=True, orphan_detected=True,
                        extracted_question_orphans_detected=True, extracted_question_bytes_preserved=True,
+                       legacy_image_damage_detected=True, legacy_image_missing_detected=True,
+                       legacy_image_original_preserved=True,
                        external_edit_detected=True, business_bytes_preserved=True, repair_performed=False,
                        recovery_preview_readonly=True, recovery_save_conflict_guard=True, recovery_explicit_save=True,
                        missing_source_copy=True, copy_creation_idempotent=True, original_missing_not_repaired=True,

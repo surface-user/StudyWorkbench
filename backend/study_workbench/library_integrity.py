@@ -12,6 +12,7 @@ from pathlib import Path, PurePosixPath
 from .backup_archive import SUPPORTED_SCHEMA, archive_path
 from .backup_store import connect, no_links, runtime_file
 from .data_root import DataLock, validate_root
+from .question_splitting import all_blocks
 
 ENTRY_LIMIT = 20000
 ROW_LIMIT = 50000
@@ -140,11 +141,31 @@ def check_library(directory, *, install=None):
                     issue('unsupported_schema')
                     result['complete'] = False
                     return result
+                resources = {}
                 for table in ['resources', 'media_entries']:
                     for row in rows(db, table):
+                        if table == 'resources':
+                            resources[row['id']] = row
                         verify(row['relative_path'], row['sha256'], row['size'],
                                workspace=row['workspace_id'],
                                optional=table == 'media_entries' and row['status'] != 'ready')
+                for row in rows(db, 'markdown_questions'):
+                    directory = f"workspaces/{row['workspace_id']}/questions/{row['id']}"
+                    markdown = resources.get(row['markdown_resource_id'])
+                    if (markdown is None or markdown['workspace_id'] != row['workspace_id']
+                            or markdown['relative_path'] != directory + '/question.md'):
+                        issue('invalid_legacy_question_reference')
+                        continue
+                    for block in all_blocks(json.loads(row['content'])):
+                        checkpoint()
+                        if block['type'] != 'image':
+                            continue
+                        asset = resources.get(block['attachment_id'])
+                        if asset is None or asset['workspace_id'] != row['workspace_id']:
+                            issue('invalid_legacy_attachment_reference')
+                            continue
+                        verify(f"{directory}/assets/{asset['id']}.png", asset['sha256'], asset['size'],
+                               workspace=row['workspace_id'])
                 workspaces = {}
                 for row in rows(db, 'document_workfiles'):
                     workspaces[row['node_id']] = row['workspace_id']
