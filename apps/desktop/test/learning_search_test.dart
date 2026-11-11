@@ -49,6 +49,7 @@ Future<void> show(
   WidgetTester tester,
   Backend backend, {
   ValueChanged<String>? opened,
+  ValueChanged<Map<String, dynamic>>? openedTarget,
 }) async {
   tester.view.physicalSize = const Size(1400, 1100);
   tester.view.devicePixelRatio = 1;
@@ -60,7 +61,7 @@ Future<void> show(
         body: Builder(
           builder: (context) => TextButton(
             onPressed: () async {
-              final result = await showDialog<String>(
+              final result = await showDialog<Map<String, dynamic>>(
                 context: context,
                 barrierDismissible: false,
                 builder: (_) => LearningSearchDialog(
@@ -68,7 +69,10 @@ Future<void> show(
                   workspaceId: 'default',
                 ),
               );
-              if (result != null) opened?.call(result);
+              if (result != null) {
+                opened?.call(result['uri'] as String);
+                openedTarget?.call(result);
+              }
             },
             child: const Text('打开搜索'),
           ),
@@ -90,6 +94,66 @@ Future<void> search(WidgetTester tester, [String query = '拥塞']) async {
 }
 
 void main() {
+  testWidgets(
+    'TXT results return checked line positions or explicit name-only navigation',
+    (tester) async {
+      for (final withLine in [true, false]) {
+        Map<String, dynamic>? opened;
+        final target = {
+          ...row('txt', kind: 'text_resource'),
+          'uri': 'studyworkbench://v1/workspaces/default/nodes/txt',
+          'content_sha256': 'a' * 64,
+          if (withLine) 'anchor': {'kind': 'text_line', 'line': 2},
+        };
+        final backend = _Backend((method, path, body) async {
+          if (path.contains('/learning-search?')) return page([target]);
+          if (path.endsWith('/internal-links/resolve')) {
+            return {'status': 'valid'};
+          }
+          return {'sha256': 'a' * 64};
+        });
+        await show(tester, backend, openedTarget: (value) => opened = value);
+        await search(tester);
+        expect(find.text('TXT资料 · txt'), findsOneWidget);
+        expect(
+          find.textContaining(withLine ? '原文第 2 行' : '名称匹配，打开资料'),
+          findsOneWidget,
+        );
+        await tester.tap(find.text('TXT资料 · txt'));
+        await tester.pumpAndSettle();
+        expect(opened!['uri'], target['uri']);
+        expect(opened!.containsKey('anchor'), withLine);
+        await tester.pumpWidget(const SizedBox());
+      }
+    },
+  );
+
+  testWidgets('TXT changed bytes keep the result and reject its old line', (
+    tester,
+  ) async {
+    Map<String, dynamic>? opened;
+    final backend = _Backend((method, path, body) async {
+      if (path.contains('/learning-search?')) {
+        return page([
+          {
+            ...row('txt', kind: 'text_resource'),
+            'uri': 'studyworkbench://v1/workspaces/default/nodes/txt',
+            'content_sha256': 'a' * 64,
+            'anchor': {'kind': 'text_line', 'line': 2},
+          },
+        ]);
+      }
+      if (path.endsWith('/internal-links/resolve')) return {'status': 'valid'};
+      return {'sha256': 'b' * 64};
+    });
+    await show(tester, backend, openedTarget: (value) => opened = value);
+    await search(tester);
+    await tester.tap(find.text('TXT资料 · txt'));
+    await tester.pumpAndSettle();
+    expect(opened, isNull);
+    expect(find.textContaining('正文已变化'), findsOneWidget);
+    expect(find.text('TXT资料 · txt'), findsOneWidget);
+  });
   testWidgets(
     'bounded results show truncation and plain snippets; next page deduplicates stable IDs',
     (tester) async {
