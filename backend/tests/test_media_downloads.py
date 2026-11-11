@@ -16,6 +16,62 @@ from test_explorer import PREFIX, client
 RAW = b'\x1aE\xdf\xa3' + b'self-authored test container bytes' * 8
 URL = 'https://media.example.com/video.webm?signature=private-test'
 
+def test_history_pages_keep_order_across_status_changes_new_jobs_and_restart(monkeypatch, tmp_path):
+    with client(tmp_path) as c:
+        with write_transaction(c.app.state.engine) as session:
+            for i in range(125):
+                identifier = f'{i:032x}'
+                session.add(MediaDownloadJob(id=identifier, workspace_id='default', parent_id=None,
+                    request_id=f'history-fixture-{i:04}', source_url=URL, name=f'历史{i}.webm',
+                    status='paused', cancel_requested=False, attempt=1,
+                    relative_path=f'workspaces/default/downloads/{identifier}/1.webm',
+                    progress={'received': 0}, result={}, error=None,
+                    created_at=f'2000-01-{10 + i // 50:02}T00:00:00+00:00'))
+        endpoint = PREFIX + '/media-downloads'
+        first = c.get(endpoint, params={'history': True, 'limit': 50}).json()
+        assert [item['id'] for item in first[:25]] == [f'{i:032x}' for i in range(100, 125)]
+        boundary = first[0]['id']
+        with write_transaction(c.app.state.engine) as session:
+            session.get(MediaDownloadJob, f'{30:032x}').status = 'queued'
+            session.get(MediaDownloadJob, f'{100:032x}').status = 'ready'
+        monkeypatch.setattr(c.app.state.downloads.pool, 'submit', lambda *args: None)
+        new = c.post(endpoint, json=body('history-newly-created-job')).json()
+        query = {'history': True, 'newest_id': boundary, 'limit': 50}
+        second = c.get(endpoint, params={**query, 'offset': 50}).json()
+        third = c.get(endpoint, params={**query, 'offset': 100}).json()
+        seen = [item['id'] for item in first + second + third]
+        assert len(seen) == len(set(seen)) == 125
+        assert set(seen) == {f'{i:032x}' for i in range(125)}
+        assert new['id'] not in seen
+        assert c.get(endpoint, params={'history': True}).json()[0]['id'] == new['id']
+        assert [item['id'] for item in c.get(endpoint, params=query).json()] == [item['id'] for item in first]
+        assert c.get(endpoint).json()[0]['status'] == 'queued'
+        assert all('signature' not in str(item) and 'source_url' not in item for item in first + second + third)
+    with client(tmp_path) as c:
+        after = c.get(endpoint, params={**query, 'offset': 100}).json()
+        assert [item['id'] for item in after] == [item['id'] for item in third]
+        assert next(item for item in after if item['id'] == f'{30:032x}')['status'] == 'interrupted'
+
+
+def test_history_boundary_is_scoped_and_validated(monkeypatch, tmp_path):
+    with client(tmp_path) as c:
+        monkeypatch.setattr(c.app.state.downloads.pool, 'submit', lambda *args: None)
+        identifier = c.post(PREFIX + '/media-downloads', json=body()).json()['id']
+        other = c.post('/api/workspaces', json={'name': '另一空间'}).json()['id']
+        endpoint = PREFIX + '/media-downloads'
+        assert c.get(f'/api/workspaces/{other}/media-downloads',
+            params={'history': True, 'newest_id': identifier}).status_code == 404
+        for params, status in [
+            ({'history': True, 'newest_id': 'f' * 32}, 404),
+            ({'history': True, 'newest_id': 'invalid'}, 422),
+            ({'newest_id': identifier}, 422),
+            ({'history': True, 'offset': -1}, 422),
+            ({'history': True, 'limit': 101}, 422),
+        ]:
+            assert c.get(endpoint, params=params).status_code == status
+        assert c.get(endpoint, params={'history': True, 'newest_id': identifier},
+            headers={'Origin': 'https://example.com'}).status_code == 403
+
 
 def body(request='download-test-request-0001', name='自编.webm'):
     return dict(url=URL, name=name, request_id=request, rights_confirmed=True)

@@ -68,3 +68,32 @@ Windows前端排除其旧backend后与本批冻结后端配成全新window-bundl
 ### 2026-11-06 网络前置复核
 
 继续任务时只读重查socket.getaddrinfo(upload.wikimedia.org,443,AF_INET,SOCK_STREAM)，退出0；仍仅1个答案、all_public=false、benchmark_fake_ip_seen=true，摘要artifacts/lw06-native-20261106/public-dns-recheck.json。不再启动必然被同一门禁拒绝的完整公网流程，不改代理/DNS/证书或放行网段；原public-flow-01失败与公网下载/窗口待验保持。新Office包的本地媒体导入、download worker负面拒绝及整库恢复已在LW-06对应闭环复验，通过范围不包含公网下载或播放。
+
+## 2026-11-12：LW-07a 下载完整历史分页
+
+任务沿主 Agent 的并行调度进入 IN_PROGRESS；以 #23 的 2645366ca4f37cced53f41119ccebd732239a123 为父基线，独立目录 .local/goal-20261112/downloads。根工作区/个人库保持，后续提交独立草稿 PR，主 Agent 核验当前 head CI 和退出条件前维持 REVIEW；此处 REVIEW 为交付证据核验，代码审查仍按 ADR0014 暂缓，人工测试取消。
+
+原界面仅列100条；直接将活动优先列表按offset连续翻页，会因完成/暂停后的排序移动而重复或漏掉历史。本切片保留默认API兼容，显式history=true按created_at倒序、id升序，newest_id校验同空间后限定首次时间/ID上界。复用offset/limit，无数据库迁移或新增依赖；不改传输、许可、来源权限或任务数据。上界不是事务快照：系统时钟回拨而产生的较早时间新任务可能进入范围，须显式刷新重新开始浏览，不声称覆盖这一快照语义。
+
+普通UI每页50条，取51条判定下一页。自动轮询保留当前页/上界，显式刷新、创建成功与重新打开从第一页开始；加载期间禁重复翻页，翻页失败保留原页可重试，操作递增请求代次拒绝迟到轮询。列表加载错误与操作错误分开，目标移除仍拒绝打开，完整URL/query不渲染。调用方仅现有对话框和既有下载路由，无新导出/配置；API及学习契约对应段已同步。
+
+### 实际验证与失败保留
+
+工作目录为独立源码，Q为根.local/release-venv/Scripts/python.exe（3.13.17），P为根.venv/Scripts/python.exe（3.12），D为已安装Flutter SDK的bin/cache/dart-sdk/bin/dart.exe，F为同SDK的bin/cache/flutter_tools.snapshot。原始结果在本目录artifacts/lw07a，未纳入Git。
+
+- Q -m pytest backend/tests/test_media_downloads.py -q：首轮默认临时目录权限失败11 errors，backend.xml保留；加basetemp首轮遗漏.local父目录，backend-rerun.xml保留。创建独立.local父目录后进入用例。
+- 新历史夹具首轮用2026-11-12日期晚于本机UTC，插入新任务落在旧范围，断言失败；改为固定2000年旧历史。下一轮重启断言选了第二页的ID却在第三页查找，保留失败后改用明确第三页ID30，不降低125项唯一/全集断言。backend-rerun02/03.xml保留。
+- Q -m pytest backend/tests/test_media_downloads.py -q --basetemp=.local/lw07a-test04 --junitxml=artifacts/lw07a/backend-rerun04.xml：退出0，11通过。Q -m ruff check backend tools：退出0，全量通过。
+- P -m pytest backend/tests/test_media_downloads.py -q --basetemp=.local/lw07a-p312 --junitxml=artifacts/lw07a/backend312.xml：11通过、JUnit无失败；同一命令单元后接D analyze错误相对路径使单元退出1，该路径错误不当作静态检查通过，另在apps/desktop执行检查。
+- flutter pub get --offline：受SDK缓存锁文件写权限阻断，停止本任务会话后使用D F --no-version-check pub get --offline。依赖解析成功但本机插件symlink支持检查退出1；未改系统Developer Mode、上游库或锁文件，后续--no-pub组件测试实际可运行。
+- D format lib/media_download_dialog.dart test/media_download_dialog_test.dart：退出0，两文件格式化。
+- D F --no-version-check test --no-pub test/media_download_dialog_test.dart --reporter expanded：首轮5通过/1失败，测试ensureVisible将刷新文本贴近被裁边缘，真实tap未命中；改居中滚动等待后原断言保持，flutter-target.txt保留。第二轮退出0，6通过，flutter-target02.txt。
+- 新增后端2项覆盖125条、同时间ID顺序、状态变化/新插入/重启、私有URL不出响应、跨空间/缺失/非法边界、分页预算及Origin拒绝。新增Flutter3项覆盖123条、第三页/末页/返回、失败原页保留、轮询当前页、重开/显式刷新重置、迟到轮询/关闭与重复翻页禁用。原暂停/恢复/重新开始/目标移除、600×450布局和幂等创建测试保留通过。
+
+完整桌面/当前head CI另核，不用专项数代替；人工窗口/播放未执行。LW-07整体及DL-01公网证据是独立任务，不据历史分页交付标记整个下载能力完成。历史失败/下载原件/attempt保持。
+
+### LW-07a 本地完整回归
+
+D F --no-version-check analyze --no-pub：退出0，无问题，101.6秒，analyze.txt。初次完整test未传STUDY_ROOT/STUDY_DATA_DIR，188通过/5跳过/3备份对话框失败（缺测试根导致选择路径校验未完成），flutter-full.txt保留。给独立源码新建.venv目录链接至既有Q环境，不修改依赖；设PYTHONPATH为该源码backend，在apps/desktop运行D F --no-version-check test --no-pub --dart-define=STUDY_ROOT=<独立源码绝对路径> --dart-define=STUDY_DATA_DIR=<独立源码>/.local/flutter-full02 --reporter expanded：退出0，196全通过、45秒，包含真实后端备份恢复/配置/管道退出，flutter-full02.txt。未改失败测试或降低断言。
+
+最终D format --output=none --set-exit-if-changed lib test integration_test首次指出新增居中滚动行未格式化，退出1；按原格式器修正后退出0，87文件0变化。仅空白修正，不重复功能测试；当前head CI继续执行全套。此切片仍REVIEW，等待独立PR和主Agent验收，Windows本地发行构建未重跑，由当前head CI验证。
