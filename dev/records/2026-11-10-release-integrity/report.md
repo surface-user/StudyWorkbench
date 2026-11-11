@@ -376,3 +376,39 @@ PLAN-06仅修改AGENTS.md、docs/task.md和本报告。准备脚本逐blob验证
 
 实际提交[独立草稿PR #32](https://github.com/surface-user/StudyWorkbench/pull/32)，codex/source-lock-vulnerabilities基于#28的2187fec，实现提交75971a02007e5f992e344f8220cbc465cc2deb63。六文件文档/范围assert退出0，保持全部其余基线文件、原报告前缀和非本项task行；原始artifacts未入Git。首次create_tree未返回结构，重试相同内容的幂等tree操作后成功，没有移动错误ref或重复创建PR。最终head与完整CI在PR描述维护，主Agent核实前保持REVIEW；下一项按独立03b/c处理。
 
+## 2026-11-12：REL-03b pytest已知漏洞修复
+
+主Agent已核#32最终89f0d775d847981b97a70c1a88281e140756c8f2的CI #168（43071363779）completed/success、双Python专项各42、真实查询报告hash及snapshot未知边界，REL-03a有限查询任务验收通过；本task记DONE，原漏洞/未知继续保留。以该head逐Git blob复制450文件到独立.local/goal-20261112/pytest-fix；本项从IN_PROGRESS进入REVIEW，独立PR/当前head CI及主Agent验收前不记DONE。
+
+### 范围与依据
+
+仅backend/requirements.lock.txt中pytest==9.0.1改为9.0.3，另更新依赖文档、task及本原报告共四文件；没有新测试代码、业务入口、数据库、CI门禁或其他锁版本变化。原test_source_sbom.py中的9.0.1是自编解析夹具，继续保留，不能把夹具值误当运行环境版本。
+
+[官方9.0.3发行说明](https://github.com/pytest-dev/pytest/releases/tag/9.0.3)记录2026-04-07修复CVE-2025-71176（#14343）；[PyPI固定版本元数据](https://pypi.org/pypi/pytest/9.0.3/json)要求Python>=3.10，既有3.12/3.13锁依赖满足，不需传递升级。沿用03a原始官方元数据，SHA256 d2d51b1dc8bdb0844b51d95144bce4c0c38daa72d00417ebf771cdac7cd1b0a2。官方files.pythonhosted.org的pytest-9.0.3-py3-none-any.whl实取375249字节，SHA256 2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9，与官方digest/大小一致且未撤回；原始来源URL/HTTP Date/hash存artifacts/rel03b/download-provenance.json。wheel内MIT LICENSE完整留存，SHA256 ca836a5f9ecca3b2f350230faa20a48fb8b145653b5568d784862df864706b9b；未将安装包或原始artifact提交Git。
+
+pytest是开发工具；原公告说明UNIX默认/tmp目录的本地攻击，不把本项目Windows通过记为UNIX漏洞复现或全平台认证。上游修复版本与源锁复查只是关闭该已知包版本发现的依据，不清除03a原发现，也不把未验证可达性变成误报。Starlette0.50.0/FastAPI0.161.1保持原锁，五个Starlette CVE仍由03c独立承担。
+
+### 隔离环境与实际验证
+
+工作目录为上述pytest-fix。共享Q/P仍为根.local/release-venv/Scripts/python.exe（3.13.17）和根.venv/Scripts/python.exe（3.12.7）。新IQ/IP分别为本副本.local/pytest-q-isolated/Scripts/python.exe及.local/pytest-p-isolated/Scripts/python.exe。新venv仅安装官方固定hash pytest wheel，其他现有依赖经本venv的shared-build-dependencies.pth只读引用对应Q/P site-packages；实际断言pytest.__file__位于新sys.prefix且版本9.0.3。不是重新安装整栈或改写共享环境；CI仍会从锁文件创建新的完整依赖环境。
+
+- Q/P -m venv --without-pip .local/pytest-{q,p}-isolated，然后Q/P -m pip --isolated --disable-pip-version-check --python <新解释器> install --no-index --no-deps --no-cache-dir --no-user artifacts/rel03b/pytest-9.0.3-py3-none-any.whl：均退出0。新解释器版本/pytest路径断言及pip --python <新解释器> check：均退出0，其他版本保持FastAPI0.161.1/Starlette0.50.0，No broken requirements。
+- IQ/IP -m pytest backend/tests/test_source_sbom.py backend/tests/test_source_vulnerabilities.py -q --basetemp=.local/pytest-{q,p}-targeted --junitxml=artifacts/rel03b/{q,p}-targeted.xml：退出0，各77通过。
+- IQ/IP -m pytest -q --basetemp=.local/pytest-{q,p}-full --junitxml=artifacts/rel03b/{q,p}-full.xml：原运行均退出1，各809通过/12失败/77子测试通过/2警告；Q约403秒，P约449秒。原始JUnit统计898条（821测试加77子测试）；初次证据核验脚本误将JUnit总数预期为821而退出1，按实际子测试结构更正核验预期后继续，未改变测试断言。逐JUnit核两边失败节点集合相同，全部是mklink/J或os.link因本地权限拒绝创建夹具。旧共享pytest9.0.1同一junction用例也退出1，原失败及诊断日志/JUnit保留。
+- 原Q/P完整失败节点12项从JUnit提取为failed-nodes.json，未删改测试；以允许真实目录/硬链接的受控权限运行IQ/IP -m pytest <该12个节点> -q --basetemp=.local/pytest-{q,p}-permitted --junitxml=artifacts/rel03b/{q,p}-permitted.xml：均退出0，各12通过。新目标目录事先确认不存在，不复用/删除原失败目录。此为809通过加12项复验，不把原始完整运行改记一次全绿；完整当前head CI另核。
+- Q -m ruff check backend tools：退出0。起初用IQ -m ruff因只读引用模块无法找到新venv中未安装的ruff.exe而退出1，原ruff.log保留；改为直接调用已有共享Q的静态工具，不增装或升级Ruff，成功记录ruff-shared.log。
+- Python逐文件SHA256复核Q/P各74个pytest/_pytest非缓存文件与测试前指纹相等，共享解释器实际pytest仍为9.0.1：退出0。测试过程设置PYTHONDONTWRITEBYTECODE=1，使用各自新basetemp及本副本TEMP/TMP，未写共享包或清理个人目录。
+- 初次普通venv创建的ensurepip子进程两边均退出1，根因未确证；保留两个部分环境与执行摘要。随后新目录使用--without-pip和显式pip --python定向安装成功，不覆盖失败环境或擅自修复系统Python。
+
+### SBOM与漏洞复查
+
+IQ tools/source_sbom.py --syft D:/computer_work/project/StudyWorkbench/.local/release-tools/syft-1.57.1/syft.exe --output artifacts/rel03b/source-sbom：退出0，仍匹配136个源包及8个SDK排除项。独立assert对照03a前源清单，集合仅移除pkg:pypi/pytest@9.0.1并增加pkg:pypi/pytest@9.0.3，其他135包身份及SDK未知完全相同；comparison.json SHA256 a1a305b86c3eae99e13845a1942cb40e772b14534ba3f0581b6b50f76aada8ed，BOM SHA256 8777bd5bff163d46487fe1fa31f64e55f55a11ce7847c27a4d21267d813454dc。新requirements锁SHA256 4e6de78b36b6daab6fae0f407cdfca09e1a7ac8f533798b6ffb413cac3a9c8e7；pubspec锁仍c1ab979d33d15197f1018cae7ec752cfb0244523e26f3ed2c73ee1f761be2ce5。
+
+IQ tools/source_vulnerabilities.py --output artifacts/rel03b/source-vulns：退出2，表示仍有发现；2026-11-11T18:03:48.206873Z至18:04:02.242271Z查询135包完成，pytest9.0.3无公告返回，仅Starlette保留10条公告（五CVE），Git/8SDK排除不变。所有原始请求/响应hash独立复核通过；report.json SHA256 56b653316ee2067d19125aa0173063240ef7d0e4ae36d788b3acbb322e07b87f。
+
+另复用固定查询器exchange，将公开pytest9.0.1与9.0.3在同一querybatch做对照：2026-11-11T18:05:11.755490Z完成，旧版本仍返回GHSA-6w46-j5rx-g56g/PYSEC-2026-1845，新版本为空；assert退出0，原始response SHA256 a8f2d9bf1fec0bf0527603d31e351f242420780c6369f16d6172fd516b9f8ffc，comparison.json SHA256 d45e642ff05a4737d3f188164c76dcbac45b08a921273a49e880891096b461ca。这加强了对应已知公告/包映射的修复证据，但在线数据库snapshot/freshness仍未知，没有全产品安全结论。
+
+代码审查暂缓、人工测试取消，完整发行SBOM/传递许可/二进制漏洞/签名和正式发行仍未完成。新依赖只影响开发测试，未做UNIX攻击复现；原查询发现、权限失败、初始环境失败与工具失败均保留。03b需独立草稿PR/最终head CI及主Agent核验后决定DONE，下一项为03c，未合并或发行。
+
+实际提交[独立草稿PR #35](https://github.com/surface-user/StudyWorkbench/pull/35)，codex/pytest-vulnerability-fix基于#32最终89f0d775，实现提交e90e659fcd149b35f47ca8830a67989e1895c5a2。四文件范围/精确单行锁差异、原报告前缀、非03a/b任务行、UTF-8/LF/尾空白/相对链接检查通过；JUnit898条含77子测试的计数已核。最终head与完整CI在PR描述维护，主Agent核验前保持REVIEW；不为记录自身SHA反复触发提交。
+
