@@ -28,6 +28,7 @@ def save_manifest(stage, value):
 def staged(tmp_path, monkeypatch):
     monkeypatch.syspath_prepend(str(Path(__file__).parents[2] / 'tools'))
     checker = importlib.import_module('check_release')
+    native = importlib.import_module('native_dependencies')
     collector = importlib.import_module('release_inventory')
     stage = tmp_path / 'stage'
     stage.mkdir()
@@ -50,7 +51,7 @@ def staged(tmp_path, monkeypatch):
             parse_data_directories=lambda **kwargs: calls['parsed'].append(path),
             DIRECTORY_ENTRY_IMPORT=[SimpleNamespace(dll=name) for name in calls['imports']],
             close=lambda: calls['closed'].append(path))
-    monkeypatch.setattr(checker.pefile, 'PE', pe)
+    monkeypatch.setattr(native.pefile, 'PE', pe)
     monkeypatch.setenv('SystemRoot', str(tmp_path / 'empty-system'))
     monkeypatch.setattr(sys, 'argv', ['check_release.py', str(stage)])
     return stage, checker, collector, calls
@@ -132,7 +133,7 @@ def test_original_crt_and_pe_dependency_guards_remain_and_close_handles(staged, 
     stage, checker, _, calls = staged
     calls['imports'] = [dependency]
     before = snapshot(stage)
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError, match='Unresolved import'):
         checker.main()
     assert calls['opened'] and calls['closed'] == calls['opened']
     assert snapshot(stage) == before
@@ -381,7 +382,27 @@ def test_separate_helper_architecture_is_outside_main_process_gate(staged, relat
     save_manifest(stage, value)
     calls['headers'][relative] = (0x14c, 0x10b)
     before = snapshot(stage)
-    checker.main()
+    with pytest.raises(ValueError, match='coverage incomplete.*unclassified PE'):
+        checker.main()
     assert snapshot(stage) == before
     assert str(path) in calls['parsed']
     assert calls['opened'] == calls['closed']
+
+
+def test_unknown_helper_is_reported_without_claiming_whole_package_x64(staged, capsys):
+    stage, checker, _, calls = staged
+    path = stage / 'templates/arm.exe'
+    path.parent.mkdir()
+    path.write_bytes(b'self-authored non-runtime template')
+    value = manifest(stage)
+    value['files']['templates/arm.exe'] = hashlib.sha256(path.read_bytes()).hexdigest()
+    save_manifest(stage, value)
+    calls['headers']['templates/arm.exe'] = (0xaa64, 0x20b)
+    before = snapshot(stage)
+    with pytest.raises(ValueError, match='coverage incomplete.*unclassified PE'):
+        checker.main()
+    report = json.loads(capsys.readouterr().out.splitlines()[0])
+    assert report['pe_coverage'] == 'partial'
+    assert report['unproven_runtime_candidates'] == [dict(path='templates/arm.exe', machine='0xaa64')]
+    assert report['limitations']
+    assert snapshot(stage) == before

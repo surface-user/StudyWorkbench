@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-import pefile
+from native_dependencies import inspect_dependencies
 from release_inventory import stage_files
 
 
@@ -28,33 +28,13 @@ def main():
             assert hashlib.file_digest(handle, "sha256").hexdigest() == expected, relative
     files = {path.name.lower() for path in payload.values()}
     assert "python313.dll" in files and "python312.dll" not in files
-    missing = set()
-    for path in payload.values():
-        if path.suffix.lower() not in {".exe", ".dll", ".pyd"}:
-            continue
-        pe = pefile.PE(str(path), fast_load=True)
-        try:
-            relative = path.relative_to(stage)
-            if (len(relative.parts) == 1
-                    or relative.as_posix().lower() == 'backend/study_backend.exe'
-                    or (relative.parts[0].lower() == 'backend' and path.suffix.lower() in {'.dll', '.pyd'})):
-                if (pe.FILE_HEADER.Machine != pefile.MACHINE_TYPE['IMAGE_FILE_MACHINE_AMD64']
-                        or pe.OPTIONAL_HEADER.Magic != pefile.OPTIONAL_HEADER_MAGIC_PE_PLUS):
-                    raise ValueError(f'Expected x64 PE32+ image: {relative.as_posix()}')
-            pe.parse_data_directories(directories=[pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_IMPORT"]])
-            for entry in getattr(pe, "DIRECTORY_ENTRY_IMPORT", []):
-                name = entry.dll.decode("ascii").lower()
-                if name.startswith(("api-ms-", "ext-ms-")):
-                    continue
-                system = Path(os.environ["SystemRoot"]) / "System32" / name
-                if name not in files and not system.is_file():
-                    missing.add((path.relative_to(stage).as_posix(), name))
-                if name.startswith(("msvcp", "vcruntime")):
-                    assert name in files, f"CRT must be app-local: {name}"
-        finally:
-            pe.close()
-    assert not missing, missing
-    print(f"PASS: {len(inventory['files'])} file hashes, CPython version, no database, main-process x64 headers, PE imports available; not a clean-VM test")
+    report = inspect_dependencies(payload, Path(os.environ['SystemRoot']) / 'System32')
+    print(json.dumps({key: value for key, value in report.items() if key != 'domains'}, ensure_ascii=False))
+    if report['unproven_runtime_candidates']:
+        raise ValueError('Native runtime coverage incomplete: unclassified PE images block release; '
+                         'establish auditable execution domains or non-runtime classification first')
+    print(f"PASS: {len(inventory['files'])} file hashes, CPython version, no database, main-process x64 headers, "
+          "declared static native loading domains; not a clean-VM or full loader test")
 
 
 if __name__ == "__main__":
