@@ -11,6 +11,7 @@
 | 模块 | 当前责任 | 实现入口 |
 |---|---|---|
 | 工作空间与布局 | 空间隔离/归档、v1/v2布局、旧utility及未知页兼容 | workspaces.py、workspace_layout.dart、workspace_shell.dart |
+| API错误兼容 | 保留HTTP状态/detail形状、固定安全错误元数据/服务端关联ID、422输入脱敏；成功流和非API媒体保持，桌面兼容旧后端 | api_errors.py、app.py、request_limits.py、backend.dart |
 | 资源目录 | 稳定逻辑ID、树/搜索、改名移动、删除墓碑、旧资源适配 | explorer.py、resource_explorer.dart |
 | 统一添加 | 原生多选/OLE回调→暂存预检→明确确认→后台受管复制 | resource_picker.dart、add_resources_dialog.dart、Windows runner、Explorer |
 | 内容提取 | 原件哈希校验→ImportJob解析→候选预览/调整→显式确认 | imports.py、documents.py、question_splitting.py、draft_editing.py |

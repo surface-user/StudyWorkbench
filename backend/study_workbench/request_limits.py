@@ -1,5 +1,5 @@
 """Bound actual ASGI body bytes, including requests without Content-Length."""
-from starlette.responses import JSONResponse
+from .api_errors import error_response
 
 IMPORT_LIMIT = 8 * 1024 * 1024
 
@@ -31,7 +31,7 @@ class RequestLimits:
             chunk = message.get("body", b"")
             size += len(chunk)
             if size > limit:
-                return await JSONResponse({"detail": "Request too large"}, status_code=413)(scope, receive, send)
+                return await error_response(scope, 413, "Request too large")(scope, receive, send)
             chunks.append(chunk)
             if not message.get("more_body", False):
                 break
