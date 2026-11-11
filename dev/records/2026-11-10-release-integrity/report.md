@@ -335,3 +335,58 @@ PLAN-06仅修改AGENTS.md、docs/task.md和本报告。准备脚本逐blob验证
 
 实际交付[独立草稿PR #28](https://github.com/surface-user/StudyWorkbench/pull/28)，分支codex/pinned-java-preparation，base为#25最终1b52eb3，实现提交616b2f9c5600ac2922e623ec5186aa987ddc43e8。文档assert退出0，核六份明确改动的UTF-8/LF/尾空白/相对链接、原报告前缀与非本项任务行保留；新task只额外按主Agent验收更新REL-01a为DONE，完整父项保持进行。首次PR创建工具未返回正常结构，查询该分支无PR后重试成功，没有重复创建。最终head/CI在PR描述维护，当前REVIEW等待主Agent验收。
 
+
+
+## 2026-11-12 OFF-02c：按实际加载域检查PE依赖（设计）
+
+基于固定Java准备PR #28最终2187fec21fee25472124aa97a2b1ea524d85e357，tree e05bda1920978a0e666b4c8b77270ce0177158fa；448个Git blob从已有java副本逐字节验证后复制到独占.local/goal-20261112/native-closure。AGENTS/requirements/architecture/question-content-spec与已完整读取基线字节一致，重读task和发行/组件契约。#28最终CI #153/43065303373已success，主Agent验收OFF-02a，本次任务表记DONE；父OFF-02及REL-01不销项。代码审查暂缓、人工/Computer Use取消，不授权发行/合并。
+
+现有check_release在完整文件集合/hash之后仅检查.exe/.dll/.pyd普通导入，以全包basename或本机System32文件存在作为可用条件。调用方为build-release.ps1的安装器编译前门禁，专项为test_release_inventory.py；原OFF-01辅助scan.py只读诊断曾扫描.com/.bin和延迟导入，但未进入产品门禁。本次不改OfficeRuntime/compose；组合加载实现由主Agent独立OFF-02b负责。原库存hash、无个人.db、CPython身份、主程序/后端原x64/PE32+检查及失败保留顺序均保持。
+
+只读盘点使用固定Q=根.local/release-venv/Scripts/python.exe（3.13.17），PYTHONDONTWRITEBYTECODE=1，内存pefile解析导入目录1/13，不运行待检PE或写原组件：
+
+- 新组合组件.local/release-tools/libreoffice-java-26.8.1-21.0.13含351个PE，321 AMD64、26 x86、4 ARM64；x86/ARM64包含Office内Python安装模板和独立辅助，不等于主Office架构错误，也不能称整包全x64。旧检查遗漏soffice/unopkg的.com/.bin四项；18条延迟边来自Java AWT/java/net/splashscreen和原Office。
+- Office候选域program、java/bin、java/bin/server，入口soffice.com/bin+officebean+jvm的递归图64节点，无候选缺边/架构冲突，CRT落在program。Java.exe+jvm+jawt域java/bin、server图9节点，CRT落java/bin。仅在内存去掉Office域的Java根时，officebean→jawt明确缺失，虽然组件其他目录仍有同名DLL；没有移动或删除组件。
+- FMT新冻结产物（.local/goal-20261112/formats/dist/study_backend）159PE全AMD64；只用插件目录/_internal/后端目录会留下5条NumPy/Pandas依赖。其已锁初始化源码实际调用os.add_dll_directory注册numpy.libs/pandas.libs；从冻结PYZ提取整个初始化代码并用check_frozen_sources.equivalent与本机固定源码比较通过。因此需识别有代码证据的注册目录，不能按缺边新增任意搜索目录。
+- 既有11-10基础包app根15PE，根目录/本机OS候选下无缺边，并额外发现Flutter/WebView2Loader四条delay。此为旧候选包的路径规则样本，不作为本次新完整发行证明。
+
+### 最小实现与验证范围
+
+1. 共用PE解析器列出全部.exe/.dll/.pyd及MZ格式.com/.bin，读取普通和delay导入；严格闭合句柄、大小写路径索引、拒绝错误PE/非法导入名/同域架构不符。未证明会执行的独立helper/安装模板列为非运行候选或未知，不套上全包AMD64结论。
+2. 对明确入口和插件分别建立加载域：主应用根；PyInstaller后端及_internal、插件自身目录；Office程序目录与显式Java根；独立Java.exe域。普通VC运行库必须位于对应进程的app-local根，不能靠别的进程目录或本机System32救缺失。后端带重命名的包私有CRT只能在已证明的注册目录中解析。
+3. NumPy/Pandas.libs不凭名称放行：固定当前冻结初始化代码的规范化指纹及其来源版本，实际PYZ匹配后才采用已核注册路径；版本/初始化代码变更须重新取证，未知注册不静默推断。AddDllDirectory多个目录顺序无保证，同名候选字节不一致时拒绝歧义，不以全包basename兜底。
+4. API set单独列为Windows契约叶节点，不能当作普通可分发DLL；本机System32的OS叶节点与私有CRT分开。静态图不模拟所有已加载模块、SxS、运行期LoadLibrary、导出转发或最低Windows版本；未映射运行边失败，未知范围在报告明确列不完整，不写全产品加载认证。
+5. 安装器编译前调用新加载域检查；提供可复用的只读实际组件/后端诊断入口，不调用本分支旧OfficeRuntime来“验证”新组合格式。原输入组件、清单和字节保持，错误诊断给出来源、导入种类、搜索域及其他不可达位置。
+6. 自动化覆盖错域CRT、System32掩盖、延迟边缺失、.com/.bin漏扫、错误架构、API-set/OS叶、图环/大小写/未知范围、已验证与变更的冻结注册代码、顺序不明重名DLL。真实正例用固定组合与新冻结产物，负例仅改内存图/加载根，原文件hash复核；双Python专项、全量Ruff、最终head CI另行记录。
+
+规则依据为[Microsoft DLL搜索顺序](https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order)、[LoadLibraryEx标志](https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibraryexa)及[API sets](https://learn.microsoft.com/en-us/windows/win32/apiindex/windows-apisets)，本轮已打开核对；加载根还来自实际OfficeRuntime受控环境和已比对的固定冻结初始化代码。文档设计先落地，当前IN_PROGRESS，尚未把方案当作实现或测试通过。
+
+### 实施结果与范围收紧
+
+新增native_dependencies.py共享静态图，check_release在原清单/hash/CPython/无数据库校验之后调用；新增check_native_dependencies.py提供只读组件/冻结后端诊断，不执行待检入口或依赖本分支旧OfficeRuntime。PE普通与delay边、实际Office .com/.bin、大小写/非法导入路径、进程域CRT、已注册目录与进程内同名不同字节歧义均有断言。全包同名仅用于缺边错误中的elsewhere提示，绝不满足依赖。未新增依赖、未修改Office运行时/组合脚本、原组件或任何安装器产物。
+
+主Agent进一步明确完整覆盖门禁：闭包外文件不能因不可达就归为非运行模板。本实现输出pe_coverage=partial与全部未分类路径/架构；check_release遇到任一未知PE即拒绝发行，没有跳过开关或按路径免责名单。原独立helper用例仍验证不会被误套主进程架构，进一步要求发行覆盖错误；ARM未知用例核输出partial并拒绝，原文件保持。诊断命令退出0仅代表声明域解析完成，不代表组合可发行。父OFF-02仍需对277项逐项形成可审计运行域/非运行分类及其余实际加载证据；父REL-01不因本切片销项。
+
+check_frozen_sources保留原equivalent的逐字段及嵌套常量比较，将相同字段表共用给code_fingerprint，忽略构建路径/源码行偏移但不忽略嵌套行为。NumPy 2.5.4、Pandas 3.1.0完整初始化代码与固定安装源码及实际PYZ比较后登记指纹；变化/未知.libs拒绝，不通过源码substring猜测动态注册。已注册同名候选字节不同以及各插件域解析到同名不同字节均拒绝，避免不确定AddDllDirectory/已加载模块顺序产生虚假闭合。
+
+### 命令与自动化证据
+
+工作目录.local/goal-20261112/native-closure。Q为根.local/release-venv/Scripts/python.exe（3.13.17），P为根.venv/Scripts/python.exe（3.12.7）；原始日志/JUnit/实际图均位于忽略的artifacts/off02c，临时夹具位于本副本.local。只读真实扫描设置PYTHONDONTWRITEBYTECODE=1，不把产物/组件复制进Git。
+
+- Q -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py -q --basetemp=.local/off02c-gate313 --junitxml=artifacts/off02c/gate313.xml：退出0，84通过（3.48秒）；P同命令使用gate312：退出0，84通过（3.41秒）。覆盖普通/延迟错域CRT、System32不能补私有依赖、Java桥不可达、.com/.bin、错误架构、OS/API-set区分、图环、注册代码变更、两类DLL冲突、未知覆盖阻断、组件清单缺/增/变/hash/路径/版本，以及现有许可复制和重解析保护。
+- Q -m ruff check backend tools：退出0，ruff-gate.txt记录全量静态检查通过；不是业务全量运行测试。本地只跑相关专项，独立PR最终head继续完整CI。
+- Q tools/check_native_dependencies.py --office D:/computer_work/project/StudyWorkbench/.local/release-tools/libreoffice-java-26.8.1-21.0.13：退出0，office-final.json；先核19743个实际文件（19742个锁内文件+runtime-lock.json），清单SHA256 156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9。解析351 PE/18条delay；Office域69节点850边，Java域9节点109边，重叠节点不重复宣称覆盖。Office CRT落program、独立Java CRT落java/bin；仍有277未分类PE（247 AMD64、26 x86、4 ARM64），结果明确partial，不能通过check_release完整覆盖门禁。
+- Q tools/check_native_dependencies.py --backend D:/computer_work/project/StudyWorkbench/.local/goal-20261112/office-bundle/dist/study_backend：退出0，backend33-final.json；#33最终e0a3fcf对应新冻结exe SHA256 bad0e600989de0f85d3b0ded02b195078c83c921ba0bebaa85cc512bde6d1642，1001文件/159 PE/1条delay，声明后端域没有剩余未分类PE。此前FMT新冻结样本同159 PE通过；后端独立诊断并不核完整发行清单或证明安装包成员。
+- Q tools/check_release.py D:/computer_work/project/StudyWorkbench/dist/StudyWorkbench-Release-20261110-37a8d55/app：退出0，base-release-gate.txt；旧基础包1304文件清单/hash、CPython、无DB、主进程x64与174 PE/5条delay声明静态域通过，没有未分类PE。它不含本次Office组件，仅是既有基础发行门禁回归，不称新整包构建/安装或干净机通过。
+- Q artifacts/off02c/real-negative.py：退出0，real-negative.txt；在真实351 PE内存图中分别移除Office的Java搜索根、Office私有CRT根、Java私有CRT根，三项均出现对应Unresolved import，即使同名文件仍在其他目录或System32。原runtime-lock、officebean、jawt及两个vcruntime140的5项hash前后相等，且Office/Java的vcruntime字节确实不同；原组件没有删除、移动或修改。
+- Q读取本分支共享check_frozen_sources，将源码定位到#33 office-bundle（只调整内存__file__），运行原main对实际exe比较：退出0，frozen-sources-final.txt，43业务模块及嵌套代码/常量匹配。另对numpy/pandas的整个PYZ初始化分别与固定安装源码equivalent比较并核规范化指纹，均通过。两指纹为e4f5a942c031e942cb3d44e0f38adedba8c24dd51ae9cbc0c5788c998647e31a、0786ce19ddf69547b54b04728688dad0c8d36b2d54c275ed9bedc608a4d14572。
+
+### 保留失败与限制
+
+target01退出1：71通过/2失败，均为受限环境不能创建Windows链接（child_reparse_directory与collector_license_directory_junction）；原txt/xml保留。获准原生目录复验native313/native312分别73通过、退出0，后续新增边界用例的final313/final312各84通过；上列gate末轮在加强未知覆盖拒绝后再次各84通过。没有删除失败测试或降低断言。Ruff首轮3项unused/import冲突、后续新增用例1项排序均修正，最终全量通过；记录保留。
+
+实际Office初轮office01退出1：普通导入名校验过窄，真实pythonloaderlo.dll导入pyuno.pyd被拒绝。核PE实表后将通用导入扩展到已支持PE扩展名，保留路径/ASCII/非法字符保护并增加pyuno用例；office02与office-final完整hash/图通过。该修正基于合法PE导入形式，不是对缺失DLL增加豁免。第一次小型汇总命令括号遗漏造成SyntaxError，仅统计脚本，修正后重新读报告；不混为产品成功证据。最初全图输出重复每个后端插件闭包，改为保留各插件搜索根、去重边并拒绝跨域不同字节，完整图仍留诊断输出，发行摘要避免重复刷屏。
+
+静态规则不证明所有动态LoadLibrary、已加载模块/SxS、导出转发、API-set的最低Windows可用性或所有helper/插件实际行为。真实Office诊断的277未知项继续阻断完整发行，不能只凭69/9节点给OFF-02整包完成结论。代码审查暂缓，人工/Computer Use已取消；没有合并、签名、安装、发布、清理旧失败或新的模型/下载。实现和专项已完成，任务进入REVIEW，草稿PR及最终head CI核验前不记DONE。
+
+实际交付[独立草稿PR #36](https://github.com/surface-user/StudyWorkbench/pull/36)，分支codex/native-loading-domains，base为#28最终2187fec；实现提交b03d990ddfc9a8fcc1bcd13b9e0688ec4ec2a5cd。九份明确改动的UTF-8/LF/尾空白与git diff --no-index --check通过，原报告前缀、非本项任务行和全部其他基线blob保持。首次聚合传输JSON因输出截断而失败，分块后检测到控制台中文编码长度不符；改用ASCII转义分块并核完整长度后才创建远端tree，没有提交不完整或乱码内容。最终head/CI在PR描述维护，待主Agent核验有限检测/拒绝能力后决定DONE；父项未知范围继续阻断，未合并或发行。
