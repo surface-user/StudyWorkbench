@@ -29,7 +29,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | PLAN-06 并行调度登记 | REVIEW | 依赖现行任务/远端状态核验；本表及开发约束同步，文档检查、独立PR和当前head CI核实后DONE |
 | OFF-01 | DONE | #22诊断开发交付已完成；本轮另核该head CI，OFF-02缺口仍保留 |
 | OFF-02 | BLOCKED | 等待确定Java发行者/精确版本/许可与布局方案；未获明确选择前不代选新增产品组件 |
-| REL-01a 源码锁文件标准SBOM | REVIEW | 已实现固定Syft 1.57.1生成CycloneDX 1.6及锁文件身份/来源/hash对照；双Python专项各35通过，真实136包及官方Schema核验通过，8个SDK项明确未知；等待主Agent核对独立PR/最终head CI，见发行原报告；未覆盖最终产品包 |
+| REL-01a 源码锁文件标准SBOM | REVIEW | 已实现固定Syft 1.57.1生成CycloneDX 1.6及锁文件身份/来源/hash对照；双Python专项各35通过，真实136包及官方Schema核验通过，8个SDK项明确未知；已提交[独立草稿PR #25](https://github.com/surface-user/StudyWorkbench/pull/25)，等待主Agent核对最终head CI，见发行原报告；未覆盖最终产品包 |
 | REL-01 完整源码与发行包SBOM | IN_PROGRESS | 先交付01a；最终覆盖仍依赖OFF-02及所有实际组件/安装器payload，不能据源锁文件或环境包表销项 |
 | REL-02、REL-03 | BLOCKED | 完整传递许可与漏洞检查依赖REL-01实际组件清单；源锁文件切片就绪后可开展相应子范围，整体保持未完成 |
 | REL-04 | BLOCKED | 依赖REL-01至03；真实签名另缺发行身份，配置/篡改拒绝自动化不代表已签 |
