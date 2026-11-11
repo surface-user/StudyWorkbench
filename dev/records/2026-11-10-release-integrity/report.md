@@ -335,3 +335,42 @@ PLAN-06仅修改AGENTS.md、docs/task.md和本报告。准备脚本逐blob验证
 
 实际交付[独立草稿PR #28](https://github.com/surface-user/StudyWorkbench/pull/28)，分支codex/pinned-java-preparation，base为#25最终1b52eb3，实现提交616b2f9c5600ac2922e623ec5186aa987ddc43e8。文档assert退出0，核六份明确改动的UTF-8/LF/尾空白/相对链接、原报告前缀与非本项任务行保留；新task只额外按主Agent验收更新REL-01a为DONE，完整父项保持进行。首次PR创建工具未返回正常结构，查询该分支无PR后重试成功，没有重复创建。最终head/CI在PR描述维护，当前REVIEW等待主Agent验收。
 
+## 2026-11-12：REL-03a 源码锁文件漏洞查询
+
+基线为OFF-02a草稿PR #28最终2187fec21fee25472124aa97a2b1ea524d85e357，独占副本.local/goal-20261112/source-vulns的448个基线文件逐Git blob核验复制，没有复制构建产物或修改其他工作区。主Agent已核#28双Python37项、315个官方JRE文件及最终CI #153（43065303373）三job/44步全部成功，本task将OFF-02a记DONE，父OFF-02不因此完成。REL-03a由IN_PROGRESS进入REVIEW，等待独立PR最终head CI与主Agent验收；完整REL-03仍依赖实际发行组件清单与后续修复。
+
+### 设计与实现
+
+新增tools/source_vulnerabilities.py 1.0及其专项测试，同步依赖/打包指南、本task和原报告共六文件。复用REL-01a的lock_inventory/read_lock/no_links，同一两份锁、精确PyPI/pub.dev身份；Git不能冒充同名hosted发行版，8个SDK占位没有真实SDK版本。只将公开包名、生态与版本发往[OSV v1官方API](https://google.github.io/osv.dev/api/)，续页只带服务返回token，详情只带返回的受限ID；无源码、锁全文、hash、Git仓库URL/commit或个人数据上传。标准库HTTPS，无代理继承/重定向/凭据；没安装其他扫描器或运行依赖，没有改任何锁版本。
+
+固定的是项目查询器版本/文件hash、API v1、原锁hash和本次HTTP原始证据，不冒称使用OSV-Scanner二进制。在线API无可固定的完整数据库快照/hash/更新时点，database_snapshot=null、database_freshness=unknown_live_api始终保留；UTC查询时间及响应Date只证明本次观察。缺Date标未知，超过24小时或超前5分钟拒绝；服务离线、非200、超8MiB、重复JSON键/畸形批次、身份无法映射、分页循环或8轮/1000包/1000公告预算越界均不生成成功结论。返回ID另取完整公告，保留原范围/fixed事件/别名/severity/来源/withdrawn/modified；详情身份不匹配、查询后修订、撤回各有显式状态，不从原始证据删掉。批次modified为微秒而详情可能纳秒，按微秒比较并保留两种原值和精度字段。
+
+输出必须为新目录，原始编号request/response文件与SHA256、报告落于忽略的artifacts；已有目标、链接/重解析路径拒绝，结束重核锁字节未变。失败留下已有现场及不完整报告。退出1为查询/验证失败，2为有公告需判定，3为查询完成但无公告返回；没有代表全产品安全的0，发现不冒充测试失败或已修复。CI用离线受控响应验证，联网查询为显式构建动作，不添加发行门禁或自动批准。
+
+### 实际命令与证据
+
+工作目录.local/goal-20261112/source-vulns，Q/P分别为根.local/release-venv/Scripts/python.exe（3.13.17）与根.venv/Scripts/python.exe（3.12.7）。原始现场位于本副本artifacts/rel03a，未入Git。
+
+- Q -m pytest backend/tests/test_source_vulnerabilities.py -q --basetemp=.local/vulns-q-01 --junitxml=artifacts/rel03a/q01.xml：退出0，42通过；P同专项使用.local/vulns-p-final和p-final.xml：退出0，42通过。覆盖公开字段/不发送Git、源锁/hash/未知边界、发现范围不升级、分页/循环/预算、畸形/缺失/额外批次、ID注入、详情映射/修订/撤回、微秒/纳秒、网络/HTTP失败/陈旧Date/原始字节hash、源变化、已有目录保留及私有URL拒绝。
+- Q -m ruff check tools/source_vulnerabilities.py backend/tests/test_source_vulnerabilities.py：退出0。首次I001 import排序检查失败，使用--fix只调整排序后通过；没有删失败测试或降低断言。
+- Q tools/source_vulnerabilities.py --output artifacts/rel03a/real02：原生及显式PowerShell透传退出2，这是发现标志；queries_complete=true，135包（70 PyPI、65 Pub），2个包12条公告，133个包无公告返回且映射/收录仍未证实，另1个Git/8个SDK未查询。2026-11-11T17:32:43.034461Z至17:33:04.139703Z（本地11-12 01:32–01:33），13次HTTP均200且Date在时限内；数据库新鲜度仍未知。
+- Python独立assert复核13对原始request/response SHA256、135查询恰为package(name/ecosystem)+version且70/65分布一致、12条详情均映射并保留requires_triage状态：退出0。real02/report.json SHA256 d32d5ab76cc9bfbb128b96ae40992a4a3ce6fd48ed31f3e1440eaf1213282f3f；批次response SHA256 b0a0693cec061db8dabf92dd34c74e826f23426632f5949135121b11fb85f9f8；其余12份原始公告各hash完整保存在该report.evidence，不把此hash称完整数据库hash。
+- 本次查询器SHA256 d896295851ef4b21a30e911ba614f2660159315682137b0cc1f9ee441dd63ebc；复用source_sbom.py SHA256 492ecb1b9765cd23dc2b816c3be5995e5f80b6b33233c4104c63045f5e6710d0。requirements/pubspec锁hash仍为前述f4aba068…/c1ab979d…，未变。
+- 首次real01已命中相同2包/12公告，但批次与详情时间精度不同使部分状态保守标为changed_since_query_unknown；保留原结果，显式微秒比较并补测试后real02修正。首次PowerShell未显式exit透传使外壳显示1，报告内原生exit_code为2；real02显式透传确认为2。前置小探针使用非本项目requests2.32.5与archive4.0.7，仅验证生态/API响应，不计入本项目发现。
+- 辅助rg曾指定不存在backend/pyproject.toml、requirements.txt及错误workflow路径而退出1；后续以rg --files确定根pyproject.toml和requirements.lock.txt，再只查实际业务目录。GitHub连接器不支持security-advisories REST端点，未取得结果；随后读取官方OSV原始公告与上游公开公告页。没有把这些工具失败当作漏洞验证通过。
+
+### 真实发现与后续修复
+
+保留12条公告，GHSA与PYSEC互为别名，按CVE汇总为6项；下面的“修复版本”来自公告，尚未确认与现有FastAPI/冻结环境兼容。扫描命中是锁版本处于公告范围，不证明本项目存在可利用路径、已遭利用或修复完成。
+
+| 锁依赖与CVE | 公告范围/修复版本 | 上游触发条件与本项目证据边界 |
+|---|---|---|
+| pytest 9.0.1，CVE-2025-71176 | <9.0.3，修复9.0.3；[GHSA-6w46-j5rx-g56g](https://github.com/advisories/GHSA-6w46-j5rx-g56g)，别名PYSEC-2026-1845 | UNIX默认/tmp测试目录的本地攻击；本次Windows专项不证明该路径可触发，pytest为开发工具，仍保留源依赖发现，未据此豁免 |
+| Starlette 0.50.0，CVE-2026-48710 | <1.0.1，修复1.0.1；[GHSA-86qp-5c8j-p5mr](https://github.com/Kludex/starlette/security/advisories/GHSA-86qp-5c8j-p5mr)，PYSEC-2026-161 | 非法Host污染request.url.path，影响依该值做安全判定；app.py:116确实用其拒绝Origin，同时有TrustedHost及鉴权。中间件顺序/畸形请求入口仍需专门回归，不能只因存在TrustedHost宣布免疫 |
+| Starlette 0.50.0，CVE-2026-48817 | <1.1.0，修复1.1.0；[GHSA-x746-7m8f-x49c](https://github.com/Kludex/starlette/security/advisories/GHSA-x746-7m8f-x49c)，PYSEC-2026-2280 | 无methods约束的HTTPEndpoint子类按非常规HTTP方法调用属性；业务目录文本检索未发现此类，未做传递/动态可达性证明 |
+| Starlette 0.50.0，CVE-2026-48818 | <1.1.0，修复1.1.0；[GHSA-wqp7-x3pw-xc5r](https://github.com/Kludex/starlette/security/advisories/GHSA-wqp7-x3pw-xc5r)，PYSEC-2026-2281 | Windows StaticFiles默认realpath处理UNC先触发SMB/NTLM再拒绝；业务目录未发现StaticFiles，已有FileResponse不因此被判成同一触发入口；传递路径仍未确认 |
+| Starlette 0.50.0，CVE-2026-54282 | <1.3.0，修复1.3.0；[GHSA-jp82-jpqv-5vv3](https://github.com/Kludex/starlette/security/advisories/GHSA-jp82-jpqv-5vv3)，PYSEC-2026-248 | ASGI提供无前导/的path，使request.url authority污染；现有Origin中间件读取url，实际服务器接收/传播此路径未验证 |
+| Starlette 0.50.0，CVE-2026-54283 | >=0.4.1,<1.3.1，修复1.3.1；[GHSA-82w8-qh3p-5jfq](https://github.com/Kludex/starlette/security/advisories/GHSA-82w8-qh3p-5jfq)，PYSEC-2026-249 | request.form对urlencoded未执行字段数/字段大小限制；业务目录未发现request.form/Form调用，已有JSON/请求预算不构成完整传递可达性证明 |
+
+已通知主Agent并按其指令登记独立REL-03b（pytest最小兼容修复）和REL-03c（Starlette/FastAPI兼容组合与Host/path/相关入口回归）。本PR不改锁、不安装新版依赖、不默默升级全栈。Git/SDK、Python冻结/native、Flutter/NuGet/CRT/WebView2、Office/Java/安装器实际payload以及完整库更新/修复复扫均未闭合。代码审查暂缓、人工测试取消；完整SBOM/传递许可/签名/发行、合并均不在本切片结论内。
+

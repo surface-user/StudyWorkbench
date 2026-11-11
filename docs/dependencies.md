@@ -74,6 +74,10 @@ webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-d
 
 ## 待验证与升级门禁
 
-锁版本不代表无漏洞。本轮未做漏洞数据库审计、法律认证或重新联网验证上游版本。发行前必须核实际传递依赖、二进制配置、NOTICE/SBOM/签名和干净机；保留PDFium BUILD_LICENSES等组合许可，构建环境包清单不是完整发行SBOM。
+源码依赖漏洞查询使用项目内tools/source_vulnerabilities.py 1.0及[OSV v1官方API](https://google.github.io/osv.dev/api/)，复用既有锁文件解析，仅发送公开PyPI/pub.dev包名、生态和精确版本，后续只取返回公告ID。网络使用Python标准库，没有新运行依赖、第三方扫描器安装或源码上传；查询器及解析器文件SHA256、Python版本随报告固定。OSV当前维护[数据来源](https://google.github.io/osv.dev/data/)包括GitHub/PyPI公告，PyPI与Pub为其支持的生态；公告数据来源许可与应用依赖许可是不同事项，原始返回保留在忽略的artifacts，不随产品分发。
+
+OSV在线查询不提供固定数据库快照或全库新鲜度证明，报告明确database_snapshot=null/database_freshness=unknown_live_api。每次查询保存UTC起止、HTTP Date、原始请求/响应SHA256和公告modified/published；这只固定本次观察，不能重建完整数据库。无返回记录仍保留包映射/收录覆盖未知，Git/SDK和最终二进制明确未覆盖；发现、撤回、映射缺失及查询后公告变化不静默抹去。用法和退出码见[构建指南](packaging-windows.md#源码锁文件漏洞查询)，具体发现与修复任务只在task/原报告维护。
+
+锁版本不代表无漏洞；有限源范围查询不构成完整漏洞审计、法律认证或全部上游版本复核。发行前必须核实际传递依赖、二进制配置、NOTICE/SBOM/签名和干净机；保留PDFium BUILD_LICENSES等组合许可，构建环境包清单不是完整发行SBOM。
 
 flutter_inappwebview_windows0.6.0与VS18旧协程头存在历史STL1011失败，CI固定windows-2022/VS2022；升级工具链前重验。WebView原生焦点/DPI/合成、Office复杂字体版式、媒体编码/音轨、NuGet供应链/离线构建及安装升级仍有未验项。历史来源见[依赖快照](../dev/archive/baseline-20261030/docs/dependencies.md)，仅需溯源时读取。
