@@ -323,8 +323,10 @@ def test_queue_budget_queued_cancel_and_shutdown(tmp_path, fake):
         node, identifier = jobs[1]
         assert c.post(f'{PREFIX}/nodes/{node}/previews/{identifier}/cancel').status_code == 200
         c.app.state.documents.close()
-        assert wait(c, *jobs[0])['status'] == 'interrupted'
-        assert all(wait(c, node, identifier)['status'] in {'interrupted', 'cancelled'} for node, identifier in jobs)
+        first = wait(c, *jobs[0])
+        assert first['status'] == 'interrupted', first
+        finished = [wait(c, node, identifier) for node, identifier in jobs]
+        assert all(item['status'] in {'interrupted', 'cancelled'} for item in finished), finished
 
 
 def test_runtime_inventory_rejects_missing_changed_unlisted_and_bad_paths(tmp_path):

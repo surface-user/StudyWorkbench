@@ -51,3 +51,13 @@ Q=根.local/release-venv/Scripts/python.exe（3.13.17），P=根.venv/Scripts/py
 API-01a实现、本地相关自动化、实际冻结HTTP和文档完成，任务转REVIEW，独立草稿PR/最终head CI待交付核实；主Agent核验后才可登记DONE。API-01父项仍进行中，详细业务错误码、跨版本演进和REL-03c新Starlette组合回归不在本切片冒称完成。审查暂缓、人工取消，未合并/发行/清理数据。
 
 已创建[独立草稿PR #34](https://github.com/surface-user/StudyWorkbench/pull/34)，codex/api-error-compatibility基于codex/txt-fulltext-search的9027508；实现提交16975063f155ca8f72ceed1639ae2c7fbf6d0186。17份远端Git blob逐项与本地完全一致，树对基线仅此17文件变化。PR链接跟进后最终head CI继续核实，结果维护PR实时说明，不把父head或实现head绿灯代替最终head；当前保持REVIEW。
+
+### CI队列关闭失败跟进
+
+f481475a00b33acc9f35777a6b2717c3c77a7268的[PR CI 43073448556](https://github.com/surface-user/StudyWorkbench/actions/runs/43073448556)中，Python3.13.17完整pytest退出1：725通过、1失败，454.26秒；Python3.12被矩阵取消，不能计通过。唯一失败是既有`test_office_previews::test_queue_budget_queued_cancel_and_shutdown`：关闭后首任务为failed而非interrupted。该轮Windows桌面（Flutter/Release/冻结/新增API HTTP探针）成功。同一head的[push CI 43073440181](https://github.com/surface-user/StudyWorkbench/actions/runs/43073440181)三job全部success，不能因此覆盖PR轮失败。原完整日志保留artifacts/api01a/ci-43073448556-backend313.log；远端JUnit产物13881650963也保留。
+
+核对Office close/check/事务和假运行时的事件协作，API切片未修改该状态机；原失败断言只输出状态，不包含任务error，现有证据不足以归因。通过内存诊断包装保留原期望，将同一测试以10个独立basetemp连续执行：10次均通过，退出0，office-queue-repeat.log；pytest重复载入的assert重写警告保留。未把无法复现等同问题已修复，也不归为权限或网络环境失败。
+
+主Agent确认仅增强原断言输出完整任务状态/error；interrupted、取消及4项排队预算断言保持，不猜测修改生产逻辑。`Q -m pytest backend/tests/test_office_previews.py -q --basetemp=.local/api01a-office-diagnostic01 --junitxml=artifacts/api01a/office-diagnostic01.xml`退出0，13通过、16.47秒；该文件Ruff退出0。完整日志保存首次尝试因Windows命令行长度限制退出1（CreateProcessW 206），随后通过文件补丁写入忽略的artifacts路径成功，不影响验证结果。
+
+同一#34追加诊断和本报告，交付范围增至18文件；等待新最终head全CI。若再次失败，依据新增任务error继续查因。即使后续通过，仍保留这次无法归因的偶发失败，不宣称Office状态机缺陷已修复。任务继续REVIEW，审查暂缓、人工取消、未合并。
