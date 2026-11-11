@@ -29,7 +29,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | PLAN-06 并行调度登记 | REVIEW | 依赖现行任务/远端状态核验；本表及开发约束同步，文档检查、独立PR和当前head CI核实后DONE |
 | OFF-01 | DONE | #22诊断开发交付已完成；本轮另核该head CI，OFF-02缺口仍保留 |
 | OFF-02 | IN_PROGRESS | 用户委托技术判断后主Agent选择项目内Temurin 21.0.13+9 x64 JRE；先由OFF-02a准备固定组件，Office/CRT加载布局与冻结验证另行推进，整包仍未闭合 |
-| OFF-02a 固定Java组件准备 | REVIEW | 已实现固定Temurin包核验/安全解包/完整legal与逐文件锁清单；双Python专项各37通过、官方315文件逐字节核对、关键PE/release/java-version通过；等待独立PR/最终head CI及主Agent核验，不含Office运行/CRT布局集成 |
+| OFF-02a 固定Java组件准备 | REVIEW | 已实现固定Temurin包核验/安全解包/完整legal与逐文件锁清单；双Python专项各37通过、官方315文件逐字节核对、关键PE/release/java-version通过；已提交[独立草稿PR #28](https://github.com/surface-user/StudyWorkbench/pull/28)，等待最终head CI及主Agent核验，不含Office运行/CRT布局集成 |
 | REL-01a 源码锁文件标准SBOM | DONE | 主Agent已核双Python专项各35、真实136包/8个SDK未知、官方Schema和本地/远端blob；[草稿PR #25](https://github.com/surface-user/StudyWorkbench/pull/25)最终1b52eb3的[CI #141](https://github.com/surface-user/StudyWorkbench/actions/runs/43060243273)三job/44步成功，开发交付完成，审查暂缓；未覆盖最终产品包 |
 | REL-01 完整源码与发行包SBOM | IN_PROGRESS | 先交付01a；最终覆盖仍依赖OFF-02及所有实际组件/安装器payload，不能据源锁文件或环境包表销项 |
 | REL-02、REL-03 | BLOCKED | 完整传递许可与漏洞检查依赖REL-01实际组件清单；源锁文件切片就绪后可开展相应子范围，整体保持未完成 |
