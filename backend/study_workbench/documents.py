@@ -9,7 +9,7 @@ from pathlib import Path
 from uuid import uuid4
 from zipfile import BadZipFile, ZipFile
 
-from .question_splitting import START, split_blocks
+from .question_splitting import START, DraftSplitter, all_blocks, split_blocks
 
 MAX_ASSETS = 64 * 1024 * 1024
 
@@ -114,14 +114,14 @@ def extract(data, suffix):
                 document._backend.unload()
         except BadZipFile as error:
             raise ValueError("Word ZIP 结构无效") from error
-        drafts = split_blocks(blocks)
         warnings = ["Word按内容顺序与显式题号拆为MD候选，表格保留Markdown。不是实际分页截图；请核对复杂版式、图片顺序和题目边界，不推断缺失答案。",
-                    "题号前的卷头/共享材料未自动复制到各题，请核对原件；目前没有自动阅读材料归组。"]
+                    "仅显式材料标题和完整有序题号范围自动归组为候选；其他卷头/材料仍在整篇预览，须核对或手动归组。"]
+        drafts = split_blocks(blocks, warnings)
     elif suffix == ".pdf":
         import pypdfium2 as pdfium
 
         document = pdfium.PdfDocument(data)
-        drafts = []
+        splitter = DraftSplitter()
         current = None
         try:
             if not 0 < len(document) <= 20:
@@ -160,19 +160,20 @@ def extract(data, suffix):
                         if any(starts[i][1] >= starts[i + 1][1] for i in range(len(starts) - 1)):
                             starts = []
                             current = None
+                            if splitter.group is not None:
+                                splitter.warn('PDF题号位置次序不可靠，共享材料未自动关联；请核对整页原图。')
+                                splitter.group = None
+                            splitter.current = None
                         segments = []
                         if current is not None:
                             end = starts[0][0].start() if starts else len(page_text)
                             segments.append((current, 0, starts[0][1] if starts else height, page_text[:end]))
                         for position, (match, top) in enumerate(starts):
-                            current = {'title': match.group().strip()[:240], 'blocks': [],
-                                       'source_pages': [], 'regions': []}
-                            drafts.append(current)
-                            if len(drafts) > 200:
-                                raise ValueError('文档题目超过200道，请分批导入')
+                            current = splitter.begin(match)
                             end = starts[position + 1][0].start() if position + 1 < len(starts) else len(page_text)
                             bottom = starts[position + 1][1] if position + 1 < len(starts) else height
-                            segments.append((current, top, bottom, page_text[match.start():end]))
+                            if current is not None:
+                                segments.append((current, top, bottom, page_text[match.start():end]))
                         for draft, top, bottom, value in segments:
                             if bottom - top < 1:
                                 continue
@@ -194,15 +195,17 @@ def extract(data, suffix):
                     page.close()
         finally:
             document.close()
-        warnings = ["PDF按显式题号生成单栏裁切候选，跨页延续同题；裁图保留公式和插图，文字仅供检索。扫描件无OCR，多栏和复杂题号需人工处理；不推断缺失答案。",
-                    "题号前的卷头/共享材料未自动复制到各题，请核对原件；目前没有自动阅读材料归组。"]
+        drafts = splitter.finish()
+        warnings = ["PDF按显式题号生成单栏裁切候选，跨页延续同题或材料；裁图保留公式和插图，文字仅供检索。扫描件无OCR，多栏及未支持题号需手动处理；不推断缺失答案。",
+                    "仅显式材料标题和完整有序题号范围自动归组为候选；其他卷头/材料仍在整篇预览，须核对或手动归组。",
+                    *splitter.warnings]
     else:
         raise ValueError("不支持此文档格式")
     if not blocks:
         raise ValueError("文档没有可提取内容，请核对原件")
     TypeAdapter(Content).validate_python(blocks)
     for draft in drafts:
-        TypeAdapter(Content).validate_python(draft['blocks'])
+        TypeAdapter(Content).validate_python(all_blocks(draft))
     if not drafts:
         warnings.append('未识别到可靠题号，原资料保留；当前不能自动拆题，请勿将整篇笔记视为逐题入库。')
     return {"kind": "note", "blocks": blocks, "question_drafts": drafts, "warnings": warnings, "_assets": assets}
