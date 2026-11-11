@@ -68,3 +68,17 @@ Windows前端排除其旧backend后与本批冻结后端配成全新window-bundl
 ### 2026-11-06 网络前置复核
 
 继续任务时只读重查socket.getaddrinfo(upload.wikimedia.org,443,AF_INET,SOCK_STREAM)，退出0；仍仅1个答案、all_public=false、benchmark_fake_ip_seen=true，摘要artifacts/lw06-native-20261106/public-dns-recheck.json。不再启动必然被同一门禁拒绝的完整公网流程，不改代理/DNS/证书或放行网段；原public-flow-01失败与公网下载/窗口待验保持。新Office包的本地媒体导入、download worker负面拒绝及整库恢复已在LW-06对应闭环复验，通过范围不包含公网下载或播放。
+
+## 2026-11-12：DL-01a，真实公网下载、重启与整库恢复
+
+本轮只读DNS复核发现原Commons源现为1个允许公网IPv4答案，benchmark_fake_ip_seen=false；于是继续原自动化，不改代理/DNS/证书或任何拒绝网段。[原文件页](https://commons.wikimedia.org/wiki/File:Media.webm)（修订1205920199）声明作者SounDany18、CC0-1.0、6501273字节与独立SHA1 e0c41415959164afa4584379fda17dec95616d95。下载仅在新建测试目录使用，不进Git/产品包，不是播放或人工验收。
+
+源基线为#23的2645366（与#22业务相同），隔离目录.local/goal-20261112/public-download。Q为根.local/release-venv/Scripts/python.exe、CPython3.13.17；源码运行设置PYTHONPATH指向该副本backend。以下命令均从该副本执行，原始日志在根artifacts/goal-20261112：
+
+- Q -X utf8 tools/check_learning_workbench.py --test-root <新建dl-source-01> --download-url https://upload.wikimedia.org/wikipedia/commons/0/0f/Media.webm --expected-download-sha1 e0c41415959164afa4584379fda17dec95616d95：退出0，public_download_and_restore_verified=true；入库SHA256及备份恢复后SHA1均一致，重启、原件保持和SQLite行摘要核对通过，日志download-source-01.log。
+- Q -X utf8 tools/check_frozen_sources.py --exe <原dist/StudyWorkbench-Release-20261110-37a8d55/app/backend/study_backend.exe>：退出0，43个业务模块及嵌套代码与本副本一致；exe SHA256见精选证据。没有重新构建或覆盖旧包。
+- 上述check_learning_workbench加同一--exe、使用新建dl-frozen-01：退出0，冻结真实子进程公网下载、入库、重启/备份恢复通过；工具将PATH限定System32并去除PYTHONPATH/PYTHONHOME，日志download-frozen-01.log。来源文件/学习关系保持；未实际播放媒体。
+
+额外真实传输探针Q -X utf8 artifacts/goal-20261112/check_public_range.py（根目录执行）在524288字节时主动中断后，强ETag断言失败，退出1；public-range-01.log和旧部分保留。该公开源未提供本实现允许的强ETag，不能声称Range续传通过，未降低产品拒绝规则。随后独立探针check_public_restart.py退出0：无强ETag恢复明确拒绝且旧部分逐字不变，显式新文件重新下载6501273字节，独立SHA1一致、SHA256为2ea4c1fccfbe6f37fd3e286cf6a1104b09686a7be260c772582cc5ede140737b，旧部分继续保持。重定向未测试；真实Range成功、重定向及更广错误网络仍属于DL-01未完成项。
+
+[精选证据](evidence/public-download-20261112.json)只保留公开来源、摘要、具体结论和false边界；来源为上述两条真实流程、冻结源码核验及两个实际传输探针，不复制原始日志/数据库/profile/IP/令牌/视频。原11-05/11-06失败保持。本切片仅task、原报告和一个JSON摘要变更，无产品代码、依赖或网络保护变更；文档/JSON/差异范围校验后独立草稿PR，当前head CI未知前保持REVIEW。代码审查暂缓、人工取消；DL-01父项和LW-07整体仍进行中，不合并或发行。
