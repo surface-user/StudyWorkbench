@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "task": "OFF-01",
+  "date": "2026-11-11",
+  "base_head": "2010bda927f9abb2f0900ee325e8ae60a6c5235b",
+  "runtime": {
+    "runtime_manifest_sha256": "147d21f38890236a51ac3b079d4632690ce7ae12f1470d6896aaef3597a0f8ca",
+    "runtime_files_verified": 19417,
+    "runtime_bytes_declared": 1577045386
+  },
+  "static": {
+    "pe_images": 244,
+    "delay_imports": [
+      {
+        "from": "program/cli_cppuhelper.dll",
+        "name": "cppu3.dll",
+        "kind": "delay"
+      },
+      {
+        "from": "program/cli_cppuhelper.dll",
+        "name": "cppuhelper3msc.dll",
+        "kind": "delay"
+      },
+      {
+        "from": "program/cli_cppuhelper.dll",
+        "name": "sal3.dll",
+        "kind": "delay"
+      },
+      {
+        "from": "program/mergedlo.dll",
+        "name": "shell32.dll",
+        "kind": "delay"
+      }
+    ],
+    "unresolved": [
+      {
+        "from": "program/officebean.dll",
+        "name": "jawt.dll",
+        "kind": "import"
+      }
+    ],
+    "duplicate_basenames": {
+      "libcrypto-3.dll": [
+        "program/libcrypto-3.dll",
+        "program/python-core-3.13.15/lib/libcrypto-3.dll"
+      ],
+      "libssl-3.dll": [
+        "program/libssl-3.dll",
+        "program/python-core-3.13.15/lib/libssl-3.dll"
+      ],
+      "python.exe": [
+        "program/python-core-3.13.15/bin/python.exe",
+        "program/python.exe"
+      ],
+      "sqlite3.dll": [
+        "program/python-core-3.13.15/lib/sqlite3.dll",
+        "program/sqlite3.dll"
+      ],
+      "concrt140.dll": [
+        "System/concrt140.dll",
+        "System64/concrt140.dll"
+      ],
+      "msvcp140.dll": [
+        "System/msvcp140.dll",
+        "System64/msvcp140.dll"
+      ],
+      "msvcp140_1.dll": [
+        "System/msvcp140_1.dll",
+        "System64/msvcp140_1.dll"
+      ],
+      "msvcp140_2.dll": [
+        "System/msvcp140_2.dll",
+        "System64/msvcp140_2.dll"
+      ],
+      "msvcp140_atomic_wait.dll": [
+        "System/msvcp140_atomic_wait.dll",
+        "System64/msvcp140_atomic_wait.dll"
+      ],
+      "msvcp140_codecvt_ids.dll": [
+        "System/msvcp140_codecvt_ids.dll",
+        "System64/msvcp140_codecvt_ids.dll"
+      ],
+      "vccorlib140.dll": [
+        "System/vccorlib140.dll",
+        "System64/vccorlib140.dll"
+      ],
+      "vcruntime140.dll": [
+        "System/vcruntime140.dll",
+        "System64/vcruntime140.dll"
+      ],
+      "vcruntime140_threads.dll": [
+        "System/vcruntime140_threads.dll",
+        "System64/vcruntime140_threads.dll"
+      ]
+    },
+    "launcher_program_closure_count": 54,
+    "launcher_unresolved": [],
+    "checker_skipped_pe_images": [
+      "program/soffice.bin",
+      "program/soffice.com",
+      "program/unopkg.bin",
+      "program/unopkg.com"
+    ],
+    "missing_jawt_or_jvm": true
+  },
+  "runtime_sampling": {
+    "formats": [
+      {
+        "format": "docx",
+        "pages": 2,
+        "source_sha256": "69169843ffc5c1335bf08cbb58523b9f272b74006f3f2839f30a91f9610b8f1b"
+      },
+      {
+        "format": "pptx",
+        "pages": 2,
+        "source_sha256": "47771237dfcfc1eb10fcf30bb25e232d2f201447de69746b0b373f167cb477eb"
+      }
+    ],
+    "job_processes": 8,
+    "module_snapshots": 6544,
+    "job_queries": 2243,
+    "errors": {
+      "module:299": 120,
+      "module:24": 17,
+      "module:87": 1,
+      "module:18": 1
+    },
+    "distinct_modules": 170,
+    "office_modules": 74,
+    "observed_java_modules": [
+      "jvmaccesslo.dll",
+      "jvmfwklo.dll"
+    ],
+    "crt_paths": [
+      "windows:SYSTEM32/MSVCP140.dll",
+      "windows:SYSTEM32/MSVCP140_1.dll",
+      "windows:SYSTEM32/MSVCP140_2.dll",
+      "windows:SYSTEM32/VCRUNTIME140.dll",
+      "windows:SYSTEM32/VCRUNTIME140_1.dll"
+    ],
+    "python_paths": [
+      "office:program/python313.dll",
+      "office:program/pythonloaderlo.dll"
+    ],
+    "unclassified_external_names": [
+      "AudioDevProps2.dll"
+    ],
+    "limits": "10ms requested Job-scoped Toolhelp snapshots; transient/unloaded or unexercised dynamic branches can be missed; no Java feature execution"
+  },
+  "bridge_load_probe": {
+    "module": "program/officebean.dll",
+    "load_flags": "DLL_LOAD_DIR|SYSTEM32",
+    "loaded": false,
+    "winerror": 126,
+    "expected_missing_dependency": true,
+    "scope": "fresh Q child, not a Java VM or component smoke pass"
+  },
+  "source_files": [
+    {
+      "path": "scan.py",
+      "sha256": "dac198ef1be06f24e1da85a4e485982ca46988a7b5f4d8a4116a279f3554c0ab"
+    },
+    {
+      "path": "sample_loads.py",
+      "sha256": "c2045ed81a5f556b91fa6c099a47f8c27f035f388983bf95bb91dfc64f1971bb"
+    }
+  ],
+  "evidence_selection": {
+    "sources": "artifacts/off01-20261111/static.json, loads.json, bridge-load.json; original fixed Office and self-authored DOCX/PPTX only",
+    "reason": "Keep only findings needed for Java/CRT distribution decision; exclude raw module path lists, PIDs, task profiles, binaries and PDFs",
+    "limitations": "System DLLs are static graph leaves; source-process Job snapshots are sampled, not a complete trace; no Java runtime installed or Java branch exercised; frozen source consistency only, not a new frozen Office workflow"
+  }
+}
