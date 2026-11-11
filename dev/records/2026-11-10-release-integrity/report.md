@@ -388,3 +388,5 @@ target01退出1：71通过/2失败，均为受限环境不能创建Windows链接
 实际Office初轮office01退出1：普通导入名校验过窄，真实pythonloaderlo.dll导入pyuno.pyd被拒绝。核PE实表后将通用导入扩展到已支持PE扩展名，保留路径/ASCII/非法字符保护并增加pyuno用例；office02与office-final完整hash/图通过。该修正基于合法PE导入形式，不是对缺失DLL增加豁免。第一次小型汇总命令括号遗漏造成SyntaxError，仅统计脚本，修正后重新读报告；不混为产品成功证据。最初全图输出重复每个后端插件闭包，改为保留各插件搜索根、去重边并拒绝跨域不同字节，完整图仍留诊断输出，发行摘要避免重复刷屏。
 
 静态规则不证明所有动态LoadLibrary、已加载模块/SxS、导出转发、API-set的最低Windows可用性或所有helper/插件实际行为。真实Office诊断的277未知项继续阻断完整发行，不能只凭69/9节点给OFF-02整包完成结论。代码审查暂缓，人工/Computer Use已取消；没有合并、签名、安装、发布、清理旧失败或新的模型/下载。实现和专项已完成，任务进入REVIEW，草稿PR及最终head CI核验前不记DONE。
+
+实际交付[独立草稿PR #36](https://github.com/surface-user/StudyWorkbench/pull/36)，分支codex/native-loading-domains，base为#28最终2187fec；实现提交b03d990ddfc9a8fcc1bcd13b9e0688ec4ec2a5cd。九份明确改动的UTF-8/LF/尾空白与git diff --no-index --check通过，原报告前缀、非本项任务行和全部其他基线blob保持。首次聚合传输JSON因输出截断而失败，分块后检测到控制台中文编码长度不符；改用ASCII转义分块并核完整长度后才创建远端tree，没有提交不完整或乱码内容。最终head/CI在PR描述维护，待主Agent核验有限检测/拒绝能力后决定DONE；父项未知范围继续阻断，未合并或发行。
