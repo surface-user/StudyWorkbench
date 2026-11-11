@@ -180,3 +180,38 @@ unfrozen-deep在160字符物理输出路径重现缺PDF（deep-source-result.jso
 
 
 远端实际复核：4cd157a870d557eb82d57204431b8642bf295ffd的[PR run42078193435](https://github.com/surface-user/StudyWorkbench/actions/runs/42078193435)已completed/success，Python3.12、3.13.17与desktop三个job全部success，含完整Release/COM/冻结资料导入/生命周期/文档workers。旧54ad绿灯与两轮红灯、Office旧失败均保留；真实Office矩阵为本机固定组件证据，CI未装可选LibreOffice，不能混称远端运行了它。本节及精选页图属于后续文档/证据增量，当前head CI以同PR实时检查为准，不为记录自身SHA循环提交报告。
+
+## 2026-11-12 FMT-01：复杂格式自动化矩阵
+
+本次延续LW-06原报告，按当前任务的有限范围补齐复杂DOCX/PPTX/XLSX样本、真实页面边界、命名拒绝门禁及无短名目录证据。基于PAR-01草稿PR #26最终`1d103f3c21cb8c95f5ea62841be11a4b7b2d16f9`；工作目录为仓库`.local/goal-20261112/formats`的独占副本，未改旧根checkout。PAR-01该head的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43061041645)三job/44步骤已成功，主Agent已核验并要求后续任务表记DONE；不将父M2-04同时销项。本节不改变前文任何失败记录。
+
+### 设计、样本与实现边界
+
+- `tools/make_complex_office_samples.py`只生成自编样本到新目录。Word为两页竖版加一页横版、页眉页脚、指定字体及不存在字体、OMML平方、20行长表、合并表头；PPT为三页，包含静态嵌入图表数据、中文表格、左右分栏、字体替换文字、上/下标；XLSX为两表含隐藏表、合并/样式/图表、缓存公式175、公式错误、缺失缓存、日期序列、布尔及外观像脚本/公式的字面文字。
+- 复用`check_office_previews.py`的真实loopback/导入/取消/重试/缓存/重启/原件hash检查，增加可选`--complex-xlsx`矩阵。Word/PPT逐页核固定页数、标识文字、文字框在页内、非空渲染；另核横竖方向、长表末行、公式、图表重复标签、左右栏位置。XLSX仍是只读值查看器，核A1位置及原值，不将合并/样式/图表还原为支持能力。
+- 新增20项标准库自编坏包/边界测试。拒绝断言对应具体的字段、关系、嵌入静态值、活动对象、媒体格式、DTD、重名包路径和损坏压缩流门禁。未读取的XLSX样式/图表正文保持不读取、不执行；契约澄清XML预算/DTD拒绝针对实际读取XML。没有放宽预算或启动Excel。
+- 首轮压缩损坏样本暴露`zlib.error`未归入格式损坏提示；原预览任务仍有兜底失败，但错误不具体。本次仅在`office_inputs.validate_office`统一映射为现有“格式损坏或已加密”ValueError，所有调用方继续使用原输入门禁。没有更改转换配置、Office版本/清单、Java桥、数据库/API或冻结依赖。
+- `check_office_no_short_name.py`在该checkout的`.local`全新目录中核绝对路径/无重解析点后，用[Microsoft SetFileShortNameW](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setfileshortnamew)移除本次新建目录的短名，并读回目录名与samefile身份，随后用原OfficeRuntime转换同一自编DOCX。没有更改卷/系统8dot3设置，不删除文件字节，不用mock补原生分支。上层已有目录可能仍有短名，因此此探针不等同“整卷禁用8.3”或任意极端路径支持。
+
+### 环境、命令与保留失败
+
+Q=`D:/computer_work/project/StudyWorkbench/.local/release-venv/Scripts/python.exe`（CPython3.13.17），P为根`.venv/Scripts/python.exe`（3.12.7）；原组件R=`D:/computer_work/project/StudyWorkbench/.local/release-tools/libreoffice-26.8.1`，只读复用，不复制组件或改锁。完整日志/JUnit在本副本`artifacts/fmt01/`，生成样本/测试数据在`.local/`，均不进Git。样本字体检查只证明文字存在和有限布局边界，不证明字体形状/像素与Microsoft Office一致。
+
+首次authoring安装走本机既有镜像，TLS EOF退出1；失败仅有前序工具会话输出，重试复用了安装日志路径，未保留独立首轮日志；此记录限制明确保留。随后设TEMP/TMP到本任务`.local/pip-tmp`，Q执行`-m pip install --disable-pip-version-check --no-deps --only-binary=:all: --require-hashes --index-url https://pypi.org/simple --target .local/authoring -r .local/authoring-requirements.txt`退出0。清单字节现固定于`tools/sample-authoring-requirements.txt`，官方wheel SHA已核，不关闭TLS验证。python-pptx1.0.2 MIT及XlsxWriter3.2.5 BSD-2-Clause仅用于样本工具，Windows/Python3.13生成通过；来源/版本/未验项见docs/dependencies.md，不进产品运行环境或新冻结包。
+
+| 实际命令（工作目录同上） | 退出码与结果 | 日志 |
+|---|---|---|
+| `PYTHONPATH=.local/authoring; Q -X utf8 tools/make_complex_office_samples.py --output .local/fmt-samples01` | 0，自编DOCX/PPTX/XLSX生成 | generate01.txt |
+| `Q -X utf8 -m pytest backend/tests/test_complex_office_matrix.py -q --basetemp=.local/fmt-matrix01 --junitxml=artifacts/fmt01/matrix01.xml` | 1，17通过/2失败；一项错误地要求从未读取的样式XML触发读取门禁，已改为实际worksheet；一项发现损坏DEFLATE流异常类型，已修复，旧失败保留 | matrix01.txt/xml |
+| `Q -m ruff check backend tools` | 0，全量静态检查通过 | 工具输出 |
+| `Q -X utf8 -m pytest backend/tests/test_complex_office_matrix.py backend/tests/test_office_launcher.py backend/tests/test_office_previews.py backend/tests/test_spreadsheet_view.py -q --basetemp=.local/fmt-target02 --junitxml=artifacts/fmt01/target02.xml` | 0，76通过，21.97秒 | target02.txt/xml |
+| 上一行改P、basetemp为`.local/fmt-target312`、JUnit为`target312.xml` | 0，76通过，29.55秒 | target312.txt/xml |
+| `PYTHONPATH=backend; Q -X utf8 tools/check_office_previews.py --test-root .local/fmt-source01 --runtime R --docx .local/fmt-samples01/复杂分节.docx --pptx .local/fmt-samples01/复杂图表.pptx --complex-xlsx .local/fmt-samples01/复杂工作簿.xlsx` | 0，真实源码HTTP矩阵通过：DOCX3页108084B、PPTX3页77986B，XLSX2表15格；取消/重试/缓存/重启/原件hash/数据库完整性及XML预算拒绝全部通过 | source01.txt |
+| `./packaging/windows/build-backend.ps1 -Python Q` | 0，182.5秒构建完成，43个冻结应用模块与当前源码一致；exe SHA256 `fee72df47591c1146692af693aa65ba2b0c15810643eba375608be1d3771ee9f` | build01.txt |
+| `Q -X utf8 tools/check_office_no_short_name.py --test-root .local/fmt-no-short01 --runtime R --docx .local/fmt-samples01/复杂分节.docx` | 0，物理任务路径105字符、传给原生组件91字符；本次root/中文末级目录无短名、samefile成立，真实DOCX3页全部断言通过，源hash与组件完整清单不变 | no-short01.txt；.local/fmt-no-short01/result.json |
+
+在源码矩阵命令上增加`--exe dist/study_backend/study_backend.exe`、test-root改`.local/fmt-frozen01`，新冻结真实HTTP矩阵退出0（frozen01.txt）：DOCX/PPTX仍各3页、108084/77986B，XLSX2表15格，全部逐页/值/取消/缓存/重启及原件断言通过。冻结启动清除开发PATH/PYTHONPATH/PYTHONHOME；43应用模块已核与当前源码一致。源码矩阵启动时尚未修改损坏DEFLATE提示，修补后的命名错误路径由双Python专项覆盖，最终冻结矩阵使用修补后的源码。既有Starlette/anyio弃用警告保留。完整后端/桌面矩阵以本PR最终head CI为准，不把本机76项写成全量。
+
+### 交付状态与限制
+
+FMT-01实现和本机自动化完成，当前REVIEW；源码/新冻结复杂矩阵、真实无短名目录、双Python相关专项已通过，独立草稿PR和最终head CI待交付，主Agent核验前不记DONE。代码审查按本轮用户指令暂缓，人工测试/Computer Use按11-06指令取消，没有制造人工通过。Office组件的Java桥、完整SBOM/许可/漏洞/签名/发行属于其他独立任务；本矩阵不替代这些条件。任意第三方文件保真、整卷禁用8.3、极端路径、字体造型/像素等价及安装/干净机没有据此认证。

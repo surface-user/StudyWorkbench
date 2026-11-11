@@ -18,6 +18,72 @@ from alembic.config import Config
 from alembic.script import ScriptDirectory
 
 
+def check_complex_pdf(pdf_path, suffix):
+    """Finite layout assertions, not pixel equivalence with Microsoft Office."""
+    import pypdfium2
+    from PIL import ImageChops
+    markers = (['FMT PORTRAIT ONE', 'FMT PORTRAIT TWO', 'FMT LANDSCAPE THREE']
+               if suffix == '.docx' else ['FMT CHART ONE', 'FMT COLUMNS TWO', 'FMT FORMULA THREE'])
+    pages = []
+    with pypdfium2.PdfDocument(pdf_path) as pdf:
+        assert len(pdf) == 3, f'{suffix}: expected three authored pages, got {len(pdf)}'
+        for number, page in enumerate(pdf):
+            width, height = page.get_size()
+            textpage = page.get_textpage()
+            text = textpage.get_text_range()
+            assert markers[number] in text, (suffix, number, text)
+            for index in range(textpage.count_chars()):
+                if not textpage.get_text_range(index, 1).strip():
+                    continue
+                left, bottom, right, top = textpage.get_charbox(index)
+                assert -2 <= left <= right <= width + 2 and -2 <= bottom <= top <= height + 2, (number, index)
+            bitmap = page.render(scale=1)
+            raster = bitmap.to_pil().convert('RGB')
+            assert ImageChops.difference(raster, raster.copy().point(lambda _: 255)).getbbox(), number
+            if suffix == '.docx':
+                assert 'FMT HEADER' in text and 'FMT FOOTER' in text
+                assert (width > height) == (number == 2), (number, width, height)
+                if number == 0:
+                    assert 'FONT AVAILABLE' in text and 'FONT FALLBACK' in text and re.search(r'x\s*2', text)
+                elif number == 1:
+                    assert all(f'R{i:02}' in text for i in range(1, 21)) and 'TABLE END' in text
+                else:
+                    assert 'MERGED HEADING' in text and 'LEFT' in text and 'RIGHT' in text
+            elif number == 0:
+                assert text.count('数学') >= 2 and text.count('英语') >= 2
+            elif number == 1:
+                def position(label):
+                    found = textpage.search(label).get_next()
+                    assert found is not None
+                    return textpage.get_charbox(found[0])[0]
+                assert position('LEFT COLUMN') < width / 2 < position('RIGHT COLUMN')
+                assert 'FONT FALLBACK' in text
+            else:
+                assert all(label in text for label in ['公式', 'x', 'y', 'z', 'H', 'O'])
+            pages.append(dict(page=number + 1, width=width, height=height, text_inside_page=True, nonblank=True))
+            bitmap.close()
+            textpage.close()
+            page.close()
+    return pages
+
+
+def check_complex_workbook(value):
+    from datetime import date
+    from decimal import Decimal
+    assert value['renderer_version'] == 'xlsx-values-v1'
+    first, second = value['sheets']
+    assert [first['name'], second['name']] == ['复杂成绩', '日期与隐藏'] and second['state'] == 'hidden'
+    cells, extra = [{cell['address']: cell for cell in sheet['cells']} for sheet in (first, second)]
+    assert cells['A1']['value'] == 'MERGED TITLE' and cells['A2']['value'] == '数学'
+    assert cells['C2']['value'] == 'TRUE' and cells['C3']['value'] == 'FALSE'
+    assert cells['B4']['formula'] and not cells['B4']['cache_missing'] and Decimal(cells['B4']['value']) == 175
+    assert cells['B5']['value'] == '#DIV/0!' and cells['B5']['formula']
+    assert cells['B6']['cache_missing'] and cells['B6']['value'] == '公式无缓存值'
+    assert Decimal(extra['A1']['value']) == (date(2026, 11, 12) - date(1899, 12, 30)).days
+    assert extra['B1']['value'] == '<script>字面数据</script>'
+    assert extra['C1']['value'] == '=WEBSERVICE("https://example.invalid")' and not extra['C1']['formula']
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--exe', type=Path)
@@ -25,10 +91,13 @@ def main():
     parser.add_argument('--runtime', type=Path)
     parser.add_argument('--docx', type=Path, required=True)
     parser.add_argument('--pptx', type=Path, required=True)
+    parser.add_argument('--complex-xlsx', type=Path, help='Enable FMT-01 page/layout and inert workbook matrix')
     args = parser.parse_args()
     root = args.test_root.resolve()
     root.mkdir()
     fixtures = [args.docx.resolve(strict=True), args.pptx.resolve(strict=True)]
+    if args.complex_xlsx:
+        fixtures.append(args.complex_xlsx.resolve(strict=True))
     hashes = [hashlib.sha256(path.read_bytes()).hexdigest() for path in fixtures]
     env = dict(os.environ, PYTHONUTF8='1', PYTHONIOENCODING='utf-8')
     env.pop('STUDY_OFFICE_RUNTIME', None)
@@ -103,6 +172,13 @@ def main():
             node = added['results'][0]['resource_item_id']
             endpoint = prefix + '/nodes/' + node
             doc = request(endpoint + '/document')
+            if fixture.suffix == '.xlsx':
+                check_complex_workbook(doc)
+                assert doc['sha256'] == checksum and hashlib.sha256(fixture.read_bytes()).hexdigest() == checksum
+                results.append(dict(format='.xlsx', sheets=len(doc['sheets']), cells=doc['cell_count'],
+                                    values_only=True, source_preserved=True))
+                print(json.dumps(results[-1]), flush=True)
+                continue
             assert doc['source_sha256'] == checksum and doc['preview_capability']['available'], doc
             body = {'expected_source_sha256': checksum}
             cancelled = request(endpoint + '/previews', body)
@@ -117,11 +193,12 @@ def main():
                 relative = db.execute('SELECT relative_pdf FROM document_previews WHERE id=?', (value['id'],)).fetchone()[0]
             with pypdfium2.PdfDocument(root / 'data' / relative) as pdf:
                 text = ''.join(page.get_textpage().get_text_range() for page in pdf)
+            layout = check_complex_pdf(root / 'data' / relative, fixture.suffix) if args.complex_xlsx else None
             if fixture.suffix == '.docx':
                 assert re.search(r'x\s*2', text), 'OMML formula disappeared from derived PDF'
             else:
                 assert text.count('数学') >= 2 and text.count('英语') >= 2, 'Chart labels disappeared from derived PDF'
-            for number in {1, value['page_count']}:
+            for number in range(1, value['page_count'] + 1) if args.complex_xlsx else {1, value['page_count']}:
                 page = request(endpoint + '/previews/' + value['id'] + '/page?page=' + str(number))
                 png = base64.b64decode(page['image_base64'])
                 assert png.startswith(b'\x89PNG')
@@ -131,13 +208,15 @@ def main():
             jobs.append((endpoint, value['id'], body))
             results.append(dict(format=fixture.suffix, pages=value['page_count'], pdf_bytes=value['pdf_size'],
                                 source_preserved=True, cancelled_retry=True, cache_reused=True,
-                                math_or_chart_checked=True))
+                                math_or_chart_checked=True, layout=layout))
             print(json.dumps(results[-1]), flush=True)
         stop()
         request = launch()
         for endpoint, identifier, body in jobs:
             assert request(endpoint + '/document')['preview']['id'] == identifier
             assert request(endpoint + '/previews', body)['id'] == identifier
+        if args.complex_xlsx:
+            check_complex_workbook(request(prefix + '/nodes/' + node + '/document'))
         stop()
         with sqlite3.connect(root / 'data/study.db') as db:
             migrations = Config()
