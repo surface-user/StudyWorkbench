@@ -30,7 +30,19 @@ staging文件清单生成与校验共用枚举：只排除根build-inventory.jso
 
 命令先核固定49106397字节/SHA256，再完整检查ZIP路径/大小写冲突/Windows保留名/原名规范化/特殊文件和数量/膨胀预算。只把固定顶层目录内部内容解到新目录，保留全部文件及NOTICE/legal；拒绝已有目标和链接/重解析路径，不安装、不运行Java、不修改环境。结束重核原zip与目标文件集合/hash、release版本/架构/JRE身份及java.exe/jawt.dll/server/jvm.dll的AMD64/PE32+，再独占写java-runtime-lock.json。失败保留现场且不覆盖旧目录，成功清单字段为version/package_sha256/source_url/bytes/files；后续组件使用前必须再核实际文件集合与hash，不能只相信清单存在。
 
-准备Java组件不改变build-release的默认产品包，也不自动配置Office或补CRT。OFF-02后续仍须确定Office查找JVM与CRT加载根，完成冻结转换/取消重启及无开发依赖验证。完整SBOM、传递许可/源码义务、漏洞和签名另行完成；不可据本步骤称Office整包已可发行。
+准备Java组件不改变build-release的默认产品包；需要配套Java时，另用下述命令组合，不就地修改任一原组件。
+
+## Office与Java组合运行时
+
+```powershell
+.local/release-venv/Scripts/python.exe tools/compose_office_runtime.py --office .local/release-tools/libreoffice-26.8.1 --java .local/java-runtime-21.0.13-9 --destination .local/office-java-runtime
+```
+
+两个输入必须分别通过固定原清单/hash与完整文件核验；目标父目录须存在，目标必须全新且不位于输入内，拒绝链接/重解析目录。命令保留原Office所有文件与原清单office-runtime-lock.json，在java/保留全部JRE及java-runtime-lock.json，只另将Office原System64中的8份VC运行库逐字复制到program/，不覆盖原文件。新runtime-lock.json声明配套Java及完整组合集合；加载时要求两份原清单hash和文件集合精确相等，转换前继续逐文件核验。失败保留现场，不能因清单已写入就视为成功；必须以命令退出0及完整复核为准。
+
+Office子进程才接收包内JAVA_HOME、UNO_JAVA_JFW_JREHOME文件URI和headless参数，PATH只包含Office程序、包内Java bin/server与系统目录；不继承JAVA_TOOL_OPTIONS或其他外来Java启动参数，不改主后端DLL目录或系统配置。用同版本LibreOffice的[Java框架直接模式](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/include/jvmfwk/framework.hxx)显式选JRE，输入限制、宏/脚本保护与进程预算保持。原不含Java组件仍支持，不自动发现开发机Java。
+
+组合目录可交给原build-release.ps1的-OfficeRuntime入口，默认主包行为保持。实际加载、转换及限制见[发行任务报告](../dev/records/2026-11-10-release-integrity/report.md)。完整PE进程加载域/延迟导入门禁、发行SBOM、传递许可/源码义务、漏洞和签名仍须分别完成；本步骤不等于Office整包可发行或干净机验证。
 
 ## 源码锁文件SBOM
 

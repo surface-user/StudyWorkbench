@@ -22,6 +22,7 @@ def task(tmp_path, prepared=True):
     source.write_bytes(package())
     runtime = object.__new__(office_runtime.OfficeRuntime)
     runtime.root = tmp_path / 'runtime'
+    runtime.java_home = None
     runtime.executable = runtime.root / 'program/soffice.com'
     return runtime, directory, source
 
