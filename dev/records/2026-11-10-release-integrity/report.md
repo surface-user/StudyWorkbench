@@ -262,3 +262,5 @@ OFF-02还须决定新增组件与原Office锁的关系：原组件字节/官方�
 ### OFF-01 文档与证据校验
 
 Q -X utf8 artifacts/off01-20261111/check_docs.py退出0：三份明确文件UTF-8/LF/尾空格、62处相对链接、原82条表格行数量不变（只更新OFF-01/02两行）、其他任务正文逐字保持、原报告全部历史前缀保留。精选JSON解析/唯一jawt缺口、无误报的启动候选图、两格式各2页及负例126/采样错误保留断言通过；Git blob收据在docs-check.json。git diff --check退出0，根status仍仅原两项未跟踪内容；本轮未改变原工作区/固定组件/交付包。本地没有重跑未修改的后端/Flutter业务全量，新PR当前head完整CI仍须核验；父#21绿灯不代替该结果。没有代码审查或人工测试通过结论。
+
+实际交付：[独立草稿PR #22](https://github.com/surface-user/StudyWorkbench/pull/22)，分支codex/office-loader-diagnosis，base为#21最终2010bda9，实现e0469205ac62bbd97a46c601e94cacd876f4ef3f，三份明确文件；task/本报告补实际链接，已附加聊天。最终head/当前head CI运行与核对时间在PR描述维护，避免为记录自身SHA循环提交。OFF-01仅诊断交付，OFF-02与发行整体继续未完成；代码审查与人工暂缓，不合并或发布。
