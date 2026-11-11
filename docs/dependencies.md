@@ -56,6 +56,10 @@
 
 ## 开发工具和未采用候选
 
+源码锁文件SBOM构建工具固定为[Anchore Syft 1.57.1 Windows amd64](https://github.com/anchore/syft/releases/tag/v1.57.1)，Apache-2.0，保留官方压缩包内LICENSE。官方发布于2026-11-09，Windows构建及本项目真实离线扫描已核；只用于开发/构建，不随应用分发、不增加Python运行依赖。官方zip SHA256为3a01fe865076bb548352195b77e88fa4649277861ea458efe165c3a810b6dcc7，30255314字节；解包syft.exe SHA256为42deb23bff7852997bf0316a540d3dcb364953273152749205e47881dd270c53，由生成命令每次核对。官方HTTPS发布资产digest/checksums核验不等于签名认证；Authenticode为NotSigned，Sigstore未验证。
+
+[支持生态](https://oss.anchore.com/docs/capabilities/all-packages/)声明可解析Python requirements与Dart pubspec.lock；本项目只启用对应两个cataloger，禁用更新检查/联网补全，不扫描开发环境。SDK版本占位不能推断成实际Flutter/Dart SDK；投影输入显式排除SDK并在对照报告保留未知项，Git依赖核对完整resolved-ref。锁文件SBOM不证明运行时成员、许可证义务、漏洞状态或最终二进制闭合，详见[生成说明](packaging-windows.md#源码锁文件sbom)。
+
 pytest/Ruff/Flutter Test/integration_test是开发工具。样本生成可使用本机python-pptx、开发FFmpeg，但它们不是产品运行依赖；MarkItDown0.1.9与Docling的样本比较是历史选型记录，不把MarkItDown列为当前产品依赖。
 
 webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-dlp2026.10.21仅做过开发预备，下载队列未实现；FFmpeg未选定产品二进制/构建配置，不能只按主体许可证发行。Seal只参考交互，不复制GPLv3代码/资源。

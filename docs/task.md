@@ -10,7 +10,7 @@
 
 2026-11-10用户明确要求当前Release exe自行人工测试并汇报；仅启动本轮[人工测试清单](../dev/records/2026-11-06-learning-workbench-delivery/manual-test-20261110.md)，用户反馈待收取，不恢复全项目人工门禁，Agent不执行窗口验收。当前产品基线#18/2a884fe，[独立草稿PR #19](https://github.com/surface-user/StudyWorkbench/pull/19)在codex/manual-release-handoff补CI短期构建产物出口；37a8d55构建CI #113三组44步成功，基础安装器/免安装包及独立Office扩展已在本地生成，1304文件门禁、43冻结模块及真实资源/恢复/Office探针通过。整包Office集成的Java桥接依赖仍阻断，未跳过门禁；最终记录head CI、包路径/hash与交付结论见PR实时记录，未核实前待交付，不合并或公开发行。
 
-2026-11-03用户已审阅并采纳通用学习工作台方向，并要求继续推进。LW-00已形成[契约](learning-workbench-contracts.md)和[ADR0012](adr/0012-learning-notes-anchors-and-backup.md)，设计复核待验；**LW-01自由笔记、LW-02位置书签与备注、LW-03内部链接及LW-04集中查找已本地实现，人工测试已取消，阶段未补记通过**，LW-05完整备份恢复已实现并通过自动化验证；LW-09冻结进程闭环通过，人工窗口测试已取消，工具旧超时保留历史；LW-06文本/XLSX只读切片已本地实现，最终0016包Office故障已定位并本地修补，DOCX/PPTX各两页及Calc矩阵复验通过，旧转储/失败保留，复杂文件自动化矩阵继续扩展，人工窗口测试已取消；LW-07直接下载切片已本地实现/冻结验证，公网DNS自动化仍受限；LW-08按用户11-05要求只完善授权/审核，已本地实现无模型候选流程，双Python回归/桌面构建/冻结闭环通过，人工测试已取消。完整备份设计已纳入LW-00，其余拟议表/API不列为已实现。
+2026-11-03用户已审阅并采纳通用学习工作台方向，并要求继续推进。LW-00已形成[契约](learning-workbench-contracts.md)和[ADR0012](adr/0012-learning-notes-anchors-and-backup.md)，设计复核待验；**LW-01自由笔记、LW-02位置书签与备注、LW-03内部链接及LW-04集中查找已本地实现，人工测试已取消，阶段未补记通过**，LW-05完整备份恢复已实现并通过自动化验证；LW-09冻结进程闭环通过，人工窗口测试已取消，工具旧超时保留历史；LW-06文本/XLSX只读切片已本地实现，最终0016包Office故障已定位并本地修补，DOCX/PPTX各两页及Calc矩阵复验通过，旧转储/失败保留，复杂文件自动化矩阵继续扩展，人工窗口测试已取消；LW-07直接下载切片已本地实现/冻结验证，11-12源码/冻结公网下载与整库恢复已通过，真实Range及重定向仍待验证；LW-08按用户11-05要求只完善授权/审核，已本地实现无模型候选流程，双Python回归/桌面构建/冻结闭环通过，人工测试已取消。完整备份设计已纳入LW-00，其余拟议表/API不列为已实现。
 
 R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/PR #3继续交付跟进，模型等新增能力按LW-08后排。人工测试已取消；历史M0故障、失败证据与PR/当前head CI义务不取消。用户11-06明确授权当前版本提交/推送并创建PR后继续任务；[草稿PR #4](https://github.com/surface-user/StudyWorkbench/pull/4)已创建，base为未合并#3，两轮路径/schema探针失败保留，Office修补代码head 4cd157a已全CI通过（54ad12b前批绿灯及两轮红灯均保留）；文档/精选证据补交跟进同PR，当前head检查以PR实时状态为准；本批送审覆盖旧窗口前置顺序，人工测试已按最新指令取消，不授权合并或发行。批次交付与当前head CI见[交付报告](../dev/records/2026-11-06-learning-workbench-delivery/report.md)。
 
@@ -26,22 +26,26 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 
 | 任务 | 调度状态 | 依赖判断与下一步 |
 |---|---|---|
-| PLAN-06 并行调度登记 | REVIEW | 依赖现行任务/远端状态核验；本表及开发约束同步，文档检查、独立PR和当前head CI核实后DONE |
+| PLAN-06 并行调度登记 | DONE | 主Agent已核[草稿PR #23](https://github.com/surface-user/StudyWorkbench/pull/23)最终2645366的[CI #133](https://github.com/surface-user/StudyWorkbench/actions/runs/43057985634)成功；本轮继续维护原表和独立PR，不代表功能全部完成 |
 | OFF-01 | DONE | #22诊断开发交付已完成；本轮另核该head CI，OFF-02缺口仍保留 |
-| OFF-02 | BLOCKED | 等待确定Java发行者/精确版本/许可与布局方案；未获明确选择前不代选新增产品组件 |
-| REL-01a 源码锁文件标准SBOM | IN_PROGRESS | 子 Agent sbom；Python/Dart锁文件已存在，固定工具、生成标准SBOM并对照源清单，明确不含最终冻结/原生/Office包；独立PR交付 |
+| OFF-02 | IN_PROGRESS | 用户委托技术判断后采用项目内Temurin 21.0.13+9 x64 JRE；组件准备已交付#28，Office/CRT布局及真实运行集成继续，不安装系统Java |
+| OFF-02a 固定Java组件准备 | DONE | 主Agent已核37×2专项、315文件与关键PE/hash；独立[草稿PR #28](https://github.com/surface-user/StudyWorkbench/pull/28)最终2187fec的[CI #153](https://github.com/surface-user/StudyWorkbench/actions/runs/43065303373)成功；此组件尚未组合入本批源码，整包OFF-02继续 |
+| REL-03a 源锁文件漏洞查询 | IN_PROGRESS | REL-01a范围已就绪，子Agent在独立副本开展公开包名/版本漏洞查询；工具/数据库时间、未知覆盖和原始发现必须保留，父REL-03仍未完成 |
+| INT-01 首批组合回归 | REVIEW | 将#24–#27的精确已交付改动组合到隔离候选；后端760及77子测试通过，当前组合head CI待核，见[批次报告](../dev/records/2026-11-12-parallel-batch/report.md)；没有合并原PR或main |
+| REL-01a 源码锁文件标准SBOM | DONE | 主Agent已核双Python专项各35、136源码包/8个SDK未知、官方Schema；[草稿PR #25](https://github.com/surface-user/StudyWorkbench/pull/25)最终1b52eb3的[CI #141](https://github.com/surface-user/StudyWorkbench/actions/runs/43060243273)成功；仅源码范围，父REL-01仍未完成 |
 | REL-01 完整源码与发行包SBOM | IN_PROGRESS | 先交付01a；最终覆盖仍依赖OFF-02及所有实际组件/安装器payload，不能据源锁文件或环境包表销项 |
 | REL-02、REL-03 | BLOCKED | 完整传递许可与漏洞检查依赖REL-01实际组件清单；源锁文件切片就绪后可开展相应子范围，整体保持未完成 |
 | REL-04 | BLOCKED | 依赖REL-01至03；真实签名另缺发行身份，配置/篡改拒绝自动化不代表已签 |
 | REL-05 | BLOCKED | 依赖OFF-02与REL-01至04；候选组装完成后仍需REV-01，发布/合并未授权 |
-| FMT-01 | READY | 既有Office/XLSX转换与受限查看能力可用于自编复杂样本自动化；不依赖Java整包发行 |
-| PAR-01 | IN_PROGRESS | 子 Agent parsing；既有提取/草稿预览可复用，先确定跨页/小题/重号/共享材料样本和候选契约再实施，不猜答案 |
+| FMT-01 | REVIEW | 独立[草稿PR #30](https://github.com/surface-user/StudyWorkbench/pull/30)已提交复杂Office/XLSX自动化矩阵，最终head CI/主Agent验收待核；不在首批组合源码中 |
+| PAR-01 | DONE | 主Agent已核双Python专项各30及12项环境失败的原生复验，原失败保留；[草稿PR #26](https://github.com/surface-user/StudyWorkbench/pull/26)最终1d103f3的[CI #149](https://github.com/surface-user/StudyWorkbench/actions/runs/43061041645)成功；限定显式题号/共享材料候选范围，见[报告](../dev/records/2026-11-12-complex-question-splitting/report.md) |
 | PAR-02、PAR-03 | READY | 设计工作可先行；OCR实施依赖固定离线组件/语言资源评估，分块实施依赖预算/取消/重启契约，禁止直接放宽保护 |
-| DL-01 | READY | 既有HTTPS下载实现已具备；重核公网来源/DNS/TLS与独立hash，无法访问则保留具体证据，不放宽禁止网段 |
+| DL-01 | IN_PROGRESS | 公开源下载/重启/恢复由DL-01a交付；真实Range/重定向仍待验证，原DNS失败保留 |
+| DL-01a 公网下载与恢复证据 | DONE | 主Agent已核源码/冻结公网下载、独立摘要、重启/整库恢复及无强ETag拒绝；[草稿PR #24](https://github.com/surface-user/StudyWorkbench/pull/24)最终91db704的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43059706025)成功；真实正向Range/重定向未覆盖，父DL-01仍进行中 |
 | DL-02 | READY | 来源/组件设计可先行；实际站点提取依赖明确站点和授权方式，不默认登录/DRM |
 | DL-03 | BLOCKED | 依赖DL-02及FFmpeg实际二进制/许可选择 |
-| LW-04a | READY | LW-04及TXT原文查看已实现；先明确全文扫描预算和版本/原文行跳转 |
-| LW-07a | REVIEW | 已实现50条历史分页、稳定排序/时间ID上界、轮询/翻页失败及迟到响应保护；双Python专项各11、Flutter专项6通过，完整Flutter196/静态检查通过；[独立草稿PR #27](https://github.com/surface-user/StudyWorkbench/pull/27)最终head CI待核；[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)，主Agent核验后才DONE |
+| LW-04a | DONE | 主Agent已核双Python专项各58、Flutter专项19/完整200及失败保留；独立[草稿PR #29](https://github.com/surface-user/StudyWorkbench/pull/29)最终9027508的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43066543568)成功；有界TXT全文与原文行回跳已交付，此源码不在首批组合中 |
+| LW-07a | DONE | 主Agent已核双Python专项各11、Flutter专项6/全量196及静态检查；[草稿PR #27](https://github.com/surface-user/StudyWorkbench/pull/27)最终6af0360的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43060817695)成功；50条历史分页/刷新/迟到响应开发交付完成，审查暂缓，见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md) |
 | UPD-01 | BLOCKED | 完整升级回滚流程依赖稳定发行产物和签名方案；保留旧库保护，未授权发布更新 |
 | API-01 | READY | 可先盘点现有错误响应/桌面调用方并确定兼容契约，再独立切片实施 |
 | M2-05i | READY | 05g/h巡检及完整备份已实现；先设计身份/来源/附件关系与显式确认，不自动恢复或删除 |
@@ -74,7 +78,7 @@ R1–R5集成交付：保留PR #1的CI临时目录与路径别名失败、修复
 
 ## 接下来的开发任务（LW路线）
 
-LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人工测试已取消，文档复核不阻塞继续开发；LW-09冻结进程闭环及LW-06文本/XLSX已测；11-06用户已取消人工窗口测试，不再重试Computer Use。LW-06已补真实离线Office/Calc样本，字符串兼容修补继续回归；LW-07传输/队列/UI已本地实现并通过当批442后端/145Flutter与冻结闭环，真实公网源自动化受DNS预检阻断，人工窗口测试已取消；LW-08授权/人工候选审核已实施，默认摘要兼容、正文另选、独立MD采用与恢复，无模型接入，自动化/自审继续。详细范围及退出目标见[路线第5节](learning-workbench-roadmap.md#5-已确定的任务顺序与实施范围)及[契约](learning-workbench-contracts.md)。先设计再实现，不把路线名称当作现有接口；所有任务退出仍执行本页统一条件。
+LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人工测试已取消，文档复核不阻塞继续开发；LW-09冻结进程闭环及LW-06文本/XLSX已测；11-06用户已取消人工窗口测试，不再重试Computer Use。LW-06已补真实离线Office/Calc样本，字符串兼容修补继续回归；LW-07传输/队列/UI已本地实现并通过当批442后端/145Flutter与冻结闭环，11-12同一公开源的DNS预检、源码/冻结下载和整库恢复通过，真实Range/重定向仍待验证，人工窗口测试已取消；LW-08授权/人工候选审核已实施，默认摘要兼容、正文另选、独立MD采用与恢复，无模型接入，自动化/自审继续。详细范围及退出目标见[路线第5节](learning-workbench-roadmap.md#5-已确定的任务顺序与实施范围)及[契约](learning-workbench-contracts.md)。先设计再实现，不把路线名称当作现有接口；所有任务退出仍执行本页统一条件。
 
 | 编号/优先级 | 任务与依赖 | 当前状态、下一步与关键退出证据 |
 |---|---|---|
@@ -87,7 +91,7 @@ LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人�
 | LW-05 / P1，已交付，设计前置到00 | 完整学习库备份恢复；依赖01至04的数据覆盖 | 离线整库快照/ZIP校验、新空目录恢复、SQLite表/文件/关系核对、普通UI/取消/配置激活已实现；后端全套343、后补专项16、Flutter136、分析/Windows Release通过，LW-09后补全套137。自审完成，人工测试已取消；发行未授权；M2-03完整备份实现已由本任务承接；[报告](../dev/records/2026-11-04-lw05-backup/report.md)。纳入本批阶段PR |
 | LW-09 / 自动化集成已交付 | 无Agent学习流程集成；依赖01至05 | 冻结真实后端串联导入→笔记/标记→链接/搜索→重启/整库恢复，源hash及SQLite摘要一致；11-05扩展JSON/XLSX闭环通过，媒体仅导入、实际播放未验证。11-04Flutter137/分析/隔离构建结果保留；11-05用户允许恢复操作后Computer Use启动两次超时，人工测试已取消，旧窗口失败仅保留历史。自审及限制见[报告](../dev/records/2026-11-04-lw09-integration/report.md)；纳入本批阶段PR，自动化集成交付完成 |
 | LW-06 / P2，进行中 | 格式支持矩阵与扩展；依赖00 | UTF-8文本与XLSX多表只读单元格/公式缓存/资源级标记已本地实现；后端全套380、专项30、末轮Flutter142、静态/Windows Release及冻结真实进程恢复通过，失败保留见[报告](../dev/records/2026-11-04-lw06-formats/report.md)。本批自审完成；复杂Office/XLSX自动化矩阵仍可扩展，人工测试已取消，旧DOC/PPT/XLS与保真编辑未扩展。纳入本批阶段PR；未合并/发行；最后0016冻结包失败现场和转储完整保留；11-06修补冻结DLL继承与深目录兼容，双Python各476、DOCX/PPTX各两页、Calc及冻结业务/CI探针通过，页图四页已检查；本轮自审完成，人工测试已取消，无短名卷自动化仍待补，代码head 4cd157a全CI通过，文档补交CI见PR实时检查，见原报告 |
-| LW-07 / P2，进行中 | 视频获取/下载；依赖00、既有媒体，批量使用前接入05 | 首批公网IPv4 HTTPS/443原始媒体、0015队列/幂等/暂停/恢复/受管入库与普通UI已本地实现；当批后端442、Flutter145、analyze/Windows/冻结通过，详见[报告](../dev/records/2026-11-05-lw07-downloads/report.md)。Commons真实来源测试因DNS返回禁止网段而失败，未放宽边界；公网下载自动化仍受DNS门禁阻断；人工测试已取消，发行未授权。未引入yt-dlp/FFmpeg、无登录/DRM/转码；纳入本批阶段PR；未合并/发行 |
+| LW-07 / P2，进行中 | 视频获取/下载；依赖00、既有媒体，批量使用前接入05 | 首批公网IPv4 HTTPS/443原始媒体、0015队列/幂等/暂停/恢复/受管入库与普通UI已本地实现；当批后端442、Flutter145、analyze/Windows/冻结通过，详见[报告](../dev/records/2026-11-05-lw07-downloads/report.md)。Commons真实来源测试因DNS返回禁止网段而失败，未放宽边界；11-12同一源的源码/冻结下载、独立hash及整库恢复通过；Range缺强ETag、重定向待验证，详见DL-01a；人工测试已取消，发行未授权。未引入yt-dlp/FFmpeg、无登录/DRM/转码；纳入本批阶段PR；未合并/发行 |
 | LW-08 / P3，进行中 | R6剩余授权/受控读取/审核；依赖00至05及格式提取 | 用户11-05明确先授权/审核、暂不接模型。0016外部候选/修订、默认摘要与另选作答正文/历史确认版、普通UI独立采用MD已本地实现；双Python全量各468、Flutter153、静态/Windows/冻结闭环通过；本地自审完成，独立人审未执行，失败修正见[报告](../dev/records/2026-11-05-lw08-authorization-review/report.md)。授权/审核切片待验，LW-08整体仍进行中。不接模型/凭据，不下载模型；人工测试已取消，阶段未补记通过。其他资料工具/候选场景继续规划，不冒充整个R6完成；原PR #3交付义务保留，本批纳入阶段PR，未合并/发行 |
 
 交付规则：LW-00复核待验，LW-01至04本地交付/人工测试已取消；其余任务实施前明确报告、提交/PR、审查与当前head CI要求。本批已授权推送/PR，未授权合并/发行。所有新增数据从首个迁移即备份、校验、保留旧数据；完整恢复能力是首轮学习流程交付门槛。外部目录原地工作区、完整代码IDE、Office等价编辑和未确认Agent场景不自动加入实现。
@@ -101,16 +105,16 @@ LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人�
 | PLAN-03 / 首项 | 现状分析、拆分及新安排落地 | 文档自动化通过；已提交[独立草稿PR #20](https://github.com/surface-user/StudyWorkbench/pull/20)，依赖#19，最终head CI与开发交付结论见该PR实时记录；代码审查暂缓、人工暂停，本项不实现以下功能 |
 | OFF-01 / P0，诊断已完成、待交付，属R3/发行 | Office Java/原生加载闭合诊断与分发方案；先于整包发行 | 11-11已核19417文件/244个PE、4条延迟导入及程序目录递归图；两种自编文件各2页，Job内加载采样确认System32 CRT和Office Python/Java框架，Bean加载预期失败126。采样错误/动态分支限制保留，未安装Java/改组件/放宽门禁；[原报告及精选证据](../dev/records/2026-11-10-release-integrity/report.md)；已提交[独立草稿PR #22](https://github.com/surface-user/StudyWorkbench/pull/22)，依赖#21，最终head CI与诊断交付结论见该PR实时记录，代码审查/人工暂缓，OFF-02整包仍未闭合 |
 | OFF-02 / P0，依赖OFF-01 | 落实经确认的固定离线Java/CRT运行时及加载方案，或另定非Java组件方案 | 待分发范围决定、未实施；OFF-01证据支持继续保留完整独立静态组件，但不抵销整包缺口。若推进整包，须明确是否新增Java、发行者/精确x64版本/来源hash/许可与更新策略、JVM/AWT及递归依赖、Office可识别的Java配置和CRT实际加载根；不能只补jawt.dll或依赖开发机System32。保留原组件清单，新增组件/布局另锁定，冻结转换/源hash/取消重启和无开发依赖自动化复验，见原报告；不删DLL/白名单绕过，不由本次诊断代选依赖 |
-| REL-01 / P0，属M0-02/M1-04 | 标准SBOM与源码/最终包对照；最终版依赖OFF-02及所选可选组件 | 待实施；固定工具/版本/hash/许可；分别覆盖Python冻结/native、Flutter/Dart、NuGet、CRT/WebView2、Office/Java及安装器payload；未知组件显式列出，不把构建环境列表当全产品SBOM |
+| REL-01 / P0，属M0-02/M1-04 | 标准SBOM与源码/最终包对照；最终版依赖OFF-02及所选可选组件 | 进行中；REL-01a源码锁文件切片已实现、REVIEW，证据见上方调度及[原报告](../dev/records/2026-11-10-release-integrity/report.md)。Python冻结/native、Flutter/Dart SDK、NuGet、CRT/WebView2、Office/Java及安装器payload仍未覆盖；未知组件显式列出，不把源锁文件或构建环境列表当全产品SBOM |
 | REL-02 / P0，依赖REL-01 | 完整传递许可与来源义务 | 待实施；组件/版本/原文/来源/分发义务逐项映射，NOTICE/源码提供义务/组合许可/实际构建配置齐备；未知或缺文不得写通过 |
 | REL-03 / P0，依赖REL-01 | 漏洞检查与修复复验 | 待实施；固定扫描器与数据库时间/hash，覆盖锁文件+最终组件，保留原发现/误报依据/修复与回归；无数据库、过期或不支持组件明确报不完整 |
 | REL-04 / P1，依赖REL-01至03 | 签名准备与验签；实际签名需发行身份 | 待实施；签名服务/身份未指定，不声称无证书或已签；先实现显式配置/缺失拒绝/篡改失败，真实SHA256签名与时间戳后更新清单；第三方签名不冒充项目签名 |
 | REL-05 / P1，依赖OFF-02、REL-01至04 | 发行候选组装与可追溯准备 | 待实施；配套前后端、签名后payload清单/SBOM、许可、扫描结果、安装器签名与外置最终hash/构建来源、当前head CI一致；自动化验证升级/卸载数据保护；人工/干净机暂停，合并/正式发布另授权 |
 | FMT-01 / P1，属LW-06/R3 | 扩展复杂DOCX/PPTX/XLSX安全/版式矩阵 | 待实施；真实自编多节/字体/表格/图表/公式/坏包和无短名目录自动化，记录保真与拒绝边界；不把旧格式/编辑列为已有能力 |
-| PAR-01 / P1，属M2-04 | 复杂题号/共享材料确定性候选；先设计样本与期望 | 待实施；复用documents/question_splitting/草稿预览，覆盖跨页/小题/重号/误拆，原图/页码可追溯，不猜答案，不改旧确认版 |
+| PAR-01 / P1，属M2-04 | 复杂题号/共享材料确定性候选；先设计样本与期望 | 实现完成、REVIEW；Word/PDF共用有限题号/显式范围归组，缺号/重号/乱序不关联，跨页原图/区域随MD保留，原件/旧确认版不变；双Python专项各30、Ruff通过，全量环境失败与原生复验保留[原报告](../dev/records/2026-11-12-complex-question-splitting/report.md)。[独立草稿PR #26](https://github.com/surface-user/StudyWorkbench/pull/26)依赖#23，最终head CI/主Agent核验继续；OCR、多栏、任意编号不在本切片，代码审查暂缓、人工取消，尚未合并/发行 |
 | PAR-02 / P2，属M2-04，依赖样本/组件评估 | 多栏与离线OCR分开切片设计/实现 | 待设计；固定离线组件/语言资源/许可/预算后分别PR，多栏阅读顺序/OCR置信提示/拒绝/超时/重启有自动化；不自动下载模型或上传资料 |
 | PAR-03 / P2，属M2-04 | 更大文档/分块任务 | 待设计；原件/页区间/进度与取消/重启/幂等/预算契约先行，不直接放宽25秒/20页等原保护；旧小文件回归保持 |
-| DL-01 / P1，属LW-07 | 当前直接HTTPS下载公网证据补齐 | 待实施；授权公开源+独立hash、DNS/重定向/TLS/断点/重启/入库/备份恢复自动化，不为测试允许禁止网段；旧Commons DNS失败保留 |
+| DL-01 / P1，属LW-07 | 当前直接HTTPS下载公网证据补齐 | 进行中；DL-01a已验证同一CC0源的源码/冻结TLS下载、独立hash、入库、重启/备份恢复；源缺强ETag，真实Range及重定向尚未通过，原DNS失败保留。详见[原报告与精选证据](../dev/records/2026-11-05-lw07-downloads/report.md)，不放宽网络门禁 |
 | DL-02 / P2，属M4/LW-07，依赖来源/组件设计 | 站点提取与质量选择；传输/UI可再拆PR | 待设计；先明确目标站点、有权获取方式、固定yt-dlp及Windows/许可证/维护证据，沿用持久队列和媒体身份；不默认登录/DRM/全站支持 |
 | DL-03 / P2，属M4，依赖DL-02及二进制选择 | FFmpeg合流/转码与入库 | 待设计；审查实际构建开关/来源及LGPL/GPL/nonfree义务，命令参数受控、超时/取消/失败原件保留、磁盘预算与备份覆盖；不得据本机生成样本假称可分发 |
 | PLAN-04 / 后续，属既有规划 | M2-05恢复策略、M3-03、WebView/媒体矩阵、R6剩余 | 继续保留原任务；M2-05不重复#8–#15，恢复/清理需先定身份/关系与同意边界；R6维持无模型，新增场景/凭据另明确。各项先定有限切片再实施/分别PR；不把“其他功能”视为无限授权 |

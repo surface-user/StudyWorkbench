@@ -77,6 +77,9 @@ def markdown_router(engine, root):
                               'regions': draft['regions'], 'parser_version': job.parser_version,
                               'verification': 'unverified', 'answer_status': 'not_inferred'}
                 provenance['shared_material_ids'] = [m['id'] for m in draft.get('shared_materials', [])]
+                provenance['shared_materials'] = [
+                    {key: value for key, value in material.items() if key != 'blocks'}
+                    for material in draft.get('shared_materials', [])]
                 provenance['text_status'] = draft.get('text_status', 'extracted')
                 # JSON inside a fenced metadata section keeps arbitrary filenames out of Markdown syntax.
                 content = markdown(draft) + f'\n---\n来源位置：{pages}\n\n```json\n' + json.dumps(
