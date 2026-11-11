@@ -69,9 +69,10 @@ class InternalLinkScope extends InheritedWidget {
 }
 
 class LinkVisit {
-  LinkVisit(this.uri, {this.view});
+  LinkVisit(this.uri, {this.view, this.anchor});
   final String uri;
   final Map<String, dynamic>? view;
+  final Map<String, dynamic>? anchor;
 }
 
 /// Only identities and small view state; drafts and bearer/capability URLs never enter history.
@@ -160,14 +161,19 @@ class _InternalLinkHostState extends State<InternalLinkHost> {
       ...widget.layout.tabs,
       ...widget.layout.closed,
     ].where((t) => t.resourceItemId == node['resource_item_id']).firstOrNull;
-    if (result['anchor'] != null) {
+    final anchor = point.anchor ?? result['anchor'];
+    if (anchor != null) {
+      if (point.anchor != null &&
+          (link.kind != 'nodes' ||
+              anchor['workspace_id'] != widget.workspaceId ||
+              anchor['resource_item_id'] != node['resource_item_id'])) {
+        throw StateError('搜索位置不属于当前资料');
+      }
       if (existing?.draftBaseSha256 != null ||
           existing?.questionDraft.isNotEmpty == true) {
         throw StateError('目标含未保存草稿，请先保存后定位；当前草稿保留');
       }
-      node['learning_anchor'] = Map<String, dynamic>.from(
-        result['anchor'] as Map,
-      );
+      node['learning_anchor'] = Map<String, dynamic>.from(anchor as Map);
     }
     if (point.view != null) {
       if (existing?.draftBaseSha256 != null ||
@@ -195,7 +201,11 @@ class _InternalLinkHostState extends State<InternalLinkHost> {
     currentTabId = widget.layout.activeId;
   }
 
-  Future<void> follow(String uri, {String? sourceSha256}) async {
+  Future<void> follow(
+    String uri, {
+    String? sourceSha256,
+    Map<String, dynamic>? anchor,
+  }) async {
     if (busy) return;
     if (publicHttpsUrl(uri)) {
       await showDialog<void>(
@@ -233,7 +243,7 @@ class _InternalLinkHostState extends State<InternalLinkHost> {
     });
     try {
       final source = snapshot(sha256: sourceSha256);
-      await open(LinkVisit(uri));
+      await open(LinkVisit(uri, anchor: anchor));
       if (!mounted) return;
       if (source != null) history.add(history.back, source);
       history.forward.clear();
@@ -306,7 +316,7 @@ class _InternalLinkHostState extends State<InternalLinkHost> {
               onPressed: busy
                   ? null
                   : () async {
-                      final uri = await showDialog<String>(
+                      final target = await showDialog<Map<String, dynamic>>(
                         context: context,
                         barrierDismissible: false,
                         builder: (_) => LearningSearchDialog(
@@ -314,7 +324,16 @@ class _InternalLinkHostState extends State<InternalLinkHost> {
                           workspaceId: widget.workspaceId,
                         ),
                       );
-                      if (mounted && uri != null) await follow(uri);
+                      if (mounted && target != null) {
+                        await follow(
+                          target['uri'] as String,
+                          anchor: target['anchor'] == null
+                              ? null
+                              : Map<String, dynamic>.from(
+                                  target['anchor'] as Map,
+                                ),
+                        );
+                      }
                     },
               child: const Text('查找学习记录'),
             ),

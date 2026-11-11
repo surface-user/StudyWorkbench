@@ -1,0 +1,27 @@
+{
+  "scope": "Pinned x64 Office framework in a static-CRT native diagnostic process; not a clean-machine or all-dynamic-branches proof",
+  "office_version": "26.8.1",
+  "java_version": "21.0.13+9",
+  "combined_lock_sha256": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+  "combined_files": 19742,
+  "payload_bytes": 1732478884,
+  "office_select": 0,
+  "vendor": "Eclipse Adoptium",
+  "selected_version": "21.0.13",
+  "office_start_vm": 0,
+  "destroy_vm": 0,
+  "modules": {
+    "jvm.dll": "java/bin/server/jvm.dll",
+    "jawt.dll": "java/bin/jawt.dll",
+    "awt.dll": "java/bin/awt.dll",
+    "officebean.dll": "program/officebean.dll",
+    "msvcp140.dll": "program/MSVCP140.dll",
+    "vcruntime140.dll": "program/VCRUNTIME140.dll",
+    "vcruntime140_1.dll": "program/VCRUNTIME140_1.dll"
+  },
+  "probe_source_sha256": "f3cfa29b8b1bd4d7cc952890f59a44e9adad431599b4065e7eb3de1ac4dd4a33",
+  "probe_exe_sha256": "99e11584580156ba2f0120582ab83e0efa77208d05fa0744371861cfbc4a522e",
+  "source": "root artifacts/goal-20261112/office-java-probe01.log/stdout/stderr; component compose01.log",
+  "selection_reason": "Only return codes, package-relative module locations, versions and diagnostic source needed to assess the former Java bridge failure; no complete raw logs or package binaries",
+  "limits": "Diagnostic calls pinned private C++ exports with matching x64 data layout and sets its own DLL directory; it is not shipped or a supported application API. Office conversions are separately checked, without claiming these module observations came from those processes."
+}

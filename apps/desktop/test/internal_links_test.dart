@@ -52,6 +52,108 @@ WorkspaceLayout makeLayout(List<WorkbenchTab> tabs, String active) {
 }
 
 void main() {
+  for (final changed in [false, true]) {
+    testWidgets(
+      'TXT search reaches the source line with final version check: changed=$changed',
+      (tester) async {
+        tester.view.physicalSize = const Size(1500, 1200);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final layout = makeLayout([], '');
+        var documentReads = 0;
+        final point = {
+          'version': 1,
+          'kind': 'text_line',
+          'workspace_id': 'default',
+          'resource_item_id': 'txt',
+          'content_sha256': 'a' * 64,
+          'line': 2,
+          'line_sha256': 'c' * 64,
+        };
+        final backend = _Backend((method, path, body) async {
+          if (path.contains('/learning-search?')) {
+            return {
+              'items': [
+                {
+                  'kind': 'text_resource',
+                  'id': 'txt',
+                  'title': '课程.txt',
+                  'snippet': '第二行关键字',
+                  'uri': link('txt'),
+                  'content_sha256': 'a' * 64,
+                  'anchor': point,
+                },
+              ],
+              'offset': 0,
+              'total': 1,
+              'has_more': false,
+              'truncated': false,
+              'scanned': {'text_resource': 1},
+            };
+          }
+          if (path.endsWith('/internal-links/resolve')) return resolved('txt');
+          if (path.endsWith('/document')) {
+            documentReads++;
+            return {
+              'type': 'text',
+              'text': '首行\r\n第二行关键字\r\n末行',
+              'sha256': (changed && documentReads > 1 ? 'b' : 'a') * 64,
+              'working_copy': false,
+            };
+          }
+          throw StateError('$method $path');
+        });
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: StatefulBuilder(
+                builder: (context, set) => InternalLinkHost(
+                  backend: backend,
+                  workspaceId: 'default',
+                  layout: layout,
+                  onChanged: () => set(() {}),
+                  child: layout.tabs.isEmpty
+                      ? const Text('资料区域')
+                      : DocumentPage(
+                          backend: backend,
+                          workspaceId: 'default',
+                          tab: layout.tabs.single,
+                          jumpAnchor: layout.tabs.single.pendingAnchor,
+                          onChanged: () {},
+                        ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('查找学习记录'));
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          find.byKey(const ValueKey('learning-search-query')),
+          '关键字',
+        );
+        await tester.tap(find.text('搜索 / 刷新'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('TXT资料 · 课程.txt'));
+        await tester.pumpAndSettle();
+        expect(layout.tabs.single.resourceItemId, 'txt');
+        expect(documentReads, greaterThanOrEqualTo(3));
+        if (changed) {
+          expect(find.textContaining('内容已变化，旧位置未自动应用'), findsOneWidget);
+          expect(find.text('定位行：第二行关键字'), findsNothing);
+        } else {
+          expect(
+            find.byKey(const ValueKey('source-line-view')),
+            findsOneWidget,
+          );
+          expect(find.text('定位行：第二行关键字'), findsOneWidget);
+          expect(layout.tabs.single.captureView!()['source_line'], 2);
+        }
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
   TestWidgetsFlutterBinding.ensureInitialized();
   test(
     'strict links retain legacy IDs and reject dangerous or ambiguous input',
