@@ -202,3 +202,65 @@ PLAN-04保留为汇总，新增有限后续切片：M2-05i恢复/重新登记设
 随后同命令退出0：两份明确文件UTF-8/LF/单末尾换行/无尾空格、60处相对链接、3处新增锚点、64条原表格行逐字保留、新增16个ID唯一且功能项均未实施/未执行、原task前后正文及原报告全部历史前缀保持。输出docs-check01.json包含实际规范Git blob SHA；补PR链接后的最终字节会再次校验并对照远端。没有运行业务/安装/窗口测试；本PR当前head完整CI另核，不拿#20结果代替。代码审查和人工测试暂缓，尚未合并或发行。
 
 实际交付：[独立草稿PR #21](https://github.com/surface-user/StudyWorkbench/pull/21)，分支codex/task-gap-followup，base为#20最终defd9d4，实现提交f0a70189680a7d1c31de077ed4168ffc03312165，仅两份文档。已附加当前聊天，task/本报告补实际链接；最终head、CI运行/核对时间及PLAN-05开发交付结论在PR描述维护，不为写入自身SHA反复提交。其余新增功能/设计仍未实施，代码审查暂缓、人工暂停，不合并或发行。
+
+## 2026-11-11：OFF-01，固定Office加载链诊断与OFF-02输入
+
+承接持续开发授权，本轮仅完成OFF-01有限诊断。先核最新#21仍为2010bda927f9abb2f0900ee325e8ae60a6c5235b，其CI #125 / 42803117625为success；根仍为#7且仅原.vscode/和交付summary.md未跟踪，两处工作树与原包不改。相关聊天状态核对未发现另一项正在修改Office的工作，源协调聊天处于idle，不重复派发。完整阅读现行开发约束/requirements/architecture/question-content-spec/task，补读ADR0009/0014、Office执行/准备/清单/发行校验及dev规则。代码审查与人工/Computer Use仍暂缓，不接模型，不执行安装或用户窗口，不恢复旧题目录。
+
+### 范围和证据方法
+
+无生产代码、UI、协议、依赖或固定组件变更。只读核官方固定组件，复用现有OfficeRuntime.verify、输入门禁、profile_configuration、WindowsProcessJob及受控命令/环境，对自编DOCX/PPTX在新隔离目录运行自动化转换；数据只写本轮artifacts/off01-20261111和.local/off01-run-20261111。Q为原根.local/release-venv/Scripts/python.exe，cwd为原仓库根；不碰个人库，不终止其他进程。
+
+静态扫描检查.exe/.dll/.pyd/.com/.bin的MZ文件、普通/延迟导入、程序目录候选递归图和重名路径；系统DLL作为叶节点，不冒充Windows loader完整模拟。首轮辅助扫描器按大小写敏感的字典找程序目录，误报8条候选缺失；static-first-case-sensitive.json保留。按Windows名称语义修正casefold路径索引并增加实际大小写断言后重跑；原DLL、清单、生产检查器均未改，最终图不含该误报。
+
+运行采样仅查询每次转换自己持有的Windows Job进程列表，再用Toolhelp快照取其中模块；不收集其他进程名称/模块。10ms为请求间隔，枚举耗时与模块生命周期使覆盖不完整，不能保证捕获所有短命加载。探针先核Win64结构大小和本进程Python模块读取，再断言两种真实格式页数/原件字节、模块采样及Job清理；句柄/线程均有结束处理。进程切换时snapshot错误299/24/87/18计数原样保留，不将缺少观察解释为绝不加载。源进程使用现有Office命令/profile/Job；本轮冻结证据仅43模块源码一致性，未重跑冻结Office HTTP全流程，不将源采样冒充冻结加载全跟踪。
+
+### 本轮结果
+
+- 固定runtime-lock SHA256为147d21f38890236a51ac3b079d4632690ce7ae12f1470d6896aaef3597a0f8ca；19417文件、声明1577045386字节前后完整核验通过。组件version.ini的buildid为bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1。未新增Java，jawt.dll/jvm.dll不在组件中。
+- 244个PE中，普通导入在全包名称+本机系统可用性范围仅发现officebean.dll缺jawt.dll；4条延迟导入是cli_cppuhelper.dll的cppu3/cppuhelper3MSC/sal3，以及mergedlo.dll的shell32。它们与Java动态加载是不同证据，不能把无额外延迟缺口推成Java闭合。
+- soffice.com/soffice.bin为实际启动链；程序目录候选递归图含54个组件PE，本机系统DLL作叶节点时无未解析普通/延迟边。officebean独立根仍缺jawt。现有check_release仅遍历.exe/.dll/.pyd普通导入，不遍历上述.com/.bin或延迟导入，而且用全包basename判断存在；本轮不修改它。该覆盖限制是OFF-02/发行校验设计输入，不以诊断绕过原门禁。
+- 同名PE有13组：Office/program与嵌入Python子树的OpenSSL/SQLite/Python，以及System/System64的CRT等。System为x86（0x14c），System64为AMD64（0x8664）；全包同名并不证明加载了正确目录/架构。嵌入Python的_ctypes.pyd还从其lib目录关联libffi，不宜把所有子进程强行当同一程序目录解析。
+- 两个自编输入各生成2页PDF，源字节/hash保持。Job内8个进程取得6544次模块快照、2243次Job查询；共观测170个不同模块，其中74个来自Office目录。模块枚举错误299=120、24=17、87=1、18=1，属于不完整采样证据，保留在原JSON。
+- 采样中soffice.com与soffice.bin来自固定program；jvmfwklo.dll/jvmaccesslo.dll已加载，但未观察到officebean/jawt/jvm。这只说明两条受测静态转换未观察到Java运行分支，不证明所有Office功能不需要Java。Office/program/python313.dll及pythonloaderlo.dll也被加载；禁用Python脚本不等于可以从SBOM或分发包中排除这些二进制。
+- MSVCP140、MSVCP140_1、MSVCP140_2、VCRUNTIME140及VCRUNTIME140_1实际观察路径为Windows/System32；未观察到从组件System64加载这些CRT。宿主机有CRT时转换成功不能证明无开发依赖环境闭合。另有1个未分类宿主扩展模块AudioDevProps2.dll，未断言其提供者或可分发性；后续环境隔离验证必须保留这一限制。
+- 在独立Q子进程中清除继承DLL目录并限定DLL_LOAD_DIR|SYSTEM32，固定officebean.dll加载失败，WinError126；探针对该预期负例断言通过。未加载Java或改变系统搜索路径配置。此为桥接负例，不是Office全功能通过。
+
+### 分发方案与OFF-02必须明确的输入
+
+诊断结论：**目前证据支持继续保留基础包+未经裁剪的独立Office静态转换组件；该分发边界继续明确Java桥接/整包依赖未闭合。** 若目标为包含完整Office的安装器，必须补充真实Java与CRT方案，不能通过删officebean.dll、复制单个jawt.dll或忽略缺失项来销项。本次只给出方案与输入，不替用户决定新增Java或重制非Java组件。
+
+| 后续路线 | 需要明确/验证的事项 | 当前结论 |
+|---|---|---|
+| 维持基础包+独立完整Office | 继续只声明受测静态DOCX/PPTX分页及现行边界；依赖/许可/SBOM持续如实登记 | 已有分发可保持；不称整包缺口修复 |
+| 完整Office整包 | 用户确定允许新增固定x64 Java运行时；再评估发行者/精确版本、官网来源/hash/签名/许可与来源义务、维护更新和体积。核JVM、AWT/jawt及递归native依赖；设计仅对子进程生效且可被Office识别的Java配置、CRT加载根/架构，避免借宿主JAVA_HOME/PATH/已装CRT蒙混通过 | OFF-02仍未实施；来源/版本/布局和依赖方案未选定，不下载、不注册系统Java、不修改全局环境 |
+| 新的非Java转换组件 | 单独定义来源/构建开关/许可/功能删减、组件布局与新清单，复验输入门禁、字体/公式/图表、进程/缓存及不支持项 | 改变固定组件需另行方案确认，不能直接删原组件DLL或改旧锁冒充同包 |
+
+OFF-02还须决定新增组件与原Office锁的关系：原组件字节/官方锁保留，新增依赖独立锁定；若布局或组件本体改变，应按新的明确组件规范生成新锁，不能静默改原锁。发行检查须按实际加载域区分backend、Office/program及嵌入helper，考虑.com/.bin、delay和已识别动态分支、重名/架构及系统前置条件；检查加强也要保留原失败/断言，不能加入忽略名单。随后才验证无开发Java/CRT借用的自动化环境、实际加载路径、冻结DOCX/PPTX/Calc、取消/重试/重启、源hash、许可/SBOM与升级配置。当前没有已选JRE可扫描，不能声称Java递归闭合或全功能兼容。
+
+### 版本绑定的官方依据
+
+直接依据为上述固定二进制、配置和本轮采样。另已读取与本地version.ini相同buildid的上游源码： [vendorbase.cxx](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/jvmfwk/plugins/sunmajor/pluginlib/vendorbase.cxx)、[sunjavaplugin.cxx](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/jvmfwk/plugins/sunmajor/pluginlib/sunjavaplugin.cxx)、[framework.cxx](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/jvmfwk/source/framework.cxx)和[Windows Office Bean](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/bean/native/win32/com_sun_star_comp_beans_LocalOfficeWindow.c)。源码说明从所选JRE路径查找运行库、动态加载并查找JNI入口，Bean通过AWT接口取窗口；固定jvmfwk二进制的LoadLibraryW导入、jvm.dll/JNI字符串与此一致。源码关联不是Java候选的实际运行兼容证明。
+
+[LibreOffice Java官方帮助](https://help.libreoffice.org/latest/en-US/text/shared/optionen/java.html)要求架构匹配并说明Java选择配置；[微软DLL搜索顺序](https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order)说明依赖按加载规则解析，不能以任意子目录同名文件代替实际路径证据；[Toolhelp快照说明](https://learn.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-createtoolhelp32snapshot)明确加载变动可能导致失败/不完整。最初web请求26.8.1.1标签两个源码URL返回cache miss，未引用其不可读内容；后改用本地buildid的GitHub连接器读取成功，master内容仅作查找线索，不当成该版本证据。
+
+### 实际命令、退出码与限制
+
+| 命令（Q如上，原仓库根） | 退出/结果 | 原始产物 |
+|---|---|---|
+| Q -X utf8 artifacts/off01-20261111/scan.py（首轮） | 0；244PE/唯一jawt缺口正确，程序目录图因扫描器大小写误报8条，保留后修正 | static-first-case-sensitive.json；非生产故障 |
+| 同命令，修正casefold索引并加真实路径断言后 | 0；19417文件核验、244PE/4delay/13重名组、54节点候选图 | static.json、static-final.log；辅助源码scan.py |
+| Q -X utf8 artifacts/off01-20261111/sample_loads.py | 0；真实受控Job转换及模块采样、自编DOCX/PPTX各2页、源字节/线程/句柄/组件核验；错误计数保留 | loads.json；辅助源码sample_loads.py；隔离.local/off01-run-20261111 |
+| Q -X utf8 -，固定officebean LoadLibraryEx负例 | 0；加载预期失败126；未引入Java或复制DLL | bridge-load.json |
+| Q -X utf8 .local/markdown-merge-followup-src/tools/check_frozen_sources.py --exe dist/StudyWorkbench-Release-20261110-37a8d55/app/backend/study_backend.exe | 0；43冻结模块与当前业务源码一致 | 本轮命令输出；现有包保持不替换 |
+| Q -X utf8 -，筛选诊断摘要 | 0；筛选与脱敏来源/理由写入摘要，未复制完整原始目录 | [精选证据](evidence/off01-summary.json) |
+
+精选JSON只保留具体结论所需的计数、缺失/延迟/重名路径、Java/CRT/Python观察、来源hash和局限；移除全部原始模块路径表、PID、profile、PDF、二进制及测试数据库。scan.py/sample_loads.py及原始数据仅在本地artifacts，以摘要中的hash标版本，不自动将原始目录晋升evidence。该证据是诊断，不是完整SBOM、许可/漏洞、独立审查、干净机或正式发行证明。
+
+本轮交付仅task两行/日期、本报告追加和一个精选JSON；没有代码/测试/依赖/配置/旧组件变更。独立草稿PR与最终head CI待创建后核验；代码审查暂缓、人工暂停，不合并或发布。OFF-01诊断不取消OFF-02、发行总项或其他未完成任务。
+
+### OFF-01 文档与证据校验
+
+Q -X utf8 artifacts/off01-20261111/check_docs.py退出0：三份明确文件UTF-8/LF/尾空格、62处相对链接、原82条表格行数量不变（只更新OFF-01/02两行）、其他任务正文逐字保持、原报告全部历史前缀保留。精选JSON解析/唯一jawt缺口、无误报的启动候选图、两格式各2页及负例126/采样错误保留断言通过；Git blob收据在docs-check.json。git diff --check退出0，根status仍仅原两项未跟踪内容；本轮未改变原工作区/固定组件/交付包。本地没有重跑未修改的后端/Flutter业务全量，新PR当前head完整CI仍须核验；父#21绿灯不代替该结果。没有代码审查或人工测试通过结论。
+
+实际交付：[独立草稿PR #22](https://github.com/surface-user/StudyWorkbench/pull/22)，分支codex/office-loader-diagnosis，base为#21最终2010bda9，实现e0469205ac62bbd97a46c601e94cacd876f4ef3f，三份明确文件；task/本报告补实际链接，已附加聊天。最终head/当前head CI运行与核对时间在PR描述维护，避免为记录自身SHA循环提交。OFF-01仅诊断交付，OFF-02与发行整体继续未完成；代码审查与人工暂缓，不合并或发布。
