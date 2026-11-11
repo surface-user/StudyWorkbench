@@ -43,3 +43,28 @@
 实现、自动化及本批自审完成；真实窗口/IME/DPI/真实个人库规模、用户人工/阶段、安装/干净机未执行，保持待验收。自动测试用构造样本，不构成大库性能验收。没有更新冻结后端/安装发行组合；未提交/推送/PR/合并/发布，远程head/CI未知。下一项LW-05，现有export仍非整库恢复包。
 
 收尾命令：`P artifacts/lw04-20261104/check_docs.py`退出0，46份Markdown、223处本地链接/7处标题锚点通过，114份受保护历史文件SHA256保持；`P tools/export_question_schema.py --check`退出0；`git -c core.safecrlf=false diff --check -- docs dev apps/desktop/lib backend`退出0。完整运行产物仍在被忽略的artifacts目录，未整包晋升evidence。
+
+## 2026-11-12：LW-04a TXT全文与原文行跳转
+
+以下载分页#27最终6af03602e5d70b40de58420b8b323c173612aaac为基线，独立目录.local/goal-20261112/txt-search。主Agent调度前已核LW-04和TXT只读依赖满足，领取IN_PROGRESS；本切片独立PR，完整实现/测试/报告后REVIEW，主Agent核当前head CI后登记DONE。代码审查与人工测试仍暂缓，不改用户原件/学习记录或根工作区。
+
+复用learning_search现有有界文件扫描，MD/TXT共同1000份、单文件1MiB及全请求16MiB；严格UTF-8、原件size/hash、同空间/墓碑和坏字节计费保持，TXT不读取MD工作副本。增加text_resource结果类型，正文首命中按casefold扩展字符映回原文，LF行/去末CR/行hash沿TextAnchor协议；只名称命中明确资源级打开。正文摘要优先匹配正文，不用标题命中代替原文行。
+
+LearningSearchDialog结果由URI字符串改为{uri,anchor?}，唯一生产调用方InternalLinkHost和全部测试调用方同步。内部URI v1保持无参数；临时位置通过LinkVisit/既有learning_anchor及pendingAnchor传给DocumentPage，不创建持久书签或新接口。搜索对话框打开前核hash，主机复核空间/目标ID/草稿，DocumentPage应用原文行前再次读取核hash；期间变化拒绝旧行，既有返回/前进与草稿保护继续。新增/修改文件限三处实现、三处测试、API/契约/架构当前能力说明、task及本报告，无迁移/依赖/通用索引。
+
+工作目录为独立源码；Q=根.local/release-venv/Scripts/python.exe（3.13.17），P=根.venv/Scripts/python.exe（3.12），D/F为既有Flutter SDK的dart.exe/flutter_tools.snapshot。原始产物只在artifacts/lw04a。本轮复用已核锁定依赖的本地package_config/package_graph，运行--no-pub；.venv新建目录链接至Q环境仅供隔离真实后端测试，不改环境依赖或系统设置。
+
+- Q -m pytest backend/tests/test_learning_search.py -q --basetemp=.local/lw04a-q01 --junitxml=artifacts/lw04a/backend.xml：退出0，18通过，8.49秒。
+- 正文优先摘要补齐后Q -m pytest backend/tests/test_learning_search.py backend/tests/test_learning_marks.py backend/tests/test_internal_links.py -q --basetemp=.local/lw04a-q02 --junitxml=artifacts/lw04a/backend-combined.xml：退出0，58通过，23.53秒；Q -m ruff check backend tools退出0。
+- 新增6后端参数用例覆盖中文、CRLF/LF、casefold展开前后位置、空行命中、名称不猜行、完整扫描后分页/重启、墓碑/空间过滤、坏编码/原件hash/共同预算。原MD/旧笔记/marks保持断言；原明确TXT不搜索夹具随新范围改为同时期望TXT，不删除原MD和旧笔记断言。
+- D format 四份修改Dart：退出0。D F --no-version-check test --no-pub test/learning_search_test.dart test/internal_links_test.dart --reporter expanded：退出0，19通过（新增4），flutter-target.txt。包含实际搜索对话框→内部导航→DocumentPage原文第2行的完整组件链，以及搜索后内容变化拒绝旧行，未用仅后端结果冒充UI能力。
+- 完整桌面/静态检查与双Python组合回归结果后补，当前head CI核实前不得DONE。普通窗口/IME/硬件/大库性能未执行；不扩展其他格式全文、OCR、通用编辑或Agent授权。
+
+### 本切片完整自动化与交付
+
+- `P -m pytest backend/tests/test_learning_search.py backend/tests/test_learning_marks.py backend/tests/test_internal_links.py -q --basetemp=.local/lw04a-p01 --junitxml=artifacts/lw04a/backend312.xml`：退出0，58通过，28.39秒；Starlette/anyio弃用警告保留。
+- `D F --no-version-check test --no-pub --dart-define=STUDY_ROOT=D:/computer_work/project/StudyWorkbench/.local/goal-20261112/txt-search --dart-define=STUDY_DATA_DIR=D:/computer_work/project/StudyWorkbench/.local/goal-20261112/txt-search/.local/flutter-full02`：退出0，完整200通过、无跳过，39秒，flutter-full02.txt；环境PYTHONPATH指向本切片backend。
+- 首轮同命令使用独立flutter-full profile且同时运行analyze/后端回归：退出1，198通过/2失败，flutter-full.txt。失败为既有真实进程备份恢复与父管道取消各30秒超时，另记录恢复后端20秒启动超时；不能由时序单独断言根因。保持代码、断言与时限，待其他任务结束后用新profile串行重跑得到上述200通过；原失败不清除。
+- 首轮analyze退出1，仅新测试2处curly_braces_in_flow_control_structures信息；补括号后`D format --output=none --set-exit-if-changed lib test integration_test`退出0，87文件无变化。`D F --no-version-check analyze --no-pub`退出0，No issues found（6.9秒），analyze02.txt，原analyze.txt保留。
+
+本切片实现和本地自动化完成，task保持REVIEW，独立草稿PR基于codex/download-history-pagination；当前head CI待核。未修改根工作区、数据库或依赖锁定文件，没有正文索引/持久学习记录副作用。代码审查按ADR0014暂缓、人工按ADR0013取消；未合并/公开发行，不把上游#27绿灯计作本切片CI。

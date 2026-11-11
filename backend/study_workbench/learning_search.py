@@ -8,7 +8,7 @@ from .document_files import TEXT_LIMIT, digest, limited_view
 from .imports import note_revision, resource_path
 from .workspaces import require_workspace
 
-MD_LIMIT = 1000
+FILE_LIMIT = 1000
 BYTE_LIMIT = 16 * TEXT_LIMIT
 DB_LIMIT = 10000
 
@@ -27,7 +27,7 @@ def note_text(value, depth=0):
     return '\n'.join(pieces)
 
 
-def snippet(text, query):
+def match_start(text, query):
     # Casefold may expand characters; map only until the first match for exact display offsets.
     folded = text.casefold()
     index = folded.find(query)
@@ -38,6 +38,13 @@ def snippet(text, query):
         consumed += len(char.casefold())
         if consumed > index:
             break
+    return start
+
+
+def snippet(text, query):
+    start = match_start(text, query)
+    if start is None:
+        return None
     left, right = max(0, start - 60), min(len(text), start + 180)
     return ('…' if left else '') + text[left:right] + ('…' if right < len(text) else '')
 
@@ -53,7 +60,7 @@ def router(documents):
             raise HTTPException(422, '搜索词不能为空白')
         query = q.casefold()
         rows, reasons = [], []
-        scanned = dict(file_note=0, legacy_note=0, mark=0, bytes=0, unreadable=0)
+        scanned = dict(file_note=0, text_resource=0, legacy_note=0, mark=0, bytes=0, unreadable=0)
 
         def reason(value):
             if value not in reasons:
@@ -67,7 +74,7 @@ def router(documents):
             scanned['bytes'] += size
             summary = snippet(text, query)
             if summary is not None:
-                target_kind = {'file_note': 'nodes', 'legacy_note': 'notes', 'mark': 'marks'}[kind]
+                target_kind = {'file_note': 'nodes', 'text_resource': 'nodes', 'legacy_note': 'notes', 'mark': 'marks'}[kind]
                 rows.append(dict(kind=kind, id=identifier, title=title, snippet=summary,
                                  uri=f'studyworkbench://v1/workspaces/{workspace_id}/{target_kind}/{identifier}', **version))
             return True
@@ -79,20 +86,22 @@ def router(documents):
                 WorkspaceNode.workspace_id == workspace_id, WorkspaceNode.removed_at.is_(None),
                 Resource.workspace_id == workspace_id, WorkspaceNode.kind == 'resource',
                 or_(func.lower(Resource.original_name).endswith('.md'),
-                    func.lower(Resource.original_name).endswith('.markdown'))).order_by(WorkspaceNode.id).limit(MD_LIMIT + 1)
+                    func.lower(Resource.original_name).endswith('.markdown'),
+                    func.lower(Resource.original_name).endswith('.txt'))).order_by(WorkspaceNode.id).limit(FILE_LIMIT + 1)
             for node in session.scalars(files):
-                if scanned['file_note'] >= MD_LIMIT:
-                    reason('达到1000份MD文件预算，结果不完整')
+                if scanned['file_note'] + scanned['text_resource'] >= FILE_LIMIT:
+                    reason('达到1000份MD/TXT文件预算，结果不完整')
                     break
-                scanned['file_note'] += 1
+                original = session.get(Resource, node.resource_id)
+                kind = 'text_resource' if original.original_name.lower().endswith('.txt') else 'file_note'
+                scanned[kind] += 1
                 title_size = len(node.name.encode('utf-8')) + 1
                 remaining = BYTE_LIMIT - scanned['bytes'] - title_size
                 if remaining <= 0:
                     reason('达到16MiB文字预算，结果不完整')
                     break
                 try:
-                    original = session.get(Resource, node.resource_id)
-                    work = session.get(DocumentWorkfile, node.id)
+                    work = session.get(DocumentWorkfile, node.id) if kind == 'file_note' else None
                     relative = work.relative_path if work else original.relative_path
                     with resource_path(documents.root, relative).open('rb') as handle:
                         data = handle.read(min(TEXT_LIMIT, remaining) + 1)
@@ -108,10 +117,20 @@ def router(documents):
                     content = data.decode('utf-8')
                 except (HTTPException, OSError, UnicodeError, ValueError):
                     scanned['unreadable'] += 1
-                    reason('部分MD文件缺失、损坏、非UTF-8或超限，结果不完整')
+                    reason('部分MD/TXT文件缺失、损坏、非UTF-8或超限，结果不完整')
                     continue
-                if not collect('file_note', node.id, node.name, node.name + '\n' + content,
-                               cost=0, content_sha256=digest(data)):
+                version = dict(content_sha256=digest(data))
+                searchable = node.name + '\n' + content
+                if kind == 'text_resource':
+                    position = match_start(content, query)
+                    if position is not None:
+                        searchable = content
+                        line = content.count('\n', 0, position) + 1
+                        line_text = content.split('\n')[line - 1].removesuffix('\r')
+                        version['anchor'] = dict(version=1, kind='text_line', workspace_id=workspace_id,
+                            resource_item_id=node.id, content_sha256=version['content_sha256'],
+                            line=line, line_sha256=digest(line_text.encode('utf-8')))
+                if not collect(kind, node.id, node.name, searchable, cost=0, **version):
                     break
             old_notes = select(Note.id, func.length(cast(Note.content, LargeBinary))).where(
                 Note.workspace_id == workspace_id).order_by(Note.id).limit(DB_LIMIT + 1)
@@ -146,6 +165,6 @@ def router(documents):
         rows.sort(key=lambda row: (row['kind'], row['id']))
         return dict(query=q, items=rows[offset:offset + limit], total=len(rows), offset=offset, limit=limit,
                     has_more=offset + limit < len(rows), truncated=bool(reasons), reasons=reasons, scanned=scanned,
-                    scope='活动MD笔记文件当前正文、旧富内容笔记、未移除书签标题/备注；不含TXT全文/OCR')
+                    scope='活动MD笔记文件当前正文、TXT资料全文、旧富内容笔记、未移除书签标题/备注；不含OCR')
 
     return routes

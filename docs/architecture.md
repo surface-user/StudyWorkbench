@@ -18,7 +18,7 @@
 | 自由笔记（LW-01） | 受管目录新建MD原件/可编辑副本、持久幂等创建/中断核对、目录及资料/媒体页入口；旧notes不迁移 | markdown_notes.py、markdown_note_dialog.dart、resource_explorer.dart、resource_page.dart |
 | 位置书签与备注（LW-02） | 版本化资源/页/原文行/媒体时间锚点、标记修订/墓碑、同空间笔记关系和来源回跳；失效位置不自动重定位 | learning_marks.py、media_duration.py、learning_marks_dialog.dart、document_page.dart、media_page.dart |
 | 内部链接（LW-03） | 严格版本URI、受鉴权解析、复制/MD插入跟随、最多50条运行时往返；目标/返回位置重验，不注册系统协议 | internal_links.py、internal_links.dart、document_page.dart |
-| 集中查找（LW-04） | 活动MD当前正文、旧笔记及书签备注的有界纯文本扫描/分页，显式截断；跳转重验版本，无搜索正文镜像 | learning_search.py、learning_search_dialog.dart |
+| 集中查找（LW-04） | 活动MD当前正文、TXT原件全文、旧笔记及书签备注的有界纯文本扫描/分页，显式截断；TXT命中绑定原文行/版本，跳转重验，无搜索正文镜像 | learning_search.py、learning_search_dialog.dart |
 | 完整库备份恢复（LW-05） | 离线SQLite快照/全文件包、受控新空目录恢复、旧schema保留后升级、表/文件/关系校验、草稿落盘/停服/取消/配置激活；人工/发行仍待验 | backup_archive.py、backup_store.py、backup_dialog.dart、main.dart、__main__.py |
 | XLSX只读查看 | 有界OOXML ZIP/XML在既有查看子进程读取，多表稀疏单元格/缓存值；不执行公式/宏或外链，不提供Office编辑/样式保真 | spreadsheet_view.py、document_view_worker.py、spreadsheet_view.dart、document_page.dart |
 | 离线完整性巡检 | 独占数据锁和SQLite只读连接，受限核文件hash/外键及派生目录归属（含旧提取题目questions的空目录/仅图片中断）；仅报告，不迁移、修复或删除；无HTTP/Agent/桌面入口 | library_integrity.py、__main__.py |

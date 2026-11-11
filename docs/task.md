@@ -40,8 +40,8 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | DL-01 | READY | 既有HTTPS下载实现已具备；重核公网来源/DNS/TLS与独立hash，无法访问则保留具体证据，不放宽禁止网段 |
 | DL-02 | READY | 来源/组件设计可先行；实际站点提取依赖明确站点和授权方式，不默认登录/DRM |
 | DL-03 | BLOCKED | 依赖DL-02及FFmpeg实际二进制/许可选择 |
-| LW-04a | READY | LW-04及TXT原文查看已实现；先明确全文扫描预算和版本/原文行跳转 |
-| LW-07a | REVIEW | 已实现50条历史分页、稳定排序/时间ID上界、轮询/翻页失败及迟到响应保护；双Python专项各11、Flutter专项6通过，完整Flutter196/静态检查通过；[独立草稿PR #27](https://github.com/surface-user/StudyWorkbench/pull/27)最终head CI待核；[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)，主Agent核验后才DONE |
+| LW-04a | REVIEW | 已实现严格UTF-8 TXT全文与原文行跳转，名称匹配明确资源级；复用共同预算、稳定分页、同空间/墓碑和版本重验。双Python搜索/位置/链接各58通过，Flutter专项19/完整200及静态检查通过；[原报告](../dev/records/2026-11-04-lw04-search/report.md)保留失败与限制；独立草稿PR及最终head CI交付中，主Agent核验后才DONE |
+| LW-07a | DONE | 完整下载历史分页开发交付完成；双Python专项各11、Flutter专项6/完整196及静态检查通过；主Agent已核[独立草稿PR #27](https://github.com/surface-user/StudyWorkbench/pull/27)最终6af0360的[CI 43060817695](https://github.com/surface-user/StudyWorkbench/actions/runs/43060817695)三job/44步全成功及[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)失败记录。审查暂缓、人工取消，未合并/发行；LW-07整体与DL-01继续未完成 |
 | UPD-01 | BLOCKED | 完整升级回滚流程依赖稳定发行产物和签名方案；保留旧库保护，未授权发布更新 |
 | API-01 | READY | 可先盘点现有错误响应/桌面调用方并确定兼容契约，再独立切片实施 |
 | M2-05i | READY | 05g/h巡检及完整备份已实现；先设计身份/来源/附件关系与显式确认，不自动恢复或删除 |
@@ -124,8 +124,8 @@ LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人�
 | 编号/归属 | 任务、依赖与范围 | 当前状态及退出证据 |
 |---|---|---|
 | PLAN-05 / PLAN-03补漏 | 补登遗漏、细化PLAN-04及集中审查收尾 | 文档补齐与校验已完成；已提交[独立草稿PR #21](https://github.com/surface-user/StudyWorkbench/pull/21)，依赖#20，最终head CI及开发交付结论见该PR实时记录；原条目/历史报告保留，代码审查/人工暂停，本项不实现下列功能 |
-| LW-04a / 集中检索后续 | TXT资料全文检索；依赖LW-04及现有TXT只读能力，先确定与笔记搜索的范围/预算/跳转契约 | 待设计、未实施；依据[契约第6节](learning-workbench-contracts.md)。须验证严格编码、同空间与墓碑过滤、中文匹配、分页/截断、源版本变化/原文行回跳；沿用MD/旧笔记/标记回归，不把任意格式全文/OCR混入本项 |
-| LW-07a / 下载历史 | 完整下载历史分页界面；依赖现有LW-07队列和列表接口 | REVIEW，实现及专项自动化完成；50条分页可访问100条以外历史，history/newest_id复用offset/limit、保留默认活动排序API；状态更新不挤页、失败保留/重试、创建后重置及迟到轮询保护。双Python专项各11、Flutter专项6通过；[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)记录命令和失败，[独立草稿PR #27](https://github.com/surface-user/StudyWorkbench/pull/27)已创建，完整Flutter196/静态检查通过；当前head CI核实后主Agent登记DONE。时间上界非事务快照；不清除任务/attempt，审查/人工暂缓，未合并/发行 |
+| LW-04a / 集中检索后续 | TXT资料全文检索；依赖LW-04及现有TXT只读能力，共同文件/字节预算、原文行/版本契约见[契约第6节](learning-workbench-contracts.md) | REVIEW，实现及相关自动化完成；严格UTF-8原件全文、中文/casefold、同空间/墓碑、稳定分页/截断、正文行与名称资源级跳转、源版本变化拒绝旧行已接UI。双Python搜索/位置/链接各58通过，Flutter专项19/完整200及静态检查通过；[原报告](../dev/records/2026-11-04-lw04-search/report.md)保留实际命令与首轮超时。独立草稿PR及当前head CI交付中，核实后主Agent登记DONE；代码审查暂缓、人工取消，未合并/发行；不含其他格式全文/OCR/索引 |
+| LW-07a / 下载历史 | 完整下载历史分页界面；依赖现有LW-07队列和列表接口 | DONE，有限范围开发交付完成；50条分页可访问100条以外历史，history/newest_id复用offset/limit、保留默认活动排序API；状态更新不挤页、失败保留/重试、创建后重置及迟到轮询保护。双Python专项各11、Flutter专项6/完整196及静态检查通过；[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)保留失败，主Agent已核[草稿PR #27](https://github.com/surface-user/StudyWorkbench/pull/27)最终6af0360的[CI 43060817695](https://github.com/surface-user/StudyWorkbench/actions/runs/43060817695)三job/44步全成功。时间上界非事务快照，不清除任务/attempt；审查暂缓、人工取消，未合并/发行；LW-07整体及DL-01仍未完成 |
 | UPD-01 / 发行长期规划 | 自动升级与完整回滚产品流程；依赖稳定发行产物/签名方案及现有备份保护，方案先行 | 待设计、未实施；依据[打包指南](packaging-windows.md#规划中)。明确更新来源、版本/来源校验、前后端/组件配套、失败回退和配置/旧库保留；分别形成升级与回滚切片/故障自动化，不执行破坏性数据库降级。REL-05的安装升级/卸载验证继续保留，不能代替本项产品流程；发布更新另授权 |
 | API-01 / 公共接口规划 | 统一error.code/message/request_id错误响应契约；依赖当前API/桌面调用方盘点 | 待设计、未实施；依据[API规划](api-spec.md#规划中)。先明确错误码、请求关联及现有detail/校验错误兼容策略，再逐切片接入；覆盖鉴权/空间/冲突/预算/幂等错误与脱敏，调用方和冻结HTTP回归保持。现有[契约](learning-workbench-contracts.md)继续保留detail，不在本轮全局换包装 |
 | M2-05i / PLAN-04恢复设计 | 旧提取题目及其他派生候选的恢复/重新登记；依赖05g/h巡检、已有恢复点和完整备份 | 待设计、未实施；先确定恢复目标身份、附件/题目/来源关系、原件hash、显式确认与幂等收据。形成新位置恢复/失败/重试/重启/跨空间等自动化要求；不从目录存在或无引用推断可恢复/可弃，不重复05a–h，不自动改写或删除 |
