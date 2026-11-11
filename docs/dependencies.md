@@ -25,7 +25,7 @@
 | FastAPI 0.161.1 / Uvicorn 0.54.0 | [MIT](https://github.com/fastapi/fastapi/blob/master/LICENSE) / [BSD-3-Clause](https://github.com/encode/uvicorn/blob/main/LICENSE.md) | pip Windows 安装与真实进程请求通过；使用标准 asyncio，不依赖 Windows 不支持的 uvloop |
 | SQLAlchemy 2.1.6 / Alembic 1.20.1 | [MIT](https://github.com/sqlalchemy/sqlalchemy/blob/main/LICENSE) / [MIT](https://github.com/sqlalchemy/alembic/blob/main/LICENSE) | Windows wheel 已安装；SQLite 迁移、重启作答持久化通过；SQLite backup/WAL迁移已有隔离回归，真实升级/干净机待验 |
 | SQLite | [public domain](https://sqlite.org/copyright.html) | Python 标准库自带，实际版本写测试报告；本地单机，不放网络共享盘，不允许多主写入 |
-| pytest / Ruff / Flutter Test / integration_test | MIT / MIT / Flutter BSD | 开发工具，不作为产品业务依赖；CI 与本地实际运行分开报告 |
+| pytest 9.0.3 / Ruff / Flutter Test / integration_test | [pytest MIT](https://github.com/pytest-dev/pytest/blob/9.0.3/LICENSE) / MIT / Flutter BSD | 开发工具，不作为产品业务依赖；pytest固定修复CVE-2025-71176的最小版本，Windows独立环境与CI证据分别记录 |
 | PyInstaller 6.22.3 | [GPL及bootloader分发例外](https://pyinstaller.org/en/stable/license.html) | 已使用独立CPython冻结；安装/干净机/最终依赖义务仍待验 |
 
 玻璃库仅公开入口API、ref固定a0bc51acf22db1b867294f810157cfeba7e951fb，保留MIT通知，不改上游/缓存。Windows SDK原生Known Folder、OLE、Shell/Advapi32用于选择/拖放和默认目录，无新增第三方包。
@@ -69,6 +69,8 @@
 [支持生态](https://oss.anchore.com/docs/capabilities/all-packages/)声明可解析Python requirements与Dart pubspec.lock；本项目只启用对应两个cataloger，禁用更新检查/联网补全，不扫描开发环境。SDK版本占位不能推断成实际Flutter/Dart SDK；投影输入显式排除SDK并在对照报告保留未知项，Git依赖核对完整resolved-ref。锁文件SBOM不证明运行时成员、许可证义务、漏洞状态或最终二进制闭合，详见[生成说明](packaging-windows.md#源码锁文件sbom)。
 
 pytest/Ruff/Flutter Test/integration_test是开发工具。样本生成可使用本机python-pptx、开发FFmpeg，但它们不是产品运行依赖；MarkItDown0.1.9与Docling的样本比较是历史选型记录，不把MarkItDown列为当前产品依赖。
+
+pytest固定9.0.3；[官方2026-04-07发行说明](https://github.com/pytest-dev/pytest/releases/tag/9.0.3)明确修复CVE-2025-71176，[PyPI该版本元数据](https://pypi.org/pypi/pytest/9.0.3/json)要求Python>=3.10、声明Windows支持且wheel未撤回。官方pytest-9.0.3-py3-none-any.whl为375249字节，SHA256 2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9；包内MIT许可保留。现有3.12/3.13的其他锁依赖已满足其要求，无额外传递升级。已知公告触发条件为UNIX默认测试临时目录，本项目Windows回归不等于复现该漏洞或证明全部平台安全；原发现与修复复查在原发行报告保留。现有Starlette/FastAPI锁不随此开发工具补丁升级。
 
 webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-dlp2026.10.21仅做过开发预备，下载队列未实现；FFmpeg未选定产品二进制/构建配置，不能只按主体许可证发行。Seal只参考交互，不复制GPLv3代码/资源。
 
