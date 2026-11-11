@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:study_workbench/backend.dart';
@@ -31,7 +33,155 @@ Future<void> show(WidgetTester tester, Backend backend) async {
   await tester.pumpAndSettle();
 }
 
+Map<String, dynamic> historyRow(int i, {String status = 'paused'}) => {
+  'id': i.toRadixString(16).padLeft(32, '0'),
+  'name': '历史$i.webm',
+  'source_host': 'media.example.com',
+  'source_url': 'https://media.example.com/a?signature=private-fixture',
+  'status': status,
+  'progress': {'received': i},
+  'can_resume': false,
+  'result': {'resource_item_id': 'node'},
+  'error': null,
+};
+
+Future<void> press(WidgetTester tester, String text) async {
+  await Scrollable.ensureVisible(
+    tester.element(find.text(text)),
+    alignment: .5,
+  );
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(text));
+  await tester.pumpAndSettle();
+}
+
 void main() {
+  testWidgets(
+    'history reaches beyond 100, retries a failed page and refreshes its boundary',
+    (tester) async {
+      final requests = <Uri>[];
+      var failSecond = true;
+      var inserted = false;
+      final backend = _Backend((method, path, body) async {
+        final uri = Uri.parse(path);
+        requests.add(uri);
+        final query = uri.queryParameters;
+        expect(query['history'], 'true');
+        expect(query['limit'], '51');
+        final offset = int.parse(query['offset']!);
+        if (offset == 50 && failSecond) throw Exception('offline');
+        final all = [
+          if (inserted && !query.containsKey('newest_id')) historyRow(999),
+          ...List.generate(123, historyRow),
+        ];
+        return all.skip(offset).take(51).toList();
+      });
+      await show(tester, backend);
+      expect(find.text('第 1 页 · 每页 50 条'), findsOneWidget);
+      expect(find.textContaining('signature='), findsNothing);
+      await press(tester, '下一页');
+      expect(find.text('第 1 页 · 每页 50 条'), findsOneWidget);
+      expect(find.textContaining('已显示记录保留'), findsOneWidget);
+      failSecond = false;
+      await press(tester, '下一页');
+      expect(find.text('第 2 页 · 每页 50 条'), findsOneWidget);
+      expect(requests.last.queryParameters['newest_id'], historyRow(0)['id']);
+      inserted = true;
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
+      expect(requests.last.queryParameters['offset'], '50');
+      await press(tester, '下一页');
+      expect(find.text('第 3 页 · 每页 50 条'), findsOneWidget);
+      expect(find.text('历史100.webm · 已暂停'), findsOneWidget);
+      expect(
+        tester
+            .widget<TextButton>(find.widgetWithText(TextButton, '下一页'))
+            .onPressed,
+        isNull,
+      );
+      await press(tester, '上一页');
+      expect(find.text('第 2 页 · 每页 50 条'), findsOneWidget);
+      await press(tester, '刷新列表');
+      expect(find.text('第 1 页 · 每页 50 条'), findsOneWidget);
+      expect(requests.last.queryParameters.containsKey('newest_id'), false);
+      expect(find.text('历史999.webm · 已暂停'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+      await show(tester, backend);
+      expect(requests.last.queryParameters.containsKey('newest_id'), false);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'late polling cannot overwrite an action or update a closed dialog',
+    (tester) async {
+      final stale = Completer<dynamic>();
+      final afterClose = Completer<dynamic>();
+      var gets = 0;
+      var status = 'running';
+      final backend = _Backend((method, path, body) async {
+        if (method == 'POST') {
+          status = 'paused';
+          return {};
+        }
+        gets++;
+        if (gets == 2) return stale.future;
+        if (gets == 4) return afterClose.future;
+        return [historyRow(0, status: status)];
+      });
+      await show(tester, backend);
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pump();
+      expect(find.text('正在加载…'), findsOneWidget);
+      await press(tester, '暂停');
+      expect(find.text('历史0.webm · 已暂停'), findsOneWidget);
+      stale.complete([historyRow(0, status: 'running')]);
+      await tester.pumpAndSettle();
+      expect(find.text('历史0.webm · 已暂停'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pump();
+      await tester.pumpWidget(const SizedBox());
+      afterClose.complete([historyRow(0, status: 'ready')]);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'page navigation is disabled until the requested page completes',
+    (tester) async {
+      final pending = Completer<dynamic>();
+      var requests = 0;
+      await show(
+        tester,
+        _Backend((method, path, body) async {
+          requests++;
+          if (requests > 1) return pending.future;
+          return List.generate(51, historyRow);
+        }),
+      );
+      await tester.tap(find.text('下一页'));
+      await tester.pump();
+      expect(
+        tester
+            .widget<TextButton>(find.widgetWithText(TextButton, '下一页'))
+            .onPressed,
+        isNull,
+      );
+      expect(
+        tester
+            .widget<TextButton>(find.widgetWithText(TextButton, '刷新列表'))
+            .onPressed,
+        isNull,
+      );
+      await tester.pump(const Duration(seconds: 2));
+      expect(requests, 2);
+      pending.complete([historyRow(50)]);
+      await tester.pumpAndSettle();
+      expect(find.text('第 2 页 · 每页 50 条'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
   testWidgets('small desktop viewport keeps the entire form scrollable', (
     tester,
   ) async {

@@ -272,12 +272,21 @@ class MediaDownloads:
             self.pool.submit(self.run, identifier)
             return result
         @router.get('')
-        def listing(workspace_id: str, offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100)):
+        def listing(workspace_id: str, offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100),
+                    history: bool = False, newest_id: str | None = Query(None, pattern=r'^[a-f0-9]{32}$')):
             with Session(self.engine) as session:
                 require_workspace(session, workspace_id)
-                return [describe(item) for item in session.scalars(select(MediaDownloadJob).where(
-                    MediaDownloadJob.workspace_id == workspace_id).order_by(MediaDownloadJob.status.in_(['queued', 'running']).desc(),
-                        MediaDownloadJob.created_at.desc(), MediaDownloadJob.id).offset(offset).limit(limit))]
+                statement = select(MediaDownloadJob).where(MediaDownloadJob.workspace_id == workspace_id)
+                if newest_id is not None:
+                    if not history:
+                        raise HTTPException(422, '历史边界仅适用于历史排序')
+                    newest = job_in(session, workspace_id, newest_id)
+                    statement = statement.where((MediaDownloadJob.created_at < newest.created_at)
+                        | ((MediaDownloadJob.created_at == newest.created_at) & (MediaDownloadJob.id >= newest.id)))
+                if not history:
+                    statement = statement.order_by(MediaDownloadJob.status.in_(['queued', 'running']).desc())
+                statement = statement.order_by(MediaDownloadJob.created_at.desc(), MediaDownloadJob.id)
+                return [describe(item) for item in session.scalars(statement.offset(offset).limit(limit))]
         @router.get('/{identifier}')
         def get(workspace_id: str, identifier: str):
             with Session(self.engine) as session:

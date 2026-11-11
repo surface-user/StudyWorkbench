@@ -22,7 +22,11 @@ class _MediaDownloadDialogState extends State<MediaDownloadDialog> {
   final url = TextEditingController(), name = TextEditingController();
   List<dynamic> rows = [];
   bool rights = false, busy = false, loading = false;
-  String? error, requestId, requestKey;
+  static const pageSize = 50;
+  int page = 0, generation = 0;
+  bool hasNext = false;
+  String? newestId;
+  String? error, listError, requestId, requestKey;
   Timer? timer;
   String get prefix => '/api/workspaces/${widget.workspaceId}/media-downloads';
   @override
@@ -40,33 +44,59 @@ class _MediaDownloadDialogState extends State<MediaDownloadDialog> {
     super.dispose();
   }
 
-  Future<void> refresh() async {
+  Future<void> refresh({int? targetPage, bool reset = false}) async {
     if (loading || busy) return;
-    loading = true;
+    final requestedPage = reset ? 0 : targetPage ?? page;
+    final boundary = reset ? null : newestId;
+    final request = ++generation;
+    setState(() => loading = true);
     try {
-      final result = await widget.backend.request('GET', '$prefix?limit=100');
-      if (mounted) setState(() => rows = result as List);
+      final result = await widget.backend.request(
+        'GET',
+        '$prefix?history=true&offset=${requestedPage * pageSize}&limit=${pageSize + 1}'
+            '${boundary == null ? '' : '&newest_id=${Uri.encodeQueryComponent(boundary)}'}',
+      ) as List;
+      if (mounted && request == generation) {
+        setState(() {
+          rows = result.take(pageSize).toList();
+          hasNext = result.length > pageSize;
+          page = requestedPage;
+          newestId =
+              boundary ??
+              (result.isEmpty ? null : result.first['id'] as String);
+          listError = null;
+        });
+      }
     } catch (_) {
-      if (mounted) setState(() => error = '下载列表暂不可用，已显示记录保留，可刷新重试');
+      if (mounted && request == generation) {
+        setState(() => listError = '下载列表暂不可用，已显示记录保留，可重试翻页或刷新');
+      }
     } finally {
-      loading = false;
+      if (mounted && request == generation) setState(() => loading = false);
     }
   }
 
-  Future<void> action(Future<void> Function() operation) async {
+  Future<void> action(
+    Future<void> Function() operation, {
+    bool reset = false,
+  }) async {
     if (busy) return;
     setState(() {
+      generation++;
+      loading = false;
       busy = true;
       error = null;
     });
+    var succeeded = false;
     try {
       await operation();
+      succeeded = true;
     } catch (failure) {
       if (mounted) setState(() => error = '操作未完成，下载记录与已存部分保留：$failure');
     } finally {
       if (mounted) {
         setState(() => busy = false);
-        await refresh();
+        await refresh(reset: reset && succeeded);
       }
     }
   }
@@ -91,7 +121,7 @@ class _MediaDownloadDialogState extends State<MediaDownloadDialog> {
         'request_id': requestId,
         'rights_confirmed': true,
       });
-    });
+    }, reset: true);
   }
 
   Future<void> open(Map row) async {
@@ -163,16 +193,39 @@ class _MediaDownloadDialogState extends State<MediaDownloadDialog> {
                         child: const Text('加入下载队列'),
                       ),
                       TextButton(
-                        onPressed: busy ? null : refresh,
+                        onPressed: busy || loading
+                            ? null
+                            : () => refresh(reset: true),
                         child: const Text('刷新列表'),
                       ),
                     ],
                   ),
                   const Text(
-                    '优先显示进行中的任务，列表最多100条；更早记录仍保留在本地库。',
+                    '按创建时间从新到旧分页，状态变化保留原位置。自动更新当前页；刷新列表可查看新任务。',
                     style: TextStyle(fontSize: 12),
                   ),
+                  Wrap(
+                    spacing: 12,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: busy || loading || page == 0
+                            ? null
+                            : () => refresh(targetPage: page - 1),
+                        child: const Text('上一页'),
+                      ),
+                      Text('第 ${page + 1} 页 · 每页 $pageSize 条'),
+                      TextButton(
+                        onPressed: busy || loading || !hasNext
+                            ? null
+                            : () => refresh(targetPage: page + 1),
+                        child: const Text('下一页'),
+                      ),
+                      if (loading) const Text('正在加载…'),
+                    ],
+                  ),
                   if (error != null) Text(error!),
+                  if (listError != null) Text(listError!),
                   if (rows.isEmpty) const Center(child: Text('暂无下载任务')),
                 ],
               ),
