@@ -264,3 +264,13 @@ OFF-02还须决定新增组件与原Office锁的关系：原组件字节/官方�
 Q -X utf8 artifacts/off01-20261111/check_docs.py退出0：三份明确文件UTF-8/LF/尾空格、62处相对链接、原82条表格行数量不变（只更新OFF-01/02两行）、其他任务正文逐字保持、原报告全部历史前缀保留。精选JSON解析/唯一jawt缺口、无误报的启动候选图、两格式各2页及负例126/采样错误保留断言通过；Git blob收据在docs-check.json。git diff --check退出0，根status仍仅原两项未跟踪内容；本轮未改变原工作区/固定组件/交付包。本地没有重跑未修改的后端/Flutter业务全量，新PR当前head完整CI仍须核验；父#21绿灯不代替该结果。没有代码审查或人工测试通过结论。
 
 实际交付：[独立草稿PR #22](https://github.com/surface-user/StudyWorkbench/pull/22)，分支codex/office-loader-diagnosis，base为#21最终2010bda9，实现e0469205ac62bbd97a46c601e94cacd876f4ef3f，三份明确文件；task/本报告补实际链接，已附加聊天。最终head/当前head CI运行与核对时间在PR描述维护，避免为记录自身SHA循环提交。OFF-01仅诊断交付，OFF-02与发行整体继续未完成；代码审查与人工暂缓，不合并或发布。
+## 2026-11-12：PLAN-06，并行调度与依赖核验
+
+用户设定持续实施目标并明确由主 Agent 同时启动三个子 Agent。当前有效入口为 docs/task.md，目标中的 doc/TASK.md 与 doc/tasks.md 不存在，不创建平行目录。根工作区仍位于 #7，保留原两项未跟踪文件；通过远端 Git tree 与 blob hash 从现有副本重建 #22 ae4ecf5 的444个文件，作为隔离基线，不依赖旧根任务状态。
+
+已逐项核对当前未完成任务的依赖，新增调度状态表；父任务和旧失败保持。先领取 REL-01a、PAR-01、LW-07a，分别使用 .local/goal-20261112 下 sbom/parsing/downloads 独立目录，进入 IN_PROGRESS；实现后 REVIEW，主 Agent 检查自动化、文档、独立草稿 PR 及当前 head CI 后才能 DONE。代码审查依 ADR0014 暂缓，REVIEW 不冒充独立审查批准，人工测试继续取消。OFF-02缺分发决定；REL-02至05、DL-03、UPD-01、M2-05j、R6-02及REV-01的前置或外部决定明确保留，其余可先开展的有限设计/实现为READY。
+
+本轮核实 #22 最终 head 的 CI 43007287613 为 completed/success，因此 OFF-01诊断开发交付记DONE，整包仍未闭合。REL-01a仅覆盖可独立开展的源码锁文件标准SBOM，REL-01父任务仍进行中，不能抵销最终冻结/原生/Office/安装器覆盖。主任务持续有效，不因本次调度文档交付缩小为三个子项。
+
+PLAN-06仅修改AGENTS.md、docs/task.md和本报告。准备脚本逐blob验证444文件退出0；首次文档补丁因工具拒绝同路径双操作、后续日期上下文不符均未改动文件，改用精确上下文完成。文档检查核对原任务行/报告历史、状态与引用、UTF-8/空白及仅三份改动；命令与收据放artifacts/goal-20261112。业务代码未变，本地不重复业务全量，独立PR仍执行完整当前head CI。PR创建后在其描述补最终head/CI结论，未核实前保持REVIEW，不合并或发行。
+
