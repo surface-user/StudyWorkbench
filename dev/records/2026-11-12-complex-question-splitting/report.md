@@ -27,4 +27,10 @@
 5. P -X utf8 -m pytest同四文件 -q --basetemp=.local/par01-target312 --junitxml=artifacts/par01/target312.xml：退出0，30项通过，95.31秒，Python3.12.7，既有弃用警告保留。
 6. git -c core.autocrlf=false diff --no-index --check ../base/backend/study_workbench/question_splitting.py backend/study_workbench/question_splitting.py：退出1，无错误输出（no-index文件不同）；不记为退出0，空白检查另按最终明确文件执行。
 
-双Python后续回归及PR最终head CI按实际结果在本报告/PR继续记录；未执行项目代码审查或人工测试，不把相关验证当全格式/多栏/OCR/任意编号支持。完整M2-04以及整体发行仍未完成。
+7. Q -X utf8 -m pytest -q --basetemp=.local/par01-full313 --junitxml=artifacts/par01/full313.xml：退出1，711通过、12失败、77子测试通过，586.55秒。12项均为既有Windows junction/hardlink或元数据只读测试，失败trace包含链接创建拒绝/受限进程文件访问差异；所有解析新增及原用例通过。完整full313.txt/xml保留。
+8. 为定位上述运行环境差异，按原断言在获准的任务隔离目录原生执行备份1项（native01，退出0，2.43秒）、恢复/下载3项（native02，退出0，3.29秒）、Explorer/巡检/Office3项（native03，退出0，4.12秒）。全量结束后统一执行Q -X utf8 -m pytest --lf -q --basetemp=.local/par01-native-failed --junitxml=artifacts/par01/native-failed.xml：退出0，全量所列12项全部通过，6.76秒；native-failed.txt/xml记录实际用例与结果。没有改生产代码、夹具、目录链接行为或断言来绕过失败，不将原全量退出1改记退出0。
+9. artifacts/par01/bundle.py对明确8份提交文件执行UTF-8/LF/末尾换行/无尾空格断言并计算规范Git blob hash，退出0；只提交代码、测试及必要契约/任务/报告，运行日志/样本临时库不入PR。
+
+交付为[独立草稿PR #26](https://github.com/surface-user/StudyWorkbench/pull/26)，分支codex/complex-question-candidates，base为#23的2645366，实现提交ee0000e680b882c4d22a45cac7ac2874de4d52af，8份文件。补充本段与任务实际链接后核最终head CI，最终head/运行链接和主Agent交付核验结论在PR描述维护，不因写入自身SHA循环提交。状态仍REVIEW，不据父head或专项通过登记DONE。
+
+未执行项目代码审查或人工测试，不把上述自动化当全格式/多栏/OCR/任意编号支持。完整M2-04以及整体发行仍未完成，未合并/发布。
