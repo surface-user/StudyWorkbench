@@ -97,3 +97,5 @@ Windows前端排除其旧backend后与本批冻结后端配成全新window-bundl
 D F --no-version-check analyze --no-pub：退出0，无问题，101.6秒，analyze.txt。初次完整test未传STUDY_ROOT/STUDY_DATA_DIR，188通过/5跳过/3备份对话框失败（缺测试根导致选择路径校验未完成），flutter-full.txt保留。给独立源码新建.venv目录链接至既有Q环境，不修改依赖；设PYTHONPATH为该源码backend，在apps/desktop运行D F --no-version-check test --no-pub --dart-define=STUDY_ROOT=<独立源码绝对路径> --dart-define=STUDY_DATA_DIR=<独立源码>/.local/flutter-full02 --reporter expanded：退出0，196全通过、45秒，包含真实后端备份恢复/配置/管道退出，flutter-full02.txt。未改失败测试或降低断言。
 
 最终D format --output=none --set-exit-if-changed lib test integration_test首次指出新增居中滚动行未格式化，退出1；按原格式器修正后退出0，87文件0变化。仅空白修正，不重复功能测试；当前head CI继续执行全套。此切片仍REVIEW，等待独立PR和主Agent验收，Windows本地发行构建未重跑，由当前head CI验证。
+
+实际交付：[独立草稿PR #27](https://github.com/surface-user/StudyWorkbench/pull/27)，分支codex/download-history-pagination，base为#23的2645366，实施提交390072640b0db6f4c5cdf831282602a4a4ee5c9f，八文件。补链接后的最终head CI以PR实时记录为准，未核实前保持REVIEW，主Agent检查后登记DONE；不以父head通过替代本项CI，未合并/发行。
