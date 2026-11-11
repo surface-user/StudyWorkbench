@@ -305,3 +305,31 @@ PLAN-06仅修改AGENTS.md、docs/task.md和本报告。准备脚本逐blob验证
 
 实际提交[独立草稿PR #25](https://github.com/surface-user/StudyWorkbench/pull/25)，codex/source-lock-sbom基于#23的2645366，实施提交d0c4eac12fffda7da95b75895cd44b7f1ff58d41。发PR前Python文档assert退出0：明确六份文件UTF-8/LF/尾空白及相对链接、原报告前缀保留、所有非REL-01条目逐字保持、其余基线文件字节保持；辅助聚合读取工具输出截断曾使JSON解码失败，改为逐文件读取后成功，没有发布不完整文件。最终head/CI在PR描述维护，避免为记录自身SHA反复提交；主Agent验收前保持REVIEW。
 
+## 2026-11-12：OFF-02a 固定Java组件准备
+
+用户将技术判断委托主Agent后，主Agent已选择项目内Eclipse Temurin 21.0.13+9 Windows x64 HotSpot JRE；本切片从IN_PROGRESS进入REVIEW，父OFF-02继续进行。基线为#25最终1b52eb30785de734e7d5149d3198c5ee80bb78cf，独占源码.local/goal-20261112/java。主Agent已核#25的双Python35项/真实136包与8个SDK未知/官方schema及本地远端blob，最终CI #141（43060243273）三job/44步全部成功；按主Agent验收将REL-01a记DONE，源清单前置可供后续有限范围使用，完整REL-01仍未完成。
+
+### 设计与范围
+
+新增tools/prepare_java_runtime.py和backend/tests/test_java_runtime_preparation.py，同步依赖/打包指南、本task及原报告；无Office启动参数、运行环境/CRT搜索路径、数据库、安装器/默认发行包或新Python依赖变化。官方发布资产来源与版本实核，固定zip文件名OpenJDK21U-jre_x64_windows_hotspot_21.0.13_9.zip，49106397字节、SHA256 2332c0b4cff6bed722da3567c91d5e47568bcba863fa4945d0a8d6fc76158628，官方发布于2026-10-22，所有事实取自固定官方release/实际包，不以开发机安装情况替代。
+
+在创建目标前校验原zip普通文件/大小/hash、完整ZIP目录及预算；固定顶层jdk-21.0.13+9-jre，仅去掉包裹目录层，内部bin/lib/conf/legal等不删减。拒绝路径越界、空段、盘符/ADS、Windows保留名/尾点空格、大小写重名、文件目录冲突、原名被ZipFile规范化、链接/特殊条目/加密、超过1024条/200MiB预算。目标必须不存在，包/目标父目录不含链接/重解析点；流式独占写文件并核实际解压长度/CRC/hash，中断保留现场不回滚或覆写旧目录。重核原zip后复用stage_files逐文件闭合枚举（显式拒绝其排除的根build-inventory.json），核release声明和java.exe/jawt.dll/server/jvm.dll的AMD64/PE32+。成功才独占写java-runtime-lock.json，字段version/package_sha256/source_url/bytes/files与已有组件清单风格一致；锁本身非签名或来源证明。
+
+完整保留NOTICE及179个legal文件，登记GPL2/Classpath与Assembly Exception及混合第三方通知；已定位同版本官方源代码资产URL/发布digest，但未下载核验或制作源码提供包，REL-02义务未完成。不执行系统安装、不修改PATH或Office配置；准备脚本本身不执行Java。更新必须重选固定来源/hash并重建清单、回归，禁止静默就地替换组件。
+
+### 实际命令、结果和保留失败
+
+工作目录.local/goal-20261112/java，Q/P分别为根.local/release-venv/Scripts/python.exe（3.13.17）与根.venv/Scripts/python.exe（3.12.7）；所有测试/生成现场放本目录artifacts/off02a或.local。
+
+- Q tools/prepare_java_runtime.py --package D:/computer_work/project/StudyWorkbench/.local/release-tools/temurin-jre21.0.13-9/OpenJDK21U-jre_x64_windows_hotspot_21.0.13_9.zip --destination .local/temurin21-verified：退出0，315文件/151829828字节；完整清单SHA256 159433e3a2fc9f2a9c4f633a613d3db5aaca29d1b52caa64e3a63755ac8e1907。原zip未改。初轮real01因校验集合已casefold但必需NOTICE/LICENSE未统一大小写而拒绝，目标尚未创建；修正匹配后real02通过，原失败log保留。
+- 最终源码下用package_entries重新核官方378个ZIP条目，再用verify_runtime核同315文件/架构/版本，并将ZipFile逐文件原始字节SHA256与清单全部相等对照：退出0，179个legal文件均在清单。此为固定zip真实输入，不使用夹具pin替代。
+- .local/temurin21-verified/bin/java.exe -version：退出0，实际Temurin 21.0.13+9，64-Bit Server VM；这是命令行自动验证，不是系统安装、Office加载或人工窗口测试。
+- Q -m pytest backend/tests/test_java_runtime_preparation.py -q --basetemp=.local/java-q-final --junitxml=artifacts/off02a/q-final.xml：退出0，37通过；P同命令使用java-p-final及p-final.xml：退出0，37通过。保留1个重复ZIP名称自编负例的标准库警告。覆盖完整布局/legal/hash、大小写/恶意路径/NUL/反斜杠/重复及类型冲突、特殊文件、预算、错误包大小/hash、已有目标保留、失败无成功锁、重验缺失/额外/字节/架构/release及重解析父路径。
+- Q -m ruff check tools/prepare_java_runtime.py backend/tests/test_java_runtime_preparation.py：退出0。首次排序检查1项后自动调整import排序，不改行为。
+- tests01/tests02均34通过/1失败：Windows ZipFile构造和读取均会规范化反斜杠，先保留原始恶意ZIP路径夹具，再增加orig_filename与filename一致性拒绝，tests03的35项及末轮新增NUL/空目录段后37项通过。原日志/JUnit保留，未删除负例或降低断言。
+- 尚未做Office/CRT集成或应用冻结Java转换；相关工作由主Agent后续承担。新工具不参与运行时调用，本地未重复业务/Flutter全量；独立PR继续完整当前head CI。源码/报告/许可文档会检查UTF-8、相对链接、原报告历史及非本项任务行保持，PR/CI核实前不记DONE。
+
+### 限制与交付
+
+关键PE与java-version通过只证明本机固定JRE准备和入口运行；不证明Office能识别JVM、JavaBean/AWT/CRT递归依赖已闭合，不支持删除DLL或放宽既有发行门禁。签名（zip GPG未验）、完整传递许可/源码分发、漏洞、最终包SBOM、干净机与正式发行仍待后续。代码审查/人工测试依用户安排暂缓，OFF-02a由主Agent在独立PR/最终head CI核验后决定DONE，整体OFF-02继续进行，未合并或发行。
+

@@ -45,6 +45,14 @@
 实际离线清单19417文件/1577045386字节（约1.47GiB，不含MSI和清单）；MSI374870016字节。Windows独立进程、无开发PATH冻结、随包组件默认查找/缺组件、中文/OMML公式/表格/图表/多页、坏输入/取消/重试/缓存/源hash已取得专项证据。真实引擎短超时/取消及Job所属进程结束、Job所有者异常退出时结束子进程另有实证，不以模拟超时替代。新转换前完整读取清单校验会增加延迟，缓存命中无需重转。干净机、任意第三方文件保真、全传递许可/签名及安装升级卸载仍未验证；详见[Office历史实证](../dev/archive/reports/r3-office-validation-2026-10-26.md)。
 
 
+### 可选Java组件准备（Office整包前置）
+
+用户2026-11-12委托技术判断后，固定选择[Eclipse Temurin 21.0.13+9 Windows x64 HotSpot JRE](https://github.com/adoptium/temurin21-binaries/releases/tag/jdk-21.0.13%2B9)，官方发布时间2026-10-22；官方zip 49106397字节，SHA256 2332c0b4cff6bed722da3567c91d5e47568bcba863fa4945d0a8d6fc76158628。只在项目新目录解包，不注册系统Java、不改PATH/文件关联；新增的是可选外部组件，未改主要技术栈。
+
+完整保留NOTICE和179份legal文件，包内声明GPL-2.0及Classpath Exception，并包含Assembly Exception和各第三方原始许可，不能把全部组件当作单一许可。对应官方[源码资产](https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.13%2B9/OpenJDK21U-jdk-sources_21.0.13_9.tar.gz)已定位，发布元数据SHA256 b5232c9980d8a0f0459676c084c41c6e2c771ed9e785890b03c6a438406ad1ca；本切片未下载核验或提供发行源码包，完整分发义务仍由REL-02承接，不以保留通知代替许可闭合。zip来源/hash已核，未验证其GPG签名，不冒充产品签名。
+
+实际准备315文件/151829828字节，逐文件与官方zip字节核对一致；入口java.exe、jawt.dll及server/jvm.dll为AMD64/PE32+，release字段为Windows/x86_64/JRE/Temurin 21.0.13+9，java -version通过。该证据不证明Office找到JVM、Java/CRT加载闭合或干净机运行；Office运行布局与冻结复验在OFF-02后续实施。无自动更新；升级须重新核官方来源/固定hash/许可、重建清单并重跑架构/加载/冻结和漏洞检查，不能就地替换文件。
+
 ### Markdown渲染
 
 
