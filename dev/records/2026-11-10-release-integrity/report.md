@@ -274,3 +274,32 @@ Q -X utf8 artifacts/off01-20261111/check_docs.py退出0：三份明确文件UTF-
 
 PLAN-06仅修改AGENTS.md、docs/task.md和本报告。准备脚本逐blob验证444文件退出0；首次文档补丁因工具拒绝同路径双操作、后续日期上下文不符均未改动文件，改用精确上下文完成。文档检查核对原任务行/报告历史、状态与引用、UTF-8/空白及仅三份改动；命令与收据放artifacts/goal-20261112。业务代码未变，本地不重复业务全量，独立PR仍执行完整当前head CI。PR创建后在其描述补最终head/CI结论，未核实前保持REVIEW，不合并或发行。
 
+## 2026-11-12：REL-01a 源码锁文件标准SBOM
+
+本切片依据REL-01和并行调度，状态IN_PROGRESS→REVIEW；基线为#23的2645366ca4f37cced53f41119ccebd732239a123，完整REL-01仍进行中。影响仅新构建命令tools/source_sbom.py、backend/tests/test_source_sbom.py、依赖/打包说明、本task条目及原报告；无产品调用方、API/数据库/运行依赖/打包门禁变更。读取的输入固定为backend/requirements.lock.txt与apps/desktop/pubspec.lock，不扫描机器环境或个人资料。
+
+### 设计与实施
+
+固定Anchore官方Syft 1.57.1 Windows amd64（发布2026-11-09）：官方zip 30255314字节、SHA256 3a01fe865076bb548352195b77e88fa4649277861ea458efe165c3a810b6dcc7；checksums文本SHA256 92466b2b1a4695ee908f8a1567f4ff074e0fbb4f34da28463927a2630901fe2c；实际exe SHA256 42deb23bff7852997bf0316a540d3dcb364953273152749205e47881dd270c53。官方发布资产digest与既有下载核对一致，exe每次执行前核验；保留Apache-2.0 LICENSE，工具不随产品分发。Authenticode为NotSigned，Sigstore未验证，不把hash当签名证明。来源与维护链接在dependencies.md，工具生态/安装依据为Anchore官方文档。
+
+真实探针发现Syft会将Dart sdk占位0.0.0推断成Flutter约束下界3.44.0，不能据此宣称实际SDK版本。本实现以PyYAML（既有依赖）读取精确锁，将SDK项明确列入excluded_sdk_components，再仅把Python锁原字节和Dart hosted/Git投影交给两个指定cataloger；报告分别记录原锁与投影hash。Python拒绝非精确pin/重复；Dart hosted要求当前pub.dev/hash，Git要求HTTPS无凭据、完整resolved-ref与根包，不支持的来源明确失败。SDK仍未知，整个产品SBOM完整状态恒为false。
+
+配置显式禁用更新与联网补全，清除继承的SYFT_*配置影响；不下载包/Git源、不触碰Office或Java。生成固定CycloneDX 1.6后逐项比对PURL、名称/版本、Git commit或host、来源位置以及两份投影文件SHA256，缺失/额外/重复/错误均失败。读取前拒绝链接/重解析路径与超过1MiB的锁文件，输出必须为新目录，结束复核原锁字节。超时、工具非零、结果不一致保留现场但不写成功comparison.json。标准BOM含时间戳/UUID，重复性指包集合和输入hash，不承诺逐字节相同；非恶意构建机器沙箱或原子文件系统快照。
+
+### 实际自动化与失败保留
+
+工作目录为隔离源码.local/goal-20261112/sbom；Q为根.local/release-venv/Scripts/python.exe（3.13.17），P为根.venv/Scripts/python.exe（3.12.7）。原始日志和所有生成BOM/Schema留本目录artifacts/rel01a，不入Git。
+
+- Q -m pytest backend/tests/test_source_sbom.py -q --basetemp=.local/sbom-q-final --junitxml=artifacts/rel01a/q-final.xml：退出0，35通过。P同命令使用.local/sbom-p-final及p-final.xml：退出0，35通过。覆盖身份/Git pin/host、重复/未知/不支持锁、SDK未知保留、缺失额外/名称版本/来源/hash错误、格式/结构、错误exe、配置隔离、已有输出保留、超时/非零/原锁变化无成功收据及大小/重解析拒绝。
+- Q -m ruff check tools/source_sbom.py backend/tests/test_source_sbom.py：退出0。未改业务逻辑，本地未重复全部业务/Flutter/冻结；PR仍执行原完整当前head CI。
+- Q tools/source_sbom.py --syft D:/computer_work/project/StudyWorkbench/.local/release-tools/syft-1.57.1/syft.exe --output artifacts/rel01a/real03，以及另一次real04：均退出0，70个PyPI和66个Dart hosted/Git包共136项全相等，8个SDK项明确未知；BOM含另外2个输入文件组件。两轮组件/排除项/源与投影hash精确相同。real04 BOM SHA256为525157773a9834361b021bf3458d5605275966d1c74739d9027c9e2b5f36329d。
+- 真实real03 BOM用jsonschema Draft7Validator及本地Registry验证CycloneDX官方1.6 schema及spdx/jsf引用，退出0，138组件有效。Schema来源为CycloneDX/specification的1.6 tag下schema目录；bom-1.6.schema.json SHA256 3e92dddbc30cf7f6a02b80f0942b1a4cfd4fb1c26f1dfc4310afa9d613cafb93，spdx.schema.json baa9d3bd1ed57b6751b0887edead6b5063ff53ff7429cf85d476c6c94af0166e，jsf-0.82.schema.json 8bae002c25e723db7ee1f26afde680ae1a2b1a8f6b4b4b0fd65dc3becb090aae。CLI自身执行范围/身份对照；完整schema验证是本次实际工具输出证据，并非CLI新增联网步骤。
+- 初轮pytest为24通过/9个fixture错误：默认临时目录不可创建；首次显式basetemp仍因隔离目录未建.local父目录退出1。保留sbom-tests.xml、tests01.xml/log，建立明确父目录后复跑33通过，新增畸形结果用例后末轮35通过，没有删除断言。首次工具默认输出1.7被1.6对照拒绝（real01），随后显式输出1.6；real02暴露pub版本+号需PURL百分号编码，修复并补+版本断言后real03/04通过，原失败输出保留。
+- 辅助查找既有conftest.py/ci.yml路径不存在，未用于结论；不将错误路径的shell整体退出码混作测试结果。各次pytest真实退出码单独记录。
+
+源requirements锁SHA256 f4aba068d138a8097d5b4cfefa44552edf742f5645bfd705d2e7270bac41a3d6；pubspec锁SHA256 c1ab979d33d15197f1018cae7ec752cfb0244523e26f3ed2c73ee1f761be2ce5；Dart投影SHA256 8e3232e332919be2d0dbc96fa90cb40fccfa1ba11c6cf1e7c8ec2a1cb4c57d53。无新增依赖下载或模型，既有Syft官方工具复用；source.cdx.json与comparison.json是构建产物，未提交整个artifact目录。
+
+### 交付边界
+
+源码锁包含开发/构建/非Windows包，不识别最终运行时成员；Flutter/Dart SDK实际版本、冻结/原生/CRT/WebView2/NuGet/Office/Java/安装器payload、依赖边、许可原文/义务、漏洞和签名均未完成。Syft推断CPE不当作已确认漏洞匹配，锁中archive hash/Git commit并不证明已取得对应内容。REL-01a只能作为后续源清单基线，不能让REL-01/02/03整体销项。代码审查与人工测试按要求暂缓；独立草稿PR/最终head CI待核，主Agent核对前保持REVIEW，未合并或发行。
+
