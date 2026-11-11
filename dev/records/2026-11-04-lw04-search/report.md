@@ -68,3 +68,5 @@ LearningSearchDialog结果由URI字符串改为{uri,anchor?}，唯一生产调�
 - 首轮analyze退出1，仅新测试2处curly_braces_in_flow_control_structures信息；补括号后`D format --output=none --set-exit-if-changed lib test integration_test`退出0，87文件无变化。`D F --no-version-check analyze --no-pub`退出0，No issues found（6.9秒），analyze02.txt，原analyze.txt保留。
 
 本切片实现和本地自动化完成，task保持REVIEW，独立草稿PR基于codex/download-history-pagination；当前head CI待核。未修改根工作区、数据库或依赖锁定文件，没有正文索引/持久学习记录副作用。代码审查按ADR0014暂缓、人工按ADR0013取消；未合并/公开发行，不把上游#27绿灯计作本切片CI。
+
+已创建[独立草稿PR #29](https://github.com/surface-user/StudyWorkbench/pull/29)，分支codex/txt-fulltext-search，base为codex/download-history-pagination；实现提交604257f1b05745d6a1b52106ca9474522b9d8a12。交付树逐Git blob核11份本地文件完全一致，树相对base仅此11份变化，无原始产物/测试资料入库；对11份运行git diff --no-index --check均无诊断，退出1表示确有差异，聚合脚本验证退出0。按主Agent已核#27最终head三job/44步成功的结论，本PR同时把LW07a两行登记DONE，未扩大父任务状态。本次PR链接/记录跟进后只核最终head CI，结果维护PR实时说明；当前仍REVIEW，不用上游CI代替。
