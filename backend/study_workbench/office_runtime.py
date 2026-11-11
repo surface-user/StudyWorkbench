@@ -17,6 +17,12 @@ from .office_inputs import MAX_SOURCE, validate_office
 
 VERSION = '26.8.1'
 PACKAGE_SHA256 = 'c6298b10cfa1748bcbedad94c62ce771e240e5021bfd6d7a967cd571b04b5312'
+OFFICE_LOCK_SHA256 = '147d21f38890236a51ac3b079d4632690ce7ae12f1470d6896aaef3597a0f8ca'
+JAVA_LOCK_SHA256 = '159433e3a2fc9f2a9c4f633a613d3db5aaca29d1b52caa64e3a63755ac8e1907'
+JAVA = {'version': '21.0.13+9', 'directory': 'java',
+        'package_sha256': '2332c0b4cff6bed722da3567c91d5e47568bcba863fa4945d0a8d6fc76158628'}
+APP_LOCAL_CRT = ('msvcp140.dll', 'msvcp140_1.dll', 'msvcp140_2.dll', 'msvcp140_atomic_wait.dll',
+                 'msvcp140_codecvt_ids.dll', 'vcruntime140.dll', 'vcruntime140_1.dll', 'vcruntime140_threads.dll')
 OPTIONS = 'pdf-static-v3-no-macros-no-external-links-internal-charts-math'
 PROFILE = '''<?xml version="1.0" encoding="UTF-8"?>
 <oor:items xmlns:oor="http://openoffice.org/2001/registry">
@@ -187,6 +193,30 @@ class OfficeRuntime:
                 raise ValueError('转换器清单路径无效')
         if not {'program/soffice.com', 'program/soffice.bin', 'license.txt', 'NOTICE'} <= self.files.keys():
             raise ValueError('转换器或许可文件缺失')
+        self.java_home = None
+        if 'java' not in manifest and ('office-runtime-lock.json' in self.files or
+                                       any(name.startswith('java/') for name in self.files)):
+            raise ValueError('Office配套Java缺少组合清单声明')
+        if 'java' in manifest:
+            if manifest['java'] != JAVA:
+                raise ValueError('Office配套Java版本未锁定')
+            components = []
+            for name, checksum in [('office-runtime-lock.json', OFFICE_LOCK_SHA256),
+                                   ('java/java-runtime-lock.json', JAVA_LOCK_SHA256)]:
+                with resource_path(self.root, name).open('rb') as handle:
+                    component = handle.read(4 * 1024 * 1024 + 1)
+                if hashlib.sha256(component).hexdigest() != checksum:
+                    raise ValueError('Office配套组件原始清单已变化')
+                components.append(json.loads(component))
+            original, java = components
+            expected = dict(original['files'])
+            expected.update({'java/' + name: checksum for name, checksum in java['files'].items()})
+            expected.update({'office-runtime-lock.json': OFFICE_LOCK_SHA256,
+                             'java/java-runtime-lock.json': JAVA_LOCK_SHA256})
+            expected.update({'program/' + name: original['files']['System64/' + name] for name in APP_LOCAL_CRT})
+            if self.files != expected:
+                raise ValueError('Office组合清单未完整保留固定组件或CRT')
+            self.java_home = resource_path(self.root, 'java')
         self.executable = resource_path(self.root, 'program/soffice.com')
         for name in ['program/soffice.com', 'program/soffice.bin']:
             with resource_path(self.root, name).open('rb') as handle:
@@ -233,6 +263,12 @@ class OfficeRuntime:
                            TEMP=str(temporary), TMP=str(temporary), APPDATA=str(profile),
                            LOCALAPPDATA=str(profile), USERPROFILE=str(profile),
                            SAL_DISABLESKIA='1', SAL_DISABLE_OPENCL='1')
+        if self.java_home is not None:
+            environment.update(JAVA_HOME=str(self.java_home), UNO_JAVA_JFW_JREHOME=self.java_home.as_uri(),
+                               UNO_JAVA_JFW_PARAMETER_1='-Djava.awt.headless=true')
+            environment['PATH'] = os.pathsep.join((str(self.executable.parent), str(self.java_home / 'bin'),
+                                                   str(self.java_home / 'bin/server'),
+                                                   str(Path(os.environ['SystemRoot']) / 'System32')))
         return environment
 
     def command(self, source, directory):

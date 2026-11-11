@@ -153,9 +153,11 @@ creation_status为prepared/ready/interrupted/conflict；status在未完成时同
 
 [实现](../backend/study_workbench/learning_search.py)。`GET W/learning-search?q=...&offset=...&limit=...`：q为1–200字符且非全空白，保留输入空格作为字面匹配；offset≥0，limit1..100默认50。当前活动空间内匹配Unicode casefold后的字面子串，不执行正则、SQL通配符、Markdown或HTML。继承会话、Host/Origin与空间校验，复用最多2份文档处理任务的并发门禁。
 
-范围为活动MD/MARKDOWN节点名及当前工作副本/无副本原文、旧notes标题/文字/公式/附件说明、未移除marks标题/备注；失效来源的书签仍可查。TXT全文、OCR及其他格式不纳入。响应含`query/items/total/offset/limit/has_more/truncated/reasons/scanned/scope`；items含kind=`file_note|legacy_note|mark`、id、title、纯文本snippet、稳定uri，文件附content_sha256，旧笔记/标记附revision。无磁盘路径、媒体能力或正文镜像。
+范围为活动MD/MARKDOWN节点名及当前工作副本/无副本原文、活动TXT节点名及严格UTF-8原件全文、旧notes标题/文字/公式/附件说明、未移除marks标题/备注；失效来源的书签仍可查。OCR及其他格式全文不纳入。响应含`query/items/total/offset/limit/has_more/truncated/reasons/scanned/scope`；items含kind=`file_note|text_resource|legacy_note|mark`、id、title、纯文本snippet、稳定uri，文件附content_sha256，旧笔记/标记附revision。无磁盘路径、媒体能力或正文镜像。
 
-每请求先完整扫描预算范围、按kind/id排序，再分页；total为本次已扫描范围内的匹配数。最多1000份MD、旧笔记/书签共10000条，总文字读取预算16MiB、单MD≤1MiB；坏文件字节计入，超限最多额外1字节探测；旧笔记按JSON字节预检/计费。不支持的旧块、文件缺失/损坏/非UTF-8及任何预算截断均置truncated并列原因；scanned为各类尝试条数、已计费bytes及unreadable，不承诺所有尝试均成功。无匹配且截断时只能称“已扫描范围无匹配”。
+每请求先完整扫描预算范围、按kind/id排序，再分页；total为本次已扫描范围内的匹配数。最多1000份MD/TXT合计、旧笔记/书签共10000条，总文字读取预算16MiB、单MD/TXT≤1MiB；坏文件字节计入，超限最多额外1字节探测；旧笔记按JSON字节预检/计费。不支持的旧块、文件缺失/损坏/非UTF-8及任何预算截断均置truncated并列原因；scanned为各类尝试条数、已计费bytes及unreadable，不承诺所有尝试均成功。无匹配且截断时只能称“已扫描范围无匹配”。
+
+TXT结果kind=text_resource且content_sha256绑定已核原件；正文命中时附完整v1 text_line anchor（workspace_id/resource_item_id/content_sha256/line/line_sha256），按Unicode casefold首个命中映回原文字符位置、LF分行、去行尾CR后计算行hash。snippet优先显示正文命中；只有节点名称匹配时不附anchor，UI明确仅打开资料。此位置为临时搜索结果，不创建书签/学习记录或扩展内部URI语法；打开前重验内容，文档页应用原文行前再次核hash，陈旧位置拒绝。
 
 原生结果分页合并按kind/id去重，失败保留原查询和已读结果；库变化后可刷新，不承诺跨请求快照。打开文件/旧笔记结果前重验hash/revision，变化时要求刷新；书签先打开保留的记录及备注，跳到来源仍须验证位置。内部导航随后再次resolve，不因搜索结果越过空间/墓碑或扩大Agent权限。
 

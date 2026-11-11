@@ -2,6 +2,7 @@
 import io
 import posixpath
 import re
+import zlib
 from pathlib import PurePosixPath
 from urllib.parse import unquote, urlsplit
 from xml.etree import ElementTree as ET
@@ -109,7 +110,7 @@ def validate_office(data, suffix):
                             {'.docx': 'word/document.xml', '.pptx': 'ppt/presentation.xml', '.xlsx': 'xl/workbook.xml'}[kind]}
                 if not required <= names:
                     raise ValueError('Office包结构与扩展名不符，原件保留')
-        except (BadZipFile, ET.ParseError, RuntimeError, NotImplementedError, UnicodeError) as error:
+        except (BadZipFile, ET.ParseError, RuntimeError, NotImplementedError, UnicodeError, zlib.error) as error:
             raise ValueError('Office格式损坏或已加密，原件保留') from error
 
     package(data, suffix)

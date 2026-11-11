@@ -305,3 +305,102 @@ PLAN-06仅修改AGENTS.md、docs/task.md和本报告。准备脚本逐blob验证
 
 实际提交[独立草稿PR #25](https://github.com/surface-user/StudyWorkbench/pull/25)，codex/source-lock-sbom基于#23的2645366，实施提交d0c4eac12fffda7da95b75895cd44b7f1ff58d41。发PR前Python文档assert退出0：明确六份文件UTF-8/LF/尾空白及相对链接、原报告前缀保留、所有非REL-01条目逐字保持、其余基线文件字节保持；辅助聚合读取工具输出截断曾使JSON解码失败，改为逐文件读取后成功，没有发布不完整文件。最终head/CI在PR描述维护，避免为记录自身SHA反复提交；主Agent验收前保持REVIEW。
 
+## 2026-11-12：OFF-02a 固定Java组件准备
+
+用户将技术判断委托主Agent后，主Agent已选择项目内Eclipse Temurin 21.0.13+9 Windows x64 HotSpot JRE；本切片从IN_PROGRESS进入REVIEW，父OFF-02继续进行。基线为#25最终1b52eb30785de734e7d5149d3198c5ee80bb78cf，独占源码.local/goal-20261112/java。主Agent已核#25的双Python35项/真实136包与8个SDK未知/官方schema及本地远端blob，最终CI #141（43060243273）三job/44步全部成功；按主Agent验收将REL-01a记DONE，源清单前置可供后续有限范围使用，完整REL-01仍未完成。
+
+### 设计与范围
+
+新增tools/prepare_java_runtime.py和backend/tests/test_java_runtime_preparation.py，同步依赖/打包指南、本task及原报告；无Office启动参数、运行环境/CRT搜索路径、数据库、安装器/默认发行包或新Python依赖变化。官方发布资产来源与版本实核，固定zip文件名OpenJDK21U-jre_x64_windows_hotspot_21.0.13_9.zip，49106397字节、SHA256 2332c0b4cff6bed722da3567c91d5e47568bcba863fa4945d0a8d6fc76158628，官方发布于2026-10-22，所有事实取自固定官方release/实际包，不以开发机安装情况替代。
+
+在创建目标前校验原zip普通文件/大小/hash、完整ZIP目录及预算；固定顶层jdk-21.0.13+9-jre，仅去掉包裹目录层，内部bin/lib/conf/legal等不删减。拒绝路径越界、空段、盘符/ADS、Windows保留名/尾点空格、大小写重名、文件目录冲突、原名被ZipFile规范化、链接/特殊条目/加密、超过1024条/200MiB预算。目标必须不存在，包/目标父目录不含链接/重解析点；流式独占写文件并核实际解压长度/CRC/hash，中断保留现场不回滚或覆写旧目录。重核原zip后复用stage_files逐文件闭合枚举（显式拒绝其排除的根build-inventory.json），核release声明和java.exe/jawt.dll/server/jvm.dll的AMD64/PE32+。成功才独占写java-runtime-lock.json，字段version/package_sha256/source_url/bytes/files与已有组件清单风格一致；锁本身非签名或来源证明。
+
+完整保留NOTICE及179个legal文件，登记GPL2/Classpath与Assembly Exception及混合第三方通知；已定位同版本官方源代码资产URL/发布digest，但未下载核验或制作源码提供包，REL-02义务未完成。不执行系统安装、不修改PATH或Office配置；准备脚本本身不执行Java。更新必须重选固定来源/hash并重建清单、回归，禁止静默就地替换组件。
+
+### 实际命令、结果和保留失败
+
+工作目录.local/goal-20261112/java，Q/P分别为根.local/release-venv/Scripts/python.exe（3.13.17）与根.venv/Scripts/python.exe（3.12.7）；所有测试/生成现场放本目录artifacts/off02a或.local。
+
+- Q tools/prepare_java_runtime.py --package D:/computer_work/project/StudyWorkbench/.local/release-tools/temurin-jre21.0.13-9/OpenJDK21U-jre_x64_windows_hotspot_21.0.13_9.zip --destination .local/temurin21-verified：退出0，315文件/151829828字节；完整清单SHA256 159433e3a2fc9f2a9c4f633a613d3db5aaca29d1b52caa64e3a63755ac8e1907。原zip未改。初轮real01因校验集合已casefold但必需NOTICE/LICENSE未统一大小写而拒绝，目标尚未创建；修正匹配后real02通过，原失败log保留。
+- 最终源码下用package_entries重新核官方378个ZIP条目，再用verify_runtime核同315文件/架构/版本，并将ZipFile逐文件原始字节SHA256与清单全部相等对照：退出0，179个legal文件均在清单。此为固定zip真实输入，不使用夹具pin替代。
+- .local/temurin21-verified/bin/java.exe -version：退出0，实际Temurin 21.0.13+9，64-Bit Server VM；这是命令行自动验证，不是系统安装、Office加载或人工窗口测试。
+- Q -m pytest backend/tests/test_java_runtime_preparation.py -q --basetemp=.local/java-q-final --junitxml=artifacts/off02a/q-final.xml：退出0，37通过；P同命令使用java-p-final及p-final.xml：退出0，37通过。保留1个重复ZIP名称自编负例的标准库警告。覆盖完整布局/legal/hash、大小写/恶意路径/NUL/反斜杠/重复及类型冲突、特殊文件、预算、错误包大小/hash、已有目标保留、失败无成功锁、重验缺失/额外/字节/架构/release及重解析父路径。
+- Q -m ruff check tools/prepare_java_runtime.py backend/tests/test_java_runtime_preparation.py：退出0。首次排序检查1项后自动调整import排序，不改行为。
+- tests01/tests02均34通过/1失败：Windows ZipFile构造和读取均会规范化反斜杠，先保留原始恶意ZIP路径夹具，再增加orig_filename与filename一致性拒绝，tests03的35项及末轮新增NUL/空目录段后37项通过。原日志/JUnit保留，未删除负例或降低断言。
+- 尚未做Office/CRT集成或应用冻结Java转换；相关工作由主Agent后续承担。新工具不参与运行时调用，本地未重复业务/Flutter全量；独立PR继续完整当前head CI。源码/报告/许可文档会检查UTF-8、相对链接、原报告历史及非本项任务行保持，PR/CI核实前不记DONE。
+
+### 限制与交付
+
+关键PE与java-version通过只证明本机固定JRE准备和入口运行；不证明Office能识别JVM、JavaBean/AWT/CRT递归依赖已闭合，不支持删除DLL或放宽既有发行门禁。签名（zip GPG未验）、完整传递许可/源码分发、漏洞、最终包SBOM、干净机与正式发行仍待后续。代码审查/人工测试依用户安排暂缓，OFF-02a由主Agent在独立PR/最终head CI核验后决定DONE，整体OFF-02继续进行，未合并或发行。
+
+实际交付[独立草稿PR #28](https://github.com/surface-user/StudyWorkbench/pull/28)，分支codex/pinned-java-preparation，base为#25最终1b52eb3，实现提交616b2f9c5600ac2922e623ec5186aa987ddc43e8。文档assert退出0，核六份明确改动的UTF-8/LF/尾空白/相对链接、原报告前缀与非本项任务行保留；新task只额外按主Agent验收更新REL-01a为DONE，完整父项保持进行。首次PR创建工具未返回正常结构，查询该分支无PR后重试成功，没有重复创建。最终head/CI在PR描述维护，当前REVIEW等待主Agent验收。
+
+## 2026-11-12：REL-03a 源码锁文件漏洞查询
+
+基线为OFF-02a草稿PR #28最终2187fec21fee25472124aa97a2b1ea524d85e357，独占副本.local/goal-20261112/source-vulns的448个基线文件逐Git blob核验复制，没有复制构建产物或修改其他工作区。主Agent已核#28双Python37项、315个官方JRE文件及最终CI #153（43065303373）三job/44步全部成功，本task将OFF-02a记DONE，父OFF-02不因此完成。REL-03a由IN_PROGRESS进入REVIEW，等待独立PR最终head CI与主Agent验收；完整REL-03仍依赖实际发行组件清单与后续修复。
+
+### 设计与实现
+
+新增tools/source_vulnerabilities.py 1.0及其专项测试，同步依赖/打包指南、本task和原报告共六文件。复用REL-01a的lock_inventory/read_lock/no_links，同一两份锁、精确PyPI/pub.dev身份；Git不能冒充同名hosted发行版，8个SDK占位没有真实SDK版本。只将公开包名、生态与版本发往[OSV v1官方API](https://google.github.io/osv.dev/api/)，续页只带服务返回token，详情只带返回的受限ID；无源码、锁全文、hash、Git仓库URL/commit或个人数据上传。标准库HTTPS，无代理继承/重定向/凭据；没安装其他扫描器或运行依赖，没有改任何锁版本。
+
+固定的是项目查询器版本/文件hash、API v1、原锁hash和本次HTTP原始证据，不冒称使用OSV-Scanner二进制。在线API无可固定的完整数据库快照/hash/更新时点，database_snapshot=null、database_freshness=unknown_live_api始终保留；UTC查询时间及响应Date只证明本次观察。缺Date标未知，超过24小时或超前5分钟拒绝；服务离线、非200、超8MiB、重复JSON键/畸形批次、身份无法映射、分页循环或8轮/1000包/1000公告预算越界均不生成成功结论。返回ID另取完整公告，保留原范围/fixed事件/别名/severity/来源/withdrawn/modified；详情身份不匹配、查询后修订、撤回各有显式状态，不从原始证据删掉。批次modified为微秒而详情可能纳秒，按微秒比较并保留两种原值和精度字段。
+
+输出必须为新目录，原始编号request/response文件与SHA256、报告落于忽略的artifacts；已有目标、链接/重解析路径拒绝，结束重核锁字节未变。失败留下已有现场及不完整报告。退出1为查询/验证失败，2为有公告需判定，3为查询完成但无公告返回；没有代表全产品安全的0，发现不冒充测试失败或已修复。CI用离线受控响应验证，联网查询为显式构建动作，不添加发行门禁或自动批准。
+
+### 实际命令与证据
+
+工作目录.local/goal-20261112/source-vulns，Q/P分别为根.local/release-venv/Scripts/python.exe（3.13.17）与根.venv/Scripts/python.exe（3.12.7）。原始现场位于本副本artifacts/rel03a，未入Git。
+
+- Q -m pytest backend/tests/test_source_vulnerabilities.py -q --basetemp=.local/vulns-q-01 --junitxml=artifacts/rel03a/q01.xml：退出0，42通过；P同专项使用.local/vulns-p-final和p-final.xml：退出0，42通过。覆盖公开字段/不发送Git、源锁/hash/未知边界、发现范围不升级、分页/循环/预算、畸形/缺失/额外批次、ID注入、详情映射/修订/撤回、微秒/纳秒、网络/HTTP失败/陈旧Date/原始字节hash、源变化、已有目录保留及私有URL拒绝。
+- Q -m ruff check tools/source_vulnerabilities.py backend/tests/test_source_vulnerabilities.py：退出0。首次I001 import排序检查失败，使用--fix只调整排序后通过；没有删失败测试或降低断言。
+- Q tools/source_vulnerabilities.py --output artifacts/rel03a/real02：原生及显式PowerShell透传退出2，这是发现标志；queries_complete=true，135包（70 PyPI、65 Pub），2个包12条公告，133个包无公告返回且映射/收录仍未证实，另1个Git/8个SDK未查询。2026-11-11T17:32:43.034461Z至17:33:04.139703Z（本地11-12 01:32–01:33），13次HTTP均200且Date在时限内；数据库新鲜度仍未知。
+- Python独立assert复核13对原始request/response SHA256、135查询恰为package(name/ecosystem)+version且70/65分布一致、12条详情均映射并保留requires_triage状态：退出0。real02/report.json SHA256 d32d5ab76cc9bfbb128b96ae40992a4a3ce6fd48ed31f3e1440eaf1213282f3f；批次response SHA256 b0a0693cec061db8dabf92dd34c74e826f23426632f5949135121b11fb85f9f8；其余12份原始公告各hash完整保存在该report.evidence，不把此hash称完整数据库hash。
+- 本次查询器SHA256 d896295851ef4b21a30e911ba614f2660159315682137b0cc1f9ee441dd63ebc；复用source_sbom.py SHA256 492ecb1b9765cd23dc2b816c3be5995e5f80b6b33233c4104c63045f5e6710d0。requirements/pubspec锁hash仍为前述f4aba068…/c1ab979d…，未变。
+- 首次real01已命中相同2包/12公告，但批次与详情时间精度不同使部分状态保守标为changed_since_query_unknown；保留原结果，显式微秒比较并补测试后real02修正。首次PowerShell未显式exit透传使外壳显示1，报告内原生exit_code为2；real02显式透传确认为2。前置小探针使用非本项目requests2.32.5与archive4.0.7，仅验证生态/API响应，不计入本项目发现。
+- 辅助rg曾指定不存在backend/pyproject.toml、requirements.txt及错误workflow路径而退出1；后续以rg --files确定根pyproject.toml和requirements.lock.txt，再只查实际业务目录。GitHub连接器不支持security-advisories REST端点，未取得结果；随后读取官方OSV原始公告与上游公开公告页。没有把这些工具失败当作漏洞验证通过。
+
+### 真实发现与后续修复
+
+保留12条公告，GHSA与PYSEC互为别名，按CVE汇总为6项；下面的“修复版本”来自公告，尚未确认与现有FastAPI/冻结环境兼容。扫描命中是锁版本处于公告范围，不证明本项目存在可利用路径、已遭利用或修复完成。
+
+| 锁依赖与CVE | 公告范围/修复版本 | 上游触发条件与本项目证据边界 |
+|---|---|---|
+| pytest 9.0.1，CVE-2025-71176 | <9.0.3，修复9.0.3；[GHSA-6w46-j5rx-g56g](https://github.com/advisories/GHSA-6w46-j5rx-g56g)，别名PYSEC-2026-1845 | UNIX默认/tmp测试目录的本地攻击；本次Windows专项不证明该路径可触发，pytest为开发工具，仍保留源依赖发现，未据此豁免 |
+| Starlette 0.50.0，CVE-2026-48710 | <1.0.1，修复1.0.1；[GHSA-86qp-5c8j-p5mr](https://github.com/Kludex/starlette/security/advisories/GHSA-86qp-5c8j-p5mr)，PYSEC-2026-161 | 非法Host污染request.url.path，影响依该值做安全判定；app.py:116确实用其拒绝Origin，同时有TrustedHost及鉴权。中间件顺序/畸形请求入口仍需专门回归，不能只因存在TrustedHost宣布免疫 |
+| Starlette 0.50.0，CVE-2026-48817 | <1.1.0，修复1.1.0；[GHSA-x746-7m8f-x49c](https://github.com/Kludex/starlette/security/advisories/GHSA-x746-7m8f-x49c)，PYSEC-2026-2280 | 无methods约束的HTTPEndpoint子类按非常规HTTP方法调用属性；业务目录文本检索未发现此类，未做传递/动态可达性证明 |
+| Starlette 0.50.0，CVE-2026-48818 | <1.1.0，修复1.1.0；[GHSA-wqp7-x3pw-xc5r](https://github.com/Kludex/starlette/security/advisories/GHSA-wqp7-x3pw-xc5r)，PYSEC-2026-2281 | Windows StaticFiles默认realpath处理UNC先触发SMB/NTLM再拒绝；业务目录未发现StaticFiles，已有FileResponse不因此被判成同一触发入口；传递路径仍未确认 |
+| Starlette 0.50.0，CVE-2026-54282 | <1.3.0，修复1.3.0；[GHSA-jp82-jpqv-5vv3](https://github.com/Kludex/starlette/security/advisories/GHSA-jp82-jpqv-5vv3)，PYSEC-2026-248 | ASGI提供无前导/的path，使request.url authority污染；现有Origin中间件读取url，实际服务器接收/传播此路径未验证 |
+| Starlette 0.50.0，CVE-2026-54283 | >=0.4.1,<1.3.1，修复1.3.1；[GHSA-82w8-qh3p-5jfq](https://github.com/Kludex/starlette/security/advisories/GHSA-82w8-qh3p-5jfq)，PYSEC-2026-249 | request.form对urlencoded未执行字段数/字段大小限制；业务目录未发现request.form/Form调用，已有JSON/请求预算不构成完整传递可达性证明 |
+
+已通知主Agent并按其指令登记独立REL-03b（pytest最小兼容修复）和REL-03c（Starlette/FastAPI兼容组合与Host/path/相关入口回归）。本PR不改锁、不安装新版依赖、不默默升级全栈。Git/SDK、Python冻结/native、Flutter/NuGet/CRT/WebView2、Office/Java/安装器实际payload以及完整库更新/修复复扫均未闭合。代码审查暂缓、人工测试取消；完整SBOM/传递许可/签名/发行、合并均不在本切片结论内。
+
+实际提交[独立草稿PR #32](https://github.com/surface-user/StudyWorkbench/pull/32)，codex/source-lock-vulnerabilities基于#28的2187fec，实现提交75971a02007e5f992e344f8220cbc465cc2deb63。六文件文档/范围assert退出0，保持全部其余基线文件、原报告前缀和非本项task行；原始artifacts未入Git。首次create_tree未返回结构，重试相同内容的幂等tree操作后成功，没有移动错误ref或重复创建PR。最终head与完整CI在PR描述维护，主Agent核实前保持REVIEW；下一项按独立03b/c处理。
+
+
+## 2026-11-12：OFF-02b Office与Java/CRT组合运行时
+
+基线为OFF-02a的#28最终2187fec21fee25472124aa97a2b1ea524d85e357，448份源码逐Git blob核对后复制到.local/goal-20261112/office-bundle。主Agent已核#28的37×2专项、315文件及最终[CI #153](https://github.com/surface-user/StudyWorkbench/actions/runs/43065303373)三组44步成功，OFF-02a在task登记DONE。用户委托技术判断后采用项目内Temurin，不安装系统Java、不改全局环境。OFF-02b实现与本地自动化完成，当前REVIEW，整体OFF-02及发行准备仍未完成。
+
+### 范围与实现
+
+新tools/compose_office_runtime.py复用已有OfficeRuntime/prepare_java_runtime逐文件核验，要求固定的原Office与Java清单hash，目标全新、非输入内部且无重解析路径。Office所有原文件及清单保留；Java完整复制到java/；仅另从原Office System64逐字复制8份VC运行库到program/，不覆盖原件。组件二次复核原文件/清单保持，再生成组合清单并完整核对目标；失败不删现场，非零退出不能当成功。
+
+后端OfficeRuntime新增固定组合清单校验和进程专用JAVA_HOME/UNO_JAVA_JFW_JREHOME/headless环境；原无Java组件路径继续支持。调用方为原预览worker/冻结内部launcher及stage工具；唯一绕过构造器的launcher测试夹具同步java_home=None。转换前逐文件核验、输入门禁、宏/脚本/外链保护、独立profile/Job预算均保持；不修改主进程DLL搜索状态、不继承外来Java参数、不引入产品Python依赖。Java识别依据固定LibreOffice源构建bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1的framework.hxx/framework.cxx/fwkbase.cxx直接模式；未改变厂商配置XML。
+
+### 实际命令与结果
+
+以下工作目录为隔离office-bundle源码；Q为D:/computer_work/project/StudyWorkbench/.local/release-venv/Scripts/python.exe（3.13.17），P为根.venv/Scripts/python.exe（3.12.7）。原组件O=D:/computer_work/project/StudyWorkbench/.local/release-tools/libreoffice-26.8.1，J=D:/computer_work/project/StudyWorkbench/.local/goal-20261112/java/.local/temurin21-verified；新组合C=D:/computer_work/project/StudyWorkbench/.local/release-tools/libreoffice-java-26.8.1-21.0.13。F=D:/computer_work/project/StudyWorkbench/.local/goal-20261112/formats/.local/fmt-samples01，为本批自编样本，未读取个人文档。
+
+- Q -m pytest -q backend/tests/test_office_java_bundle.py backend/tests/test_office_launcher.py backend/tests/test_office_previews.py --basetemp=.local/off02b-test03 --junitxml=artifacts/off02b/test03.xml：退出0，38通过，20.65秒；P使用.local/off02b-p-test01与p-test01.xml：退出0，38通过，24.24秒。覆盖原文件保持、来源/锁/组合清单篡改、遗漏Java标记/CRT、额外成员、嵌套/已有目标拒绝、包内Java环境与不继承外来参数，保留旧组件/冻结launcher测试。Starlette弃用警告保留。
+- Q tools/compose_office_runtime.py --office O --java J --destination C：退出0，19742文件/1732478884字节；组合清单2417775字节、SHA256 156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9。原Office19417与Java315、两份原清单和8份CRT复制均在固定集合内；日志artifacts/off02b/compose01.log。不含任何原包就地修改或DLL移除。
+- 原生诊断在根artifacts/goal-20261112编译：VS2022 x64 cl.exe /nologo /std:c++17 /EHsc /MT /W4 /Fe:probe_office_java.exe /Fo:probe_office_java.obj probe_office_java.cpp，退出0；INCLUDE/LIB使用同一MSVC及Windows SDK的x64/ucrt目录。Q -X utf8 artifacts/goal-20261112/run_office_java_probe.py（根目录）：退出0，先完整核C，再以OfficeRuntime.environment启动静态CRT诊断进程。Office自己的JFW选出Eclipse Adoptium21.0.13并启动JVM，JavaBean/AWT加载成功，所有列出的私有模块均在C内，JVM关闭返回0。诊断源与7个模块位置等精选结论见[evidence/off02b-java-summary.json](evidence/off02b-java-summary.json)和[诊断源](evidence/off02b-jfw-probe.cpp)。源hash f3cfa29b8b1bd4d7cc952890f59a44e9adad431599b4065e7eb3de1ac4dd4a33。该有限诊断使用固定私有C++ ABI，只是开发证据，不进入产品/自动兼容未来版本；其DLL目录配置只影响自身，不把它当作真实Office转换进程的模块采样。
+- PYTHONPATH=backend; Q -X utf8 tools/check_office_previews.py --test-root .local/off02b-source01 --runtime C --docx F/复杂分节.docx --pptx F/复杂图表.pptx：退出0，DOCX/PPTX各3页，PDF108084/77986字节；公式/图表标签、原件hash、取消重试、缓存与重启、数据库完整性及XML预算拒绝通过（source01.log）。运行源码中包含本次组合环境与校验，不借旧后端冒充。
+- ./packaging/windows/build-backend.ps1 -Python Q：退出0，114.7秒构建完成，43个冻结模块与本次源码精确一致；exe SHA256 bad0e600989de0f85d3b0ded02b195078c83c921ba0bebaa85cc512bde6d1642，22565938字节，freeze01.log。随后的冻结实际转换另见下项，构建通过本身不等于运行成功。
+- 同一check_office_previews命令增加--exe dist/study_backend/study_backend.exe，test-root为.local/off02b-frozen01：退出0，DOCX/PPTX仍各3页、108084/77986字节；公式/图表、XML预算拒绝、取消重试、缓存/重启/源hash和数据库检查均通过，frozen01.log。该工具将PATH限制到System32，清除PYTHONPATH/PYTHONHOME；包内Java由本次冻结OfficeRuntime设置，没有使用开发机Java环境。
+- Q -m ruff check backend tools：退出0。对改变的原文件执行git -c core.autocrlf=false diff --no-index --check：无诊断，退出1仅表示有差异，聚合检查退出0。新增代码与文档在提交前另核UTF-8/LF/尾空白/相对链接。
+
+保留失败：首次lint报告import排序1项，修正后通过；test02误写不存在的test_office_runtime.py导致退出4/0项执行，改为实际存在的test_office_previews.py后上述38×2通过，原test02.log保留。初次diff驱动把Git全局LF→CRLF警告当失败，明确关闭该命令的autocrlf后复核，无断言降低。最初Python进程JNI探针曾加载开发机CRT，只作为不闭合的旧证据保留；本次原生/MT进程补证，不改写旧结果。
+
+### 剩余退出条件
+
+源码与新冻结真实转换均通过；独立草稿PR/最终head CI待核，OFF-02b保持REVIEW。OFF-02c将独立检查实际PE进程加载域/.com/.bin/延迟导入，原check_release不降低或跳过；尚未声称最终安装/免安装整包已闭合。完整SBOM、许可/源码提供义务、漏洞修复与签名在REL系列继续，现成系统DLL/文件hash不能代替这些条件。审查按ADR0014暂缓，人工/Computer Use取消；没有合并或公开发行，没有删除原组件/测试失败/个人数据。原始日志、生成PDF/样本及exe保持Git忽略，只筛选本节所需摘要与诊断源作为共享证据。

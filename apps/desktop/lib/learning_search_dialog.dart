@@ -81,7 +81,7 @@ class _LearningSearchDialogState extends State<LearningSearchDialog> {
           initialMarkId: row['id'] as String,
         ),
       );
-      if (mounted && node != null) Navigator.pop(context, row['uri'] as String);
+      if (mounted && node != null) Navigator.pop(context, {'uri': row['uri']});
       return;
     }
     setState(() {
@@ -97,18 +97,24 @@ class _LearningSearchDialogState extends State<LearningSearchDialog> {
       if (resolved['status'] != 'valid') {
         throw StateError(resolved['message'] as String? ?? '目标不可用');
       }
-      if (row['kind'] == 'file_note') {
+      if (row['kind'] == 'file_note' || row['kind'] == 'text_resource') {
         final doc = await widget.backend.request(
           'GET',
           '$scope/nodes/${row['id']}/document',
         ) as Map;
         if (doc['sha256'] != row['content_sha256']) {
-          throw StateError('笔记正文已变化，请刷新搜索后再打开');
+          throw StateError('资料或笔记正文已变化，请刷新搜索后再打开');
         }
       } else if ((resolved['note'] as Map)['revision'] != row['revision']) {
         throw StateError('旧笔记已变化，请刷新搜索后再打开');
       }
-      if (mounted) Navigator.pop(context, row['uri'] as String);
+      if (mounted) {
+        Navigator.pop(context, {
+          'uri': row['uri'],
+          if (row['kind'] == 'text_resource' && row['anchor'] != null)
+            'anchor': row['anchor'],
+        });
+      }
     } catch (failure) {
       if (mounted) setState(() => error = '结果未打开，记录保留：$failure');
     } finally {
@@ -132,7 +138,7 @@ class _LearningSearchDialogState extends State<LearningSearchDialog> {
         height: 560,
         child: Column(
           children: [
-            const Text('搜索MD笔记文件当前正文、旧富内容笔记和书签备注；不含TXT全文或OCR。'),
+            const Text('搜索MD笔记文件当前正文、TXT资料全文、旧富内容笔记和书签备注；不含OCR。'),
             TextField(
               key: const ValueKey('learning-search-query'),
               controller: query,
@@ -164,11 +170,18 @@ class _LearningSearchDialogState extends State<LearningSearchDialog> {
                       title: Text(
                         '${switch (row['kind']) {
                           'file_note' => 'MD文件',
+                          'text_resource' => 'TXT资料',
                           'legacy_note' => '旧笔记',
                           _ => '书签/备注',
                         }} · ${row['title']}',
                       ),
-                      subtitle: Text(row['snippet'] as String),
+                      subtitle: Text(
+                        '${row['snippet']}${row['kind'] == 'text_resource'
+                            ? row['anchor'] == null
+                                  ? '\n名称匹配，打开资料'
+                                  : '\n原文第 ${(row['anchor'] as Map)['line']} 行'
+                            : ''}',
+                      ),
                       onTap: busy ? null : () => open(row),
                     ),
                   if (result != null && rows.isEmpty)

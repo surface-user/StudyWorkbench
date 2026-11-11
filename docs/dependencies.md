@@ -45,6 +45,16 @@
 实际离线清单19417文件/1577045386字节（约1.47GiB，不含MSI和清单）；MSI374870016字节。Windows独立进程、无开发PATH冻结、随包组件默认查找/缺组件、中文/OMML公式/表格/图表/多页、坏输入/取消/重试/缓存/源hash已取得专项证据。真实引擎短超时/取消及Job所属进程结束、Job所有者异常退出时结束子进程另有实证，不以模拟超时替代。新转换前完整读取清单校验会增加延迟，缓存命中无需重转。干净机、任意第三方文件保真、全传递许可/签名及安装升级卸载仍未验证；详见[Office历史实证](../dev/archive/reports/r3-office-validation-2026-10-26.md)。
 
 
+### 可选Java组件准备（Office整包前置）
+
+用户2026-11-12委托技术判断后，固定选择[Eclipse Temurin 21.0.13+9 Windows x64 HotSpot JRE](https://github.com/adoptium/temurin21-binaries/releases/tag/jdk-21.0.13%2B9)，官方发布时间2026-10-22；官方zip 49106397字节，SHA256 2332c0b4cff6bed722da3567c91d5e47568bcba863fa4945d0a8d6fc76158628。只在项目新目录解包，不注册系统Java、不改PATH/文件关联；新增的是可选外部组件，未改主要技术栈。
+
+完整保留NOTICE和179份legal文件，包内声明GPL-2.0及Classpath Exception，并包含Assembly Exception和各第三方原始许可，不能把全部组件当作单一许可。对应官方[源码资产](https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.13%2B9/OpenJDK21U-jdk-sources_21.0.13_9.tar.gz)已定位，发布元数据SHA256 b5232c9980d8a0f0459676c084c41c6e2c771ed9e785890b03c6a438406ad1ca；本切片未下载核验或提供发行源码包，完整分发义务仍由REL-02承接，不以保留通知代替许可闭合。zip来源/hash已核，未验证其GPG签名，不冒充产品签名。
+
+实际准备315文件/151829828字节，逐文件与官方zip字节核对一致；入口java.exe、jawt.dll及server/jvm.dll为AMD64/PE32+，release字段为Windows/x86_64/JRE/Temurin 21.0.13+9，java -version通过。该证据不证明Office找到JVM、Java/CRT加载闭合或干净机运行；Office运行布局与冻结复验在OFF-02后续实施。无自动更新；升级须重新核官方来源/固定hash/许可、重建清单并重跑架构/加载/冻结和漏洞检查，不能就地替换文件。
+
+配套组合采用同版本Office原MSI携带的VC运行库14.44.35211.0（System64目录8份）逐字复制到Office program目录；原System64文件、原Office清单、Java目录内原14.40.33810.0运行库与全部通知保持。Office程序和独立java.exe是不同加载根，不能按全包同名DLL存在就认定已满足依赖。组合命令与后端只接受原Office清单SHA256 147d21f38890236a51ac3b079d4632690ce7ae12f1470d6896aaef3597a0f8ca、原Java清单159433e3a2fc9f2a9c4f633a613d3db5aaca29d1b52caa64e3a63755ac8e1907及完整固定组合；来源仍为上述官方MSI/JRE，不另下载或借用开发机CRT。此布局的实际模块观察属于有限自动化证据，不替代Microsoft运行库再分发义务核对、完整依赖门禁/漏洞或签名。
+
 ### Markdown渲染
 
 
@@ -62,10 +72,16 @@
 
 pytest/Ruff/Flutter Test/integration_test是开发工具。样本生成可使用本机python-pptx、开发FFmpeg，但它们不是产品运行依赖；MarkItDown0.1.9与Docling的样本比较是历史选型记录，不把MarkItDown列为当前产品依赖。
 
+FMT-01的自编复杂样本工具固定[python-pptx 1.0.2](https://pypi.org/project/python-pptx/1.0.2/)（MIT，2024-08-07发布，Python≥3.8）和[XlsxWriter 3.2.5](https://pypi.org/project/xlsxwriter/3.2.5/)（BSD-2-Clause，2025-06-17发布，Python≥3.8）；固定官方wheel SHA256见[样本工具清单](../tools/sample-authoring-requirements.txt)。二者为独立可选开发工具，安装到本任务.local/authoring，借用已锁定python-docx/Pillow/lxml等环境生成本地自编样本，不进入后端依赖或冻结包。Windows x64/Python3.13生成成功不代表其他平台验证，也不是漏洞或传递许可证审查结论；不称固定版本为今日最新版。
+
 webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-dlp2026.10.21仅做过开发预备，下载队列未实现；FFmpeg未选定产品二进制/构建配置，不能只按主体许可证发行。Seal只参考交互，不复制GPLv3代码/资源。
 
 ## 待验证与升级门禁
 
-锁版本不代表无漏洞。本轮未做漏洞数据库审计、法律认证或重新联网验证上游版本。发行前必须核实际传递依赖、二进制配置、NOTICE/SBOM/签名和干净机；保留PDFium BUILD_LICENSES等组合许可，构建环境包清单不是完整发行SBOM。
+源码依赖漏洞查询使用项目内tools/source_vulnerabilities.py 1.0及[OSV v1官方API](https://google.github.io/osv.dev/api/)，复用既有锁文件解析，仅发送公开PyPI/pub.dev包名、生态和精确版本，后续只取返回公告ID。网络使用Python标准库，没有新运行依赖、第三方扫描器安装或源码上传；查询器及解析器文件SHA256、Python版本随报告固定。OSV当前维护[数据来源](https://google.github.io/osv.dev/data/)包括GitHub/PyPI公告，PyPI与Pub为其支持的生态；公告数据来源许可与应用依赖许可是不同事项，原始返回保留在忽略的artifacts，不随产品分发。
+
+OSV在线查询不提供固定数据库快照或全库新鲜度证明，报告明确database_snapshot=null/database_freshness=unknown_live_api。每次查询保存UTC起止、HTTP Date、原始请求/响应SHA256和公告modified/published；这只固定本次观察，不能重建完整数据库。无返回记录仍保留包映射/收录覆盖未知，Git/SDK和最终二进制明确未覆盖；发现、撤回、映射缺失及查询后公告变化不静默抹去。用法和退出码见[构建指南](packaging-windows.md#源码锁文件漏洞查询)，具体发现与修复任务只在task/原报告维护。
+
+锁版本不代表无漏洞；有限源范围查询不构成完整漏洞审计、法律认证或全部上游版本复核。发行前必须核实际传递依赖、二进制配置、NOTICE/SBOM/签名和干净机；保留PDFium BUILD_LICENSES等组合许可，构建环境包清单不是完整发行SBOM。
 
 flutter_inappwebview_windows0.6.0与VS18旧协程头存在历史STL1011失败，CI固定windows-2022/VS2022；升级工具链前重验。WebView原生焦点/DPI/合成、Office复杂字体版式、媒体编码/音轨、NuGet供应链/离线构建及安装升级仍有未验项。历史来源见[依赖快照](../dev/archive/baseline-20261030/docs/dependencies.md)，仅需溯源时读取。
