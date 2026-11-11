@@ -49,3 +49,5 @@ Q=根.local/release-venv/Scripts/python.exe（3.13.17），P=根.venv/Scripts/py
 - 17份交付文件逐项`git -c core.safecrlf=false diff --no-index --check <基线文件或空文件> <当前文件>`无诊断；单项退出1表示确有差异，聚合校验退出0。12份既有文件修改均在清单内，其余5份新增；6份Markdown共137处本地链接目标存在，校验退出0。测试资料、日志、清单和包不进Git。
 
 API-01a实现、本地相关自动化、实际冻结HTTP和文档完成，任务转REVIEW，独立草稿PR/最终head CI待交付核实；主Agent核验后才可登记DONE。API-01父项仍进行中，详细业务错误码、跨版本演进和REL-03c新Starlette组合回归不在本切片冒称完成。审查暂缓、人工取消，未合并/发行/清理数据。
+
+已创建[独立草稿PR #34](https://github.com/surface-user/StudyWorkbench/pull/34)，codex/api-error-compatibility基于codex/txt-fulltext-search的9027508；实现提交16975063f155ca8f72ceed1639ae2c7fbf6d0186。17份远端Git blob逐项与本地完全一致，树对基线仅此17文件变化。PR链接跟进后最终head CI继续核实，结果维护PR实时说明，不把父head或实现head绿灯代替最终head；当前保持REVIEW。
