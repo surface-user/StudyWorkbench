@@ -58,6 +58,8 @@
 
 pytest/Ruff/Flutter Test/integration_test是开发工具。样本生成可使用本机python-pptx、开发FFmpeg，但它们不是产品运行依赖；MarkItDown0.1.9与Docling的样本比较是历史选型记录，不把MarkItDown列为当前产品依赖。
 
+FMT-01的自编复杂样本工具固定[python-pptx 1.0.2](https://pypi.org/project/python-pptx/1.0.2/)（MIT，2024-08-07发布，Python≥3.8）和[XlsxWriter 3.2.5](https://pypi.org/project/xlsxwriter/3.2.5/)（BSD-2-Clause，2025-06-17发布，Python≥3.8）；固定官方wheel SHA256见[样本工具清单](../tools/sample-authoring-requirements.txt)。二者为独立可选开发工具，安装到本任务.local/authoring，借用已锁定python-docx/Pillow/lxml等环境生成本地自编样本，不进入后端依赖或冻结包。Windows x64/Python3.13生成成功不代表其他平台验证，也不是漏洞或传递许可证审查结论；不称固定版本为今日最新版。
+
 webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-dlp2026.10.21仅做过开发预备，下载队列未实现；FFmpeg未选定产品二进制/构建配置，不能只按主体许可证发行。Seal只参考交互，不复制GPLv3代码/资源。
 
 ## 待验证与升级门禁

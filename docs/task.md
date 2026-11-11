@@ -34,8 +34,8 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | REL-02、REL-03 | BLOCKED | 完整传递许可与漏洞检查依赖REL-01实际组件清单；源锁文件切片就绪后可开展相应子范围，整体保持未完成 |
 | REL-04 | BLOCKED | 依赖REL-01至03；真实签名另缺发行身份，配置/篡改拒绝自动化不代表已签 |
 | REL-05 | BLOCKED | 依赖OFF-02与REL-01至04；候选组装完成后仍需REV-01，发布/合并未授权 |
-| FMT-01 | READY | 既有Office/XLSX转换与受限查看能力可用于自编复杂样本自动化；不依赖Java整包发行 |
-| PAR-01 | REVIEW | 已实现有限题号与显式材料范围候选、PDF跨页来源和导出；双Python专项各30通过，全量711通过/12环境失败后原生复验12通过，原失败保留；[独立草稿PR #26](https://github.com/surface-user/StudyWorkbench/pull/26)最终head CI及主Agent核验前不记DONE，详见[报告](../dev/records/2026-11-12-complex-question-splitting/report.md) |
+| FMT-01 | REVIEW | 自编复杂DOCX/PPTX各3页、XLSX2表15格的源码/新冻结真实矩阵通过，双Python专项各76；本任务无短名目录真实转换通过，未扩大为整卷/极端路径/像素保真。[独立草稿PR #30](https://github.com/surface-user/StudyWorkbench/pull/30)最终head CI及主Agent核验待完成，详见[LW-06报告](../dev/records/2026-11-04-lw06-formats/report.md) |
+| PAR-01 | DONE | 有限题号/显式材料范围与跨页来源候选已交付[草稿PR #26](https://github.com/surface-user/StudyWorkbench/pull/26)，最终head `1d103f3c21cb8c95f5ea62841be11a4b7b2d16f9` 的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43061041645)三job/44步骤通过，主Agent已核验；父M2-04仍未完成，详见[报告](../dev/records/2026-11-12-complex-question-splitting/report.md) |
 | PAR-02、PAR-03 | READY | 设计工作可先行；OCR实施依赖固定离线组件/语言资源评估，分块实施依赖预算/取消/重启契约，禁止直接放宽保护 |
 | DL-01 | READY | 既有HTTPS下载实现已具备；重核公网来源/DNS/TLS与独立hash，无法访问则保留具体证据，不放宽禁止网段 |
 | DL-02 | READY | 来源/组件设计可先行；实际站点提取依赖明确站点和授权方式，不默认登录/DRM |
@@ -106,8 +106,8 @@ LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人�
 | REL-03 / P0，依赖REL-01 | 漏洞检查与修复复验 | 待实施；固定扫描器与数据库时间/hash，覆盖锁文件+最终组件，保留原发现/误报依据/修复与回归；无数据库、过期或不支持组件明确报不完整 |
 | REL-04 / P1，依赖REL-01至03 | 签名准备与验签；实际签名需发行身份 | 待实施；签名服务/身份未指定，不声称无证书或已签；先实现显式配置/缺失拒绝/篡改失败，真实SHA256签名与时间戳后更新清单；第三方签名不冒充项目签名 |
 | REL-05 / P1，依赖OFF-02、REL-01至04 | 发行候选组装与可追溯准备 | 待实施；配套前后端、签名后payload清单/SBOM、许可、扫描结果、安装器签名与外置最终hash/构建来源、当前head CI一致；自动化验证升级/卸载数据保护；人工/干净机暂停，合并/正式发布另授权 |
-| FMT-01 / P1，属LW-06/R3 | 扩展复杂DOCX/PPTX/XLSX安全/版式矩阵 | 待实施；真实自编多节/字体/表格/图表/公式/坏包和无短名目录自动化，记录保真与拒绝边界；不把旧格式/编辑列为已有能力 |
-| PAR-01 / P1，属M2-04 | 复杂题号/共享材料确定性候选；先设计样本与期望 | 实现完成、REVIEW；Word/PDF共用有限题号/显式范围归组，缺号/重号/乱序不关联，跨页原图/区域随MD保留，原件/旧确认版不变；双Python专项各30、Ruff通过，全量环境失败与原生复验保留[原报告](../dev/records/2026-11-12-complex-question-splitting/report.md)。[独立草稿PR #26](https://github.com/surface-user/StudyWorkbench/pull/26)依赖#23，最终head CI/主Agent核验继续；OCR、多栏、任意编号不在本切片，代码审查暂缓、人工取消，尚未合并/发行 |
+| FMT-01 / P1，属LW-06/R3 | 扩展复杂DOCX/PPTX/XLSX安全/版式矩阵 | 实现完成、REVIEW；自编分节/字体/长表/图表/公式/坏包矩阵与真实无短名目录已自动核验，源码/新冻结均通过，双Python专项各76；损坏压缩流错误映射已修，首轮失败保留。[LW-06报告](../dev/records/2026-11-04-lw06-formats/report.md)明确逐页布局及值查看边界，不认证任意保真/整卷无短名/极端路径；[独立草稿PR #30](https://github.com/surface-user/StudyWorkbench/pull/30)最终head CI及主Agent核验待完成，代码审查暂缓、人工取消 |
+| PAR-01 / P1，属M2-04 | 复杂题号/共享材料确定性候选；先设计样本与期望 | DONE；Word/PDF共用有限题号/显式范围归组，缺号/重号/乱序不关联，跨页原图/区域随MD保留；双Python专项各30、Ruff及最终head `1d103f3c21cb8c95f5ea62841be11a4b7b2d16f9` [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43061041645)通过，主Agent已核交付条件。[草稿PR #26](https://github.com/surface-user/StudyWorkbench/pull/26)未合并/发行；[原报告](../dev/records/2026-11-12-complex-question-splitting/report.md)保留全量12环境失败及原生复验。OCR、多栏、任意编号和父M2-04仍未完成；代码审查暂缓、人工取消 |
 | PAR-02 / P2，属M2-04，依赖样本/组件评估 | 多栏与离线OCR分开切片设计/实现 | 待设计；固定离线组件/语言资源/许可/预算后分别PR，多栏阅读顺序/OCR置信提示/拒绝/超时/重启有自动化；不自动下载模型或上传资料 |
 | PAR-03 / P2，属M2-04 | 更大文档/分块任务 | 待设计；原件/页区间/进度与取消/重启/幂等/预算契约先行，不直接放宽25秒/20页等原保护；旧小文件回归保持 |
 | DL-01 / P1，属LW-07 | 当前直接HTTPS下载公网证据补齐 | 待实施；授权公开源+独立hash、DNS/重定向/TLS/断点/重启/入库/备份恢复自动化，不为测试允许禁止网段；旧Commons DNS失败保留 |
