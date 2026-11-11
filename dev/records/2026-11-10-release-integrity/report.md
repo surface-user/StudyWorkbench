@@ -410,3 +410,5 @@ IQ tools/source_vulnerabilities.py --output artifacts/rel03b/source-vulns：退�
 
 代码审查暂缓、人工测试取消，完整发行SBOM/传递许可/二进制漏洞/签名和正式发行仍未完成。新依赖只影响开发测试，未做UNIX攻击复现；原查询发现、权限失败、初始环境失败与工具失败均保留。03b需独立草稿PR/最终head CI及主Agent核验后决定DONE，下一项为03c，未合并或发行。
 
+实际提交[独立草稿PR #35](https://github.com/surface-user/StudyWorkbench/pull/35)，codex/pytest-vulnerability-fix基于#32最终89f0d775，实现提交e90e659fcd149b35f47ca8830a67989e1895c5a2。四文件范围/精确单行锁差异、原报告前缀、非03a/b任务行、UTF-8/LF/尾空白/相对链接检查通过；JUnit898条含77子测试的计数已核。最终head与完整CI在PR描述维护，主Agent核验前保持REVIEW；不为记录自身SHA反复触发提交。
+
