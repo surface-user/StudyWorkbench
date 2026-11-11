@@ -374,3 +374,5 @@ PLAN-06仅修改AGENTS.md、docs/task.md和本报告。准备脚本逐blob验证
 
 已通知主Agent并按其指令登记独立REL-03b（pytest最小兼容修复）和REL-03c（Starlette/FastAPI兼容组合与Host/path/相关入口回归）。本PR不改锁、不安装新版依赖、不默默升级全栈。Git/SDK、Python冻结/native、Flutter/NuGet/CRT/WebView2、Office/Java/安装器实际payload以及完整库更新/修复复扫均未闭合。代码审查暂缓、人工测试取消；完整SBOM/传递许可/签名/发行、合并均不在本切片结论内。
 
+实际提交[独立草稿PR #32](https://github.com/surface-user/StudyWorkbench/pull/32)，codex/source-lock-vulnerabilities基于#28的2187fec，实现提交75971a02007e5f992e344f8220cbc465cc2deb63。六文件文档/范围assert退出0，保持全部其余基线文件、原报告前缀和非本项task行；原始artifacts未入Git。首次create_tree未返回结构，重试相同内容的幂等tree操作后成功，没有移动错误ref或重复创建PR。最终head与完整CI在PR描述维护，主Agent核实前保持REVIEW；下一项按独立03b/c处理。
+
