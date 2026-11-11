@@ -1,6 +1,5 @@
 import sqlite3
 
-import pytest
 from sqlalchemy import event
 from test_explorer import PREFIX, client, start
 from test_question_files import convert, preview, publish
@@ -61,8 +60,10 @@ def test_removal_is_atomic_and_blocks_active_copies(tmp_path):
 
         event.listen(c.app.state.engine, 'before_cursor_execute', fail)
         try:
-            with pytest.raises(RuntimeError, match='injected removal failure'):
-                c.delete(PREFIX + '/nodes/' + folder)
+            response = c.delete(PREFIX + '/nodes/' + folder)
+            assert response.status_code == 500 and response.json()['error']['code'] == 'internal_error'
+            assert response.json()['detail'] == '请求未完成，请稍后重试'
+            assert 'injected removal failure' not in response.text
         finally:
             event.remove(c.app.state.engine, 'before_cursor_execute', fail)
         assert c.get(PREFIX + '/nodes/' + folder).json()['status'] == 'ready'

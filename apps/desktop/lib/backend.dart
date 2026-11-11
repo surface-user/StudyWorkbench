@@ -9,8 +9,47 @@ import 'package:flutter/services.dart';
 import 'question_contract.dart';
 
 class BackendError extends HttpException {
-  BackendError(this.statusCode, String message) : super(message);
+  BackendError(this.statusCode, String message, {this.code, this.requestId})
+    : super(message);
   final int statusCode;
+  final String? code, requestId;
+
+  factory BackendError.fromResponse(
+    int statusCode,
+    String text, {
+    String summary = '请求失败',
+    String guidance = '',
+  }) {
+    String? detail, code, requestId;
+    try {
+      final decoded = jsonDecode(text);
+      if (decoded is Map) {
+        final error = decoded['error'];
+        if (error is Map &&
+            error['code'] is String &&
+            RegExp(r'^[a-z][a-z0-9_]{0,63}$')
+                .hasMatch(error['code'] as String) &&
+            error['request_id'] is String &&
+            RegExp(r'^[0-9a-f]{32}$').hasMatch(error['request_id'] as String)) {
+          code = error['code'] as String;
+          requestId = error['request_id'] as String;
+          if (error['message'] is String) detail = error['message'] as String;
+        }
+        if (decoded['detail'] is String) detail = decoded['detail'] as String;
+      }
+    } on FormatException {
+      // Never display raw non-JSON responses or tracebacks.
+    }
+    final suffix = detail == null
+        ? ''
+        : ': ${detail.substring(0, min(240, detail.length))}';
+    return BackendError(
+      statusCode,
+      '$summary $statusCode$suffix$guidance',
+      code: code,
+      requestId: requestId,
+    );
+  }
 }
 
 class Backend {
@@ -199,20 +238,7 @@ class Backend {
         .join()
         .timeout(const Duration(seconds: 5));
     if (response.statusCode != 200) {
-      var detail = '';
-      try {
-        final decoded = jsonDecode(text);
-        if (decoded is Map && decoded['detail'] is String) {
-          detail =
-              ': ${(decoded['detail'] as String).substring(0, min(240, (decoded['detail'] as String).length))}';
-        }
-      } on FormatException {
-        // Non-JSON errors should not expose raw backend tracebacks in the UI.
-      }
-      throw BackendError(
-        response.statusCode,
-        '请求失败 ${response.statusCode}$detail',
-      );
+      throw BackendError.fromResponse(response.statusCode, text);
     }
     if (path == '/api/player') return text;
     final decoded = jsonDecode(text);
@@ -269,7 +295,12 @@ class Backend {
         .join()
         .timeout(const Duration(seconds: 30));
     if (response.statusCode != 200) {
-      throw HttpException('导入请求失败 ${response.statusCode}，请刷新导入记录核实状态');
+      throw BackendError.fromResponse(
+        response.statusCode,
+        result,
+        summary: '导入请求失败',
+        guidance: '，请刷新导入记录核实状态',
+      );
     }
     final job = jsonDecode(result) as Map<String, dynamic>;
     if (job['preview']?['kind'] == 'questions') {
@@ -319,7 +350,12 @@ class Backend {
         .join()
         .timeout(const Duration(seconds: 20));
     if (response.statusCode != 200) {
-      throw HttpException('媒体入库未完成 ${response.statusCode}，请刷新记录核对；原文件保留');
+      throw BackendError.fromResponse(
+        response.statusCode,
+        text,
+        summary: '媒体入库未完成',
+        guidance: '，请刷新记录核对；原文件保留',
+      );
     }
     return jsonDecode(text);
   }
@@ -346,7 +382,11 @@ class Backend {
       }
     }
     if (response.statusCode != 200) {
-      throw HttpException('附件读取失败 ${response.statusCode}');
+      throw BackendError.fromResponse(
+        response.statusCode,
+        utf8.decode(bytes.toBytes(), allowMalformed: true),
+        summary: '附件读取失败',
+      );
     }
     return bytes.takeBytes();
   }

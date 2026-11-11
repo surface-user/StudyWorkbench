@@ -99,7 +99,7 @@ studyworkbench://v1/workspaces/{workspace_id}/notes/{legacy_note_id}
 
 ## 6. 拟议API、实体与迁移分批
 
-LW-01至04已实现接口和实际字段统一见[API](api-spec.md)，实际实体见[数据模型](data-model.md)。W沿用`/api/workspaces/{workspace_id}`，所有接口继承Bearer/Host/Origin和活动空间校验，拒绝未知字段；服务不得接收客户端磁盘路径。保留现有detail错误体，不顺便引入全局错误包装。
+LW-01至04已实现接口和实际字段统一见[API](api-spec.md)，实际实体见[数据模型](data-model.md)。W沿用`/api/workspaces/{workspace_id}`，所有接口继承Bearer/Host/Origin和活动空间校验，拒绝未知字段；服务不得接收客户端磁盘路径。API-01a保留HTTP状态/detail字符串或校验列表形状，新增安全error.code/message/request_id；422列表去输入/未知字段原值，仅给安全定位摘要。关联ID由服务端生成，不与业务幂等编号混同；成功体/媒体Range不换包装，旧调用方仍可读detail。详细兼容及脱敏规则见API，不依据错误元数据自动重放写入。
 
 自由笔记创建遵守第2节的幂等/原件/恢复约束，当前接口和字段以API/数据模型为准，不在本设计文件另行追加每次实施补丁。
 
