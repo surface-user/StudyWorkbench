@@ -214,4 +214,8 @@ Q=`D:/computer_work/project/StudyWorkbench/.local/release-venv/Scripts/python.ex
 
 ### 交付状态与限制
 
-FMT-01实现和本机自动化完成，当前REVIEW；源码/新冻结复杂矩阵、真实无短名目录、双Python相关专项已通过，独立草稿PR和最终head CI待交付，主Agent核验前不记DONE。代码审查按本轮用户指令暂缓，人工测试/Computer Use按11-06指令取消，没有制造人工通过。Office组件的Java桥、完整SBOM/许可/漏洞/签名/发行属于其他独立任务；本矩阵不替代这些条件。任意第三方文件保真、整卷禁用8.3、极端路径、字体造型/像素等价及安装/干净机没有据此认证。
+FMT-01实现和本机自动化完成，当前REVIEW；源码/新冻结复杂矩阵、真实无短名目录、双Python相关专项已通过，[独立草稿PR #30](https://github.com/surface-user/StudyWorkbench/pull/30)已创建，base为codex/complex-question-candidates，最终head CI及主Agent核验前不记DONE。代码审查按本轮用户指令暂缓，人工测试/Computer Use按11-06指令取消，没有制造人工通过。Office组件的Java桥、完整SBOM/许可/漏洞/签名/发行属于其他独立任务；本矩阵不替代这些条件。任意第三方文件保真、整卷禁用8.3、极端路径、字体造型/像素等价及安装/干净机没有据此认证。
+
+最终原组件只读复核：`PYTHONPATH=backend; Q -X utf8 -c "from study_workbench.office_runtime import OfficeRuntime; r=OfficeRuntime(R); r.verify(lambda:None)"`（R为上列完整绝对路径，实际命令另输出JSON文件数/指纹）退出0，`component-final.txt`确认19417文件及指纹`147d21f38890236a51ac3b079d4632690ce7ae12f1470d6896aaef3597a0f8ca`保持，无新增转储或清单例外。10项显式交付文件UTF-8/LF、尾部空白及`git -c core.autocrlf=false diff --no-index --check`检查通过；首次校验驱动将no-index正常差异退出1误判失败，仅修正驱动的退出码解释，未改变文件断言。
+
+实现提交`7b67b27a58389e48e7e19f43165125afc88061b3`已送[草稿PR #30](https://github.com/surface-user/StudyWorkbench/pull/30)，后续文档提交只补PR交付与上述最终复核。最终head CI通过PR实时状态核对，未完成前保持REVIEW，不借父head绿灯销项，不为在文档记录其自身SHA循环提交。原始样本/测试库/页图/完整日志及新冻结产物均保持Git忽略，未上传产品包或合并。
