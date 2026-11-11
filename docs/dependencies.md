@@ -53,6 +53,8 @@
 
 实际准备315文件/151829828字节，逐文件与官方zip字节核对一致；入口java.exe、jawt.dll及server/jvm.dll为AMD64/PE32+，release字段为Windows/x86_64/JRE/Temurin 21.0.13+9，java -version通过。该证据不证明Office找到JVM、Java/CRT加载闭合或干净机运行；Office运行布局与冻结复验在OFF-02后续实施。无自动更新；升级须重新核官方来源/固定hash/许可、重建清单并重跑架构/加载/冻结和漏洞检查，不能就地替换文件。
 
+配套组合采用同版本Office原MSI携带的VC运行库14.44.35211.0（System64目录8份）逐字复制到Office program目录；原System64文件、原Office清单、Java目录内原14.40.33810.0运行库与全部通知保持。Office程序和独立java.exe是不同加载根，不能按全包同名DLL存在就认定已满足依赖。组合命令与后端只接受原Office清单SHA256 147d21f38890236a51ac3b079d4632690ce7ae12f1470d6896aaef3597a0f8ca、原Java清单159433e3a2fc9f2a9c4f633a613d3db5aaca29d1b52caa64e3a63755ac8e1907及完整固定组合；来源仍为上述官方MSI/JRE，不另下载或借用开发机CRT。此布局的实际模块观察属于有限自动化证据，不替代Microsoft运行库再分发义务核对、完整依赖门禁/漏洞或签名。
+
 ### Markdown渲染
 
 

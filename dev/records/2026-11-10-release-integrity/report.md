@@ -335,3 +335,31 @@ PLAN-06仅修改AGENTS.md、docs/task.md和本报告。准备脚本逐blob验证
 
 实际交付[独立草稿PR #28](https://github.com/surface-user/StudyWorkbench/pull/28)，分支codex/pinned-java-preparation，base为#25最终1b52eb3，实现提交616b2f9c5600ac2922e623ec5186aa987ddc43e8。文档assert退出0，核六份明确改动的UTF-8/LF/尾空白/相对链接、原报告前缀与非本项任务行保留；新task只额外按主Agent验收更新REL-01a为DONE，完整父项保持进行。首次PR创建工具未返回正常结构，查询该分支无PR后重试成功，没有重复创建。最终head/CI在PR描述维护，当前REVIEW等待主Agent验收。
 
+
+## 2026-11-12：OFF-02b Office与Java/CRT组合运行时
+
+基线为OFF-02a的#28最终2187fec21fee25472124aa97a2b1ea524d85e357，448份源码逐Git blob核对后复制到.local/goal-20261112/office-bundle。主Agent已核#28的37×2专项、315文件及最终[CI #153](https://github.com/surface-user/StudyWorkbench/actions/runs/43065303373)三组44步成功，OFF-02a在task登记DONE。用户委托技术判断后采用项目内Temurin，不安装系统Java、不改全局环境。OFF-02b实现与本地自动化完成，当前REVIEW，整体OFF-02及发行准备仍未完成。
+
+### 范围与实现
+
+新tools/compose_office_runtime.py复用已有OfficeRuntime/prepare_java_runtime逐文件核验，要求固定的原Office与Java清单hash，目标全新、非输入内部且无重解析路径。Office所有原文件及清单保留；Java完整复制到java/；仅另从原Office System64逐字复制8份VC运行库到program/，不覆盖原件。组件二次复核原文件/清单保持，再生成组合清单并完整核对目标；失败不删现场，非零退出不能当成功。
+
+后端OfficeRuntime新增固定组合清单校验和进程专用JAVA_HOME/UNO_JAVA_JFW_JREHOME/headless环境；原无Java组件路径继续支持。调用方为原预览worker/冻结内部launcher及stage工具；唯一绕过构造器的launcher测试夹具同步java_home=None。转换前逐文件核验、输入门禁、宏/脚本/外链保护、独立profile/Job预算均保持；不修改主进程DLL搜索状态、不继承外来Java参数、不引入产品Python依赖。Java识别依据固定LibreOffice源构建bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1的framework.hxx/framework.cxx/fwkbase.cxx直接模式；未改变厂商配置XML。
+
+### 实际命令与结果
+
+以下工作目录为隔离office-bundle源码；Q为D:/computer_work/project/StudyWorkbench/.local/release-venv/Scripts/python.exe（3.13.17），P为根.venv/Scripts/python.exe（3.12.7）。原组件O=D:/computer_work/project/StudyWorkbench/.local/release-tools/libreoffice-26.8.1，J=D:/computer_work/project/StudyWorkbench/.local/goal-20261112/java/.local/temurin21-verified；新组合C=D:/computer_work/project/StudyWorkbench/.local/release-tools/libreoffice-java-26.8.1-21.0.13。F=D:/computer_work/project/StudyWorkbench/.local/goal-20261112/formats/.local/fmt-samples01，为本批自编样本，未读取个人文档。
+
+- Q -m pytest -q backend/tests/test_office_java_bundle.py backend/tests/test_office_launcher.py backend/tests/test_office_previews.py --basetemp=.local/off02b-test03 --junitxml=artifacts/off02b/test03.xml：退出0，38通过，20.65秒；P使用.local/off02b-p-test01与p-test01.xml：退出0，38通过，24.24秒。覆盖原文件保持、来源/锁/组合清单篡改、遗漏Java标记/CRT、额外成员、嵌套/已有目标拒绝、包内Java环境与不继承外来参数，保留旧组件/冻结launcher测试。Starlette弃用警告保留。
+- Q tools/compose_office_runtime.py --office O --java J --destination C：退出0，19742文件/1732478884字节；组合清单2417775字节、SHA256 156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9。原Office19417与Java315、两份原清单和8份CRT复制均在固定集合内；日志artifacts/off02b/compose01.log。不含任何原包就地修改或DLL移除。
+- 原生诊断在根artifacts/goal-20261112编译：VS2022 x64 cl.exe /nologo /std:c++17 /EHsc /MT /W4 /Fe:probe_office_java.exe /Fo:probe_office_java.obj probe_office_java.cpp，退出0；INCLUDE/LIB使用同一MSVC及Windows SDK的x64/ucrt目录。Q -X utf8 artifacts/goal-20261112/run_office_java_probe.py（根目录）：退出0，先完整核C，再以OfficeRuntime.environment启动静态CRT诊断进程。Office自己的JFW选出Eclipse Adoptium21.0.13并启动JVM，JavaBean/AWT加载成功，所有列出的私有模块均在C内，JVM关闭返回0。诊断源与7个模块位置等精选结论见[evidence/off02b-java-summary.json](evidence/off02b-java-summary.json)和[诊断源](evidence/off02b-jfw-probe.cpp)。源hash f3cfa29b8b1bd4d7cc952890f59a44e9adad431599b4065e7eb3de1ac4dd4a33。该有限诊断使用固定私有C++ ABI，只是开发证据，不进入产品/自动兼容未来版本；其DLL目录配置只影响自身，不把它当作真实Office转换进程的模块采样。
+- PYTHONPATH=backend; Q -X utf8 tools/check_office_previews.py --test-root .local/off02b-source01 --runtime C --docx F/复杂分节.docx --pptx F/复杂图表.pptx：退出0，DOCX/PPTX各3页，PDF108084/77986字节；公式/图表标签、原件hash、取消重试、缓存与重启、数据库完整性及XML预算拒绝通过（source01.log）。运行源码中包含本次组合环境与校验，不借旧后端冒充。
+- ./packaging/windows/build-backend.ps1 -Python Q：退出0，114.7秒构建完成，43个冻结模块与本次源码精确一致；exe SHA256 bad0e600989de0f85d3b0ded02b195078c83c921ba0bebaa85cc512bde6d1642，22565938字节，freeze01.log。随后的冻结实际转换另见下项，构建通过本身不等于运行成功。
+- 同一check_office_previews命令增加--exe dist/study_backend/study_backend.exe，test-root为.local/off02b-frozen01：退出0，DOCX/PPTX仍各3页、108084/77986字节；公式/图表、XML预算拒绝、取消重试、缓存/重启/源hash和数据库检查均通过，frozen01.log。该工具将PATH限制到System32，清除PYTHONPATH/PYTHONHOME；包内Java由本次冻结OfficeRuntime设置，没有使用开发机Java环境。
+- Q -m ruff check backend tools：退出0。对改变的原文件执行git -c core.autocrlf=false diff --no-index --check：无诊断，退出1仅表示有差异，聚合检查退出0。新增代码与文档在提交前另核UTF-8/LF/尾空白/相对链接。
+
+保留失败：首次lint报告import排序1项，修正后通过；test02误写不存在的test_office_runtime.py导致退出4/0项执行，改为实际存在的test_office_previews.py后上述38×2通过，原test02.log保留。初次diff驱动把Git全局LF→CRLF警告当失败，明确关闭该命令的autocrlf后复核，无断言降低。最初Python进程JNI探针曾加载开发机CRT，只作为不闭合的旧证据保留；本次原生/MT进程补证，不改写旧结果。
+
+### 剩余退出条件
+
+源码与新冻结真实转换均通过；独立草稿PR/最终head CI待核，OFF-02b保持REVIEW。OFF-02c将独立检查实际PE进程加载域/.com/.bin/延迟导入，原check_release不降低或跳过；尚未声称最终安装/免安装整包已闭合。完整SBOM、许可/源码提供义务、漏洞修复与签名在REL系列继续，现成系统DLL/文件hash不能代替这些条件。审查按ADR0014暂缓，人工/Computer Use取消；没有合并或公开发行，没有删除原组件/测试失败/个人数据。原始日志、生成PDF/样本及exe保持Git忽略，只筛选本节所需摘要与诊断源作为共享证据。
