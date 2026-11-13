@@ -42,6 +42,8 @@ staging文件清单生成与校验共用枚举：只排除根build-inventory.jso
 
 Office子进程才接收包内JAVA_HOME、UNO_JAVA_JFW_JREHOME文件URI和headless参数，PATH只包含Office程序、包内Java bin/server与系统目录；不继承JAVA_TOOL_OPTIONS或其他外来Java启动参数，不改主后端DLL目录或系统配置。用同版本LibreOffice的[Java框架直接模式](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/include/jvmfwk/framework.hxx)显式选JRE，输入限制、宏/脚本保护与进程预算保持。原不含Java组件仍支持，不自动发现开发机Java。
 
+源码与冻结helper共用固定bootstrap命令：配置仅从包内share/registry的schema/data/resource层和本任务profile读取，不加载HKLM/HKCU策略或扩展配置层；UNO服务/类型限定原包7份services及3份types注册文件，Java类型仅原包两份jar，不展开用户/共享/捆绑扩展unorc。所有路径由已核组件和任务目录生成file URI，不接HTTP/文档传入的bootstrap参数；环境从SystemRoot/WINDIR重新建立，不继承URE_BOOTSTRAP、INIFILENAME等配置来源。profile显式清空ooSetupConnectionURL；强制策略隔离由省略外来配置层实现，不依赖空值覆盖finalized策略。转换选项升v4，旧缓存与文件保留但须重新生成后使用。该措施不删除原组件、扩展文件或许可，不构成Windows文件/网络沙箱，也不证明TWAIN等所有动态路径不可达；证据及未验边界继续原报告。
+
 组合目录可交给原build-release.ps1的-OfficeRuntime入口，默认主包行为保持。实际加载、转换及限制见[发行任务报告](../dev/records/2026-11-10-release-integrity/report.md)。完整PE进程加载域/延迟导入门禁、发行SBOM、传递许可/源码义务、漏洞和签名仍须分别完成；本步骤不等于Office整包可发行或干净机验证。
 
 ## 源码锁文件SBOM

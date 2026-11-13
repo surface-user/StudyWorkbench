@@ -155,6 +155,31 @@ def test_preview_ready_cache_tamper_scope_and_original_preservation(tmp_path, fa
         assert c.get(endpoint + f"/{retry['id']}/page").status_code == 409
 
 
+def test_previous_configuration_cache_is_retained_but_never_reused(tmp_path, fake):
+    old_options = 'pdf-static-v3-no-macros-no-external-links-internal-charts-math'
+    assert office_runtime.OPTIONS != old_options
+    original = (SAMPLES / 'original-study.docx').read_bytes()
+    with client(tmp_path) as c:
+        node, _, path = add(c, tmp_path, '资料.docx', original)
+        endpoint = f'{PREFIX}/nodes/{node}/previews'
+        body = {'expected_source_sha256': hashlib.sha256(original).hexdigest()}
+        first = c.post(endpoint, json=body).json()
+        assert wait(c, node, first['id'])['status'] == 'ready'
+        with write_transaction(c.app.state.engine) as session:
+            item = session.get(DocumentPreview, first['id'])
+            item.options_hash = hashlib.sha256(old_options.encode()).hexdigest()
+            old_pdf = tmp_path / item.relative_pdf
+        old_bytes = old_pdf.read_bytes()
+        assert c.get(endpoint + f"/{first['id']}/page").status_code == 409
+        document = c.get(f'{PREFIX}/nodes/{node}/document')
+        assert document.status_code == 200, document.text
+        assert document.json()['preview'] is None
+        second = c.post(endpoint, json=body).json()
+        assert second['id'] != first['id'] and wait(c, node, second['id'])['status'] == 'ready'
+        assert fake.calls == 2 and path.read_bytes() == original and old_pdf.read_bytes() == old_bytes
+        assert c.get(endpoint + f"/{first['id']}").json()['status'] == 'ready'
+
+
 def test_cancel_duplicate_timeout_retry_and_unsafe_input_never_reach_converter(tmp_path, fake):
     with client(tmp_path) as c:
         node, _, _ = add(c, tmp_path, '资料.docx', package())
@@ -357,6 +382,10 @@ def test_runtime_inventory_rejects_missing_changed_unlisted_and_bad_paths(tmp_pa
         runtime.verify(lambda: None)
     (root / 'NOTICE').write_bytes(b'fixture-only')
     (root / 'extra.dll').write_bytes(b'unlisted')
+    with pytest.raises(ValueError, match='未登记'):
+        runtime.verify(lambda: None)
+    (root / 'extra.dll').unlink()
+    (root / 'program/fundamental.override.ini').write_text('[Bootstrap]\nCONFIGURATION_LAYERS=foreign')
     with pytest.raises(ValueError, match='未登记'):
         runtime.verify(lambda: None)
     files['../escape'] = 'a' * 64

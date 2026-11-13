@@ -30,8 +30,10 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | OFF-01 | DONE | #22诊断开发交付已完成；本轮另核该head CI，OFF-02缺口仍保留 |
 | OFF-02 | IN_PROGRESS | 用户委托技术判断后主Agent选择项目内Temurin 21.0.13+9 x64 JRE；先由OFF-02a准备固定组件，Office/CRT加载布局与冻结验证另行推进，整包仍未闭合 |
 | OFF-02a 固定Java组件准备 | DONE | 主Agent已核37×2专项、315文件与关键PE/hash；[独立草稿PR #28](https://github.com/surface-user/StudyWorkbench/pull/28)最终2187fec的[CI #153](https://github.com/surface-user/StudyWorkbench/actions/runs/43065303373)成功；有限准备任务开发交付完成，整包OFF-02继续 |
-| OFF-02b Office配套Java/CRT组合 | REVIEW | 固定组合/进程专用Java环境已实现；双Python专项各38、19742文件核对及Office框架/JVM/桥接包内加载通过；源码/新冻结DOCX/PPTX各3页、取消/缓存/重启/原件hash通过，独立PR/最终CI待核；未完成整包发行门禁 |
-| OFF-02c PE加载域门禁 | READY | 需检查Office程序、Java入口、后端与主应用各自可见的DLL及延迟导入，避免全包basename误判；先盘点设计，再独立PR，不能放宽门禁或据系统CRT存在判通过 |
+| OFF-02b Office配套Java/CRT组合 | DONE | 主Agent已核双Python各38项、Office框架/JVM及源码/新冻结转换；[独立草稿PR #33](https://github.com/surface-user/StudyWorkbench/pull/33)最终e0a3fcf的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43072881498)三组44步成功；只接受有限组合切片，整包仍未闭合 |
+| OFF-02c PE加载域门禁 | DONE | 独立分支[草稿PR #36](https://github.com/surface-user/StudyWorkbench/pull/36)最终fbbc847已由主Agent核84×2专项及[CI attempt 2](https://github.com/surface-user/StudyWorkbench/actions/runs/43092944364)三组44步成功；原上传失败保留、277未知及严格发行拒绝保留；本#33派生分支未合入该代码 |
+| OFF-02d 固定UNO注册入口 | DONE | 独立分支[草稿PR #39](https://github.com/surface-user/StudyWorkbench/pull/39)最终2da4306由主Agent核102×2专项及[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43359332568)三组44步成功；53注册入口新增覆盖54项，223未知仍严格拒绝；本#33派生分支未合入该代码，完整Office未闭合 |
+| OFF-02e 受控Office配置来源 | REVIEW | 基于#33实现固定配置层/服务/类型/Java类型来源，源与冻结helper同参数、旧缓存保留但不复用；44×2专项及额外override拒绝1×2通过，真实finalized/扩展注册反例、源码/新冻结DOCX/PPTX各3页及各4个实际进程参数/环境核验通过；独立PR/当前head CI待核，续[原报告](../dev/records/2026-11-10-release-integrity/report.md)；不据此豁免TWAIN或完成整包 |
 | REL-01a 源码锁文件标准SBOM | DONE | 主Agent已核双Python专项各35、真实136包/8个SDK未知、官方Schema和本地/远端blob；[草稿PR #25](https://github.com/surface-user/StudyWorkbench/pull/25)最终1b52eb3的[CI #141](https://github.com/surface-user/StudyWorkbench/actions/runs/43060243273)三job/44步成功，开发交付完成，审查暂缓；未覆盖最终产品包 |
 | REL-01 完整源码与发行包SBOM | IN_PROGRESS | 先交付01a；最终覆盖仍依赖OFF-02及所有实际组件/安装器payload，不能据源锁文件或环境包表销项 |
 | REL-02、REL-03 | BLOCKED | 完整传递许可与漏洞检查依赖REL-01实际组件清单；源锁文件切片就绪后可开展相应子范围，整体保持未完成 |

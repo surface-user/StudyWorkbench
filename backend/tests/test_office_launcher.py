@@ -69,6 +69,7 @@ def test_only_disposable_helper_clears_dll_before_fixed_external_command(tmp_pat
     kernel = SimpleNamespace(SetDllDirectoryW=clear)
     def run(command, **options):
         assert calls == ['clear']
+        assert command == runtime.command(directory / 'source.docx', directory)
         assert command[0] == str(runtime.executable)
         assert command[-1] == str(directory / 'source.docx')
         assert 'pdf:writer_pdf_Export' in command
@@ -133,3 +134,50 @@ def test_native_directory_checks_identity_and_never_uses_truncated_alias(tmp_pat
             office_runtime.native_directory(directory)
     else:
         assert office_runtime.native_directory(directory) == directory
+
+
+@pytest.mark.parametrize('suffix,filter_name', [('.docx', 'writer_pdf_Export'), ('.pptx', 'impress_pdf_Export')])
+def test_bootstrap_sources_are_fixed_file_uris_for_both_launch_paths(tmp_path, suffix, filter_name):
+    runtime, directory, _ = task(tmp_path)
+    runtime.root = tmp_path / '固定组件 with spaces'
+    runtime.executable = runtime.root / 'program/soffice.com'
+    command = runtime.command(directory / ('source' + suffix), directory)
+    bootstrap = dict(value[5:].split('=', 1) for value in command if value.startswith('-env:'))
+    registry = (runtime.root / 'share/registry').as_uri()
+    assert bootstrap['CONFIGURATION_LAYERS'] == (
+        f'xcsxcu:{registry} res:{registry} user:!{(directory / "profile/user/registrymodifications.xcu").as_uri()}')
+    program = (runtime.root / 'program').as_uri()
+    assert bootstrap['UNO_SERVICES'].split() == [program + '/' + name for name in (
+        'services.rdb', 'services/postgresql-sdbc.rdb', 'services/pyuno.rdb',
+        'services/scriptproviderforbeanshell.rdb', 'services/scriptproviderforjavascript.rdb',
+        'services/scriptproviderforpython.rdb', 'services/services.rdb')]
+    assert bootstrap['UNO_TYPES'].split() == [program + '/' + name for name in (
+        'types.rdb', 'types/offapi.rdb', 'types/oovbaapi.rdb')]
+    assert bootstrap['URE_MORE_JAVA_TYPES'].split() == [program + '/classes/' + name for name in (
+        'libreoffice.jar', 'ScriptFramework.jar')]
+    assert bootstrap['UserInstallation'] == (directory / 'profile').as_uri()
+    assert len(bootstrap) == 5 and '%' in program and ' ' not in program
+    assert 'pdf:' + filter_name in command and '--accept' not in command
+
+
+def test_child_environment_drops_all_external_bootstrap_sources(tmp_path, monkeypatch):
+    runtime, directory, _ = task(tmp_path)
+    names = ('URE_BOOTSTRAP', 'INIFILENAME', 'CONFIGURATION_LAYERS', 'UserInstallation', 'UNO_SERVICES',
+             'UNO_TYPES', 'URE_MORE_JAVA_TYPES', 'URE_MORE_SERVICES', 'URE_MORE_TYPES', 'UNO_PATH',
+             'SAL_CONFIG_STATICIZE', 'SAL_CONFIG_WINREG_RETAIN_TMP')
+    for name in names:
+        monkeypatch.setenv(name, 'foreign bootstrap must not be inherited')
+    environment = runtime.environment(directory)
+    assert all(name not in environment for name in names)
+    assert all(os.environ[name] == 'foreign bootstrap must not be inherited' for name in names)
+
+
+@pytest.mark.parametrize('internal_rendering', [False, True])
+def test_controlled_profile_never_configures_a_listener(internal_rendering):
+    from xml.etree import ElementTree
+    root = ElementTree.fromstring(office_runtime.profile_configuration(internal_rendering))
+    namespace = {'oor': 'http://openoffice.org/2001/registry'}
+    item = root.find("item[@oor:path='/org.openoffice.Setup/Office']", namespace)
+    assert item is not None
+    value = item.find("prop[@oor:name='ooSetupConnectionURL']/value", namespace)
+    assert value is not None and not value.text
