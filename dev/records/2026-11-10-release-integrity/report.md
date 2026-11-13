@@ -412,3 +412,30 @@ IQ tools/source_vulnerabilities.py --output artifacts/rel03b/source-vulns：退�
 
 实际提交[独立草稿PR #35](https://github.com/surface-user/StudyWorkbench/pull/35)，codex/pytest-vulnerability-fix基于#32最终89f0d775，实现提交e90e659fcd149b35f47ca8830a67989e1895c5a2。四文件范围/精确单行锁差异、原报告前缀、非03a/b任务行、UTF-8/LF/尾空白/相对链接检查通过；JUnit898条含77子测试的计数已核。最终head与完整CI在PR描述维护，主Agent核验前保持REVIEW；不为记录自身SHA反复触发提交。
 
+
+## 2026-11-13：REL-02a 锁定源码依赖的本地许可证据
+
+主Agent从#35最终a73bedd24c228b61c9f1ccd4290152af2bace57b按远端Git blob复制450文件到独立.local/goal-20261112/source-licenses。#35已核CI43092294564三组通过，有限pytest修复DONE，原漏洞/权限失败保留。本项按现行REL-02a范围建立版本、许可原文、声明来源及缺失映射；完整REL-02仍依实际发行成员及官方归档/组合义务，不因本工具交付销项。
+
+范围为tools/source_licenses.py、其独立测试、打包指南/task、本报告和精选摘要；无产品调用方、API/UI/数据库、运行依赖、CI或发行stage变化。复用现有source_sbom锁解析/no_links/PyYAML/packaging，Python标准库读取metadata/RECORD，Dart只读指定package_config及缓存pubspec。新目录内按内容hash保存原字节、逐版本PURL记录原文相对路径/hash及声明来源。拒绝越界/链接/已有输出/异常长度或SHA256；没有下载或替换依赖/原件，没有解释许可标签为完整法律义务。
+
+### 命令与实证
+
+工作目录如上。Q为根.local/release-venv/Scripts/python.exe（3.13.17），P为根.venv/Scripts/python.exe（3.12.7）；实包采集IQ为pytest-fix/.local/pytest-q-isolated/Scripts/python.exe，已安装9.0.3但只读复用Q其他锁依赖。所有命令启用UTF-8/PYTHONDONTWRITEBYTECODE，不改变共享环境。
+
+- 根Q -X utf8 artifacts/goal-20261112/prepare_next.py source-licenses-manifest.json：退出0，450基线文件逐blob一致。首次未加-X utf8，读取含中文路径manifest时默认GBK失败；保留命令结果，未形成副本，改用显式UTF-8后成功。
+- Q/P -X utf8 -m pytest backend/tests/test_source_licenses.py backend/tests/test_source_sbom.py -q --basetemp=.local/licenses-{q,p}04 --junitxml=artifacts/rel02a/{q,p}04.xml：各退出0，57通过（22个新证据用例及35个既有锁解析用例）。新用例覆盖原文字节与hash、SDK/产品未知、精确版本缺失/歧义、RECORD变更/长度/路径、缺文/声明自定义文件、重复config/远端URI、超预算、原输出保留、锁变更、vendored metadata身份和CLI缺证非零。
+- 首轮q01因未创建.local父目录出现21个夹具建立错误；创建父目录后q02/p02各20通过/1失败，原始JUnit/log保留。失败揭示importlib.metadata.files()会过滤不存在的RECORD项，从而隐藏越界许可路径。修复为直接读取/验证原始RECORD后q03/p03各56通过；未降低断言或删除负例。Ruff初轮import排序1项按既有规则修正。
+- IQ -X utf8 tools/source_licenses.py --package-config ../batch-two/apps/desktop/.dart_tool/package_config.json --output artifacts/rel02a/real-final：退出2（明确缺证），136个精确源包、246个原文引用/182个唯一文本，8个SDK占位明确排除；仅latex2mathml3.81.1没有许可原文。Python其余选中文件的本地RECORD SHA256及长度一致；Dart版本与缓存pubspec一致。这是本地证据，未证明归档来源、缓存Git内容、许可完整性或分发义务。
+- 实包首轮real01遇setuptools84.2.1携带其他包的嵌套dist-info/METADATA，工具保守拒绝歧义，退出1且无成功report；将发行包身份限定为顶层dist-info、仍保留嵌套许可后real02退出2。为此新增独立vendored metadata回归，没有排除嵌套许可证。real02、real-final原始产物均保留。
+- 根Q -X utf8 artifacts/goal-20261112/record_source_licenses.py：逐246引用重新读副本核长度/SHA256，并检查摘要不含本机绝对路径；退出0。精选evidence/source-license-summary.json只保留公共包PURL、文件数、缺证/未知及原报告hash；用于可共享覆盖核验，不提交全部原始日志、缓存或第三方安装内容。
+
+最终report SHA256 192006c171592c548ddd460bcab8aaa4d567ab2ff2678b9d74190b331d68cac3，collector SHA256 1bc9799594876a597e26dbd1e70ee08c28c6c6b83c7a5fcaa446876ce9cf85cd。原文目录与完整逐文件映射在忽略的artifacts/rel02a/real-final；新工具可对后续精确锁与环境重新生成，不复用旧版本结果。当前Starlette仍为该基线0.50.0，独立03c修复需在组合后重采，不能把此清单冒充最终候选。
+
+### 退出边界
+
+本工具是有限证据映射，不是完整许可证审查。latex2mathml缺原文、官方wheel/pub归档/Git来源认证、源码提供/NOTICE/组合义务、SDK/冻结/native/Office/Java/安装器及运行时成员均继续由REL-02后续处理。缺文及未验证原样保留，不以元数据许可证标签或下载链接补记通过。代码审查暂缓，人工测试取消，未合并/发行。本项实现/专项/实际采集与文档完成后REVIEW，独立草稿PR与当前head完整CI核验前不记DONE；最新head/CI由PR描述维护，不为记录自身SHA反复提交。
+
+最终源码（含报告schema_version/采集器hash字段）再次运行同57项，Q/P的licenses-{q,p}-final及q-final/p-final日志均退出0；Q -m ruff check backend tools退出0。六文件范围、原报告前缀、未改依赖锁、UTF-8/LF/尾空白及Markdown相对链接检查通过。首次检查驱动把git diff --no-index --check的有差异退出1误作失败（stdout/stderr均空）；按该命令差异语义接受0/1且必须无诊断，未更改源码或忽略空白报错，保留首次驱动失败。
+
+实际交付[独立草稿PR #41](https://github.com/surface-user/StudyWorkbench/pull/41)，分支codex/source-license-evidence基于#35最终a73bedd，实现提交0506a79e4a11370a0afed8c5a05cda173bb263e7。首次共享摘要采用Windows默认CRLF，被提交检查拒绝；仅将新摘要规范化为LF后，六文件/69链接检查退出0。原始采集report及hash未改。最终head CI和有限交付结论在PR描述持续更新，不记完整许可义务已完成。
