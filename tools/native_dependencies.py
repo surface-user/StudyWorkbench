@@ -2,6 +2,7 @@
 import hashlib
 import json
 import re
+import xml.etree.ElementTree as ET
 from pathlib import PurePosixPath
 
 import pefile
@@ -15,6 +16,50 @@ DLL_REGISTRATIONS = {
     'numpy': dict(version='2.5.4', code_sha256='e4f5a942c031e942cb3d44e0f38adedba8c24dd51ae9cbc0c5788c998647e31a'),
     'pandas': dict(version='3.1.0', code_sha256='0786ce19ddf69547b54b04728688dad0c8d36b2d54c275ed9bedc608a4d14572'),
 }
+# Fixed Office startup/registration bytes, not a general UNO bootstrap interpreter.
+OFFICE_UNO_FILES = {
+    'program/uno.ini': 'e4b23a72009455cef8b105312e6893a1523f1a00005de502f821317708f2b6d6',
+    'program/fundamental.ini': 'b4d54f865c2ae335dad400114f4638051360e04491fae41359f62511eb8160c2',
+    'program/services.rdb': 'ea90dacd3cae92582dd02c03b93f73e3307d8017fa3403e38c6a07f6cc1522cb',
+    'program/services/postgresql-sdbc.rdb': '5e2fdbdfd2f01f37e23df3ddbfe8a082da75fb7b3579a5009d6d0d12a5813362',
+    'program/services/pyuno.rdb': 'b4495431256f030c6e2da038d64f6ccaa09e60709ba7206ced73ebe17c869ff6',
+    'program/services/scriptproviderforbeanshell.rdb': '4b290aaf66192075ab16404ceadd28b3e38c1890fe53e17572da400af5dac3be',
+    'program/services/scriptproviderforjavascript.rdb': 'fe5092c30ac96be4e45ca5df7b60ad0118273f26c07e9d7c1a78d177dc046e83',
+    'program/services/scriptproviderforpython.rdb': 'ed096e982ec7996361fcd1159b270f8169aa9547a09463a6a006bff5057a3c2d',
+    'program/services/services.rdb': 'bc996be9362ebf3a9c6be11d4c3c9fef26941182743c70d1649a6e5fe317f094',
+}
+
+
+def office_uno_entries(payload, office):
+    expected = {office + name: digest for name, digest in OFFICE_UNO_FILES.items()}
+    actual = {name for name in payload if name.startswith(office + 'program/services/')}
+    if actual != {name for name in expected if name.startswith(office + 'program/services/')}:
+        raise ValueError('Office UNO registration file set changed; renew loading evidence')
+    entries = {}
+    for name, digest in expected.items():
+        path = payload.get(name)
+        if path is None:
+            raise ValueError('Missing Office UNO configuration: ' + name)
+        with path.open('rb') as stream:
+            raw = stream.read(1024 * 1024 + 1)
+        if len(raw) > 1024 * 1024 or hashlib.sha256(raw).hexdigest() != digest:
+            raise ValueError('Office UNO configuration changed or exceeds budget: ' + name)
+        if not name.endswith('.rdb'):
+            continue
+        # Parse only the exact, bounded bytes above; untrusted XML never reaches this parser.
+        document = ET.fromstring(raw)
+        if document.tag != '{http://openoffice.org/2010/uno-components}components':
+            raise ValueError('Unknown Office UNO registry format: ' + name)
+        for component in document:
+            if component.get('loader') != 'com.sun.star.loader.SharedLibrary':
+                continue
+            match = re.fullmatch(r'vnd\.sun\.star\.expand:\$(?:URE_INTERNAL_LIB_DIR|LO_LIB_DIR)/'
+                                 r'([a-zA-Z0-9_+-]+\.(?:dll|pyd))', component.get('uri', ''))
+            if match is None:
+                raise ValueError('Unsupported Office UNO library URI in ' + name)
+            target = office + 'program/' + match[1].casefold()
+            entries.setdefault(target, []).append(name)
+    return {name: sorted(set(sources)) for name, sources in sorted(entries.items())}
 
 
 def registered_directories(payload):
@@ -178,7 +223,12 @@ def inspect_dependencies(payload, system):
             roots.append(server + '/jvm.dll')
             domains['java'] = closure(nodes, [java + '/java.exe', java + '/jawt.dll', server + '/jvm.dll'],
                                       [java, server], [java], system)
-        domains['office'] = closure(nodes, roots, [program, java, server], [program], system)
+        uno_entries = office_uno_entries(payload, office)
+        domains['office'] = closure(nodes, sorted(set(roots) | uno_entries.keys()),
+                                    [program, java, server], [program], system)
+        domains['office']['uno_entries'] = uno_entries
+        domains['office']['uno_configuration_sha256'] = {
+            office + name: digest for name, digest in OFFICE_UNO_FILES.items()}
     covered = {name for domain in domains.values() for name in domain['nodes']}
     return dict(scope='documented-entry-and-plugin-domains-v1', pe_images=len(nodes),
                 pe_coverage='partial' if len(covered) < len(nodes) else 'all-images-in-declared-static-domains',

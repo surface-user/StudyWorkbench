@@ -390,3 +390,39 @@ target01退出1：71通过/2失败，均为受限环境不能创建Windows链接
 静态规则不证明所有动态LoadLibrary、已加载模块/SxS、导出转发、API-set的最低Windows可用性或所有helper/插件实际行为。真实Office诊断的277未知项继续阻断完整发行，不能只凭69/9节点给OFF-02整包完成结论。代码审查暂缓，人工/Computer Use已取消；没有合并、签名、安装、发布、清理旧失败或新的模型/下载。实现和专项已完成，任务进入REVIEW，草稿PR及最终head CI核验前不记DONE。
 
 实际交付[独立草稿PR #36](https://github.com/surface-user/StudyWorkbench/pull/36)，分支codex/native-loading-domains，base为#28最终2187fec；实现提交b03d990ddfc9a8fcc1bcd13b9e0688ec4ec2a5cd。九份明确改动的UTF-8/LF/尾空白与git diff --no-index --check通过，原报告前缀、非本项任务行和全部其他基线blob保持。首次聚合传输JSON因输出截断而失败，分块后检测到控制台中文编码长度不符；改用ASCII转义分块并核完整长度后才创建远端tree，没有提交不完整或乱码内容。最终head/CI在PR描述维护，待主Agent核验有限检测/拒绝能力后决定DONE；父项未知范围继续阻断，未合并或发行。
+
+## 2026-11-13 OFF-02d：固定UNO注册入口（设计）
+
+基线为#36最终fbbc8479b039fc69ea41260c7bdd298484effa16/tree ec39c923f1e17e5c443be30fae8ddb6124e7e497，451个tracked blob逐字节核对后复制至独占.local/goal-20261112/office-uno-closure。原根、原Office/Java组件及#36源码不改；共享Q/P环境不升级。首次复制因默认GBK读取UTF-8清单退出1，尚未写目标；使用PYTHONUTF8=1重新执行prepare_next.py office-uno-manifest.json后退出0，451文件匹配。#36的CI43092944364两组后端成功，desktop上传产物步骤失败由主Agent继续处理；本分支不把父项记DONE，不改CI。
+
+读取本副本AGENTS、requirements、architecture、question-content-spec、task及打包/依赖规范、dev规则，并盘点native_dependencies的两个调用方check_release/check_native_dependencies、对应测试、build-release编译前调用。影响只限共享依赖图、专项测试、打包说明、任务和本报告；不改Office进程配置、API/数据库或用户资料，不新增依赖。
+
+已有静态PE导入图遗漏通过UNO注册表装载的入口。固定Office buildid bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1的[ServiceManager](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/cppuhelper/source/servicemanager.cxx)读取注册文件/目录，并在801–818行展开SharedLibrary URI后调用装载函数；[shlib](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/cppuhelper/source/shlib.cxx)在307–310行使用该URI打开模块。官方源Git blob分别为09273863097ba162b830f6c46c18030d2b73d300和5bbefd436833aae5c053c9022197b66c329b2ed5。普通网页读取Cache miss，随后官方GitHub API按固定提交完整获取成功，没有改用未固定版本。
+
+本切片只纳入组件自带的固定UNO注册范围：核program/uno.ini与fundamental.ini完整hash，确定URE_INTERNAL_LIB_DIR/LO_LIB_DIR均指向program、UNO_SERVICES由主services.rdb及program/services内6文件构成；注册目录文件集合及7文件完整hash必须与已核版本一致。随后解析这些已验证字节，SharedLibrary只接受两种已证明变量前缀与单个DLL/PYD文件名，得到53个唯一原生入口及各自注册来源。全部入口加入既有Office进程域，用原有架构/普通与delay/私有CRT守卫解析，不添加全包搜索目录。配置变化、未知注册文件、URI路径越界、入口/传递库缺失或错架构必须失败；Java/Python脚本注册不假装是原生库。
+
+预期专项包括注册来源可追溯、缺/改/增文件、文件预算、跨目录/错误变量URI、非原生注册不混算、已注册入口及传递依赖缺失、原x64/未知覆盖阻断。真实组件先重核19742 payload hash，再比较旧/新覆盖集合，仍未知的CLR/模板/helper等继续列出；twain32shim.exe真实x86/CRT缺口不予免责。原组件、旧失败、源文件身份与发行未知范围保持。独立草稿PR及当前head CI由主Agent核验后才能记本有限切片DONE；不是整包OFF-02或发行完成。
+
+### 实现与自动化
+
+native_dependencies内复用同一closure，新增固定UNO配置核验与注册来源映射，无新执行器/运行时依赖/搜索目录。注册文件每份限1MiB，先校验完整hash再解析同一份字节；非预期文件集合、配置变更及不支持URI均拒绝。主应用/后端/独立Java规则保持，check_release原有未知PE严格拒绝未修改。静态检查扩大了已证明的可加载入口集合，不声称全部入口都在转换样本中实际调用。
+
+工作目录为.local/goal-20261112/office-uno-closure，Q=根.local/release-venv/Scripts/python.exe（3.13.17），P=根.venv/Scripts/python.exe（3.12.7）；设置PYTHONUTF8=1/PYTHONDONTWRITEBYTECODE=1。实际命令和退出码：
+
+- Q/P -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py -q --basetemp=.local/uno-native313（P为uno-native312）--junitxml=artifacts/off02d/native313.xml（P为native312.xml）：均退出0，各102通过，分别3.30/4.87秒。18个新增用例覆盖注册来源/脚本排除、缺改增/预算、URI路径/变量拒绝、未核XML不解析、入口/传递边/架构与未知保留；原84项守卫保持。测试中的目录链接仅在本任务临时目录原生复验，不改系统配置。
+- Q -m ruff check backend tools：退出0，全量通过，artifacts/off02d/ruff.txt。没有产品业务/桌面改动，本地不重复业务/Flutter全量；独立PR当前head完整CI仍执行。
+- Q tools/check_native_dependencies.py --office D:/computer_work/project/StudyWorkbench/.local/release-tools/libreoffice-java-26.8.1-21.0.13：退出0，完整结果artifacts/off02d/office01.json。核19743实际文件（19742 payload加清单），清单SHA256仍156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9；351 PE/18条delay。53个唯一UNO入口并入Office后，Office域65根/123节点/1528边，独立Java仍3根/9节点/109边。与#36旧图相同输入逐项对照，新增覆盖54项，未知277→223，pe_coverage仍partial。原静态域/已知文件没有丢失，twain32shim.exe仍为I386未知项，整包不能通过发行门禁。
+- Q artifacts/off02d/real-evidence.py：退出0，使用真实组件PE/配置数据，仅在内存分别去掉sclo.dll入口、libpq.dll传递库、改sclo架构、去掉fundamental.ini映射、增一条注册映射；五项分别触发缺入口/缺导入/x64/配置缺失/注册集合拒绝。原runtime-lock、9份配置及twain32shim共11个文件前后hash相同，未删除/移动/覆盖原组件。完整结果real-summary.json，执行输出real-evidence.txt。
+- Q artifacts/off02d/select-evidence.py：退出0，逐项筛选[off02d-uno-summary.json](evidence/off02d-uno-summary.json)，11599字节，SHA256 923c06b191089c7243733a48be352b2bbfd7e69abf13b5ff574469e3e1ae0c86。仅保留固定配置hash、53入口对应注册来源、覆盖计数/负例与TWAIN未知示例，附原始报告hash/版本/筛选理由；不提交整个artifacts、原组件、完整原始图或个人数据。首轮文档检查发现该新JSON采用Windows默认CRLF，显式LF重新生成后才交付，旧检查失败保留。
+
+原失败保留：target01第一次pytest因未建立独立.local父目录而1通过/47个夹具错误，pytest实际退出1（外层打印命令曾掩盖该退出码，未当成通过）；建立父目录后target02退出1，100通过/2失败，仍是原Windows链接夹具创建被受限执行拒绝。后续两套原生102通过，没有降低或删除断言。实际组件检查运行期间提前读取尚为空的输出曾触发汇总JSONDecodeError，未作为产品失败/成功结论；完整扫描最后退出0后读取458721字节完整JSON并核对，原空读取错误保留于本轮执行记录。
+
+### 基线验收、限制与交付
+
+主Agent已核#36的双Python各84、原277未知/三项实际负例及严格发行拒绝，最终fbbc847的CI43092944364 attempt2三组44步全部成功，接受OFF-02c有限门禁DONE；attempt1上传产物CreateArtifact失败保留，不说该历史运行通过。本OFF-02d只叠加注册入口，没有吸收其他功能或改变父head。
+
+剩余223项仍需独立证明实际运行域或有可审计来源条件的非运行分类；包括CLR、Python启动器资源、独立JRE其他PE、Shell/其他helper。twain32shim的真实x86/CRT问题继续阻断，不能凭当前DOCX/PPTX未调用而豁免。固定注册图不覆盖用户/扩展配置变化、全部动态LoadLibrary/导出转发/SxS、OS最低版本或干净机运行。未执行人工/Computer Use、合并/发布/签名、注册Office/Java或改个人数据。代码审查继续暂缓，任务进入REVIEW；独立草稿PR、最终head CI及主Agent验收另核，完整OFF-02/REL任务不销项。
+
+提交前Q artifacts/off02d/validate-docs.py退出0，核仅6份明确改动，其余基线blob、原报告前缀和非本项任务行保持，UTF-8/LF/无尾空白及本地链接有效；逐文件git diff --no-index --check无任何诊断。首轮辅助脚本误要求存在差异的no-index也必须退出0，因正常差异返回1而失败；修正为仅接受0/1且stdout/stderr均空后通过，未忽略空白错误，docs.txt/docs02.txt保留。PR最终head/当前CI结论在PR描述维护，避免记录自身SHA导致反复变更head。
+
+实际交付[独立草稿PR #39](https://github.com/surface-user/StudyWorkbench/pull/39)，分支codex/office-uno-loading依赖#36最终fbbc847；实现提交35b225e8ad5813ffab63cdf26b6628ae5100d772，452个远端blob与本地逐项匹配后创建PR。随后仅补本交付链接；最终head/本head CI和主Agent验收以PR描述及实时检查为准，未核验前保持REVIEW，不合并或发行。
