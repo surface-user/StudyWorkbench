@@ -415,3 +415,5 @@ Q artifacts/off02e/inspect_office_arguments.py：退出0，仍调用OfficeRuntim
 进程诊断只读本次后代，不读/写其他进程或宿主策略。其NtQueryInformationProcess/PEB命令布局依据[微软接口](https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess)和[参数结构](https://learn.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-rtl_user_process_parameters)；environment偏移是本机x64有界校验的诊断ABI，微软明确内部结构可变，不能当跨Windows版本的产品接口或完整执行轨迹。成功采样与同引擎配置解析是互补证据，未在真实soffice内部读取最终配置对象，也未做宿主策略注入/监听测试，不扩大为完整OS隔离或任意第三方文件安全结论。
 
 实现及上述本地自动化已完成，task进入REVIEW；独立草稿PR/最终head CI与主Agent有限验收仍待完成。完整Office的未知原生组件/TWAIN真实依赖缺口保持，配置限制不自动给任何文件豁免；完整SBOM/许可/漏洞/签名、集中审查、正式发布仍分别未完成。人工/Computer Use取消，未合并或发行。
+
+OFF-02e已创建[独立草稿PR #44](https://github.com/surface-user/StudyWorkbench/pull/44)，分支codex/office-config-sources依赖#33精确e0a3fcf；首实现提交fe3b233c0d26e0bb2c65f48e3d4c279f58d26632/tree 6f7f749abb4e776753a33f97f2d4b75e734beda6，仅11份范围文件（7份既有源码/测试/文档、4份逐项精选证据）。随后仅补本交付链接；最终head/CI与主Agent有限验收以PR描述/实时检查为准，未核实前保持REVIEW，不把待核CI写成通过。未提交artifacts整目录、样本/PDF/个人库或二进制，不合并/发行。
