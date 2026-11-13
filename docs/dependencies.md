@@ -1,6 +1,6 @@
 # 当前依赖与风险登记
 
-版本以apps/desktop/pubspec.lock、backend/requirements.lock.txt、打包脚本固定清单为准。下列维护/Windows证据取自既有审查，日期见归档；本轮没有重新联网审计或升级依赖，不把历史稳定版描述当成今日最新版本。新增依赖必须记录版本、许可证、维护证据、Windows支持和未验证项。
+版本以apps/desktop/pubspec.lock、backend/requirements.lock.txt、打包脚本固定清单为准。已采用项的维护/Windows证据取自既有审查，日期见归档；站点提取候选的只读官方资料核验另在下节注明，不代表升级或重新审计全部依赖。新增依赖必须记录版本、许可证、维护证据、Windows支持和未验证项。
 
 ## 已采用的运行与构建依赖
 
@@ -58,10 +58,31 @@
 
 pytest/Ruff/Flutter Test/integration_test是开发工具。样本生成可使用本机python-pptx、开发FFmpeg，但它们不是产品运行依赖；MarkItDown0.1.9与Docling的样本比较是历史选型记录，不把MarkItDown列为当前产品依赖。
 
-webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-dlp2026.10.21仅做过开发预备，下载队列未实现；FFmpeg未选定产品二进制/构建配置，不能只按主体许可证发行。Seal只参考交互，不复制GPLv3代码/资源。
+webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-dlp2026.10.21仅做过历史开发预备，未接入产品；当前直接HTTPS下载队列已用CPython标准库实现。FFmpeg未选定产品二进制/构建配置，不能只按主体许可证发行。Seal只参考交互，不复制GPLv3代码/资源。
+
+### 站点提取候选（未采用）
+
+2026-11-13只读核对官方[release 2026.10.26](https://github.com/yt-dlp/yt-dlp/releases/tag/2026.10.26)（2026-10-26发布）及[tag指向](https://api.github.com/repos/yt-dlp/yt-dlp/git/ref/tags/2026.10.26)：固定源码commit `f264a6cbd1f630894da0f368df00f8aae50140e0`。该日期/发布物是维护证据，不保证站点持续可用或没有漏洞。候选评估没有安装依赖、下载第三方可执行文件或修改产品锁文件。
+
+| 固定对象 | 官方许可/支持证据 | 采用前仍需完成 |
+|---|---|---|
+| Git源码commit及同版PyPI源码包/wheel候选 | 固定[LICENSE](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/LICENSE)为Unlicense；[README许可说明](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/README.md#licensing)区分这些对象与成品；[pyproject](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/pyproject.toml)声明Python≥3.11、基础dependencies为空，extras另列 | 未获取/校验PyPI包字节、未确定产品分发对象；实际所用传递包、许可证/来源原文、漏洞结果、Windows3.12/3.13与冻结行为须逐项验证，不能从基础依赖为空推断完整站点能力无依赖 |
+| 官方`yt-dlp.exe` 2026.10.26 | README声明Win10+ x64；上游明确PyInstaller成品为GPLv3+组合，附固定[THIRD_PARTY_LICENSES](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/THIRD_PARTY_LICENSES.txt) | release API声明23575744字节、SHA256 `f5389d3698ecde4ef06f4e6b1ce0294fe9ac1396228c8990b8d3416d6d177a7d`；仅元数据，未下载核hash/验签/执行，未审实际组件与对应源码义务，不作为产品可用方案 |
+| 官方`yt-dlp.tar.gz` 2026.10.26 | README说明release tarball额外含meriyah ISC与astring MIT代码，不能与Git/PyPI单一源码许可混同 | release API声明6019106字节、SHA256 `21f942d258d25cc4e60b4982a25c423460f0bebb835f38e6dfd1fcb140087f95`；同样未下载、验签或审内容 |
+| EJS/JS运行时与其他可选组件 | 固定README说明完整YouTube支持需要yt-dlp-ejs及JS引擎；pyproject的default extra固定yt-dlp-ejs 0.8.0，README列其Unlicense及所捆MIT/ISC组件；FFmpeg/ffprobe用于分轨合并/后处理 | EJS、Deno/Node/Bun/QuickJS、curl_cffi、FFmpeg等均未因此采用；每个实际所需对象另定版本/hash/Windows/许可/漏洞与受控执行，不能暗中下载或利用开发机已有程序 |
+
+用户指定B站、抖音、爱奇艺，B站先行。以下只读核对同一固定commit的上游提取器，未向三站发起媒体下载；第三方提取器源码不是网站官方接口或授权证明，测试URL也不自动获得使用/下载权。
+
+| 目标站点 | 固定源码观察及组件差异 | 本项目边界/待证据 |
+|---|---|---|
+| B站普通单视频，先行 | [BiliBiliIE](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/yt_dlp/extractor/bilibili.py#L723)读取页面/分页与播放API，包含WBI请求参数签名；结果带Referer，格式可为分轨DASH或单/多段durl，存在登录/会员/试看分支 | 固定公开Referer/Origin、WBI参数属于可设计的普通能力，不因现有下载器无headers字段永久阻断；服务端固定字段、精确目标域与每跳重验后接入，不能接任意用户headers。元数据/质量预览先行，分轨交接/合流由DL-03，真实下载须有权且无需登录样本；不启用会员/登录或把试看当完整资源 |
+| 抖音单视频 | [DouyinIE](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/yt_dlp/extractor/tiktok.py#L1495)请求web detail API；无详情时上游要求新cookies，未必是登录cookies，再交共享格式解析 | 临时匿名站点cookies不等同登录凭据，可另设计任务隔离/短生命周期/域范围；本切片未启用，不读浏览器cookies，不执行验证码或签名挑战。无cookie/匿名会话实际路径均未验证；不能以TikTok其他extractor或样本替代抖音证据 |
+| 爱奇艺国内站 | [IqiyiIE](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/yt_dlp/extractor/iqiyi.py#L104)使用HTTP接口与请求签名，返回m3u8；国际iq.com为另一[IqIE](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/yt_dlp/extractor/iqiyi.py#L389)，会调用PhantomJS执行签名代码 | 国内路径与HTTPS/单文件现界不符，禁止按原样接入或猜测换协议；需官方/标准授权访问路径及允许下载样本。国际站不自动算用户指定范围，PhantomJS未采用；不处理会员/付费/DRM绕过，也不把试听试看当完整资源 |
+
+建议在所选站点可完全受控的前提下评估固定源码适配；现有`YoutubeDL`的[request director](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/yt_dlp/YoutubeDL.py#L4343)提供请求处理入口，但这只是候选接入点，不证明每个提取器都不绕过它。`skip_download`/JSON输出、关闭配置/插件等CLI选项不能证明内部请求执行本项目DNS固定/TLS/预算；无法覆盖全部网络路径的stock CLI禁止作为可用产品方案。先按[规划契约](learning-workbench-contracts.md#站点提取与质量选择规划中未接入产品)验证有限站点，再决定是否采用及具体分发方式。来源证据和限制续记[下载报告](../dev/records/2026-11-05-lw07-downloads/report.md)。
 
 ## 待验证与升级门禁
 
-锁版本不代表无漏洞。本轮未做漏洞数据库审计、法律认证或重新联网验证上游版本。发行前必须核实际传递依赖、二进制配置、NOTICE/SBOM/签名和干净机；保留PDFium BUILD_LICENSES等组合许可，构建环境包清单不是完整发行SBOM。
+锁版本不代表无漏洞。本次候选资料核验未做漏洞数据库扫描、实际二进制验签或法律认证。发行前必须核实际传递依赖、二进制配置、NOTICE/SBOM/签名和干净机；保留PDFium BUILD_LICENSES等组合许可，构建环境包清单不是完整发行SBOM。
 
 flutter_inappwebview_windows0.6.0与VS18旧协程头存在历史STL1011失败，CI固定windows-2022/VS2022；升级工具链前重验。WebView原生焦点/DPI/合成、Office复杂字体版式、媒体编码/音轨、NuGet供应链/离线构建及安装升级仍有未验项。历史来源见[依赖快照](../dev/archive/baseline-20261030/docs/dependencies.md)，仅需溯源时读取。
