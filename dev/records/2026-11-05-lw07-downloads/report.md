@@ -134,3 +134,5 @@ D F --no-version-check analyze --no-pub：退出0，无问题，101.6秒，analy
 实现/离线相关自动化已完成，真实公网正向Range/重定向/新冻结恢复仍等待本PR限定CI验证，DL-01b保持IN_PROGRESS，不销父DL-01。失败现场和历史Commons缺强ETag/DNS证据保留；审查暂缓、人工取消、未合并/发行，不引入站点提取/转码/模型。
 
 交付前7文件逐项git diff --no-index --check无诊断、72处本地Markdown目标存在，delivery-validation01.log，聚合退出0；全量Ruff和Question Schema漂移检查均退出0。未修改产品/UI，不另跑本地Flutter或重建重复冻结包，当前head CI继续全套后端/桌面/新冻结与公网步骤。
+
+已创建[独立草稿PR #38](https://github.com/surface-user/StudyWorkbench/pull/38)，分支codex/public-download-range，base为#34最终8b29a27；初始实现提交9746c207411e0e8244bbf9c06701907c4405df77，7文件。PR限定公网步骤在PR事件执行，push轮不将跳过记为通过。补交本链接后的当前head完整CI、公网结果及主Agent核验结论以PR实时记录为准，未核实前保持IN_PROGRESS，不使用父head或旧实现head绿灯代替；未合并/发行。
