@@ -460,3 +460,42 @@ IQ tools/source_vulnerabilities.py --output artifacts/rel03c/source-vulns：2026
 REL-03b已由主Agent核验#35最终head CI三组成功，登记DONE。REL-03c实现/本地自动化已完成，状态REVIEW；需本项独立草稿PR、当前head CI和主Agent核验，不能据父#35绿灯销项。代码审查按用户要求暂缓、人工测试取消；本切片不合并或发行，不修改共享环境，不升级不相关依赖。完整最终组件SBOM/传递许可、Office/Java及冻结原生组件漏洞、签名/发行准备仍由父REL任务继续。
 
 实际提交[独立草稿PR #40](https://github.com/surface-user/StudyWorkbench/pull/40)，分支codex/starlette-vulnerability-fix，base为#35最终a73bedd，实现提交d66f636a81acbc0dc4082cf8c809b31cd2fa3f59；最终head与对应CI在PR描述维护，不为记录自身SHA反复提交。精确六文件变更、其余444个base blob未变、锁单行、文档相对链接/UTF-8/LF/尾空白及原报告前缀检查通过。首次检查脚本将Git的CRLF提示/差异退出码与文件换行混淆而退出1，保留diff-check.log及diff-check02.log；显式关闭本次diff的autocrlf并将本任务六文件写为LF后，git diff --no-index --check无诊断，完整检查退出0（diff-check03.log），没有修改Git配置或旧分支文件。
+
+## 2026-11-13：REL-01b 冻结后端SBOM与覆盖对照
+
+### 基线、设计与有限范围
+
+主Agent已核#40最终b48b711d0ee1bdc5e2aa507e1e08852be73829ae及CI43359261755三组44步成功，接受REL-03c有限开发交付DONE。此任务基于该head/tree de75bcd2a5e6782400ef1964cacf5570a7e7970a，新建.local/goal-20261112/frozen-sbom副本，逐Git blob复制450个受跟踪文件；不改变旧根、starlette-fix、其他任务或共享环境。相关现行规范、release_inventory/check_frozen_sources/source_sbom与打包规则已读取；任务先登记IN_PROGRESS，实扫后设计获主Agent确认再实施。
+
+输入仅#40本机新冻结后端dist/study_backend，exe22568458字节/SHA256 3fba079e510e4550d086b7786973f937fa3c2a92e28efcd0e112d6bec82d50a2。复用官方固定Syft1.57.1/现有PyInstaller静态格式能力和锁/文件hash函数，不新增扫描器、不上传源码、不执行包内代码、不落地提取、不重新打包或补当前未用的HTML/MathML功能。原始扫描、输出及失败在本任务artifacts/rel01b；只提交[精选摘要](evidence/frozen-backend-sbom-summary.json)，选择理由/来源/hash/未知均在摘要，目录与输出路径不含本机个人路径。
+
+首次Syft真实默认目录实扫在关闭更新/enrich/远端许可、全部文件摘要配置下退出0：969实体文件/145089570字节，扫描前后完全相同。73候选为15实际dist-info声明与58 PE资源候选；CDX另含969 file组件。原始Syft JSON的1106个filesystem条目还包括137目录，不能把目录计作额外文件或包。Syft没有恢复2721个PYZ模块或154个base_library.zip成员的完整包身份；103个PYD也没有scanner包候选。原始探针保留，不凭Scanner支持生态文档推定覆盖。
+
+### 实现与来源界限
+
+tools/frozen_sbom.py输出原始CycloneDX1.6及syft-json，并单独生成coverage.json。固定三种Python installed/PE/binary cataloger、exe SHA256、配置hash、源锁hash、完整实体输入指纹；逐项校对文件集合/hash、实际METADATA名称/版本/唯一性/源锁，以及两份扫描输出中的候选和位置。源锁中的70个PyPI包不直接投影成发行成员；55个没有随包METADATA的锁项只是“未观测元数据”，不是“没有打包”。完整product_sbom_complete恒false，CLI退出1为失败、2为有限对照成功而完整产品仍不完整，不返回发行通过码。
+
+CArchive/PYZ目录检查cookie/TOC/成员范围、预算、重叠/重复、名称和当前解释器字节码；合法runtime option只作为字面元数据保留。每个内嵌条目可追溯到容器/偏移/长度。PYZ的hash明确仅针对压缩字节；9个namespace条目无内容，允许其offset保留写入位置。只对全部43个业务模块解压并静态比较嵌套代码/常量/异常表，不执行code object。ZIP检查原始名称，防止Python将反斜线或NUL静默规范化后隐藏异常；只读取有界成员并核实际解压字节，无提取目标。source head及预期exe hash在工具中明确为调用者声明，source_head_authenticated=false，不把字符串或hash当来源认证。
+
+本次真实来源另由GitHub git/commits接口核b48b711→de75bcd2，并对旧构建源码450个blob及当前43份业务源码逐项核远端tree；43份源码又与实际exe的PYZ代码相等。精选摘要保存这些源码blob/hash及提交/tree证据，未推定一般工具能认证任意远端构建。使用既有CArchiveReader独立对照12项CArchive/2721项PYZ目录的名称、类型、偏移/长度，均相同；所有969实体文件仍等于首次探针前清单。
+
+15个随包metadata仅证明包内声明；58 PE候选的名称、版本、PURL/CPE均保持未认证，不自动推导官方来源或漏洞匹配。4个版本UNKNOWN为libffi-8、两份OpenBLAS DLL及主exe，完整候选位置在coverage.json及精选摘要中保留。2721个PYZ中43个业务模块已与源码比较，2678个其余模块身份仍未映射；154个基础ZIP成员同样不凭文件名补造CPython分发身份。58个DLL/EXE候选加103个PYD后缀文件不是完整原生传递依赖关系或所有内嵌库清单。
+
+latex2mathml3.81.1的既有只读跟进继续保存在starlette-fix/artifacts/rel02-followup：官方wheel/sdist均缺项目LICENSE，固定tag的MIT原文已核；上游unimathsymbols.txt有独立LPPL1.3-or-later声明，原Work固定来源及vendor修改义务未闭合。当前同一冻结exe包含7个模块但不含该数据，既有三个DOCX调用链/冻结文档探针未复现当前已支持流程失败，不能据此声称永久不可达或将项目归为单一MIT。本切片仅列缺口，不向产品补资源或关闭REL-02。
+
+### 实际验证与失败保留
+
+工作目录为上述frozen-sbom。Q为根.local/release-venv/Scripts/python.exe（3.13.17）；IQ/IP只读复用starlette-fix任务内starlette-q-isolated（3.13.17）/starlette-p-isolated（3.12.7），pytest9.0.3。均设置PYTHONDONTWRITEBYTECODE=1，不升级共享依赖。命令与原始JUnit/log在artifacts/rel01b。
+
+- IQ/IP `-X utf8 -m pytest backend/tests/test_frozen_sbom.py backend/tests/test_source_sbom.py backend/tests/test_release_inventory.py -q --basetemp=artifacts/rel01b/tmp-iq05或tmp-ip05 --junitxml=artifacts/rel01b/combined-iq05.xml或combined-ip05.xml`：各退出0、140项通过，无失败/跳过；其中52项新测试、原35项source SBOM与53项inventory保持。覆盖不执行夹具代码、压缩/ZIP预算、namespace、危险原名/重叠/重复/越界、错误解释器、源代码漂移、metadata重复/错版本、缺失/额外/篡改扫描结果、错工具hash、输出嵌套/已有输出、扫描中源与payload变化及超时。全产品业务全量不在本次本地重复，独立PR当前CI继续执行全量。
+- Q `tools/frozen_sbom.py --payload <#40原冻结目录> --source-head b48b711d0ee1bdc5e2aa507e1e08852be73829ae --exe-sha256 3fba079e510e4550d086b7786973f937fa3c2a92e28efcd0e112d6bec82d50a2 --syft <根.local/release-tools/syft-1.57.1/syft.exe> --output artifacts/rel01b/real05`：退出2（预期有限成功），969实体/15 metadata/58 PE候选及全部内嵌条目对照通过；扫描前后原包、锁和源码均不变。
+- Q `-X utf8 artifacts/rel01b/verify_real.py`：退出0；实际1042个CDX组件通过官方1.6 Schema及本地引用校验，三份Schema来自CycloneDX/specification固定1.6 tag，其SHA256与REL-01a已记录原文一致；同时核上述Git来源、现有reader目录一致及第一次探针至最终文件清单相同。无Schema网络解析回退。
+- Q `-m ruff check backend tools`及`tools/export_question_schema.py --check`：均退出0。此工具不改产品调用方/数据库/打包参数，既有冻结包只读复用；不额外构建产品或声称新的运行时功能通过。
+
+real05 coverage.json SHA256 59ee081298406076d537aeac7dfd0b6fe72a6f79218b12a44116cf8cdad32956；backend.cdx.json SHA256 3404363c91bb6f298d9a72211f5e186f683b36986d949b4a4a1181c9ac2147c2；backend.syft.json SHA256 44078d9c154bb87b73b7a45b03ae2b90bf3c7fcf344ba3f5755caa3617d83406。精选摘要SHA256 45a4d09fdab080528bffa0f3711109a05e903fdccb6d09d9aab793411d717e63，包含输出、配置、工具、源码和扫描输入的关联；只保留未知候选的名称/版本/位置，全部推断CPE仍在原始输出，不复制为已核身份。
+
+原失败保留：最初误读不存在的spec路径退出1，随后核实际build-backend.ps1；real01先拒绝合法PyInstaller runtime option、real02拒绝Rich动态模块连字符、real04误要求namespace零offset，均退出1，按实际固定格式补齐支持后real05通过，不跳过目录/版本/字节码保护。初轮双Python新测试各43通过/1失败：Windows ZipFile在创建夹具时规范化反斜线；改为保留实际原名的夹具，并让解析同时核orig_filename/filename，旧日志保留。初轮合跑双Python各130通过/2失败均为旧mklink /J夹具在受限进程中访问被拒，未删改旧断言；改用任务内全新临时目录和已授权本机测试权限后各132、139及最终140通过。早期ruff仅导入排序失败，修正后全量静态检查通过。原始失败不进入成功计数。
+
+实现、相关自动化及文档完成，REL-01b保持REVIEW；独立草稿PR/当前head CI与主Agent核验后才DONE。审查按用户要求暂缓、人工测试取消，未合并或发行。源码锁切片/此目录文件覆盖不关闭REL-01：剩余Python/native身份与来源、完整组件关系、前端/SDK/NuGet/CRT/WebView2/Office/Java/安装器payload仍需后续逐项核验，许可/漏洞/签名父任务保留。
+
+实际创建[独立草稿PR #42](https://github.com/surface-user/StudyWorkbench/pull/42)，分支codex/frozen-backend-sbom，base为#40最终b48b711，实现提交064a033444b7187967564ce330b5951c6391441d。精确六文件范围/其余447个base blob不变、原报告完整前缀、UTF-8/LF/尾空白与本地文档链接检查退出0；源码与候选均未改写。最终head/对应CI结果在PR实时说明维护，不为记录自身SHA反复提交；当前CI未知不能记通过。

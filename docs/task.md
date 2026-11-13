@@ -31,11 +31,12 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | OFF-02 | IN_PROGRESS | 用户委托技术判断后主Agent选择项目内Temurin 21.0.13+9 x64 JRE；先由OFF-02a准备固定组件，Office/CRT加载布局与冻结验证另行推进，整包仍未闭合 |
 | OFF-02a 固定Java组件准备 | DONE | 主Agent已核双Python专项各37、官方315文件逐字节/关键PE/release/java-version；[草稿PR #28](https://github.com/surface-user/StudyWorkbench/pull/28)最终2187fec的[CI #153](https://github.com/surface-user/StudyWorkbench/actions/runs/43065303373)三job/44步成功，有限任务开发交付完成，审查暂缓；不含Office运行/CRT布局集成 |
 | REL-01a 源码锁文件标准SBOM | DONE | 主Agent已核双Python专项各35、真实136包/8个SDK未知、官方Schema和本地/远端blob；[草稿PR #25](https://github.com/surface-user/StudyWorkbench/pull/25)最终1b52eb3的[CI #141](https://github.com/surface-user/StudyWorkbench/actions/runs/43060243273)三job/44步成功，开发交付完成，审查暂缓；未覆盖最终产品包 |
+| REL-01b 冻结后端SBOM与覆盖对照 | REVIEW | 基于#40最终b48b711已实现有限目录工具；双Python专项各140、真实969文件集合/hash、43业务源码、2721 PYZ/154 ZIP条目及官方1.6 Schema通过。15随包metadata/58 PE候选分层，2678模块与103 PYD未映射、4候选版本未知；源码head另核远端blob，完整REL-01不关闭。已创建[独立草稿PR #42](https://github.com/surface-user/StudyWorkbench/pull/42)，当前head CI与主Agent核验继续，见原发行报告 |
 | REL-01 完整源码与发行包SBOM | IN_PROGRESS | 先交付01a；最终覆盖仍依赖OFF-02及所有实际组件/安装器payload，不能据源锁文件或环境包表销项 |
 | REL-02、REL-03 | BLOCKED | 完整传递许可与漏洞检查依赖REL-01实际组件清单；源锁文件切片就绪后可开展相应子范围，整体保持未完成 |
 | REL-03a 源码锁文件漏洞查询 | DONE | 主Agent已核双Python专项各42及真实135包/原始report hash；[草稿PR #32](https://github.com/surface-user/StudyWorkbench/pull/32)最终89f0d775的[CI #168](https://github.com/surface-user/StudyWorkbench/actions/runs/43071363779)三job/44步成功，有限查询交付完成，审查暂缓；原2包12公告/6CVE、133包映射未证实、Git/8 SDK未知保留，不称全产品安全 |
 | REL-03b pytest漏洞修复 | DONE | 主Agent已核双隔离环境/专项与全量失败节点复验、SBOM和旧新OSV证据；[草稿PR #35](https://github.com/surface-user/StudyWorkbench/pull/35)最终a73bedd的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43092294564)三组成功；开发交付完成，审查暂缓，Starlette由03c处理 |
-| REL-03c Starlette兼容修复 | REVIEW | 仅锁Starlette1.3.1；双Python全量各828及77子测试、专项各89、#34组合各23、源码/新冻结生命周期通过；OSV135包无公告返回、旧新同批10/0，仍非全产品安全结论；已提交[独立草稿PR #40](https://github.com/surface-user/StudyWorkbench/pull/40)，当前head CI及主Agent核验继续，见原发行报告 |
+| REL-03c Starlette兼容修复 | DONE | 主Agent已核双Python全量各828及77子测试、专项各89、#34组合各23、新冻结生命周期与OSV135包原始证据；[草稿PR #40](https://github.com/surface-user/StudyWorkbench/pull/40)最终b48b711的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43359261755)三组44步成功，有限开发交付完成、审查暂缓；无公告返回不等于全产品安全，完整REL-03仍未完成 |
 | REL-04 | BLOCKED | 依赖REL-01至03；真实签名另缺发行身份，配置/篡改拒绝自动化不代表已签 |
 | REL-05 | BLOCKED | 依赖OFF-02与REL-01至04；候选组装完成后仍需REV-01，发布/合并未授权 |
 | FMT-01 | READY | 既有Office/XLSX转换与受限查看能力可用于自编复杂样本自动化；不依赖Java整包发行 |
@@ -105,7 +106,7 @@ LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人�
 | PLAN-03 / 首项 | 现状分析、拆分及新安排落地 | 文档自动化通过；已提交[独立草稿PR #20](https://github.com/surface-user/StudyWorkbench/pull/20)，依赖#19，最终head CI与开发交付结论见该PR实时记录；代码审查暂缓、人工暂停，本项不实现以下功能 |
 | OFF-01 / P0，诊断已完成、待交付，属R3/发行 | Office Java/原生加载闭合诊断与分发方案；先于整包发行 | 11-11已核19417文件/244个PE、4条延迟导入及程序目录递归图；两种自编文件各2页，Job内加载采样确认System32 CRT和Office Python/Java框架，Bean加载预期失败126。采样错误/动态分支限制保留，未安装Java/改组件/放宽门禁；[原报告及精选证据](../dev/records/2026-11-10-release-integrity/report.md)；已提交[独立草稿PR #22](https://github.com/surface-user/StudyWorkbench/pull/22)，依赖#21，最终head CI与诊断交付结论见该PR实时记录，代码审查/人工暂缓，OFF-02整包仍未闭合 |
 | OFF-02 / P0，依赖OFF-01 | 落实固定离线Java/CRT运行时及加载方案 | 11-12用户委托技术判断后主Agent选择项目内Temurin 21.0.13+9 x64 JRE，由OFF-02a先准备固定包/许可/清单；Office可识别的Java配置、JVM/AWT递归依赖及CRT实际加载根仍待集成。保留原组件清单，新增组件/布局另锁定，冻结转换/源hash/取消重启和无开发依赖自动化复验；不只补jawt.dll、不依赖开发机System32，不删DLL/白名单绕过，整包仍未完成 |
-| REL-01 / P0，属M0-02/M1-04 | 标准SBOM与源码/最终包对照；最终版依赖OFF-02及所选可选组件 | 进行中；REL-01a源码锁文件切片经主Agent核验已DONE，证据见上方调度及[原报告](../dev/records/2026-11-10-release-integrity/report.md)。Python冻结/native、Flutter/Dart SDK、NuGet、CRT/WebView2、Office/Java及安装器payload仍未覆盖；未知组件显式列出，不把源锁文件或构建环境列表当全产品SBOM |
+| REL-01 / P0，属M0-02/M1-04 | 标准SBOM与源码/最终包对照；最终版依赖OFF-02及所选可选组件 | 进行中；REL-01a源码锁文件已DONE，REL-01b仅核一个冻结后端及明确的身份缺口，证据见上方调度及[原报告](../dev/records/2026-11-10-release-integrity/report.md)。完整Python/native身份、Flutter/Dart SDK、NuGet、CRT/WebView2、Office/Java及安装器payload仍未闭合；未知组件显式列出，不把源锁文件、文件hash或构建环境列表当全产品SBOM |
 | REL-02 / P0，依赖REL-01 | 完整传递许可与来源义务 | 待实施；组件/版本/原文/来源/分发义务逐项映射，NOTICE/源码提供义务/组合许可/实际构建配置齐备；未知或缺文不得写通过 |
 | REL-03 / P0，依赖REL-01 | 漏洞检查与修复复验 | 进行中；REL-03a先查REL-01a源码锁范围，完整父项仍受实际组件清单阻塞。固定查询器与数据库/查询时间/hash，覆盖锁文件+最终组件，保留原发现/误报依据/修复与回归；无数据库、过期或不支持组件明确报不完整 |
 | REL-04 / P1，依赖REL-01至03 | 签名准备与验签；实际签名需发行身份 | 待实施；签名服务/身份未指定，不声称无证书或已签；先实现显式配置/缺失拒绝/篡改失败，真实SHA256签名与时间戳后更新清单；第三方签名不冒充项目签名 |

@@ -48,6 +48,23 @@ staging文件清单生成与校验共用枚举：只排除根build-inventory.jso
 
 这是包含开发/构建/跨平台依赖的源码锁文件清单，未分类为最终运行时成员；没有冻结/原生、Flutter/Dart SDK实际版本、NuGet/CRT/WebView2/Office/Java及安装器payload覆盖，也没有完整依赖边、许可证原文/义务或漏洞结论。Syft推断的CPE不等于确认漏洞匹配。本命令不替代原check_release门禁；完整REL-01仍需对照实际发行包，REL-02/03单独处理许可与漏洞。
 
+## 冻结后端SBOM与覆盖对照
+
+对一个已核构建来源的后端onedir目录运行以下独立命令；`$verifiedSourceHead`和`$verifiedExeSha256`分别由该次构建的精确源码提交和exe字节提供。使用与冻结字节码一致的固定CPython 3.13.17，不执行候选包内代码：
+
+```powershell
+.local/release-venv/Scripts/python.exe tools/frozen_sbom.py --payload dist/study_backend --source-head $verifiedSourceHead --exe-sha256 $verifiedExeSha256 --syft .local/release-tools/syft-1.57.1/syft.exe --output artifacts/frozen-sbom-01
+$coverageExit = $LASTEXITCODE
+```
+
+输出须为payload外的新目录，父目录须存在。复用固定Syft exe hash、锁解析及staging文件/链接拒绝；本清单也包含已存在的根build-inventory.json。限20000实体文件、每文件256MiB、总3GiB；原件不复制、修改或执行。扫描仅启用Python installed/PE/binary cataloger及全部文件SHA256，关闭更新/enrich/远端许可查询并清除继承SYFT配置变量。保留原始backend.cdx.json（CycloneDX 1.6）、backend.syft.json及日志；coverage.json逐项核对实体路径集合/hash、实际随包METADATA身份与源码锁，以及两种扫描输出中的候选身份/位置。缺失、额外、重复、错版本或内容变化失败，不输出成功对照。
+
+静态读取CArchive/PYZ和base_library.zip目录，检查容器范围、数量、重复/重叠和名称；不落地提取或运行代码。PYZ记录的是压缩字节hash，不冒称全部解压代码身份；namespace条目无内容。ZIP限单成员8MiB/总256MiB，记录实际读出的字节hash，成员仍不据名称认定包来源。全部study_workbench模块须与当前源码按嵌套代码/常量/异常表相等，另存源码SHA256/Git blob。结束复核payload、锁及业务源码不变；不声称原子文件系统快照。
+
+source head和预期exe hash是调用者声明，工具不认证远端Git或构建来源；实际交付仍须把记录的源码blob核对到指定head/tree及构建证据。METADATA只证明随包声明，不能代表全部冻结Python成员或官方归档认证；PE资源版本/PURL/CPE保留为未核候选，PYD、内嵌模块及源锁中未观察到METADATA的包分别列缺口，不能把“缺元数据”写成“未打包”。文件覆盖数量不是完整包身份覆盖。latex2mathml的项目MIT声明不能覆盖其上游内嵌数据的LPPL及修改来源待核事项；此工具不添加当前未用的HTML/MathML导出资源。
+
+退出1表示检查失败；退出2表示有限扫描/对照完成但完整产品SBOM仍不完整，固定product_sbom_complete=false，不返回发行通过码。CLI核对范围/身份，交付另用固定官方1.6 Schema验证实际输出。未知版本/来源/模块映射、完整依赖边、传递许可/漏洞/签名、前端/其他组件与安装器payload继续分别处理；不替代check_release，也不改变现有打包或产品流程。
+
 ## 源码锁文件漏洞查询
 
 在确认两份锁文件仅包含可公开查询的依赖名后，以既有构建Python执行：
