@@ -32,9 +32,11 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | OFF-02a 固定Java组件准备 | DONE | 主Agent已核双Python专项各37、官方315文件逐字节/关键PE/release/java-version；[草稿PR #28](https://github.com/surface-user/StudyWorkbench/pull/28)最终2187fec的[CI #153](https://github.com/surface-user/StudyWorkbench/actions/runs/43065303373)三job/44步成功，有限任务开发交付完成，审查暂缓；不含Office运行/CRT布局集成 |
 | REL-01a 源码锁文件标准SBOM | DONE | 主Agent已核双Python专项各35、真实136包/8个SDK未知、官方Schema和本地/远端blob；[草稿PR #25](https://github.com/surface-user/StudyWorkbench/pull/25)最终1b52eb3的[CI #141](https://github.com/surface-user/StudyWorkbench/actions/runs/43060243273)三job/44步成功，开发交付完成，审查暂缓；未覆盖最终产品包 |
 | REL-01 完整源码与发行包SBOM | IN_PROGRESS | 先交付01a；最终覆盖仍依赖OFF-02及所有实际组件/安装器payload，不能据源锁文件或环境包表销项 |
-| REL-02、REL-03 | BLOCKED | 完整传递许可与漏洞检查依赖REL-01实际组件清单；源锁文件切片就绪后可开展相应子范围，整体保持未完成 |
+| REL-02 | BLOCKED | 完整发行传递许可依赖REL-01实际组件清单；REL-02a先记录锁定源码依赖的许可原文/声明来源及缺失，整体保持未完成 |
+| REL-02a 已知源码依赖许可 | REVIEW | 本地证据工具/双Python专项各57及136包实采已完成；246原文引用/182唯一文本，latex2mathml缺原文明确退出2；官方归档认证/SDK/最终成员/义务仍未知，独立PR及当前head CI核验后交付，见[原报告](../dev/records/2026-11-10-release-integrity/report.md) |
+| REL-03 | IN_PROGRESS | 源查询和pytest修复已交付；Starlette修复在独立分支继续，完整发行组件覆盖仍依赖REL-01 |
 | REL-03a 源码锁文件漏洞查询 | DONE | 主Agent已核双Python专项各42及真实135包/原始report hash；[草稿PR #32](https://github.com/surface-user/StudyWorkbench/pull/32)最终89f0d775的[CI #168](https://github.com/surface-user/StudyWorkbench/actions/runs/43071363779)三job/44步成功，有限查询交付完成，审查暂缓；原2包12公告/6CVE、133包映射未证实、Git/8 SDK未知保留，不称全产品安全 |
-| REL-03b pytest漏洞修复 | REVIEW | 仅锁pytest9.0.1→9.0.3；双隔离环境专项各77通过，全量各809通过/12个链接权限失败经受控复验各12通过，原失败保留；Syft136组件只变pytest，OSV旧/新版本同批复查及共享环境未变核验通过；已提交[独立草稿PR #35](https://github.com/surface-user/StudyWorkbench/pull/35)，最终head CI待核，Starlette修复仍另列03c |
+| REL-03b pytest漏洞修复 | DONE | 主Agent已核双隔离环境专项各77、原全量809加12项权限复验、源码SBOM/实际OSV旧新对照及环境未变；[草稿PR #35](https://github.com/surface-user/StudyWorkbench/pull/35)最终a73bedd的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43092294564)三组通过，审查暂缓；Starlette修复仍另列03c |
 | REL-03c Starlette兼容修复 | READY | 依赖03a原发现；先核FastAPI上限/官方元数据及Host/path/StaticFiles/HTTPEndpoint/form调用方，确定覆盖五公告的最小兼容组合后独立升级与入口/冻结回归；触发未验证，不在03a改锁 |
 | REL-04 | BLOCKED | 依赖REL-01至03；真实签名另缺发行身份，配置/篡改拒绝自动化不代表已签 |
 | REL-05 | BLOCKED | 依赖OFF-02与REL-01至04；候选组装完成后仍需REV-01，发布/合并未授权 |

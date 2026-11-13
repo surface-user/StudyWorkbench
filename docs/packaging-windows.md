@@ -63,6 +63,20 @@ report.json记录查询器1.0及两份工具源码hash、锁hash、Python版本�
 
 退出1表示查询、结构、映射批次或源一致性失败；已有原始现场/失败报告保留。退出2表示返回公告（含需进一步判定的撤回/变更/映射未知），退出3表示当前查询完成但没有返回公告；两者均不是发行通过码，工具不返回安全认证的0。空结果只能称“无公告返回”，不能称“安全包”。Git和SDK排除项、开发/构建/跨平台成员、最终产品未覆盖始终保留；不依据空结果自动批准发行、不自动升级或改变既有check_release门禁。网络查询仅显式运行；CI用离线自编响应验证信任边界，不依赖在线数据库稳定性。
 
+## 锁定源码依赖的本地许可证据
+
+`tools/source_licenses.py`复用源码SBOM的精确锁身份，只读当前Python环境及明确指定的Dart package_config。使用与待检查锁一致的独立环境执行；不会安装依赖、联网查询、读取个人学习库或修改现有发行stage：
+
+```powershell
+python tools/source_licenses.py --package-config apps/desktop/.dart_tool/package_config.json --output artifacts/source-licenses-01
+```
+
+输出必须是不存在的新目录且父目录已存在。Python匹配唯一的精确名称/版本，读取顶层dist-info的METADATA及原始RECORD，保留License-File声明和具名许可/通知文件（含嵌套LICENSES/BUILD_LICENSES）；RECORD中声称的SHA256或长度不符即失败，未提供SHA256单列缺证。直接读取RECORD，不能用会过滤不存在文件的importlib.files()掩盖缺失或越界项。Dart先核缓存pubspec名称/版本，再收集根目录具名许可文件及许可目录内原文；保留锁定hosted archive hash或Git resolved-ref作为声明来源，不声称缓存已与官方归档/Git内容认证。
+
+输入锁各限1MiB，其他证据文件各限4MiB；Dart每包许可发现限10000条。拒绝链接/重解析、源文件越界及已有输出；按内容SHA256保存原字节，报告记录每包版本、来源、原相对路径、长度/hash和缺证项，不输出本机绝对目录。末尾复核锁/config未变；错误保留现场且不生成成功report。执行依赖稳定的本地构建目录，不构成原子快照或恶意构建依赖沙箱。
+
+退出0仅表示选定本地证据无已发现缺口，退出2表示报告已生成但有缺文/版本/RECORD缺证，退出1表示输入/完整性错误。report始终明确`product_licenses_complete=false`、`archive_provenance_verified=false`、`distribution_obligations_reviewed=false`；8类SDK锁占位另列未知。命名发现可能漏掉源文件内嵌或其他名称的通知，缺证不得以元数据标签代替原文。最终产品成员、完整官方来源、组合许可/源码提供义务、NOTICE及Office/Java/native/安装器仍由REL-01/02后续核验。
+
 ## 规划中
 
 自动升级/完整回滚产品流程、下载/转码组件、正式签名发行按专项实施。FFmpeg须先锁定实际构建开关与LGPL/GPL/nonfree及来源义务；本地生成样本不等于可随产品分发。
