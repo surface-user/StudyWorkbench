@@ -136,3 +136,13 @@ D F --no-version-check analyze --no-pub：退出0，无问题，101.6秒，analy
 交付前7文件逐项git diff --no-index --check无诊断、72处本地Markdown目标存在，delivery-validation01.log，聚合退出0；全量Ruff和Question Schema漂移检查均退出0。未修改产品/UI，不另跑本地Flutter或重建重复冻结包，当前head CI继续全套后端/桌面/新冻结与公网步骤。
 
 已创建[独立草稿PR #38](https://github.com/surface-user/StudyWorkbench/pull/38)，分支codex/public-download-range，base为#34最终8b29a27；初始实现提交9746c207411e0e8244bbf9c06701907c4405df77，7文件。PR限定公网步骤在PR事件执行，push轮不将跳过记为通过。补交本链接后的当前head完整CI、公网结果及主Agent核验结论以PR实时记录为准，未核实前保持IN_PROGRESS，不使用父head或旧实现head绿灯代替；未合并/发行。
+
+### 初轮公网MIME拒绝及固定托管修正
+
+初始9746c20的[PR CI43358807604](https://github.com/surface-user/StudyWorkbench/actions/runs/43358807604)，以及链接跟进bb402e5的[PR CI43359034632](https://github.com/surface-user/StudyWorkbench/actions/runs/43359034632)，均实际连通公开IPv4；HEAD长度554058、强ETag和`bytes=0-0`的206/Content-Range全部通过。随后普通任务GET被产品拒绝“下载响应不是所选媒体格式”，两轮公网步骤退出1，未达到真实暂停/续传。初版日志没有保留Content-Type具体值，因此不补造其具体MIME；这里只确认不在产品允许集合。两份完整desktop日志保留于artifacts/dl01b/ci-<run>-desktop.log；不是DNS失败，也不能据前置206称整项通过。
+
+bb402e5的Python3.12完整CI为740通过，357.82秒；3.13完整pytest/R1–R5同样通过，桌面Flutter/Windows构建/44模块冻结/既有冻结探针均通过，但公网失败使整个PR轮不通过。原head与新head的结果分开，不能用push跳过公网的绿灯抵销。
+
+只修正测试来源：将传输固定为`https://mdn.github.io/shared-assets/videos/flower.webm`。[MDN官方shared-assets说明](https://github.com/mdn/shared-assets/blob/main/README.md)明确指定此托管域；其videos目录元数据为同一554058字节/Git blob `5b8edf7d8384c057dfb13627073288cebfb54d74`，保留上述固定旧commit的CC0来源及对象身份约束。托管URL可能更新，任何不同字节继续失败；不改生产MIME、DNS、TLS、Range守卫。预检现在提前验证HEAD/206的MIME，选取日志增加Content-Type，错误MIME不读媒体正文；不增加自动选源或降级绕过。
+
+新增3项MIME拒绝用例后，Q同专项target04退出0：76通过、18.24秒；P target31202退出0：76通过、20.90秒，XML/log保留；Ruff全量退出0。新固定域本地public03实际仍在resolve被拒，退出1，mdn.github.io=`198.18.0.70`，public03.log/dns03.json保留；未绕过本机网络，等待新head CI实测。

@@ -144,6 +144,7 @@ def test_preflight_rejects_false_range_evidence(probe, monkeypatch, tmp_path,
             response.status = 200 if self.method == 'HEAD' else status
             values = {'ETag': '"fixed"', 'Content-Length': '554058'} if self.method == 'HEAD' else {
                 'ETag': etag, 'Content-Range': range_value, 'Content-Length': length}
+            values['Content-Type'] = 'video/webm'
             response.getheader = values.get
             return response
 
@@ -169,6 +170,34 @@ def test_observed_oversize_requests_pause_and_fails(probe):
     with pytest.raises(RuntimeError, match='exceeded expected size'):
         probe.wait_job(request, 'job', {'ready'})
     assert calls[-1] == (probe.PREFIX + '/job/pause', {})
+
+
+@pytest.mark.parametrize('mime', ['text/plain', 'text/html', None])
+def test_preflight_mime_rejection_never_reads_media_body(probe, monkeypatch, tmp_path, mime):
+    requests = []
+
+    class Connection:
+        def __init__(self, host, address):
+            pass
+
+        def request(self, method, target, headers):
+            requests.append(method)
+
+        def getresponse(self):
+            response = Response(b'not read')
+            response.getheader = {'ETag': '"fixed"', 'Content-Length': '554058', 'Content-Type': mime}.get
+            response.read = lambda *args: pytest.fail('MIME rejection must happen before a body read')
+            return response
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(probe, 'install_transport', lambda root: None)
+    monkeypatch.setattr(probe.transport, 'resolve', lambda host: '8.8.8.8')
+    monkeypatch.setattr(probe.transport, 'PinnedHTTPS', Connection)
+    with pytest.raises(RuntimeError, match='MIME'):
+        probe.preflight(tmp_path)
+    assert requests == ['HEAD']
 
 
 def test_source_probe_starts_real_backend_and_stops_without_downloads(probe, tmp_path):

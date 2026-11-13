@@ -20,8 +20,7 @@ sys.path.insert(0, str(ROOT / 'backend'))
 
 from study_workbench import media_download_http as transport  # noqa: E402
 
-FLOWER = ('https://raw.githubusercontent.com/mdn/interactive-examples/'
-          '9991b045e1561681d3ffc66215b92f68531ec97b/live-examples/media/cc0-videos/flower.webm')
+FLOWER = 'https://mdn.github.io/shared-assets/videos/flower.webm'
 GREEN = 'https://wpt.live/media/2x2-green.mp4'
 RELATIVE = 'https://wpt.live/common/redirect.py?location=/media/2x2-green.mp4'
 CROSS_HOST = 'https://wpt.live/common/redirect.py?location=' + quote(FLOWER, safe='')
@@ -62,7 +61,7 @@ def install_transport(test_root):
             response = super().getresponse()
             fields = response.getheaders()
             selected = {k.lower(): v for k, v in fields
-                        if k.lower() in {'etag', 'content-length', 'content-range', 'location'}}
+                        if k.lower() in {'etag', 'content-length', 'content-range', 'content-type', 'location'}}
             require(sum(len(k) + len(v) for k, v in fields) <= 32768, 'Public headers exceed budget')
             length = selected.get('content-length')
             if length is not None:
@@ -220,6 +219,8 @@ def preflight(test_root):
         response = connection.getresponse()
         etag = response.getheader('ETag')
         require(response.status == 200 and transport.strong_etag(etag), 'Fixture has no strong ETag')
+        require((response.getheader('Content-Type') or '').split(';')[0].strip().lower()
+                in {'video/webm', 'application/octet-stream'}, 'Fixture has an unsupported media MIME')
         require(response.getheader('Content-Length') == str(FIXTURES[FLOWER][0]), 'Fixture length changed')
     finally:
         connection.close()
@@ -229,6 +230,8 @@ def preflight(test_root):
                                                   'Accept-Encoding': 'identity'})
         response = connection.getresponse()
         require(response.status == 206 and response.getheader('ETag') == etag, 'Fixture rejected positive Range')
+        require((response.getheader('Content-Type') or '').split(';')[0].strip().lower()
+                in {'video/webm', 'application/octet-stream'}, 'Range has an unsupported media MIME')
         require(response.getheader('Content-Range') == 'bytes 0-0/554058'
                 and response.getheader('Content-Length') == '1', 'Fixture returned an unexpected Range')
         require(len(response.read(2)) == 1, 'Range probe was not exactly one byte')

@@ -38,7 +38,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | PAR-01 | IN_PROGRESS | 子 Agent parsing；既有提取/草稿预览可复用，先确定跨页/小题/重号/共享材料样本和候选契约再实施，不猜答案 |
 | PAR-02、PAR-03 | READY | 设计工作可先行；OCR实施依赖固定离线组件/语言资源评估，分块实施依赖预算/取消/重启契约，禁止直接放宽保护 |
 | DL-01 | IN_PROGRESS | DL-01a源码/冻结公网下载、独立hash、重启/恢复已由主Agent验收[草稿PR #24](https://github.com/surface-user/StudyWorkbench/pull/24)；本分支继续DL-01b真实正向Range与同域/跨域重定向，不放宽公网DNS/TLS门禁 |
-| DL-01b 公网Range与重定向 | IN_PROGRESS | 固定MDN/WPT公开样本；真实队列/字节/显式暂停及新源码/冻结进程resume探针已实现，源码预算与冻结外部观察分开。双Python相关各73通过，本地公网仍被原DNS门禁拒绝；[草稿PR #38](https://github.com/surface-user/StudyWorkbench/pull/38)当前head限定公网/完整CI待核，见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md) |
+| DL-01b 公网Range与重定向 | IN_PROGRESS | 固定MDN/WPT公开样本；真实队列/字节/显式暂停及新源码/冻结进程resume探针已实现，源码预算与冻结外部观察分开。双Python相关各76通过；初轮CI固定Git原始文件的MIME被产品正确拒绝，现转同一Git对象的MDN官方媒体托管并加MIME预检。本地DNS失败保留；[草稿PR #38](https://github.com/surface-user/StudyWorkbench/pull/38)新head公网/完整CI待核，见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md) |
 | DL-02 | READY | 来源/组件设计可先行；实际站点提取依赖明确站点和授权方式，不默认登录/DRM |
 | DL-03 | BLOCKED | 依赖DL-02及FFmpeg实际二进制/许可选择 |
 | LW-04a | DONE | TXT全文/原文行有限范围开发交付完成；双Python相关各58、Flutter专项19/完整200及静态检查通过，主Agent已核[草稿PR #29](https://github.com/surface-user/StudyWorkbench/pull/29)最终9027508的[CI43066543568](https://github.com/surface-user/StudyWorkbench/actions/runs/43066543568)三job/44步全成功；[原报告](../dev/records/2026-11-04-lw04-search/report.md)保留旧失败。审查暂缓、人工取消，未合并/发行 |
