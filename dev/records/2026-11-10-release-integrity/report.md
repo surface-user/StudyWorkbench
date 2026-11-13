@@ -424,3 +424,5 @@ native_dependencies内复用同一closure，新增固定UNO配置核验与注册
 剩余223项仍需独立证明实际运行域或有可审计来源条件的非运行分类；包括CLR、Python启动器资源、独立JRE其他PE、Shell/其他helper。twain32shim的真实x86/CRT问题继续阻断，不能凭当前DOCX/PPTX未调用而豁免。固定注册图不覆盖用户/扩展配置变化、全部动态LoadLibrary/导出转发/SxS、OS最低版本或干净机运行。未执行人工/Computer Use、合并/发布/签名、注册Office/Java或改个人数据。代码审查继续暂缓，任务进入REVIEW；独立草稿PR、最终head CI及主Agent验收另核，完整OFF-02/REL任务不销项。
 
 提交前Q artifacts/off02d/validate-docs.py退出0，核仅6份明确改动，其余基线blob、原报告前缀和非本项任务行保持，UTF-8/LF/无尾空白及本地链接有效；逐文件git diff --no-index --check无任何诊断。首轮辅助脚本误要求存在差异的no-index也必须退出0，因正常差异返回1而失败；修正为仅接受0/1且stdout/stderr均空后通过，未忽略空白错误，docs.txt/docs02.txt保留。PR最终head/当前CI结论在PR描述维护，避免记录自身SHA导致反复变更head。
+
+实际交付[独立草稿PR #39](https://github.com/surface-user/StudyWorkbench/pull/39)，分支codex/office-uno-loading依赖#36最终fbbc847；实现提交35b225e8ad5813ffab63cdf26b6628ae5100d772，452个远端blob与本地逐项匹配后创建PR。随后仅补本交付链接；最终head/本head CI和主Agent验收以PR描述及实时检查为准，未核验前保持REVIEW，不合并或发行。
