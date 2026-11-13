@@ -1,3 +1,4 @@
+import logging
 import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
@@ -5,15 +6,15 @@ from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
-from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .agent_access import AgentAccess
 from .analysis_review import AnalysisReviews
+from .api_errors import ApiTrustedHost, error_response, install_error_handlers, is_api, request_id
 from .content import DEMO, SUBJECTIVE
 from .db import (
     Attempt,
@@ -107,15 +108,24 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
     app.state.downloads = downloads
     app.state.agent_access = agent_access
     app.state.analysis_reviews = analysis_reviews
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1"])
+    install_error_handlers(app)
+    app.add_middleware(ApiTrustedHost)
     app.add_middleware(RequestLimits)
     capability = secrets.token_urlsafe(32)
 
     @app.middleware("http")
     async def boundaries(request: Request, call_next):
-        if request.url.path.startswith("/api/") and request.headers.get("origin"):
-            return JSONResponse({"detail": "Browser origin is not authorized"}, status_code=403)
-        return await call_next(request)
+        if not is_api(request.scope):
+            return await call_next(request)
+        identifier = request_id(request.scope)
+        if request.headers.get("origin"):
+            return error_response(request.scope, 403, "Browser origin is not authorized")
+        try:
+            return await call_next(request)
+        except Exception:
+            # call_next returns once a response starts; streaming failures must not send a second body.
+            logging.getLogger(__name__).error('API request failed request_id=%s', identifier)
+            return error_response(request.scope, 500, '请求未完成，请稍后重试')
 
     def authorize(authorization: Annotated[str | None, Header()] = None):
         if not secrets.compare_digest(authorization or "", f"Bearer {token}"):

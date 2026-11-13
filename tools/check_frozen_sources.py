@@ -1,17 +1,20 @@
 """Assert shipped application bytecode matches source, using the release interpreter."""
 import argparse
+import hashlib
+import json
 import sys
 from pathlib import Path
 from types import CodeType
 
 from PyInstaller.archive.readers import CArchiveReader
 
+CODE_FIELDS = ('co_code', 'co_names', 'co_varnames', 'co_freevars', 'co_cellvars', 'co_nlocals',
+               'co_argcount', 'co_posonlyargcount', 'co_kwonlyargcount', 'co_flags',
+               'co_stacksize', 'co_exceptiontable')
+
 
 def equivalent(actual, expected):
-    fields = ('co_code', 'co_names', 'co_varnames', 'co_freevars', 'co_cellvars', 'co_nlocals',
-              'co_argcount', 'co_posonlyargcount', 'co_kwonlyargcount', 'co_flags',
-              'co_stacksize', 'co_exceptiontable')
-    if any(getattr(actual, f) != getattr(expected, f) for f in fields):
+    if any(getattr(actual, f) != getattr(expected, f) for f in CODE_FIELDS):
         return False
     if len(actual.co_consts) != len(expected.co_consts):
         return False
@@ -22,6 +25,23 @@ def equivalent(actual, expected):
         elif left != right:
             return False
     return True
+
+
+def code_fingerprint(code):
+    """Pin inspected frozen behavior with the same code fields as source equivalence."""
+    def value(item):
+        if isinstance(item, CodeType):
+            return ['code', [value(getattr(item, field)) for field in CODE_FIELDS], value(item.co_consts)]
+        if isinstance(item, bytes):
+            return ['bytes', item.hex()]
+        if isinstance(item, tuple):
+            return ['tuple', [value(part) for part in item]]
+        if isinstance(item, frozenset):
+            return ['frozenset', sorted((value(part) for part in item), key=repr)]
+        if item is None or item is Ellipsis or isinstance(item, (str, int, float, complex)):
+            return [type(item).__name__, repr(item)]
+        raise ValueError('Unsupported frozen code constant; loading evidence must be renewed')
+    return hashlib.sha256(json.dumps(value(code), ensure_ascii=True, separators=(',', ':')).encode()).hexdigest()
 
 
 def main():

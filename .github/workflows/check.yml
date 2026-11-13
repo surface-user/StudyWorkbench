@@ -70,6 +70,9 @@ jobs:
       - name: Frozen offline library integrity check
         run: .venv/Scripts/python.exe tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/ci-library-integrity
         working-directory: .
+      - name: Frozen API error compatibility check
+        run: .venv/Scripts/python.exe tools/check_api_errors.py --exe dist/study_backend/study_backend.exe --test-root .local/ci-api-errors
+        working-directory: .
       - shell: pwsh
         run: |
           $real = Join-Path $pwd '.local/lifecycle-temp-real'

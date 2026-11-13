@@ -6,7 +6,13 @@
 
 staging文件清单生成与校验共用枚举：只排除根build-inventory.json，嵌套同名文件仍计入；拒绝子目录/文件符号链接、重解析点和非普通文件，不沿它们读写。生成许可副本前先检查现有stage。check_release先要求实际相对路径集合与清单完全相等，再核文件hash及原CPython/.db/CRT/PE检查；绝对路径或../清单项不能借校验读取stage外文件。build-release在生成清单后、编译安装包前执行此检查，非零即停，保留失败stage。该门禁依赖稳定的构建暂存目录，不构成原子文件系统快照或完整发行SBOM、签名/许可/漏洞认证。
 
-固定Windows x64目标另要求根目录PE文件、backend/study_backend.exe及backend内DLL/PYD的Machine为AMD64、可选头为PE32+，在读取导入表前拒绝不符文件；失败仍关闭PE句柄，不修改候选字节。可选转换器目录与backend内独立helper EXE不套用主进程架构门禁，仍受原文件hash及PE导入检查。文件头声明不证明签名、来源身份、CPython ABI或完整加载兼容性，不能替代运行验证。
+固定Windows x64目标另要求根目录PE文件、backend/study_backend.exe及backend内DLL/PYD的Machine为AMD64、可选头为PE32+，在读取导入表前拒绝不符文件；失败仍关闭PE句柄，不修改候选字节。可选转换器目录与backend内独立helper EXE不套用主进程架构门禁，进入已声明运行域的文件再核AMD64/PE32+；闭包外PE保持未分类，不能据路径或不可达就认定不会运行。文件头声明不证明签名、来源身份、CPython ABI或完整加载兼容性，不能替代运行验证。
+
+原生依赖检查覆盖.exe/.dll/.pyd及MZ格式.com/.bin的普通与延迟导入。只在声明的主应用根、后端_internal及各插件自身目录、Office program与其显式Java根、独立Java进程bin/server域解析，不以全包同名DLL或外部PATH兜底。普通私有VC运行库必须位于各进程约定的app-local根，System32不能补私有CRT；NumPy/Pandas的.libs须匹配固定完整冻结初始化代码指纹，才采用其中已核的目录注册行为。注册目录顺序不明或同一后端进程解析到同名不同字节时拒绝。版本/初始化代码变化必须重新取证，规则不是自动支持未来版本的白名单。
+
+Office域还读取固定组件自带的UNO注册入口：先核program/uno.ini、fundamental.ini和7份services注册文件的完整SHA256及注册目录文件集合，再仅解析这些已核字节；URE_INTERNAL_LIB_DIR与LO_LIB_DIR只映射到program，拒绝其他变量、绝对/嵌套/穿越路径和非DLL/PYD原生入口。注册的SharedLibrary及其传递依赖共用原Office搜索根/架构/CRT守卫，报告保留每个入口的注册来源与配置hash。Java/Python脚本注册不计为原生库，用户/扩展动态注册、CLR、其他辅助进程仍不由此证明；版本、启动配置或注册集合变化必须重新核证，不据文件恰在program就认可运行域。
+
+check_release遇到任一闭包外未分类PE即拒绝发行并输出partial及路径/架构，不提供绕过开关；必须后续建立可审计的运行域或非运行分类。只读tools/check_native_dependencies.py --office <组合组件目录>或--backend <冻结后端目录>可输出有限域图及未知范围，其中--office先核组件完整清单/hash，不调用OfficeRuntime。诊断退出0仅说明已声明域解析完成，pe_coverage=partial仍不满足发行门禁。API set另列Windows契约，本机System32仅为OS文件存在证据；最低Windows版本、已加载模块/SxS/动态加载/导出转发、干净机与完整Office加载范围仍需独立证据。
 
 许可复制的Python/Dart/native包目录名限定为普通ASCII包组件，候选许可路径必须相对并解析后保持在该包目录内；拒绝驱动器/根路径、冒号及Windows尾点/尾空格歧义。Python RECORD含..项仍按原规则跳过。复制前检查目标，错误使收集失败并保留已完成的合法副本，不回滚/删除stage；此前已有链接/重解析点检查继续执行。此边界面向稳定staging和本地构建输入，不构成恶意构建依赖沙箱、完整许可覆盖或SBOM/漏洞审计。
 
@@ -74,6 +80,20 @@ output必须是不存在的新目录且父目录已存在。复用源码SBOM相�
 report.json记录查询器1.0及两份工具源码hash、锁hash、Python版本、UTC查询时间、HTTP Date、逐项匹配/原始影响范围和修复事件、别名、来源、撤回/映射缺失/变更状态；编号request/response文件保存原始字节，evidence记录对应SHA256，超预算仅保留已读前缀并报错。API批次时间可精确到微秒而详情含纳秒，比较明确使用微秒精度并保留两种原值。完整数据库版本/时间/hash无法由在线API取得，必须保留snapshot/freshness未知；HTTP Date新鲜不证明数据库新鲜。超过24小时或超前5分钟的响应Date拒绝，缺Date明确未知；重新查询使用新目录，旧记录不视为持续有效。
 
 退出1表示查询、结构、映射批次或源一致性失败；已有原始现场/失败报告保留。退出2表示返回公告（含需进一步判定的撤回/变更/映射未知），退出3表示当前查询完成但没有返回公告；两者均不是发行通过码，工具不返回安全认证的0。空结果只能称“无公告返回”，不能称“安全包”。Git和SDK排除项、开发/构建/跨平台成员、最终产品未覆盖始终保留；不依据空结果自动批准发行、不自动升级或改变既有check_release门禁。网络查询仅显式运行；CI用离线自编响应验证信任边界，不依赖在线数据库稳定性。
+
+## 锁定源码依赖的本地许可证据
+
+`tools/source_licenses.py`复用源码SBOM的精确锁身份，只读当前Python环境及明确指定的Dart package_config。使用与待检查锁一致的独立环境执行；不会安装依赖、联网查询、读取个人学习库或修改现有发行stage：
+
+```powershell
+python tools/source_licenses.py --package-config apps/desktop/.dart_tool/package_config.json --output artifacts/source-licenses-01
+```
+
+输出必须是不存在的新目录且父目录已存在。Python匹配唯一的精确名称/版本，读取顶层dist-info的METADATA及原始RECORD，保留License-File声明和具名许可/通知文件（含嵌套LICENSES/BUILD_LICENSES）；RECORD中声称的SHA256或长度不符即失败，未提供SHA256单列缺证。直接读取RECORD，不能用会过滤不存在文件的importlib.files()掩盖缺失或越界项。Dart先核缓存pubspec名称/版本，再收集根目录具名许可文件及许可目录内原文；保留锁定hosted archive hash或Git resolved-ref作为声明来源，不声称缓存已与官方归档/Git内容认证。
+
+输入锁各限1MiB，其他证据文件各限4MiB；Dart每包许可发现限10000条。拒绝链接/重解析、源文件越界及已有输出；按内容SHA256保存原字节，报告记录每包版本、来源、原相对路径、长度/hash和缺证项，不输出本机绝对目录。末尾复核锁/config未变；错误保留现场且不生成成功report。执行依赖稳定的本地构建目录，不构成原子快照或恶意构建依赖沙箱。
+
+退出0仅表示选定本地证据无已发现缺口，退出2表示报告已生成但有缺文/版本/RECORD缺证，退出1表示输入/完整性错误。report始终明确`product_licenses_complete=false`、`archive_provenance_verified=false`、`distribution_obligations_reviewed=false`；8类SDK锁占位另列未知。命名发现可能漏掉源文件内嵌或其他名称的通知，缺证不得以元数据标签代替原文。最终产品成员、完整官方来源、组合许可/源码提供义务、NOTICE及Office/Java/native/安装器仍由REL-01/02后续核验。
 
 ## 规划中
 

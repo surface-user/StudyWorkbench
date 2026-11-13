@@ -95,9 +95,11 @@ def test_interrupted_question_persistence_is_detected_without_registering_or_cha
                 patch.setattr(markdown_questions, 'resource_path', interrupted_path)
             else:
                 patch.setattr(markdown_questions.Resource, '__init__', fail)
-            with pytest.raises(OSError, match='injected question persistence failure'):
-                c.post(f"{SCOPE}/imports/{job['id']}/question-markdown", json={
-                    'expected_revision': job['draft_revision'], 'selected': [0], 'confirm': True})
+            response = c.post(f"{SCOPE}/imports/{job['id']}/question-markdown", json={
+                'expected_revision': job['draft_revision'], 'selected': [0], 'confirm': True})
+            assert response.status_code == 500 and response.json()['error']['code'] == 'internal_error'
+            assert response.json()['detail'] == '请求未完成，请稍后重试'
+            assert 'injected question persistence failure' not in response.text
         assert c.get(f'{SCOPE}/question-markdown').json() == []
     orphan, = (tmp_path / 'workspaces/default/questions').iterdir()
     assert list((orphan / 'assets').glob('*.png'))

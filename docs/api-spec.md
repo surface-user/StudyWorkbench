@@ -6,11 +6,27 @@
 
 ### 会话与公共约定
 
-后端仅127.0.0.1随机端口，私有stdin首行JSON {token}，stdout握手返回port/api_version等启动状态，EOF退出。令牌至少32字符，只经管道/内存传递。业务API需Bearer，Host仅loopback，带Origin拒绝，无全局CORS及公开OpenAPI/docs。默认FastAPI detail错误体，不能假定所有错误都有error.code/request_id。
+后端仅127.0.0.1随机端口，私有stdin首行JSON {token}，stdout握手返回port/api_version等启动状态，EOF退出。令牌至少32字符，只经管道/内存传递。业务API需Bearer，Host仅loopback，带Origin拒绝，无全局CORS及公开OpenAPI/docs。/api/错误采用下述兼容detail及error元数据；旧后端、非API或已开始响应的流不能假定有error.code/request_id。
 
 除标明全路径外，下表以W=`/api/workspaces/{workspace_id}`为前缀，节点N=`W/nodes/{node_id}`。归档/不存在空间及跨空间资源拒绝。常见状态401鉴权、403 Origin/能力、404未知/隔离、409冲突、413超预算、422输入非法，具体见服务实现；不能笼统把任意4xx当作预期结果。
 
 请求体按实际接收帧计数：layout 32MiB、document及document-merge-preview 8MiB（每份文本仍1MiB UTF-8）、imports 8MiB、notes编辑2MiB、其余64KiB。media/import由流式处理器自行限制512MiB。省略Content-Length不绕过预算。[实现](../backend/study_workbench/request_limits.py)
+
+### 兼容错误响应（API-01a，当前已实现）
+
+仅/api/的Host/Origin/鉴权/实际帧限制/HTTP异常/请求校验错误增加`error: {code, message, request_id}`，原HTTP状态保持。detail字符串仍保留业务提示；422校验detail保持列表形状，但仅返回loc/msg/type摘要，不再承诺FastAPI原始input/ctx/url等字段。loc仅保留body/query/path/header/cookie来源、数字下标和固定field占位，未知字段名也不回显；msg固定“请求参数无效”、type固定value_error，最多100项，非完整原始校验清单。不能将删除敏感输入字段误解为接受无效请求。
+
+| HTTP | error.code |
+|---|---|
+| 400 / 401 / 403 | bad_request / unauthorized / forbidden |
+| 404 / 405 / 409 | not_found / method_not_allowed / conflict |
+| 413 / 416 / 422 | payload_too_large / range_not_satisfiable / validation_failed |
+| 429 / 500 / 503 / 507 | resource_busy / internal_error / unavailable / insufficient_storage |
+| 其他HTTP错误 | http_error |
+
+error.message是状态类别的固定安全提示，不拼接异常、路径、URL、令牌或正文。error.request_id为服务端每次API HTTP请求新生成的32位小写hex，错误响应头X-Request-ID与其一致；不采纳传入头/正文编号，不与创建/提交的幂等request_id混同。重复业务请求仍返回原收据，冲突仍409；不根据错误码自动重试写入。HTTP异常原有Allow/Retry-After等头保留。
+
+未开始响应的未预期异常返回固定500/detail与internal_error，日志只记录关联ID，不记录原异常文本。已开始响应的流故障不再追加JSON或伪造第二次状态；非API媒体能力/Range/HTML及成功响应正文保持原契约。到达ASGI前的HTTP解析错误、启动及离线CLI不在此包装范围。桌面BackendError保留构造/statusCode和旧字符串detail提示，新增可选code/requestId；422使用固定error.message，旧JSON/非JSON安全回退，不显示原响应或traceback。导入/媒体/附件调用方共享解析，继续保留刷新核实/原文件保留提示。代码与适配见[api_errors.py](../backend/study_workbench/api_errors.py)、[backend.dart](../apps/desktop/lib/backend.dart)。
 
 ### 工作空间与布局
 
@@ -225,7 +241,7 @@ POST /{id}/pause保留字节、请求暂停；ready拒绝409。POST /{id}/retry�
 
 LW-00确定的markdown-notes、learning-marks及笔记关系、internal-links/resolve、learning-search已实现，见上文；离线整库恢复通过独立进程，不开放任意文件路径或网页业务桥。单空间合并仍未实现，不把资源export或只读包检查当作实际恢复结果。
 
-本地授权和人工候选审核见下文；R6其余工具/凭据与模型接口尚未实现。通用error.code/message/request_id响应包装尚未形成完整公共契约。不得调用[Agent设计](agent-design.md)中的拟议工具名当成现有HTTP接口。
+本地授权和人工候选审核见下文；R6其余工具/凭据与模型接口尚未实现。API-01a通用状态级错误包装及桌面兼容已实现，见上文；各业务专用错误码和跨版本错误契约演进仍规划中。不得调用[Agent设计](agent-design.md)中的拟议工具名当成现有HTTP接口。
 
 ## 待验证
 
