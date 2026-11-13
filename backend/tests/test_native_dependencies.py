@@ -198,3 +198,117 @@ def test_import_names_cannot_select_paths_outside_loading_roots(native, tmp_path
     assert closed == [True]
 
 
+@pytest.fixture
+def uno_registry(native, tmp_path, monkeypatch):
+    office = 'converters/libreoffice/'
+    raw = ('<components xmlns="http://openoffice.org/2010/uno-components">'
+           '<component loader="com.sun.star.loader.SharedLibrary" '
+           'uri="vnd.sun.star.expand:$URE_INTERNAL_LIB_DIR/Plugin.dll"/>'
+           '<component loader="com.sun.star.loader.Java2" uri="vnd.sun.star.expand:$LO_JAVA_DIR/script.jar"/>'
+           '<component loader="com.sun.star.loader.Python" uri="script.py"/>'
+           '</components>').encode()
+    files = {'program/uno.ini': b'self-authored fixed startup',
+             'program/fundamental.ini': b'self-authored fixed bootstrap',
+             'program/services.rdb': raw,
+             'program/services/extra.rdb': raw.replace(b'URE_INTERNAL_LIB_DIR', b'LO_LIB_DIR')}
+    policy, payload = {}, {}
+    for name, data in files.items():
+        path = tmp_path / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        payload[office + name] = path
+        policy[name] = hashlib.sha256(data).hexdigest()
+    monkeypatch.setattr(native, 'OFFICE_UNO_FILES', policy)
+    return office, payload, policy
+
+
+def test_uno_registration_records_all_sources_but_not_script_loaders(native, uno_registry):
+    office, payload, _ = uno_registry
+    before = {name: path.read_bytes() for name, path in payload.items()}
+    assert native.office_uno_entries(payload, office) == {
+        office + 'program/plugin.dll': [office + 'program/services.rdb', office + 'program/services/extra.rdb']}
+    assert {name: path.read_bytes() for name, path in payload.items()} == before
+
+
+@pytest.mark.parametrize('damage', ['startup', 'bootstrap', 'registry', 'missing', 'extra', 'budget'])
+def test_uno_registration_rejects_changed_input_even_with_same_component_version(native, uno_registry, damage):
+    office, payload, _ = uno_registry
+    selected = office + {'startup': 'program/uno.ini', 'bootstrap': 'program/fundamental.ini'}.get(
+        damage, 'program/services.rdb')
+    if damage == 'missing':
+        del payload[selected]
+    elif damage == 'extra':
+        payload[office + 'program/services/unproven.rdb'] = payload[selected]
+    else:
+        payload[selected].write_bytes(b'changed' if damage != 'budget' else b'X' * (1024 * 1024 + 1))
+    before = {name: path.read_bytes() for name, path in payload.items()}
+    with pytest.raises(ValueError, match='Office UNO'):
+        native.office_uno_entries(payload, office)
+    assert {name: path.read_bytes() for name, path in payload.items()} == before
+
+
+@pytest.mark.parametrize('uri', ['file:///C:/outside.dll', 'vnd.sun.star.expand:$ORIGIN/plugin.dll',
+                               'vnd.sun.star.expand:$LO_LIB_DIR/../outside.dll',
+                               'vnd.sun.star.expand:$LO_LIB_DIR/sub/plugin.dll',
+                               'vnd.sun.star.expand:$LO_LIB_DIR/plugin%2edll',
+                               'vnd.sun.star.expand:$LO_LIB_DIR/plugin.exe'])
+def test_pinned_registry_still_requires_supported_native_uri(native, uno_registry, uri):
+    office, payload, policy = uno_registry
+    path = payload[office + 'program/services.rdb']
+    data = path.read_bytes().replace(b'vnd.sun.star.expand:$URE_INTERNAL_LIB_DIR/Plugin.dll', uri.encode())
+    path.write_bytes(data)
+    policy['program/services.rdb'] = hashlib.sha256(data).hexdigest()
+    with pytest.raises(ValueError, match='library URI'):
+        native.office_uno_entries(payload, office)
+
+
+def test_untrusted_xml_is_rejected_before_parsing(native, uno_registry, monkeypatch):
+    office, payload, _ = uno_registry
+    payload[office + 'program/services.rdb'].write_bytes(b'<!DOCTYPE x [<!ENTITY a "untrusted">]><x>&a;</x>')
+    def must_not_parse(_):
+        raise AssertionError('Unverified XML reached parser')
+    monkeypatch.setattr(native.ET, 'fromstring', must_not_parse)
+    with pytest.raises(ValueError, match='configuration changed'):
+        native.office_uno_entries(payload, office)
+
+
+@pytest.mark.parametrize('damage', ['none', 'missing-entry', 'missing-transitive', 'architecture'])
+def test_registered_office_entries_share_the_existing_loading_domain_and_unknown_gate(
+        native, uno_registry, tmp_path, monkeypatch, damage):
+    office, payload, policy = uno_registry
+    program = office + 'program/'
+    roots = ['soffice.com', 'soffice.bin', 'officebean.dll', 'javavmlo.dll', 'jvmfwklo.dll',
+             'jvmaccesslo.dll', 'javaloaderlo.dll', 'juh.dll', 'juhx.dll', 'java_uno.dll']
+    nodes = {program + name: node(program + name) for name in roots}
+    nodes[program + 'plugin.dll'] = node(program + 'plugin.dll', [('private.dll', 'delay')])
+    nodes[program + 'private.dll'] = node(program + 'private.dll')
+    unknown = program + 'twain32shim.exe'
+    nodes[unknown] = node(unknown, machine=0x14c)
+    lock = tmp_path / 'runtime-lock.json'
+    lock.write_text(json.dumps(dict(version='26.8.1',
+        package_sha256='c6298b10cfa1748bcbedad94c62ce771e240e5021bfd6d7a967cd571b04b5312',
+        java=dict(version='21.0.13+9', directory='java',
+                  package_sha256='2332c0b4cff6bed722da3567c91d5e47568bcba863fa4945d0a8d6fc76158628'))), encoding='utf-8')
+    payload[office + 'runtime-lock.json'] = lock
+    monkeypatch.setattr(native, 'pe_nodes', lambda _: nodes)
+    if damage == 'missing-entry':
+        del nodes[program + 'plugin.dll']
+    elif damage == 'missing-transitive':
+        del nodes[program + 'private.dll']
+        nodes[office + 'foreign/private.dll'] = node(office + 'foreign/private.dll')
+    elif damage == 'architecture':
+        nodes[program + 'plugin.dll']['machine'] = 0x14c
+    if damage != 'none':
+        with pytest.raises(ValueError, match='Missing declared PE|Unresolved delay|Expected x64'):
+            native.inspect_dependencies(payload, tmp_path)
+        return
+    report = native.inspect_dependencies(payload, tmp_path)
+    domain = report['domains']['office']
+    assert program + 'plugin.dll' in domain['roots'] and program + 'private.dll' in domain['nodes']
+    assert domain['uno_entries'] == native.office_uno_entries(payload, office)
+    assert domain['uno_configuration_sha256'] == {office + name: digest for name, digest in policy.items()}
+    assert domain['directories'] == [office + 'program', office + 'java/bin', office + 'java/bin/server']
+    assert report['unproven_runtime_candidates'] == [dict(path=unknown, machine='0x14c')]
+    assert report['pe_coverage'] == 'partial'
+
+

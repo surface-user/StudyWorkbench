@@ -10,6 +10,8 @@ staging文件清单生成与校验共用枚举：只排除根build-inventory.jso
 
 原生依赖检查覆盖.exe/.dll/.pyd及MZ格式.com/.bin的普通与延迟导入。只在声明的主应用根、后端_internal及各插件自身目录、Office program与其显式Java根、独立Java进程bin/server域解析，不以全包同名DLL或外部PATH兜底。普通私有VC运行库必须位于各进程约定的app-local根，System32不能补私有CRT；NumPy/Pandas的.libs须匹配固定完整冻结初始化代码指纹，才采用其中已核的目录注册行为。注册目录顺序不明或同一后端进程解析到同名不同字节时拒绝。版本/初始化代码变化必须重新取证，规则不是自动支持未来版本的白名单。
 
+Office域还读取固定组件自带的UNO注册入口：先核program/uno.ini、fundamental.ini和7份services注册文件的完整SHA256及注册目录文件集合，再仅解析这些已核字节；URE_INTERNAL_LIB_DIR与LO_LIB_DIR只映射到program，拒绝其他变量、绝对/嵌套/穿越路径和非DLL/PYD原生入口。注册的SharedLibrary及其传递依赖共用原Office搜索根/架构/CRT守卫，报告保留每个入口的注册来源与配置hash。Java/Python脚本注册不计为原生库，用户/扩展动态注册、CLR、其他辅助进程仍不由此证明；版本、启动配置或注册集合变化必须重新核证，不据文件恰在program就认可运行域。
+
 check_release遇到任一闭包外未分类PE即拒绝发行并输出partial及路径/架构，不提供绕过开关；必须后续建立可审计的运行域或非运行分类。只读tools/check_native_dependencies.py --office <组合组件目录>或--backend <冻结后端目录>可输出有限域图及未知范围，其中--office先核组件完整清单/hash，不调用OfficeRuntime。诊断退出0仅说明已声明域解析完成，pe_coverage=partial仍不满足发行门禁。API set另列Windows契约，本机System32仅为OS文件存在证据；最低Windows版本、已加载模块/SxS/动态加载/导出转发、干净机与完整Office加载范围仍需独立证据。
 
 许可复制的Python/Dart/native包目录名限定为普通ASCII包组件，候选许可路径必须相对并解析后保持在该包目录内；拒绝驱动器/根路径、冒号及Windows尾点/尾空格歧义。Python RECORD含..项仍按原规则跳过。复制前检查目标，错误使收集失败并保留已完成的合法副本，不回滚/删除stage；此前已有链接/重解析点检查继续执行。此边界面向稳定staging和本地构建输入，不构成恶意构建依赖沙箱、完整许可覆盖或SBOM/漏洞审计。
