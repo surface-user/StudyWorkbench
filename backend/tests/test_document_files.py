@@ -94,8 +94,10 @@ def test_save_fault_recovers_without_replaying_file_writes(tmp_path, monkeypatch
         else:
             event.listen(c.app.state.engine, 'before_cursor_execute', fail_finalize)
             try:
-                with pytest.raises(RuntimeError, match='finalize'):
-                    c.put(endpoint, json={'expected_sha256': value['sha256'], 'text': 'new'})
+                response = c.put(endpoint, json={'expected_sha256': value['sha256'], 'text': 'new'})
+                assert response.status_code == 500 and response.json()['error']['code'] == 'internal_error'
+                assert response.json()['detail'] == '请求未完成，请稍后重试'
+                assert 'injected finalize failure' not in response.text
             finally:
                 event.remove(c.app.state.engine, 'before_cursor_execute', fail_finalize)
         with Session(c.app.state.engine) as session:

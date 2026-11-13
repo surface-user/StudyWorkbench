@@ -55,3 +55,45 @@
 桌面实际命令：本副本新建.venv目录链接只读复用Q，不改变共享环境；PYTHONPATH指本副本backend。D F --no-version-check test --no-pub --concurrency=1 --dart-define=STUDY_ROOT=D:/computer_work/project/StudyWorkbench/.local/goal-20261112/batch-two --dart-define=STUDY_DATA_DIR=D:/computer_work/project/StudyWorkbench/.local/goal-20261112/batch-two/.local/flutter-full01，退出0，完整200通过/无跳过，1分42秒，artifacts/batch02/flutter-full01.txt。该结果是组件与真实隔离后端回归，不是窗口/人工验收。
 
 提交前检查：D format --output=none --set-exit-if-changed lib test integration_test退出0（87文件无变化）；D F --no-version-check analyze --no-pub退出0。32份实际变更的UTF-8/LF、逐文件git diff --no-index --check与Markdown本地链接聚合检查退出0；两份依赖锁与#31逐字保持。当前组合实现/本地自动化完成，保持REVIEW直到独立草稿PR最终head CI核验，提交/CI结果在PR描述维护。
+
+## 2026-11-13：INT-03 第三批组合
+
+主Agent已核INT-02/#37最终54d26ec04a046fe2852d078db6e9752e2a4a2603，CI43093356970第二次三组44步成功；首次desktop与Python3.12均在upload-artifact创建产物时五次返回HTML/JSON错误，测试/构建步骤成功。只重跑失败检查后恢复，未跳过产物上传、未改源码/断言；首次失败仍保留。INT-02有限开发交付DONE，正式发行仍未完成。
+
+在新.local/goal-20261112/batch-three核对并复制#37精确462个Git blob，先组合已由主Agent验收的#34（8b29a27008e64e0cce6615a2135edda1125a435d）、#35（a73bedd24c228b61c9f1ccd4290152af2bace57b）与#36（fbbc8479b039fc69ea41260c7bdd298484effa16）相对于各自PR基线的变更。task及本批报告由主Agent维护；未修改原PR/main或根工作区。当前INT-03 IN_PROGRESS，后续未核验切片不视为本组合实现。
+
+prepare_batch_three.py先完成#34与#35锁/报告；#35依赖说明的五行上下文跨到了已交付FMT工具独立段落，保守退出1。人工对照确认为无逻辑重叠的相邻文档新增后，resume_batch_three.py按唯一原段落插入pytest说明并完成#36，退出0。未覆盖FMT或原报告；第一次辅助命令的引号错误亦保留，没有影响源码。组合数据和精确sha位于根artifacts/goal-20261112/batch-three-manifest.json。
+
+#36主Agent另核双Python各84、实际19743文件/351PE/18延迟边、277未知partial及三项真实加载根负例，发行门禁仍拒绝未知。其CI43092944364第二次三组44步成功，首次仅upload-artifact同类错误保留。#34原API-01/a要求已满足，不将未要求的业务码细化新增为永久退出前置；其旧Office偶发测试失败继续保留，不因新CI通过宣称该偶发根因已修复。
+
+本组合实现尚待全量/冻结/桌面检查、独立PR与当前head CI。审查暂缓，人工测试取消，完整SBOM/许可/漏洞/Office整包与签名发行继续，未合并或发行。
+
+
+继续纳入已验收的#39（2da4306ab5637a8f1389a697c92b570e13d28f52）、#40（b48b711d0ee1bdc5e2aa507e1e08852be73829ae）和#41（218cfc235f3d7655c39764085aab3477ddb11bdf）。主Agent分别核当前head CI43359332568、43359261755、43359882156，均三组44步成功；#39的102×2及53入口/223未知/5负例，#40的905条JUnit×2（828加77子测试）/89×2/23×2及原始OSV哈希/新exe，#41的57×2和246原文逐引用hash/453本地远端blob均已核验。完整Office/许可/最终漏洞检查仍未完成；每项原报告和失败继续保留。
+
+extend_batch_three.py及extend_batch_three_license.py按各PR基线的精确blob应用，退出0，无源码逻辑重写或冲突。#41摘要对应其当时Starlette0.50源锁，只是历史实采；当前组合锁为pytest9.0.3/Starlette1.3.1，后续实采必须用当前锁/实际环境。许可补全另需处理latex2mathml项目MIT与内嵌LPPL；不能将本地原文收集成功当完整义务通过。
+
+在仅#34/#35/#36已组合时，IQ35 -m pytest backend/tests/test_api_errors.py backend/tests/test_native_dependencies.py backend/tests/test_office_java_bundle.py -q --basetemp=.local/batch-q-target01 --junitxml=artifacts/batch03/target01.xml，退出0，58通过。当前完整组合改用IQ40（starlette-fix/.local/starlette-q-isolated/Scripts/python.exe），实际Starlette1.3.1/pytest9.0.3，不改变共享Q/P环境。
+
+为桌面测试建立本副本.venv到IQ40的新目录链接：普通权限尝试拒绝、目标仍不存在；受控原生权限成功后版本断言退出0。两份pubspec.lock逐字hash一致，复制#37已生成的package_config供--no-pub；第一轮Flutter测试因缺package_graph.json退出1，日志flutter-full01.txt保留。补同一锁的package_graph后用新测试数据目录重跑，不执行flutter clean或改变系统Developer Mode，不复制个人数据/测试库。
+
+### INT-03 本地核验结果
+
+本轮IQ40指starlette-fix/.local/starlette-q-isolated/Scripts/python.exe（3.13.17，实际Starlette1.3.1/pytest9.0.3）；Q为根.local/release-venv/Scripts/python.exe，仅用于既有Ruff/核证辅助脚本；D/F为固定Flutter3.47.1的Dart与flutter_tools.snapshot。全部测试使用本组合backend及全新隔离数据目录，不改变共享依赖或个人库。
+
+- PYTHONPATH=backend; IQ40 -X utf8 -m pytest -q --basetemp=.local/batch-q-full01 --junitxml=artifacts/batch03/backend.xml，原生测试权限退出0，971通过、77子测试通过，1195秒；JUnit1048条无失败/错误/跳过。三条警告为httpx TestClient、anyio别名弃用及重复ZIP负例，不降低断言。完整Python3.12与远端环境另由当前head CI核对。
+- D F --no-version-check test --no-pub --concurrency=1 --dart-define=STUDY_ROOT=<本组合> --dart-define=STUDY_DATA_DIR=<本组合>/.local/flutter-full02，退出0，203通过；D format --output=none --set-exit-if-changed lib test integration_test退出0，88文件无变化；D F --no-version-check analyze --no-pub原生权限退出0，无问题。最初普通权限analyze不能访问固定SDK lockfile，退出-1073741816，日志保留后原生重跑，不改系统设置。
+- IQ40 -m ruff因只读共享包环境缺自身Scripts/ruff.exe退出1；改用已有Q -m ruff check backend tools退出0，未安装或改变任何依赖。前述测试使用隔离IQ40不受此开发工具入口影响。
+- ./packaging/windows/build-backend.ps1 -Python <IQ40>日志显示干净构建完成且44个业务模块含嵌套代码/常量均与本组合源码相等；原包装调用返回在上下文截断后无法恢复退出码，不据日志虚构数字，实际新exe及下列独立运行均已核。新exe 22577830字节，SHA256 16d3c2242fac5eb5a9d8c52775140669c1672d885485779531de9206cc8032ea。当前head CI仍须重新构建验证。
+- IQ40 -X utf8 tools/check_api_errors.py --exe dist/study_backend/study_backend.exe --test-root .local/api-frozen01，退出0，34检查/18独立错误ID、重启/幂等收据及媒体Range兼容通过。IQ40 tools/check_backend_lifecycle.py --exe同exe退出0，恶意Host/Origin、连接重置后EOF、重启/崩溃/两次迁移/原件与学习数据保持等原完整链通过。
+- IQ40 tools/check_office_previews.py --exe同exe --test-root .local/office-frozen01 --runtime <根.local/release-tools/libreoffice-java-26.8.1-21.0.13> --docx <formats/.local/fmt-samples01/复杂分节.docx> --pptx <同目录/复杂图表.pptx> --complex-xlsx <同目录/复杂工作簿.xlsx>，退出0。固定组合运行时中DOCX/PPTX各3页，PDF108085/77988字节，逐页非空/边界/公式/图表及取消重试/缓存/重启/原件hash通过，XLSX2表15格只读值、XML预算拒绝与SQLite完整性通过。不是人工视觉或任意Office保真证明。
+- IQ40 tools/source_sbom.py --syft <根.local/release-tools/syft-1.57.1/syft.exe> --output artifacts/batch03/source-sbom退出0，136源包及8个SDK未知；源锁和全部组件与#40逐项相同，BOM SHA256 bc41c7389b5b7cbf53869cf5ce716b352b699b5e696bf70ac9ae0d83c59e86ca，comparison.json SHA256 6070202c65f99832db70e28ae81596d3006b8af6ddbd2f07b9b9d23d6a79594f。未发生依赖变化，沿用#40当时135包无返回公告的有限在线证据，不冒充本轮新漏洞查询或已知数据库快照。
+- IQ40 tools/source_licenses.py --package-config apps/desktop/.dart_tool/package_config.json --output artifacts/batch03/source-licenses退出2（缺证），136源包/246原文引用/182唯一文本；每份副本重新核长度/hash，report.json SHA256 26762874b1b6db994d509f482238d6e02fd022ca01f3ed82fc8a3b168165be76。唯一已观测缺文仍latex2mathml3.81.1，内嵌LPPL另需处理；完整产品许可/归档来源/义务字段保持false。#41提交摘要是当时Starlette0.50旧锁历史，本轮实采为1.3.1，不改写旧证据。
+
+根artifacts/goal-20261112/finalize_batch_three.py首次误用辅助证据字段名退出1，按实际report的files/text_path修正后退出0；实际证据未修改，生成本地summary.json。上述原始日志/XML/图片/许可文本均留忽略的artifacts或.local，不纳Git。没有重复完整回归或将失败改为跳过。
+
+本轮另核#38最终842b19df5100e55960f98269283743d37d63433b和CI43362970857三组46步成功，直接比对桌面原日志与摘要cbdfa5cbe5211ca53dc9bcafdd707097fbfdc78c73fa6684542920cc7359fce8。源码真实206/同域跨域302、冻结恢复追加及hash/媒体复用通过；结合#24满足原DL-01，主Agent已在#38描述登记DL-01b及父DL-01 DONE。#38只有开发探针/CI/文档，未改生产下载代码；其工具未纳本INT-03。旧DNS/MIME/未知长度探针失败保留，LW-07其他规划继续。下一步DL-02a先明确站点与授权范围，未获答复前不代选。
+
+当前INT-03实现与本地自动化完成，保持REVIEW等待独立草稿PR最终head CI；PR实时描述维护最终head/运行和验收结果，不为引用自己的最终SHA循环制造文档提交。审查暂缓、人工取消、未合并或发行；OFF-02配置继承及223未知、完整SBOM/许可/漏洞/签名与发行父项保留。
+
+提交前35文件聚合检查首次在已接受输入test_native_dependencies.py发现新增EOF空行，git diff --check退出3；仅在本组合删去末尾多余空行，AST与#39逐字解析结果一致，原输入分支不动。功能源码仍与各已核输入精确相同，不重复业务测试；根Q -X utf8 artifacts/goal-20261112/check_batch_three.py重跑退出0：474文件来源核对、35变更空白检查、159本地链接和44个调度行唯一性通过，原报告与历史失败完整保留。

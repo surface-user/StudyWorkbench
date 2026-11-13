@@ -1,0 +1,245 @@
+{
+  "scope": "fixed UNO registration static-closure evidence; not full Office release readiness",
+  "input_inventory_sha256": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+  "pe_images": 351,
+  "registered_entries": 53,
+  "configuration_sha256": {
+    "converters/libreoffice/program/uno.ini": "e4b23a72009455cef8b105312e6893a1523f1a00005de502f821317708f2b6d6",
+    "converters/libreoffice/program/fundamental.ini": "b4d54f865c2ae335dad400114f4638051360e04491fae41359f62511eb8160c2",
+    "converters/libreoffice/program/services.rdb": "ea90dacd3cae92582dd02c03b93f73e3307d8017fa3403e38c6a07f6cc1522cb",
+    "converters/libreoffice/program/services/postgresql-sdbc.rdb": "5e2fdbdfd2f01f37e23df3ddbfe8a082da75fb7b3579a5009d6d0d12a5813362",
+    "converters/libreoffice/program/services/pyuno.rdb": "b4495431256f030c6e2da038d64f6ccaa09e60709ba7206ced73ebe17c869ff6",
+    "converters/libreoffice/program/services/scriptproviderforbeanshell.rdb": "4b290aaf66192075ab16404ceadd28b3e38c1890fe53e17572da400af5dac3be",
+    "converters/libreoffice/program/services/scriptproviderforjavascript.rdb": "fe5092c30ac96be4e45ca5df7b60ad0118273f26c07e9d7c1a78d177dc046e83",
+    "converters/libreoffice/program/services/scriptproviderforpython.rdb": "ed096e982ec7996361fcd1159b270f8169aa9547a09463a6a006bff5057a3c2d",
+    "converters/libreoffice/program/services/services.rdb": "bc996be9362ebf3a9c6be11d4c3c9fef26941182743c70d1649a6e5fe317f094"
+  },
+  "domains": {
+    "java": {
+      "roots": 3,
+      "nodes": 9,
+      "edges": 109
+    },
+    "office": {
+      "roots": 65,
+      "nodes": 123,
+      "edges": 1528
+    }
+  },
+  "old_unknown": 277,
+  "remaining_unknown": 223,
+  "negatives": [
+    {
+      "case": "registered-entry",
+      "result": "Unresolved import: converters/libreoffice/program/vbaobjlo.dll -> sclo.dll; loading directories=['converters/libreoffice/program', 'converters/libreoffice/java/bin', 'converters/libreoffice/java/bin/server']; elsewhere=[]; system CRT cannot satisfy private dependencies"
+    },
+    {
+      "case": "transitive-library",
+      "result": "Unresolved import: converters/libreoffice/program/postgresql-sdbc-impllo.dll -> libpq.dll; loading directories=['converters/libreoffice/program', 'converters/libreoffice/java/bin', 'converters/libreoffice/java/bin/server']; elsewhere=[]; system CRT cannot satisfy private dependencies"
+    },
+    {
+      "case": "registered-architecture",
+      "result": "Expected x64 PE32+ image in loading domain: converters/libreoffice/program/sclo.dll"
+    },
+    {
+      "case": "missing-startup",
+      "result": "Missing Office UNO configuration: converters/libreoffice/program/fundamental.ini"
+    },
+    {
+      "case": "extra-registry",
+      "result": "Office UNO registration file set changed; renew loading evidence"
+    }
+  ],
+  "checked_files_unchanged": {
+    "runtime-lock.json": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+    "program/uno.ini": "e4b23a72009455cef8b105312e6893a1523f1a00005de502f821317708f2b6d6",
+    "program/fundamental.ini": "b4d54f865c2ae335dad400114f4638051360e04491fae41359f62511eb8160c2",
+    "program/services.rdb": "ea90dacd3cae92582dd02c03b93f73e3307d8017fa3403e38c6a07f6cc1522cb",
+    "program/services/postgresql-sdbc.rdb": "5e2fdbdfd2f01f37e23df3ddbfe8a082da75fb7b3579a5009d6d0d12a5813362",
+    "program/services/pyuno.rdb": "b4495431256f030c6e2da038d64f6ccaa09e60709ba7206ced73ebe17c869ff6",
+    "program/services/scriptproviderforbeanshell.rdb": "4b290aaf66192075ab16404ceadd28b3e38c1890fe53e17572da400af5dac3be",
+    "program/services/scriptproviderforjavascript.rdb": "fe5092c30ac96be4e45ca5df7b60ad0118273f26c07e9d7c1a78d177dc046e83",
+    "program/services/scriptproviderforpython.rdb": "ed096e982ec7996361fcd1159b270f8169aa9547a09463a6a006bff5057a3c2d",
+    "program/services/services.rdb": "bc996be9362ebf3a9c6be11d4c3c9fef26941182743c70d1649a6e5fe317f094",
+    "program/twain32shim.exe": "e8c0e07120c789b8c59e6723a9b11d638982805549d46247566847dd7b51a06e"
+  },
+  "report_sha256": "ae862ce1f3332351e0328d59bf1f22c3d030aa13185ca0c041b805bb95e188c9",
+  "limitations": [
+    "Images outside declared domains remain unclassified; reachability does not prove they never execute.",
+    "API-set and host system leaves do not certify minimum Windows compatibility.",
+    "Dynamic loading, loaded-module state, SxS and export forwarding require runtime evidence."
+  ],
+  "uno_entries": {
+    "converters/libreoffice/program/abplo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/binaryurplo.dll": [
+      "converters/libreoffice/program/services.rdb"
+    ],
+    "converters/libreoffice/program/bootstraplo.dll": [
+      "converters/libreoffice/program/services.rdb"
+    ],
+    "converters/libreoffice/program/calclo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/dbplo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/deploymentgui.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/hsqldb.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/introspectionlo.dll": [
+      "converters/libreoffice/program/services.rdb"
+    ],
+    "converters/libreoffice/program/invocadaptlo.dll": [
+      "converters/libreoffice/program/services.rdb"
+    ],
+    "converters/libreoffice/program/invocationlo.dll": [
+      "converters/libreoffice/program/services.rdb"
+    ],
+    "converters/libreoffice/program/iolo.dll": [
+      "converters/libreoffice/program/services.rdb"
+    ],
+    "converters/libreoffice/program/javaloaderlo.dll": [
+      "converters/libreoffice/program/services.rdb"
+    ],
+    "converters/libreoffice/program/javavmlo.dll": [
+      "converters/libreoffice/program/services.rdb"
+    ],
+    "converters/libreoffice/program/jdbclo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/jumplistlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/languagetoollo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/mergedlo.dll": [
+      "converters/libreoffice/program/services/postgresql-sdbc.rdb",
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/migrationoo2lo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/migrationoo3lo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/mswordlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/namingservicelo.dll": [
+      "converters/libreoffice/program/services.rdb"
+    ],
+    "converters/libreoffice/program/oleautobridgelo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/pcrlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/pdfimportlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/postgresql-sdbc-impllo.dll": [
+      "converters/libreoffice/program/services/postgresql-sdbc.rdb"
+    ],
+    "converters/libreoffice/program/presentationminimizerlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/proxyfaclo.dll": [
+      "converters/libreoffice/program/services.rdb"
+    ],
+    "converters/libreoffice/program/pythonloaderlo.dll": [
+      "converters/libreoffice/program/services/pyuno.rdb"
+    ],
+    "converters/libreoffice/program/reflectionlo.dll": [
+      "converters/libreoffice/program/services.rdb"
+    ],
+    "converters/libreoffice/program/scdlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/scfiltlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/sclo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/scnlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/scuilo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/sddlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/sdlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/sduilo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/smdlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/smlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/stocserviceslo.dll": [
+      "converters/libreoffice/program/services.rdb"
+    ],
+    "converters/libreoffice/program/sw_writerfilterlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/swdlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/swlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/swuilo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/updatecheckuilo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/updchklo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/uuresolverlo.dll": [
+      "converters/libreoffice/program/services.rdb"
+    ],
+    "converters/libreoffice/program/vbaobjlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/vbaswobjlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/vclplug_winlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/winaccessibility.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/winuserinfobelo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ],
+    "converters/libreoffice/program/writerlo.dll": [
+      "converters/libreoffice/program/services/services.rdb"
+    ]
+  },
+  "provenance": {
+    "source_head": "fbbc8479b039fc69ea41260c7bdd298484effa16 plus the OFF-02d change recorded with this evidence",
+    "office_buildid": "bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1",
+    "source": "artifacts/off02d/office01.json and real-summary.json",
+    "raw_summary_sha256": "196637428e98f71eb6acea60a80f58add90daae0ef167a19adf987f3d278542a",
+    "selection": "Only pinned configuration, registered-entry provenance, coverage counts and negative-check results. No raw binary, full trace, personal profile, document or absolute machine path retained."
+  },
+  "remaining_example": {
+    "path": "converters/libreoffice/program/twain32shim.exe",
+    "machine": "0x14c"
+  }
+}

@@ -404,3 +404,205 @@ PLAN-06仅修改AGENTS.md、docs/task.md和本报告。准备脚本逐blob验证
 ### 剩余退出条件
 
 源码与新冻结真实转换均通过；独立草稿PR/最终head CI待核，OFF-02b保持REVIEW。OFF-02c将独立检查实际PE进程加载域/.com/.bin/延迟导入，原check_release不降低或跳过；尚未声称最终安装/免安装整包已闭合。完整SBOM、许可/源码提供义务、漏洞修复与签名在REL系列继续，现成系统DLL/文件hash不能代替这些条件。审查按ADR0014暂缓，人工/Computer Use取消；没有合并或公开发行，没有删除原组件/测试失败/个人数据。原始日志、生成PDF/样本及exe保持Git忽略，只筛选本节所需摘要与诊断源作为共享证据。
+## 2026-11-12：REL-03b pytest已知漏洞修复
+
+主Agent已核#32最终89f0d775d847981b97a70c1a88281e140756c8f2的CI #168（43071363779）completed/success、双Python专项各42、真实查询报告hash及snapshot未知边界，REL-03a有限查询任务验收通过；本task记DONE，原漏洞/未知继续保留。以该head逐Git blob复制450文件到独立.local/goal-20261112/pytest-fix；本项从IN_PROGRESS进入REVIEW，独立PR/当前head CI及主Agent验收前不记DONE。
+
+### 范围与依据
+
+仅backend/requirements.lock.txt中pytest==9.0.1改为9.0.3，另更新依赖文档、task及本原报告共四文件；没有新测试代码、业务入口、数据库、CI门禁或其他锁版本变化。原test_source_sbom.py中的9.0.1是自编解析夹具，继续保留，不能把夹具值误当运行环境版本。
+
+[官方9.0.3发行说明](https://github.com/pytest-dev/pytest/releases/tag/9.0.3)记录2026-04-07修复CVE-2025-71176（#14343）；[PyPI固定版本元数据](https://pypi.org/pypi/pytest/9.0.3/json)要求Python>=3.10，既有3.12/3.13锁依赖满足，不需传递升级。沿用03a原始官方元数据，SHA256 d2d51b1dc8bdb0844b51d95144bce4c0c38daa72d00417ebf771cdac7cd1b0a2。官方files.pythonhosted.org的pytest-9.0.3-py3-none-any.whl实取375249字节，SHA256 2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9，与官方digest/大小一致且未撤回；原始来源URL/HTTP Date/hash存artifacts/rel03b/download-provenance.json。wheel内MIT LICENSE完整留存，SHA256 ca836a5f9ecca3b2f350230faa20a48fb8b145653b5568d784862df864706b9b；未将安装包或原始artifact提交Git。
+
+pytest是开发工具；原公告说明UNIX默认/tmp目录的本地攻击，不把本项目Windows通过记为UNIX漏洞复现或全平台认证。上游修复版本与源锁复查只是关闭该已知包版本发现的依据，不清除03a原发现，也不把未验证可达性变成误报。Starlette0.50.0/FastAPI0.161.1保持原锁，五个Starlette CVE仍由03c独立承担。
+
+### 隔离环境与实际验证
+
+工作目录为上述pytest-fix。共享Q/P仍为根.local/release-venv/Scripts/python.exe（3.13.17）和根.venv/Scripts/python.exe（3.12.7）。新IQ/IP分别为本副本.local/pytest-q-isolated/Scripts/python.exe及.local/pytest-p-isolated/Scripts/python.exe。新venv仅安装官方固定hash pytest wheel，其他现有依赖经本venv的shared-build-dependencies.pth只读引用对应Q/P site-packages；实际断言pytest.__file__位于新sys.prefix且版本9.0.3。不是重新安装整栈或改写共享环境；CI仍会从锁文件创建新的完整依赖环境。
+
+- Q/P -m venv --without-pip .local/pytest-{q,p}-isolated，然后Q/P -m pip --isolated --disable-pip-version-check --python <新解释器> install --no-index --no-deps --no-cache-dir --no-user artifacts/rel03b/pytest-9.0.3-py3-none-any.whl：均退出0。新解释器版本/pytest路径断言及pip --python <新解释器> check：均退出0，其他版本保持FastAPI0.161.1/Starlette0.50.0，No broken requirements。
+- IQ/IP -m pytest backend/tests/test_source_sbom.py backend/tests/test_source_vulnerabilities.py -q --basetemp=.local/pytest-{q,p}-targeted --junitxml=artifacts/rel03b/{q,p}-targeted.xml：退出0，各77通过。
+- IQ/IP -m pytest -q --basetemp=.local/pytest-{q,p}-full --junitxml=artifacts/rel03b/{q,p}-full.xml：原运行均退出1，各809通过/12失败/77子测试通过/2警告；Q约403秒，P约449秒。原始JUnit统计898条（821测试加77子测试）；初次证据核验脚本误将JUnit总数预期为821而退出1，按实际子测试结构更正核验预期后继续，未改变测试断言。逐JUnit核两边失败节点集合相同，全部是mklink/J或os.link因本地权限拒绝创建夹具。旧共享pytest9.0.1同一junction用例也退出1，原失败及诊断日志/JUnit保留。
+- 原Q/P完整失败节点12项从JUnit提取为failed-nodes.json，未删改测试；以允许真实目录/硬链接的受控权限运行IQ/IP -m pytest <该12个节点> -q --basetemp=.local/pytest-{q,p}-permitted --junitxml=artifacts/rel03b/{q,p}-permitted.xml：均退出0，各12通过。新目标目录事先确认不存在，不复用/删除原失败目录。此为809通过加12项复验，不把原始完整运行改记一次全绿；完整当前head CI另核。
+- Q -m ruff check backend tools：退出0。起初用IQ -m ruff因只读引用模块无法找到新venv中未安装的ruff.exe而退出1，原ruff.log保留；改为直接调用已有共享Q的静态工具，不增装或升级Ruff，成功记录ruff-shared.log。
+- Python逐文件SHA256复核Q/P各74个pytest/_pytest非缓存文件与测试前指纹相等，共享解释器实际pytest仍为9.0.1：退出0。测试过程设置PYTHONDONTWRITEBYTECODE=1，使用各自新basetemp及本副本TEMP/TMP，未写共享包或清理个人目录。
+- 初次普通venv创建的ensurepip子进程两边均退出1，根因未确证；保留两个部分环境与执行摘要。随后新目录使用--without-pip和显式pip --python定向安装成功，不覆盖失败环境或擅自修复系统Python。
+
+### SBOM与漏洞复查
+
+IQ tools/source_sbom.py --syft D:/computer_work/project/StudyWorkbench/.local/release-tools/syft-1.57.1/syft.exe --output artifacts/rel03b/source-sbom：退出0，仍匹配136个源包及8个SDK排除项。独立assert对照03a前源清单，集合仅移除pkg:pypi/pytest@9.0.1并增加pkg:pypi/pytest@9.0.3，其他135包身份及SDK未知完全相同；comparison.json SHA256 a1a305b86c3eae99e13845a1942cb40e772b14534ba3f0581b6b50f76aada8ed，BOM SHA256 8777bd5bff163d46487fe1fa31f64e55f55a11ce7847c27a4d21267d813454dc。新requirements锁SHA256 4e6de78b36b6daab6fae0f407cdfca09e1a7ac8f533798b6ffb413cac3a9c8e7；pubspec锁仍c1ab979d33d15197f1018cae7ec752cfb0244523e26f3ed2c73ee1f761be2ce5。
+
+IQ tools/source_vulnerabilities.py --output artifacts/rel03b/source-vulns：退出2，表示仍有发现；2026-11-11T18:03:48.206873Z至18:04:02.242271Z查询135包完成，pytest9.0.3无公告返回，仅Starlette保留10条公告（五CVE），Git/8SDK排除不变。所有原始请求/响应hash独立复核通过；report.json SHA256 56b653316ee2067d19125aa0173063240ef7d0e4ae36d788b3acbb322e07b87f。
+
+另复用固定查询器exchange，将公开pytest9.0.1与9.0.3在同一querybatch做对照：2026-11-11T18:05:11.755490Z完成，旧版本仍返回GHSA-6w46-j5rx-g56g/PYSEC-2026-1845，新版本为空；assert退出0，原始response SHA256 a8f2d9bf1fec0bf0527603d31e351f242420780c6369f16d6172fd516b9f8ffc，comparison.json SHA256 d45e642ff05a4737d3f188164c76dcbac45b08a921273a49e880891096b461ca。这加强了对应已知公告/包映射的修复证据，但在线数据库snapshot/freshness仍未知，没有全产品安全结论。
+
+代码审查暂缓、人工测试取消，完整发行SBOM/传递许可/二进制漏洞/签名和正式发行仍未完成。新依赖只影响开发测试，未做UNIX攻击复现；原查询发现、权限失败、初始环境失败与工具失败均保留。03b需独立草稿PR/最终head CI及主Agent核验后决定DONE，下一项为03c，未合并或发行。
+
+实际提交[独立草稿PR #35](https://github.com/surface-user/StudyWorkbench/pull/35)，codex/pytest-vulnerability-fix基于#32最终89f0d775，实现提交e90e659fcd149b35f47ca8830a67989e1895c5a2。四文件范围/精确单行锁差异、原报告前缀、非03a/b任务行、UTF-8/LF/尾空白/相对链接检查通过；JUnit898条含77子测试的计数已核。最终head与完整CI在PR描述维护，主Agent核验前保持REVIEW；不为记录自身SHA反复触发提交。
+
+
+
+## 2026-11-12 OFF-02c：按实际加载域检查PE依赖（设计）
+
+基于固定Java准备PR #28最终2187fec21fee25472124aa97a2b1ea524d85e357，tree e05bda1920978a0e666b4c8b77270ce0177158fa；448个Git blob从已有java副本逐字节验证后复制到独占.local/goal-20261112/native-closure。AGENTS/requirements/architecture/question-content-spec与已完整读取基线字节一致，重读task和发行/组件契约。#28最终CI #153/43065303373已success，主Agent验收OFF-02a，本次任务表记DONE；父OFF-02及REL-01不销项。代码审查暂缓、人工/Computer Use取消，不授权发行/合并。
+
+现有check_release在完整文件集合/hash之后仅检查.exe/.dll/.pyd普通导入，以全包basename或本机System32文件存在作为可用条件。调用方为build-release.ps1的安装器编译前门禁，专项为test_release_inventory.py；原OFF-01辅助scan.py只读诊断曾扫描.com/.bin和延迟导入，但未进入产品门禁。本次不改OfficeRuntime/compose；组合加载实现由主Agent独立OFF-02b负责。原库存hash、无个人.db、CPython身份、主程序/后端原x64/PE32+检查及失败保留顺序均保持。
+
+只读盘点使用固定Q=根.local/release-venv/Scripts/python.exe（3.13.17），PYTHONDONTWRITEBYTECODE=1，内存pefile解析导入目录1/13，不运行待检PE或写原组件：
+
+- 新组合组件.local/release-tools/libreoffice-java-26.8.1-21.0.13含351个PE，321 AMD64、26 x86、4 ARM64；x86/ARM64包含Office内Python安装模板和独立辅助，不等于主Office架构错误，也不能称整包全x64。旧检查遗漏soffice/unopkg的.com/.bin四项；18条延迟边来自Java AWT/java/net/splashscreen和原Office。
+- Office候选域program、java/bin、java/bin/server，入口soffice.com/bin+officebean+jvm的递归图64节点，无候选缺边/架构冲突，CRT落在program。Java.exe+jvm+jawt域java/bin、server图9节点，CRT落java/bin。仅在内存去掉Office域的Java根时，officebean→jawt明确缺失，虽然组件其他目录仍有同名DLL；没有移动或删除组件。
+- FMT新冻结产物（.local/goal-20261112/formats/dist/study_backend）159PE全AMD64；只用插件目录/_internal/后端目录会留下5条NumPy/Pandas依赖。其已锁初始化源码实际调用os.add_dll_directory注册numpy.libs/pandas.libs；从冻结PYZ提取整个初始化代码并用check_frozen_sources.equivalent与本机固定源码比较通过。因此需识别有代码证据的注册目录，不能按缺边新增任意搜索目录。
+- 既有11-10基础包app根15PE，根目录/本机OS候选下无缺边，并额外发现Flutter/WebView2Loader四条delay。此为旧候选包的路径规则样本，不作为本次新完整发行证明。
+
+### 最小实现与验证范围
+
+1. 共用PE解析器列出全部.exe/.dll/.pyd及MZ格式.com/.bin，读取普通和delay导入；严格闭合句柄、大小写路径索引、拒绝错误PE/非法导入名/同域架构不符。未证明会执行的独立helper/安装模板列为非运行候选或未知，不套上全包AMD64结论。
+2. 对明确入口和插件分别建立加载域：主应用根；PyInstaller后端及_internal、插件自身目录；Office程序目录与显式Java根；独立Java.exe域。普通VC运行库必须位于对应进程的app-local根，不能靠别的进程目录或本机System32救缺失。后端带重命名的包私有CRT只能在已证明的注册目录中解析。
+3. NumPy/Pandas.libs不凭名称放行：固定当前冻结初始化代码的规范化指纹及其来源版本，实际PYZ匹配后才采用已核注册路径；版本/初始化代码变更须重新取证，未知注册不静默推断。AddDllDirectory多个目录顺序无保证，同名候选字节不一致时拒绝歧义，不以全包basename兜底。
+4. API set单独列为Windows契约叶节点，不能当作普通可分发DLL；本机System32的OS叶节点与私有CRT分开。静态图不模拟所有已加载模块、SxS、运行期LoadLibrary、导出转发或最低Windows版本；未映射运行边失败，未知范围在报告明确列不完整，不写全产品加载认证。
+5. 安装器编译前调用新加载域检查；提供可复用的只读实际组件/后端诊断入口，不调用本分支旧OfficeRuntime来“验证”新组合格式。原输入组件、清单和字节保持，错误诊断给出来源、导入种类、搜索域及其他不可达位置。
+6. 自动化覆盖错域CRT、System32掩盖、延迟边缺失、.com/.bin漏扫、错误架构、API-set/OS叶、图环/大小写/未知范围、已验证与变更的冻结注册代码、顺序不明重名DLL。真实正例用固定组合与新冻结产物，负例仅改内存图/加载根，原文件hash复核；双Python专项、全量Ruff、最终head CI另行记录。
+
+规则依据为[Microsoft DLL搜索顺序](https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order)、[LoadLibraryEx标志](https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibraryexa)及[API sets](https://learn.microsoft.com/en-us/windows/win32/apiindex/windows-apisets)，本轮已打开核对；加载根还来自实际OfficeRuntime受控环境和已比对的固定冻结初始化代码。文档设计先落地，当前IN_PROGRESS，尚未把方案当作实现或测试通过。
+
+### 实施结果与范围收紧
+
+新增native_dependencies.py共享静态图，check_release在原清单/hash/CPython/无数据库校验之后调用；新增check_native_dependencies.py提供只读组件/冻结后端诊断，不执行待检入口或依赖本分支旧OfficeRuntime。PE普通与delay边、实际Office .com/.bin、大小写/非法导入路径、进程域CRT、已注册目录与进程内同名不同字节歧义均有断言。全包同名仅用于缺边错误中的elsewhere提示，绝不满足依赖。未新增依赖、未修改Office运行时/组合脚本、原组件或任何安装器产物。
+
+主Agent进一步明确完整覆盖门禁：闭包外文件不能因不可达就归为非运行模板。本实现输出pe_coverage=partial与全部未分类路径/架构；check_release遇到任一未知PE即拒绝发行，没有跳过开关或按路径免责名单。原独立helper用例仍验证不会被误套主进程架构，进一步要求发行覆盖错误；ARM未知用例核输出partial并拒绝，原文件保持。诊断命令退出0仅代表声明域解析完成，不代表组合可发行。父OFF-02仍需对277项逐项形成可审计运行域/非运行分类及其余实际加载证据；父REL-01不因本切片销项。
+
+check_frozen_sources保留原equivalent的逐字段及嵌套常量比较，将相同字段表共用给code_fingerprint，忽略构建路径/源码行偏移但不忽略嵌套行为。NumPy 2.5.4、Pandas 3.1.0完整初始化代码与固定安装源码及实际PYZ比较后登记指纹；变化/未知.libs拒绝，不通过源码substring猜测动态注册。已注册同名候选字节不同以及各插件域解析到同名不同字节均拒绝，避免不确定AddDllDirectory/已加载模块顺序产生虚假闭合。
+
+### 命令与自动化证据
+
+工作目录.local/goal-20261112/native-closure。Q为根.local/release-venv/Scripts/python.exe（3.13.17），P为根.venv/Scripts/python.exe（3.12.7）；原始日志/JUnit/实际图均位于忽略的artifacts/off02c，临时夹具位于本副本.local。只读真实扫描设置PYTHONDONTWRITEBYTECODE=1，不把产物/组件复制进Git。
+
+- Q -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py -q --basetemp=.local/off02c-gate313 --junitxml=artifacts/off02c/gate313.xml：退出0，84通过（3.48秒）；P同命令使用gate312：退出0，84通过（3.41秒）。覆盖普通/延迟错域CRT、System32不能补私有依赖、Java桥不可达、.com/.bin、错误架构、OS/API-set区分、图环、注册代码变更、两类DLL冲突、未知覆盖阻断、组件清单缺/增/变/hash/路径/版本，以及现有许可复制和重解析保护。
+- Q -m ruff check backend tools：退出0，ruff-gate.txt记录全量静态检查通过；不是业务全量运行测试。本地只跑相关专项，独立PR最终head继续完整CI。
+- Q tools/check_native_dependencies.py --office D:/computer_work/project/StudyWorkbench/.local/release-tools/libreoffice-java-26.8.1-21.0.13：退出0，office-final.json；先核19743个实际文件（19742个锁内文件+runtime-lock.json），清单SHA256 156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9。解析351 PE/18条delay；Office域69节点850边，Java域9节点109边，重叠节点不重复宣称覆盖。Office CRT落program、独立Java CRT落java/bin；仍有277未分类PE（247 AMD64、26 x86、4 ARM64），结果明确partial，不能通过check_release完整覆盖门禁。
+- Q tools/check_native_dependencies.py --backend D:/computer_work/project/StudyWorkbench/.local/goal-20261112/office-bundle/dist/study_backend：退出0，backend33-final.json；#33最终e0a3fcf对应新冻结exe SHA256 bad0e600989de0f85d3b0ded02b195078c83c921ba0bebaa85cc512bde6d1642，1001文件/159 PE/1条delay，声明后端域没有剩余未分类PE。此前FMT新冻结样本同159 PE通过；后端独立诊断并不核完整发行清单或证明安装包成员。
+- Q tools/check_release.py D:/computer_work/project/StudyWorkbench/dist/StudyWorkbench-Release-20261110-37a8d55/app：退出0，base-release-gate.txt；旧基础包1304文件清单/hash、CPython、无DB、主进程x64与174 PE/5条delay声明静态域通过，没有未分类PE。它不含本次Office组件，仅是既有基础发行门禁回归，不称新整包构建/安装或干净机通过。
+- Q artifacts/off02c/real-negative.py：退出0，real-negative.txt；在真实351 PE内存图中分别移除Office的Java搜索根、Office私有CRT根、Java私有CRT根，三项均出现对应Unresolved import，即使同名文件仍在其他目录或System32。原runtime-lock、officebean、jawt及两个vcruntime140的5项hash前后相等，且Office/Java的vcruntime字节确实不同；原组件没有删除、移动或修改。
+- Q读取本分支共享check_frozen_sources，将源码定位到#33 office-bundle（只调整内存__file__），运行原main对实际exe比较：退出0，frozen-sources-final.txt，43业务模块及嵌套代码/常量匹配。另对numpy/pandas的整个PYZ初始化分别与固定安装源码equivalent比较并核规范化指纹，均通过。两指纹为e4f5a942c031e942cb3d44e0f38adedba8c24dd51ae9cbc0c5788c998647e31a、0786ce19ddf69547b54b04728688dad0c8d36b2d54c275ed9bedc608a4d14572。
+
+### 保留失败与限制
+
+target01退出1：71通过/2失败，均为受限环境不能创建Windows链接（child_reparse_directory与collector_license_directory_junction）；原txt/xml保留。获准原生目录复验native313/native312分别73通过、退出0，后续新增边界用例的final313/final312各84通过；上列gate末轮在加强未知覆盖拒绝后再次各84通过。没有删除失败测试或降低断言。Ruff首轮3项unused/import冲突、后续新增用例1项排序均修正，最终全量通过；记录保留。
+
+实际Office初轮office01退出1：普通导入名校验过窄，真实pythonloaderlo.dll导入pyuno.pyd被拒绝。核PE实表后将通用导入扩展到已支持PE扩展名，保留路径/ASCII/非法字符保护并增加pyuno用例；office02与office-final完整hash/图通过。该修正基于合法PE导入形式，不是对缺失DLL增加豁免。第一次小型汇总命令括号遗漏造成SyntaxError，仅统计脚本，修正后重新读报告；不混为产品成功证据。最初全图输出重复每个后端插件闭包，改为保留各插件搜索根、去重边并拒绝跨域不同字节，完整图仍留诊断输出，发行摘要避免重复刷屏。
+
+静态规则不证明所有动态LoadLibrary、已加载模块/SxS、导出转发、API-set的最低Windows可用性或所有helper/插件实际行为。真实Office诊断的277未知项继续阻断完整发行，不能只凭69/9节点给OFF-02整包完成结论。代码审查暂缓，人工/Computer Use已取消；没有合并、签名、安装、发布、清理旧失败或新的模型/下载。实现和专项已完成，任务进入REVIEW，草稿PR及最终head CI核验前不记DONE。
+
+实际交付[独立草稿PR #36](https://github.com/surface-user/StudyWorkbench/pull/36)，分支codex/native-loading-domains，base为#28最终2187fec；实现提交b03d990ddfc9a8fcc1bcd13b9e0688ec4ec2a5cd。九份明确改动的UTF-8/LF/尾空白与git diff --no-index --check通过，原报告前缀、非本项任务行和全部其他基线blob保持。首次聚合传输JSON因输出截断而失败，分块后检测到控制台中文编码长度不符；改用ASCII转义分块并核完整长度后才创建远端tree，没有提交不完整或乱码内容。最终head/CI在PR描述维护，待主Agent核验有限检测/拒绝能力后决定DONE；父项未知范围继续阻断，未合并或发行。
+
+## 2026-11-13 OFF-02d：固定UNO注册入口（设计）
+
+基线为#36最终fbbc8479b039fc69ea41260c7bdd298484effa16/tree ec39c923f1e17e5c443be30fae8ddb6124e7e497，451个tracked blob逐字节核对后复制至独占.local/goal-20261112/office-uno-closure。原根、原Office/Java组件及#36源码不改；共享Q/P环境不升级。首次复制因默认GBK读取UTF-8清单退出1，尚未写目标；使用PYTHONUTF8=1重新执行prepare_next.py office-uno-manifest.json后退出0，451文件匹配。#36的CI43092944364两组后端成功，desktop上传产物步骤失败由主Agent继续处理；本分支不把父项记DONE，不改CI。
+
+读取本副本AGENTS、requirements、architecture、question-content-spec、task及打包/依赖规范、dev规则，并盘点native_dependencies的两个调用方check_release/check_native_dependencies、对应测试、build-release编译前调用。影响只限共享依赖图、专项测试、打包说明、任务和本报告；不改Office进程配置、API/数据库或用户资料，不新增依赖。
+
+已有静态PE导入图遗漏通过UNO注册表装载的入口。固定Office buildid bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1的[ServiceManager](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/cppuhelper/source/servicemanager.cxx)读取注册文件/目录，并在801–818行展开SharedLibrary URI后调用装载函数；[shlib](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/cppuhelper/source/shlib.cxx)在307–310行使用该URI打开模块。官方源Git blob分别为09273863097ba162b830f6c46c18030d2b73d300和5bbefd436833aae5c053c9022197b66c329b2ed5。普通网页读取Cache miss，随后官方GitHub API按固定提交完整获取成功，没有改用未固定版本。
+
+本切片只纳入组件自带的固定UNO注册范围：核program/uno.ini与fundamental.ini完整hash，确定URE_INTERNAL_LIB_DIR/LO_LIB_DIR均指向program、UNO_SERVICES由主services.rdb及program/services内6文件构成；注册目录文件集合及7文件完整hash必须与已核版本一致。随后解析这些已验证字节，SharedLibrary只接受两种已证明变量前缀与单个DLL/PYD文件名，得到53个唯一原生入口及各自注册来源。全部入口加入既有Office进程域，用原有架构/普通与delay/私有CRT守卫解析，不添加全包搜索目录。配置变化、未知注册文件、URI路径越界、入口/传递库缺失或错架构必须失败；Java/Python脚本注册不假装是原生库。
+
+预期专项包括注册来源可追溯、缺/改/增文件、文件预算、跨目录/错误变量URI、非原生注册不混算、已注册入口及传递依赖缺失、原x64/未知覆盖阻断。真实组件先重核19742 payload hash，再比较旧/新覆盖集合，仍未知的CLR/模板/helper等继续列出；twain32shim.exe真实x86/CRT缺口不予免责。原组件、旧失败、源文件身份与发行未知范围保持。独立草稿PR及当前head CI由主Agent核验后才能记本有限切片DONE；不是整包OFF-02或发行完成。
+
+### 实现与自动化
+
+native_dependencies内复用同一closure，新增固定UNO配置核验与注册来源映射，无新执行器/运行时依赖/搜索目录。注册文件每份限1MiB，先校验完整hash再解析同一份字节；非预期文件集合、配置变更及不支持URI均拒绝。主应用/后端/独立Java规则保持，check_release原有未知PE严格拒绝未修改。静态检查扩大了已证明的可加载入口集合，不声称全部入口都在转换样本中实际调用。
+
+工作目录为.local/goal-20261112/office-uno-closure，Q=根.local/release-venv/Scripts/python.exe（3.13.17），P=根.venv/Scripts/python.exe（3.12.7）；设置PYTHONUTF8=1/PYTHONDONTWRITEBYTECODE=1。实际命令和退出码：
+
+- Q/P -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py -q --basetemp=.local/uno-native313（P为uno-native312）--junitxml=artifacts/off02d/native313.xml（P为native312.xml）：均退出0，各102通过，分别3.30/4.87秒。18个新增用例覆盖注册来源/脚本排除、缺改增/预算、URI路径/变量拒绝、未核XML不解析、入口/传递边/架构与未知保留；原84项守卫保持。测试中的目录链接仅在本任务临时目录原生复验，不改系统配置。
+- Q -m ruff check backend tools：退出0，全量通过，artifacts/off02d/ruff.txt。没有产品业务/桌面改动，本地不重复业务/Flutter全量；独立PR当前head完整CI仍执行。
+- Q tools/check_native_dependencies.py --office D:/computer_work/project/StudyWorkbench/.local/release-tools/libreoffice-java-26.8.1-21.0.13：退出0，完整结果artifacts/off02d/office01.json。核19743实际文件（19742 payload加清单），清单SHA256仍156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9；351 PE/18条delay。53个唯一UNO入口并入Office后，Office域65根/123节点/1528边，独立Java仍3根/9节点/109边。与#36旧图相同输入逐项对照，新增覆盖54项，未知277→223，pe_coverage仍partial。原静态域/已知文件没有丢失，twain32shim.exe仍为I386未知项，整包不能通过发行门禁。
+- Q artifacts/off02d/real-evidence.py：退出0，使用真实组件PE/配置数据，仅在内存分别去掉sclo.dll入口、libpq.dll传递库、改sclo架构、去掉fundamental.ini映射、增一条注册映射；五项分别触发缺入口/缺导入/x64/配置缺失/注册集合拒绝。原runtime-lock、9份配置及twain32shim共11个文件前后hash相同，未删除/移动/覆盖原组件。完整结果real-summary.json，执行输出real-evidence.txt。
+- Q artifacts/off02d/select-evidence.py：退出0，逐项筛选[off02d-uno-summary.json](evidence/off02d-uno-summary.json)，11599字节，SHA256 923c06b191089c7243733a48be352b2bbfd7e69abf13b5ff574469e3e1ae0c86。仅保留固定配置hash、53入口对应注册来源、覆盖计数/负例与TWAIN未知示例，附原始报告hash/版本/筛选理由；不提交整个artifacts、原组件、完整原始图或个人数据。首轮文档检查发现该新JSON采用Windows默认CRLF，显式LF重新生成后才交付，旧检查失败保留。
+
+原失败保留：target01第一次pytest因未建立独立.local父目录而1通过/47个夹具错误，pytest实际退出1（外层打印命令曾掩盖该退出码，未当成通过）；建立父目录后target02退出1，100通过/2失败，仍是原Windows链接夹具创建被受限执行拒绝。后续两套原生102通过，没有降低或删除断言。实际组件检查运行期间提前读取尚为空的输出曾触发汇总JSONDecodeError，未作为产品失败/成功结论；完整扫描最后退出0后读取458721字节完整JSON并核对，原空读取错误保留于本轮执行记录。
+
+### 基线验收、限制与交付
+
+主Agent已核#36的双Python各84、原277未知/三项实际负例及严格发行拒绝，最终fbbc847的CI43092944364 attempt2三组44步全部成功，接受OFF-02c有限门禁DONE；attempt1上传产物CreateArtifact失败保留，不说该历史运行通过。本OFF-02d只叠加注册入口，没有吸收其他功能或改变父head。
+
+剩余223项仍需独立证明实际运行域或有可审计来源条件的非运行分类；包括CLR、Python启动器资源、独立JRE其他PE、Shell/其他helper。twain32shim的真实x86/CRT问题继续阻断，不能凭当前DOCX/PPTX未调用而豁免。固定注册图不覆盖用户/扩展配置变化、全部动态LoadLibrary/导出转发/SxS、OS最低版本或干净机运行。未执行人工/Computer Use、合并/发布/签名、注册Office/Java或改个人数据。代码审查继续暂缓，任务进入REVIEW；独立草稿PR、最终head CI及主Agent验收另核，完整OFF-02/REL任务不销项。
+
+提交前Q artifacts/off02d/validate-docs.py退出0，核仅6份明确改动，其余基线blob、原报告前缀和非本项任务行保持，UTF-8/LF/无尾空白及本地链接有效；逐文件git diff --no-index --check无任何诊断。首轮辅助脚本误要求存在差异的no-index也必须退出0，因正常差异返回1而失败；修正为仅接受0/1且stdout/stderr均空后通过，未忽略空白错误，docs.txt/docs02.txt保留。PR最终head/当前CI结论在PR描述维护，避免记录自身SHA导致反复变更head。
+
+实际交付[独立草稿PR #39](https://github.com/surface-user/StudyWorkbench/pull/39)，分支codex/office-uno-loading依赖#36最终fbbc847；实现提交35b225e8ad5813ffab63cdf26b6628ae5100d772，452个远端blob与本地逐项匹配后创建PR。随后仅补本交付链接；最终head/本head CI和主Agent验收以PR描述及实时检查为准，未核验前保持REVIEW，不合并或发行。
+
+## 2026-11-13：REL-03c Starlette已知漏洞修复
+
+### 需求、设计与有限范围
+
+主Agent接受REL-03b后，依#35最终a73bedd24c228b61c9f1ccd4290152af2bace57b/tree7fb22b6ea827a0206e4c3a248467611615cd66e1建立独立副本.local/goal-20261112/starlette-fix，450个源码blob逐字节核对。根checkout和其他任务保持。先阅读AGENTS、requirements、architecture、question-content-spec、task及本切片相关API/依赖/证据规则；只修复03a已经记录的Starlette版本发现，不扩大成全栈升级或新框架。
+
+仅将backend/requirements.lock.txt的Starlette0.50.0升至1.3.1，FastAPI0.161.1与其他69个Python锁保持。官方同版本PyPI元数据说明FastAPI要求Starlette>=0.46.0，Starlette要求Python>=3.10、AnyIO>=3.6.2,<5和Python<3.13时typing-extensions>=4.10.0；现锁已满足。未启用full extra或新引入httpx2；TestClient兼容httpx0.28.1，但保留上游弃用警告。
+
+[官方1.3.1发行](https://github.com/Kludex/starlette/releases/tag/1.3.1)日期2026-06-12，[官方包元数据](https://pypi.org/pypi/starlette/1.3.1/json)记录OS Independent/Python3.12/3.13支持，wheel未撤回。官方files.pythonhosted.org下载73632字节，SHA256 c7372aae11c3c3f26a42df7bd626cec2f47d03483d261d369516a615a53714c6；BSD-3-Clause原文SHA256 dcb95677a02240243187e964f941847d19b17821cf99e5afae684fab328c19bf。维护/许可/Windows声明、真实回归和完整分发义务分开记录，不把包许可证标签视为完整发行审核。
+
+调用方检索覆盖backend业务中所有starlette、request.url、StaticFiles、HTTPEndpoint、request.form/Form引用：实际app.py读取request.url.path用于Origin拒绝；app/imports/media_library复用run_in_threadpool，request_limits复用JSONResponse。未发现业务直接使用后三类漏洞入口，不声称已复现这些攻击或证明全部传递可达性。影响范围为一个锁行、原API测试、原真实进程探针、依赖文档/任务/本报告；不改应用业务代码、错误契约、数据库、UI、CI配置或导出接口。
+
+### 旧红新绿与隔离环境
+
+以下工作目录均为该副本，原始日志/JUnit/包与查询字节位于artifacts/rel03c，未提交完整日志、下载包或测试数据。IQ/IP分别为本副本.local/starlette-{q,p}-isolated/Scripts/python.exe（3.13.17/3.12.7）；共享Q为根.local/release-venv/Scripts/python.exe、P为根.venv/Scripts/python.exe。设置PYTHONDONTWRITEBYTECODE=1与PYTHONUTF8=1；新venv仅安装固定官方Starlette1.3.1与既定pytest9.0.3，其他依赖通过本地.pth只读引用共享site-packages。
+
+- Q/P -m venv --without-pip .local/starlette-{q,p}-isolated；Q/P -m pip --isolated --disable-pip-version-check --python <新解释器> install --no-index --no-deps --no-cache-dir --no-user <已核Starlette wheel> <已核pytest9.0.3 wheel>；同一pip --python check：均退出0。记录setup-{q,p}.log及provenance.json。实际环境为FastAPI0.161.1/Starlette1.3.1/AnyIO4.15.1/httpx0.28.1/pytest9.0.3；共享Q/P各109个Starlette/pytest非缓存文件SHA256前后相同，未升级共享环境。
+- Q -m pytest backend/tests/test_api.py -q --basetemp=.local/rel03c-old-baseline --junitxml=artifacts/rel03c/old-api.xml：旧Starlette0.50退出1，6失败/6通过。含有效测试令牌的特制Host使Origin校验看见错误路径；畸形IPv6 Host造成未处理URL错误；无前导斜杠ASGI path能污染URL authority。原失败日志/JUnit保留。这是隔离测试入口的具体缺陷，不推断无需令牌的外网攻击能力。
+- IQ/IP -m pytest backend/tests/test_api.py backend/tests/test_source_sbom.py backend/tests/test_source_vulnerabilities.py -q --basetemp=.local/rel03c-{q,p}-targeted --junitxml=artifacts/rel03c/{q,p}-targeted.xml：均退出0，各89通过。7个新增用例覆盖五种Host的Origin拒绝、畸形Host受控400/合法带端口Host、ASGI path与authority分离；旧鉴权/判分/追加/重启/媒体206及416继续通过。ASGI直接构造的无斜杠路径不冒充实际HTTP服务器接受该输入。
+- IQ/IP -m pytest -q --basetemp=.local/rel03c-{q,p}-full --junitxml=artifacts/rel03c/{q,p}-full.xml：在允许创建隔离测试目录链接的受控权限运行，均退出0，各828通过及77子测试通过（JUnit905条，无失败/跳过）；Q375.68秒、P578.48秒。保留httpx/AnyIO弃用与重复ZIP夹具警告；未删除测试、降低断言或改写03b历史权限失败。
+- Q -m ruff check backend tools：退出0。锁内容assert确认精确一行版本变化；其余源码/锁未改。
+
+另从API-01的#34最终8b29a27008e64e0cce6615a2135edda1125a435d精确复制449文件至本任务.local/api-combination，仅覆盖本切片新锁与test_api.py。IQ/IP -m pytest backend/tests/test_api.py backend/tests/test_api_errors.py -q，分别使用独立basetemp及api-combo-{q,p}.xml：均退出0，各23通过，包含新error包装、原detail兼容、关联ID、401/403/400/404/409/413/422/500、脱敏和本次Host/path边界。此为明确组合的源码专项，不把#34全部功能或其他组合分支视为已经合并。
+
+### 真实进程与新冻结包
+
+IQ tools/check_backend_lifecycle.py：退出0。原探针增加6个真实HTTP Host/Origin断言，坏Host不能掩盖API Origin或引发未处理URL异常；其余独占锁、鉴权、客观/中文主观作答、EOF、重启/异常退出、两次搬迁的原件hash/收据/记录保留、DOCX/PDF拆题、媒体capability/状态及迁移父管道取消全部通过。未使用个人数据库。
+
+./packaging/windows/build-backend.ps1 -Python .local/starlette-q-isolated/Scripts/python.exe：退出0，干净新构建，43个冻结业务模块与当前源码一致。dist/study_backend/study_backend.exe为22568458字节，SHA256 3fba079e510e4550d086b7786973f937fa3c2a92e28efcd0e112d6bec82d50a2。独立读取PYZ并复用check_frozen_sources.equivalent核对全部23个已收集Starlette模块与固定官方wheel源码编译结果，嵌套代码/常量一致，明确__version__=1.3.1；记录frozen-starlette.json，不只凭构建命令推断新版已入包。
+
+IQ tools/check_backend_lifecycle.py --exe dist/study_backend/study_backend.exe：退出0，真实新冻结进程在去除开发Python/源码PATH条件下通过同一完整生命周期及新增Host/Origin检查。没有执行人工窗口、安装/干净机或Office整包验收，冻结成功不关闭这些范围。
+
+### SBOM与实际漏洞复查
+
+IQ tools/source_sbom.py --syft <根.local/release-tools/syft-1.57.1/syft.exe> --output artifacts/rel03c/source-sbom：退出0，136源包/8个SDK未知保持。独立对照03b源BOM，集合仅从pkg:pypi/starlette@0.50.0改为pkg:pypi/starlette@1.3.1；BOM SHA256 21a145015875e8d0c62cab8a2a11c886c1b0eb48bc6258fe79a799029abed340，comparison.json SHA256 f89e1c20be9b16f922a5d915b57f96dfb45243d9f5467e897f22e5fc5355488c。Python锁SHA256 8823dec8bd36cedab44ad894dbb018d442590187b23d5af837c1dbb2f2cb2512，pubspec锁仍c1ab979d33d15197f1018cae7ec752cfb0244523e26f3ed2c73ee1f761be2ce5。
+
+IQ tools/source_vulnerabilities.py --output artifacts/rel03c/source-vulns：2026-11-13T03:02:59Z起查询，退出3（设计语义为有限查询完成且无返回公告，不是全产品通过）；135包查询完成、无返回公告，9个Git/SDK排除不变。report.json SHA256 f7a6d67fe4c97d1d97145fa93c17a950b0c8f0db258b46c73bb694d93a3e56df，逐原始请求/响应hash已复核。数据库仍为在线观察，无固定snapshot或完整新鲜度证明；无公告返回不自动证明全部包映射/覆盖或不存在漏洞。
+
+另用原固定querybatch查询器在2026-11-13T03:13:54Z同时查Starlette0.50.0/1.3.1：旧版本仍返回03a所列五CVE对应10个GHSA/PYSEC记录，新版本为空，无分页遗漏。原response SHA256 3cf1641d60f1d668d4a1bafb5dcfc164ac16cd6cf3b9fd70bb66387e0161ebf8；comparison.json SHA256 4e3e2a0db95ac109831aaa02881daeda33b955e7b922ee4169ea9eec0c7d065d。该同批对照加强已知版本发现的关闭依据；不删除03a原发现，不声称Windows StaticFiles/HTTPEndpoint/form三类未使用入口均已复现。
+
+### 保留失败、限制与交付
+
+初次准备脚本按系统GBK读取含中文路径manifest退出1，显式-X utf8后450文件核验成功，未改共享编码。本机PyPI元数据连接先后出现TLS EOF及curl连接超时（exit28），受控权限重试仍失败；使用03a已存官方元数据并经当前官方网页核对相同版本/约束/下载hash，随后从其官方files.pythonhosted.org URL实际下载并核验成功，未关闭TLS证书校验。setup-run02.log保留完整TLS失败。初次证据核验误将BOM中的file组件当作均含purl而KeyError退出1，保留evidence-check.log；改为仅比较有purl的包身份后全部assert通过，未改BOM或产品断言。组合测试首次相对解释器路径拼写错误未启动测试，纠正为任务内实际解释器后才记录23项通过。
+
+REL-03b已由主Agent核验#35最终head CI三组成功，登记DONE。REL-03c实现/本地自动化已完成，状态REVIEW；需本项独立草稿PR、当前head CI和主Agent核验，不能据父#35绿灯销项。代码审查按用户要求暂缓、人工测试取消；本切片不合并或发行，不修改共享环境，不升级不相关依赖。完整最终组件SBOM/传递许可、Office/Java及冻结原生组件漏洞、签名/发行准备仍由父REL任务继续。
+
+实际提交[独立草稿PR #40](https://github.com/surface-user/StudyWorkbench/pull/40)，分支codex/starlette-vulnerability-fix，base为#35最终a73bedd，实现提交d66f636a81acbc0dc4082cf8c809b31cd2fa3f59；最终head与对应CI在PR描述维护，不为记录自身SHA反复提交。精确六文件变更、其余444个base blob未变、锁单行、文档相对链接/UTF-8/LF/尾空白及原报告前缀检查通过。首次检查脚本将Git的CRLF提示/差异退出码与文件换行混淆而退出1，保留diff-check.log及diff-check02.log；显式关闭本次diff的autocrlf并将本任务六文件写为LF后，git diff --no-index --check无诊断，完整检查退出0（diff-check03.log），没有修改Git配置或旧分支文件。
+
+## 2026-11-13：REL-02a 锁定源码依赖的本地许可证据
+
+主Agent从#35最终a73bedd24c228b61c9f1ccd4290152af2bace57b按远端Git blob复制450文件到独立.local/goal-20261112/source-licenses。#35已核CI43092294564三组通过，有限pytest修复DONE，原漏洞/权限失败保留。本项按现行REL-02a范围建立版本、许可原文、声明来源及缺失映射；完整REL-02仍依实际发行成员及官方归档/组合义务，不因本工具交付销项。
+
+范围为tools/source_licenses.py、其独立测试、打包指南/task、本报告和精选摘要；无产品调用方、API/UI/数据库、运行依赖、CI或发行stage变化。复用现有source_sbom锁解析/no_links/PyYAML/packaging，Python标准库读取metadata/RECORD，Dart只读指定package_config及缓存pubspec。新目录内按内容hash保存原字节、逐版本PURL记录原文相对路径/hash及声明来源。拒绝越界/链接/已有输出/异常长度或SHA256；没有下载或替换依赖/原件，没有解释许可标签为完整法律义务。
+
+### 命令与实证
+
+工作目录如上。Q为根.local/release-venv/Scripts/python.exe（3.13.17），P为根.venv/Scripts/python.exe（3.12.7）；实包采集IQ为pytest-fix/.local/pytest-q-isolated/Scripts/python.exe，已安装9.0.3但只读复用Q其他锁依赖。所有命令启用UTF-8/PYTHONDONTWRITEBYTECODE，不改变共享环境。
+
+- 根Q -X utf8 artifacts/goal-20261112/prepare_next.py source-licenses-manifest.json：退出0，450基线文件逐blob一致。首次未加-X utf8，读取含中文路径manifest时默认GBK失败；保留命令结果，未形成副本，改用显式UTF-8后成功。
+- Q/P -X utf8 -m pytest backend/tests/test_source_licenses.py backend/tests/test_source_sbom.py -q --basetemp=.local/licenses-{q,p}04 --junitxml=artifacts/rel02a/{q,p}04.xml：各退出0，57通过（22个新证据用例及35个既有锁解析用例）。新用例覆盖原文字节与hash、SDK/产品未知、精确版本缺失/歧义、RECORD变更/长度/路径、缺文/声明自定义文件、重复config/远端URI、超预算、原输出保留、锁变更、vendored metadata身份和CLI缺证非零。
+- 首轮q01因未创建.local父目录出现21个夹具建立错误；创建父目录后q02/p02各20通过/1失败，原始JUnit/log保留。失败揭示importlib.metadata.files()会过滤不存在的RECORD项，从而隐藏越界许可路径。修复为直接读取/验证原始RECORD后q03/p03各56通过；未降低断言或删除负例。Ruff初轮import排序1项按既有规则修正。
+- IQ -X utf8 tools/source_licenses.py --package-config ../batch-two/apps/desktop/.dart_tool/package_config.json --output artifacts/rel02a/real-final：退出2（明确缺证），136个精确源包、246个原文引用/182个唯一文本，8个SDK占位明确排除；仅latex2mathml3.81.1没有许可原文。Python其余选中文件的本地RECORD SHA256及长度一致；Dart版本与缓存pubspec一致。这是本地证据，未证明归档来源、缓存Git内容、许可完整性或分发义务。
+- 实包首轮real01遇setuptools84.2.1携带其他包的嵌套dist-info/METADATA，工具保守拒绝歧义，退出1且无成功report；将发行包身份限定为顶层dist-info、仍保留嵌套许可后real02退出2。为此新增独立vendored metadata回归，没有排除嵌套许可证。real02、real-final原始产物均保留。
+- 根Q -X utf8 artifacts/goal-20261112/record_source_licenses.py：逐246引用重新读副本核长度/SHA256，并检查摘要不含本机绝对路径；退出0。精选evidence/source-license-summary.json只保留公共包PURL、文件数、缺证/未知及原报告hash；用于可共享覆盖核验，不提交全部原始日志、缓存或第三方安装内容。
+
+最终report SHA256 192006c171592c548ddd460bcab8aaa4d567ab2ff2678b9d74190b331d68cac3，collector SHA256 1bc9799594876a597e26dbd1e70ee08c28c6c6b83c7a5fcaa446876ce9cf85cd。原文目录与完整逐文件映射在忽略的artifacts/rel02a/real-final；新工具可对后续精确锁与环境重新生成，不复用旧版本结果。当前Starlette仍为该基线0.50.0，独立03c修复需在组合后重采，不能把此清单冒充最终候选。
+
+### 退出边界
+
+本工具是有限证据映射，不是完整许可证审查。latex2mathml缺原文、官方wheel/pub归档/Git来源认证、源码提供/NOTICE/组合义务、SDK/冻结/native/Office/Java/安装器及运行时成员均继续由REL-02后续处理。缺文及未验证原样保留，不以元数据许可证标签或下载链接补记通过。代码审查暂缓，人工测试取消，未合并/发行。本项实现/专项/实际采集与文档完成后REVIEW，独立草稿PR与当前head完整CI核验前不记DONE；最新head/CI由PR描述维护，不为记录自身SHA反复提交。
+
+最终源码（含报告schema_version/采集器hash字段）再次运行同57项，Q/P的licenses-{q,p}-final及q-final/p-final日志均退出0；Q -m ruff check backend tools退出0。六文件范围、原报告前缀、未改依赖锁、UTF-8/LF/尾空白及Markdown相对链接检查通过。首次检查驱动把git diff --no-index --check的有差异退出1误作失败（stdout/stderr均空）；按该命令差异语义接受0/1且必须无诊断，未更改源码或忽略空白报错，保留首次驱动失败。
+
+实际交付[独立草稿PR #41](https://github.com/surface-user/StudyWorkbench/pull/41)，分支codex/source-license-evidence基于#35最终a73bedd，实现提交0506a79e4a11370a0afed8c5a05cda173bb263e7。首次共享摘要采用Windows默认CRLF，被提交检查拒绝；仅将新摘要规范化为LF后，六文件/69链接检查退出0。原始采集report及hash未改。最终head CI和有限交付结论在PR描述持续更新，不记完整许可义务已完成。
