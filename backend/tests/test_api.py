@@ -1,5 +1,7 @@
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
+from starlette.datastructures import URL
 from study_workbench.app import create_app
 from study_workbench.db import Question, database
 
@@ -18,6 +20,36 @@ def test_auth_origin_and_host(tmp_path):
         assert c.get("/api/health", headers={**AUTH, "Origin": "https://example.com"}).status_code == 403
         assert c.get("/api/health", headers={**AUTH, "Host": "evil.example"}).status_code == 400
         assert c.get("/openapi.json").status_code == 404
+
+
+@pytest.mark.parametrize("host", [
+    "127.0.0.1:80/?", "127.0.0.1:80/#", "127.0.0.1:80/other",
+    "evil.example/path", "[::1]",
+])
+def test_host_cannot_hide_api_origin_boundary(tmp_path, host):
+    with client(tmp_path) as c:
+        response = c.get("/api/health", headers={
+            **AUTH, "Host": host, "Origin": "https://example.com",
+        })
+        assert response.status_code == 403
+        assert response.json()["detail"] == "Browser origin is not authorized"
+
+
+def test_malformed_host_remains_a_controlled_rejection(tmp_path):
+    with client(tmp_path) as c:
+        for host in ("evil.example", "[invalid", "evil.example/path"):
+            assert c.get("/api/health", headers={**AUTH, "Host": host}).status_code == 400
+        assert c.get("/api/health", headers={**AUTH, "Host": "127.0.0.1:49152"}).status_code == 200
+
+
+def test_asgi_path_cannot_change_url_authority():
+    # Exercise the dependency's ASGI boundary; a real HTTP server may reject these paths earlier.
+    for path in ("api/health", "@evil.example/api/health", "//evil.example/api/health"):
+        url = URL(scope={"type": "http", "scheme": "http", "path": path,
+                         "server": ("127.0.0.1", 49152), "headers": []})
+        assert url.netloc == "127.0.0.1:49152"
+        expected_path = path if path.startswith("/") else "/" + path
+        assert url.path == expected_path
 
 
 def test_grading_append_and_restart(tmp_path):

@@ -1,6 +1,6 @@
 # 当前依赖与风险登记
 
-版本以apps/desktop/pubspec.lock、backend/requirements.lock.txt、打包脚本固定清单为准。下列维护/Windows证据取自既有审查，日期见归档；本轮没有重新联网审计或升级依赖，不把历史稳定版描述当成今日最新版本。新增依赖必须记录版本、许可证、维护证据、Windows支持和未验证项。
+版本以apps/desktop/pubspec.lock、backend/requirements.lock.txt、打包脚本固定清单为准。下列维护/Windows证据按各条注明的来源与验证范围解读，不把历史稳定版描述当成今日最新版本；本批指定依赖的联网核对与升级记录见相应条目及任务报告。新增依赖必须记录版本、许可证、维护证据、Windows支持和未验证项。
 
 ## 已采用的运行与构建依赖
 
@@ -23,12 +23,15 @@
 | flutter_math_fork 0.7.4 | [Apache-2.0](https://pub.dev/packages/flutter_math_fork/license) | 纯 Flutter，README 的 Windows 平台标签不等于验证；本项目组件测试实际解析积分；长公式/字体矩阵待测 |
 | url_launcher 6.3.2 | [BSD-3-Clause](https://pub.dev/packages/url_launcher/license) | Flutter 官方插件体系；Windows 实现 3.1.6；系统浏览器回退需实际交互 |
 | FastAPI 0.161.1 / Uvicorn 0.54.0 | [MIT](https://github.com/fastapi/fastapi/blob/master/LICENSE) / [BSD-3-Clause](https://github.com/encode/uvicorn/blob/main/LICENSE.md) | pip Windows 安装与真实进程请求通过；使用标准 asyncio，不依赖 Windows 不支持的 uvloop |
+| Starlette 1.3.1 | [BSD-3-Clause，同版本原文](https://github.com/Kludex/starlette/blob/1.3.1/LICENSE.md)；[官方发行](https://github.com/Kludex/starlette/releases/tag/1.3.1)2026-06-12 | PyPI要求Python>=3.10、OS Independent，现有FastAPI0.161.1要求Starlette>=0.46.0；固定覆盖已发现五CVE的最低共同修复版本，Windows/冻结验证及查询边界见原发行报告 |
 | SQLAlchemy 2.1.6 / Alembic 1.20.1 | [MIT](https://github.com/sqlalchemy/sqlalchemy/blob/main/LICENSE) / [MIT](https://github.com/sqlalchemy/alembic/blob/main/LICENSE) | Windows wheel 已安装；SQLite 迁移、重启作答持久化通过；SQLite backup/WAL迁移已有隔离回归，真实升级/干净机待验 |
 | SQLite | [public domain](https://sqlite.org/copyright.html) | Python 标准库自带，实际版本写测试报告；本地单机，不放网络共享盘，不允许多主写入 |
 | pytest 9.0.3 / Ruff / Flutter Test / integration_test | [pytest MIT](https://github.com/pytest-dev/pytest/blob/9.0.3/LICENSE) / MIT / Flutter BSD | 开发工具，不作为产品业务依赖；pytest固定修复CVE-2025-71176的最小版本，Windows独立环境与CI证据分别记录 |
 | PyInstaller 6.22.3 | [GPL及bootloader分发例外](https://pyinstaller.org/en/stable/license.html) | 已使用独立CPython冻结；安装/干净机/最终依赖义务仍待验 |
 
 玻璃库仅公开入口API、ref固定a0bc51acf22db1b867294f810157cfeba7e951fb，保留MIT通知，不改上游/缓存。Windows SDK原生Known Folder、OLE、Shell/Advapi32用于选择/拖放和默认目录，无新增第三方包。
+
+Starlette官方wheel为73632字节，SHA256 c7372aae11c3c3f26a42df7bd626cec2f47d03483d261d369516a615a53714c6，包内BSD-3-Clause原文已保留；[同版本PyPI元数据](https://pypi.org/pypi/starlette/1.3.1/json)与实际下载字节核对。仅升级该传递依赖，FastAPI、AnyIO及httpx保持原锁；实际TestClient兼容现有httpx0.28.1但上游已给弃用提醒，不为消除警告新增httpx2。业务未使用StaticFiles、HTTPEndpoint或表单解析入口；未使用不等于全产品可达性已证实，已知公告、修复复扫与Host/path/Origin入口回归分别记录。
 
 ### 可选离线Office组件
 
