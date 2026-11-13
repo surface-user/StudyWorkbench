@@ -37,14 +37,15 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | FMT-01 | READY | 既有Office/XLSX转换与受限查看能力可用于自编复杂样本自动化；不依赖Java整包发行 |
 | PAR-01 | IN_PROGRESS | 子 Agent parsing；既有提取/草稿预览可复用，先确定跨页/小题/重号/共享材料样本和候选契约再实施，不猜答案 |
 | PAR-02、PAR-03 | READY | 设计工作可先行；OCR实施依赖固定离线组件/语言资源评估，分块实施依赖预算/取消/重启契约，禁止直接放宽保护 |
-| DL-01 | READY | 既有HTTPS下载实现已具备；重核公网来源/DNS/TLS与独立hash，无法访问则保留具体证据，不放宽禁止网段 |
+| DL-01 | IN_PROGRESS | DL-01a源码/冻结公网下载、独立hash、重启/恢复已由主Agent验收[草稿PR #24](https://github.com/surface-user/StudyWorkbench/pull/24)；本分支继续DL-01b真实正向Range与同域/跨域重定向，不放宽公网DNS/TLS门禁 |
+| DL-01b 公网Range与重定向 | IN_PROGRESS | 固定MDN/WPT公开样本；真实队列/字节/显式暂停及新源码/冻结进程resume探针已实现，源码预算与冻结外部观察分开。双Python相关各78通过；CI已完成源码真实206续传，WPT未知长度暴露探针过严已修；原MIME/DNS失败保留。[草稿PR #38](https://github.com/surface-user/StudyWorkbench/pull/38)新head重定向/冻结恢复及完整CI待核，见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md) |
 | DL-02 | READY | 来源/组件设计可先行；实际站点提取依赖明确站点和授权方式，不默认登录/DRM |
 | DL-03 | BLOCKED | 依赖DL-02及FFmpeg实际二进制/许可选择 |
 | LW-04a | DONE | TXT全文/原文行有限范围开发交付完成；双Python相关各58、Flutter专项19/完整200及静态检查通过，主Agent已核[草稿PR #29](https://github.com/surface-user/StudyWorkbench/pull/29)最终9027508的[CI43066543568](https://github.com/surface-user/StudyWorkbench/actions/runs/43066543568)三job/44步全成功；[原报告](../dev/records/2026-11-04-lw04-search/report.md)保留旧失败。审查暂缓、人工取消，未合并/发行 |
 | LW-07a | DONE | 完整下载历史分页开发交付完成；双Python专项各11、Flutter专项6/完整196及静态检查通过；主Agent已核[独立草稿PR #27](https://github.com/surface-user/StudyWorkbench/pull/27)最终6af0360的[CI 43060817695](https://github.com/surface-user/StudyWorkbench/actions/runs/43060817695)三job/44步全成功及[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)失败记录。审查暂缓、人工取消，未合并/发行；LW-07整体与DL-01继续未完成 |
 | UPD-01 | BLOCKED | 完整升级回滚流程依赖稳定发行产物和签名方案；保留旧库保护，未授权发布更新 |
-| API-01 | IN_PROGRESS | 公共错误响应首切片API-01a已实现并进入REVIEW；保留状态/detail形状、增加安全错误码和服务端关联ID，详细业务码与跨版本演进仍后续，不把子项交付等同父项全部完成 |
-| API-01a | REVIEW | 统一API错误入口/422脱敏/服务端关联ID/Dart兼容已实现；Q全量726+77子测试、P相关76、Flutter完整203/静态和冻结HTTP34检查通过；[报告](../dev/records/2026-11-12-api-errors/report.md)保留先红、权限与契约失败。[独立草稿PR #34](https://github.com/surface-user/StudyWorkbench/pull/34)已创建，最终head CI待核，主Agent核验后DONE |
+| API-01 | DONE | 原定统一错误响应契约已由API-01a覆盖；主Agent核对原退出条件后确认父项及子项均开发交付完成。最终8b29a27的[CI43091834219](https://github.com/surface-user/StudyWorkbench/actions/runs/43091834219)三job/45步成功；额外细粒度业务码不作为本项未满足条件，原偶发Office失败仍保留 |
+| API-01a | DONE | [草稿PR #34](https://github.com/surface-user/StudyWorkbench/pull/34)最终8b29a27当前head CI已由主Agent核实；兼容结构/422脱敏/关联ID、调用方和冻结HTTP达到原退出要求，见[原报告](../dev/records/2026-11-12-api-errors/report.md)。审查暂缓、人工取消，未合并/发行；新Starlette组合另由REL-03c验证 |
 | M2-05i | READY | 05g/h巡检及完整备份已实现；先设计身份/来源/附件关系与显式确认，不自动恢复或删除 |
 | M2-05j | BLOCKED | 依赖05i的关系设计；容量报告已实现，实际清理另需具体授权 |
 | M3-03a、M3-03b、M3-03c、M3-03d | READY | 题目协议/事件投影/历史分页已存在；分别先定富内容、知识关系、复习评价、规模阈值再实施验证 |
@@ -111,7 +112,7 @@ LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人�
 | PAR-01 / P1，属M2-04 | 复杂题号/共享材料确定性候选；先设计样本与期望 | 待实施；复用documents/question_splitting/草稿预览，覆盖跨页/小题/重号/误拆，原图/页码可追溯，不猜答案，不改旧确认版 |
 | PAR-02 / P2，属M2-04，依赖样本/组件评估 | 多栏与离线OCR分开切片设计/实现 | 待设计；固定离线组件/语言资源/许可/预算后分别PR，多栏阅读顺序/OCR置信提示/拒绝/超时/重启有自动化；不自动下载模型或上传资料 |
 | PAR-03 / P2，属M2-04 | 更大文档/分块任务 | 待设计；原件/页区间/进度与取消/重启/幂等/预算契约先行，不直接放宽25秒/20页等原保护；旧小文件回归保持 |
-| DL-01 / P1，属LW-07 | 当前直接HTTPS下载公网证据补齐 | 待实施；授权公开源+独立hash、DNS/重定向/TLS/断点/重启/入库/备份恢复自动化，不为测试允许禁止网段；旧Commons DNS失败保留 |
+| DL-01 / P1，属LW-07 | 当前直接HTTPS下载公网证据补齐 | IN_PROGRESS；DL-01a公开下载/源码与冻结/独立hash/重启及备份恢复由PR #24交付，真实正向Range与重定向在DL-01b继续。限定公开样本和预期5MiB总响应体预算，冻结沿用产品原512MiB保护；本地DNS失败保留，公网CI未核实不记通过；[原报告](../dev/records/2026-11-05-lw07-downloads/report.md) |
 | DL-02 / P2，属M4/LW-07，依赖来源/组件设计 | 站点提取与质量选择；传输/UI可再拆PR | 待设计；先明确目标站点、有权获取方式、固定yt-dlp及Windows/许可证/维护证据，沿用持久队列和媒体身份；不默认登录/DRM/全站支持 |
 | DL-03 / P2，属M4，依赖DL-02及二进制选择 | FFmpeg合流/转码与入库 | 待设计；审查实际构建开关/来源及LGPL/GPL/nonfree义务，命令参数受控、超时/取消/失败原件保留、磁盘预算与备份覆盖；不得据本机生成样本假称可分发 |
 | PLAN-04 / 后续，属既有规划 | M2-05恢复策略、M3-03、WebView/媒体矩阵、R6剩余 | 继续保留原任务；M2-05不重复#8–#15，恢复/清理需先定身份/关系与同意边界；R6维持无模型，新增场景/凭据另明确。各项先定有限切片再实施/分别PR；不把“其他功能”视为无限授权 |
@@ -128,7 +129,7 @@ LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人�
 | LW-04a / 集中检索后续 | TXT资料全文检索；依赖LW-04及现有TXT只读能力，共同文件/字节预算、原文行/版本契约见[契约第6节](learning-workbench-contracts.md) | DONE，有限范围开发交付完成；严格UTF-8原件全文、中文/casefold、同空间/墓碑、稳定分页/截断、正文行与名称资源级跳转、源版本变化拒绝旧行已接UI。双Python搜索/位置/链接各58通过，Flutter专项19/完整200及静态检查通过；[原报告](../dev/records/2026-11-04-lw04-search/report.md)保留实际命令与首轮超时。[独立草稿PR #29](https://github.com/surface-user/StudyWorkbench/pull/29)最终9027508的[CI43066543568](https://github.com/surface-user/StudyWorkbench/actions/runs/43066543568)三job/44步全成功，主Agent已核验并批准登记DONE；代码审查暂缓、人工取消，未合并/发行；不含其他格式全文/OCR/索引 |
 | LW-07a / 下载历史 | 完整下载历史分页界面；依赖现有LW-07队列和列表接口 | DONE，有限范围开发交付完成；50条分页可访问100条以外历史，history/newest_id复用offset/limit、保留默认活动排序API；状态更新不挤页、失败保留/重试、创建后重置及迟到轮询保护。双Python专项各11、Flutter专项6/完整196及静态检查通过；[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)保留失败，主Agent已核[草稿PR #27](https://github.com/surface-user/StudyWorkbench/pull/27)最终6af0360的[CI 43060817695](https://github.com/surface-user/StudyWorkbench/actions/runs/43060817695)三job/44步全成功。时间上界非事务快照，不清除任务/attempt；审查暂缓、人工取消，未合并/发行；LW-07整体及DL-01仍未完成 |
 | UPD-01 / 发行长期规划 | 自动升级与完整回滚产品流程；依赖稳定发行产物/签名方案及现有备份保护，方案先行 | 待设计、未实施；依据[打包指南](packaging-windows.md#规划中)。明确更新来源、版本/来源校验、前后端/组件配套、失败回退和配置/旧库保留；分别形成升级与回滚切片/故障自动化，不执行破坏性数据库降级。REL-05的安装升级/卸载验证继续保留，不能代替本项产品流程；发布更新另授权 |
-| API-01 / 公共接口规划 | 统一error.code/message/request_id错误响应契约；依赖当前API/桌面调用方盘点 | IN_PROGRESS，首切片API-01a实现/本地自动化完成、[独立草稿PR #34](https://github.com/surface-user/StudyWorkbench/pull/34)最终head CI待核；统一API错误入口及Dart兼容，保留HTTP状态/detail形状；422移除原输入，服务端关联ID与幂等ID分开。详细业务错误码/跨版本演进仍后续；不全局替换业务异常或成功体，见[API设计](api-spec.md#规划中)及[报告](../dev/records/2026-11-12-api-errors/report.md) |
+| API-01 / 公共接口规划 | 统一error.code/message/request_id错误响应契约 | DONE，保留HTTP状态/detail形状、422脱敏、服务端关联ID及Dart兼容已交付；主Agent核对原定范围并接受父项/子项，PR #34最终8b29a27当前head CI三job/45步成功，详见上方调度及[原报告](../dev/records/2026-11-12-api-errors/report.md)。原无法归因的Office关闭偶发失败保留，审查暂缓、人工取消、未合并；不以未要求的细粒度业务码扩展维持父项未完成 |
 | M2-05i / PLAN-04恢复设计 | 旧提取题目及其他派生候选的恢复/重新登记；依赖05g/h巡检、已有恢复点和完整备份 | 待设计、未实施；先确定恢复目标身份、附件/题目/来源关系、原件hash、显式确认与幂等收据。形成新位置恢复/失败/重试/重启/跨空间等自动化要求；不从目录存在或无引用推断可恢复/可弃，不重复05a–h，不自动改写或删除 |
 | M2-05j / PLAN-04留存设计 | 失败副本与派生文件留存/清理策略；依赖05d/e/f容量报告及i的关系设计 | 待设计、未实施；先明确引用判定、保护清单、预览/用户同意和中断恢复规则，原件/确认版/学习历史/失败证据保留。逻辑长度不当作可回收容量，当前报告不增加删除建议；实际清理须另获具体授权 |
 | M3-03a / 作答扩展 | 富内容作答扩展；依赖既有题目协议/不可变确认版/追加记录 | 待设计、未实施；先明确本切片输入格式、附件归属和编辑/展示范围，再验证七类/缺答案兼容、旧作答/评分/确认版保持及备份恢复；不擅自增加未确认题型或猜答案 |

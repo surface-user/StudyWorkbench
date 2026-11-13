@@ -22,6 +22,16 @@ STUDY_EVIDENCE_DIR是沿用的历史参数名，原生自动截图应将其值�
 
 临时目录策略使用pytest内置failed：用例执行失败时保留tmp_path，成功用例清理；setup/teardown异常以JUnit和错误日志留证，需完整现场时显式使用`-o tmp_path_retention_policy=all`，诊断后只保留最小复现，避免永久累积整轮副本。
 
+## 显式公网下载探针
+
+`python tools/check_public_downloads.py --allow-public-fixtures --test-root <全新隔离目录> --exe <本head冻结后端>`单独访问固定MDN/WPT公开样本，不在普通pytest中联网。缺显式开关、目录已存在、DNS/证书/强ETag/206/范围/固定Git对象hash不符均非零退出；不使用代理、cookie或业务令牌访问公开源，不放宽产品地址守卫。
+
+源码阶段复用真实HTTP API/持久队列/worker/传输，仅开发入口在真实首个256KiB进度点等待普通pause，随后关闭进程，由新后端显式resume；不伪造部分文件或写入任务状态。`--exe`另将同样生成的真实部分交给未经注入的冻结后端恢复，冻结结果由同attempt/路径/前缀、强ETag及产品206校验和固定对象hash共同验证，不能将其描述为直接抓取了冻结进程的响应头。
+
+源码开发观察器逐次限制响应体读取总5MiB。整个探针预期响应体约2.2MiB、预算5MiB；冻结进程保留产品原512MiB/15分钟限制，外部轮询发现长度偏离立即请求暂停并失败，轮询不构成5MiB硬保证。报告分开源码实际读取量、冻结实际追加量和原生产限制；原件/数据库只在隔离目录，Git和CI发布产物不含下载媒体。
+
+本次证据分支`codex/public-download-range`的PR CI显式运行公网步骤，其他分支/普通push不自动访问这些源；手工执行也须显式开关。联网成功与失败按当前head记录，离线单元测试不冒充公网、解码或人工验收。来源与许可证见[LW-07报告](../dev/records/2026-11-05-lw07-downloads/report.md)。
+
 ## 已取消的人工测试范围（历史参考）
 
 用户2026-11-06明确取消人工测试，以下矩阵仅保留历史范围，不再执行、不再作为退出门禁，也不记为通过。详见[ADR0013](adr/0013-cancel-manual-testing-and-bound-artifacts.md)。产品中的用户确认/候选人工审核功能仍保留。
