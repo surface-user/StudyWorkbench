@@ -437,3 +437,5 @@ IQ tools/source_vulnerabilities.py --output artifacts/rel03b/source-vulns：退�
 本工具是有限证据映射，不是完整许可证审查。latex2mathml缺原文、官方wheel/pub归档/Git来源认证、源码提供/NOTICE/组合义务、SDK/冻结/native/Office/Java/安装器及运行时成员均继续由REL-02后续处理。缺文及未验证原样保留，不以元数据许可证标签或下载链接补记通过。代码审查暂缓，人工测试取消，未合并/发行。本项实现/专项/实际采集与文档完成后REVIEW，独立草稿PR与当前head完整CI核验前不记DONE；最新head/CI由PR描述维护，不为记录自身SHA反复提交。
 
 最终源码（含报告schema_version/采集器hash字段）再次运行同57项，Q/P的licenses-{q,p}-final及q-final/p-final日志均退出0；Q -m ruff check backend tools退出0。六文件范围、原报告前缀、未改依赖锁、UTF-8/LF/尾空白及Markdown相对链接检查通过。首次检查驱动把git diff --no-index --check的有差异退出1误作失败（stdout/stderr均空）；按该命令差异语义接受0/1且必须无诊断，未更改源码或忽略空白报错，保留首次驱动失败。
+
+实际交付[独立草稿PR #41](https://github.com/surface-user/StudyWorkbench/pull/41)，分支codex/source-license-evidence基于#35最终a73bedd，实现提交0506a79e4a11370a0afed8c5a05cda173bb263e7。首次共享摘要采用Windows默认CRLF，被提交检查拒绝；仅将新摘要规范化为LF后，六文件/69链接检查退出0。原始采集report及hash未改。最终head CI和有限交付结论在PR描述持续更新，不记完整许可义务已完成。

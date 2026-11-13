@@ -33,7 +33,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | REL-01a 源码锁文件标准SBOM | DONE | 主Agent已核双Python专项各35、真实136包/8个SDK未知、官方Schema和本地/远端blob；[草稿PR #25](https://github.com/surface-user/StudyWorkbench/pull/25)最终1b52eb3的[CI #141](https://github.com/surface-user/StudyWorkbench/actions/runs/43060243273)三job/44步成功，开发交付完成，审查暂缓；未覆盖最终产品包 |
 | REL-01 完整源码与发行包SBOM | IN_PROGRESS | 先交付01a；最终覆盖仍依赖OFF-02及所有实际组件/安装器payload，不能据源锁文件或环境包表销项 |
 | REL-02 | BLOCKED | 完整发行传递许可依赖REL-01实际组件清单；REL-02a先记录锁定源码依赖的许可原文/声明来源及缺失，整体保持未完成 |
-| REL-02a 已知源码依赖许可 | REVIEW | 本地证据工具/双Python专项各57及136包实采已完成；246原文引用/182唯一文本，latex2mathml缺原文明确退出2；官方归档认证/SDK/最终成员/义务仍未知，独立PR及当前head CI核验后交付，见[原报告](../dev/records/2026-11-10-release-integrity/report.md) |
+| REL-02a 已知源码依赖许可 | REVIEW | 本地证据工具/双Python专项各57及136包实采已完成；246原文引用/182唯一文本，latex2mathml缺原文明确退出2；官方归档认证/SDK/最终成员/义务仍未知；[独立草稿PR #41](https://github.com/surface-user/StudyWorkbench/pull/41)已提交，当前head CI核验后交付，见[原报告](../dev/records/2026-11-10-release-integrity/report.md) |
 | REL-03 | IN_PROGRESS | 源查询和pytest修复已交付；Starlette修复在独立分支继续，完整发行组件覆盖仍依赖REL-01 |
 | REL-03a 源码锁文件漏洞查询 | DONE | 主Agent已核双Python专项各42及真实135包/原始report hash；[草稿PR #32](https://github.com/surface-user/StudyWorkbench/pull/32)最终89f0d775的[CI #168](https://github.com/surface-user/StudyWorkbench/actions/runs/43071363779)三job/44步成功，有限查询交付完成，审查暂缓；原2包12公告/6CVE、133包映射未证实、Git/8 SDK未知保留，不称全产品安全 |
 | REL-03b pytest漏洞修复 | DONE | 主Agent已核双隔离环境专项各77、原全量809加12项权限复验、源码SBOM/实际OSV旧新对照及环境未变；[草稿PR #35](https://github.com/surface-user/StudyWorkbench/pull/35)最终a73bedd的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43092294564)三组通过，审查暂缓；Starlette修复仍另列03c |
