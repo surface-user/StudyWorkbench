@@ -146,3 +146,11 @@ bb402e5的Python3.12完整CI为740通过，357.82秒；3.13完整pytest/R1–R5�
 只修正测试来源：将传输固定为`https://mdn.github.io/shared-assets/videos/flower.webm`。[MDN官方shared-assets说明](https://github.com/mdn/shared-assets/blob/main/README.md)明确指定此托管域；其videos目录元数据为同一554058字节/Git blob `5b8edf7d8384c057dfb13627073288cebfb54d74`，保留上述固定旧commit的CC0来源及对象身份约束。托管URL可能更新，任何不同字节继续失败；不改生产MIME、DNS、TLS、Range守卫。预检现在提前验证HEAD/206的MIME，选取日志增加Content-Type，错误MIME不读媒体正文；不增加自动选源或降级绕过。
 
 新增3项MIME拒绝用例后，Q同专项target04退出0：76通过、18.24秒；P target31202退出0：76通过、20.90秒，XML/log保留；Ruff全量退出0。新固定域本地public03实际仍在resolve被拒，退出1，mdn.github.io=`198.18.0.70`，public03.log/dns03.json保留；未绕过本机网络，等待新head CI实测。
+
+### WPT未知长度响应与探针修正
+
+098ba18的[PR CI43360984198](https://github.com/surface-user/StudyWorkbench/actions/runs/43360984198)中，两组后端全部成功：Python3.12为743通过/424.04秒，3.13.17为743通过/449.20秒；R1–R5/JUnit及桌面公网之前各步骤通过。公网阶段实际从MDN取得video/webm、554058字节和强ETag，源码真实首块256KiB暂停后，新进程发出`Range: bytes=262144-`与相同If-Range，返回206、291914字节、`Content-Range: bytes 262144-554057/554058`；同attempt/前缀及固定Git对象校验后进入重定向阶段。
+
+WPT同域302实际到达目标video/mp4，但该响应没有Content-Length，生产下载器合法报告`total=None`；开发观察器把未知总长度误判为固定样本变长，抛出`Public fixture size changed`，公网步骤退出1。不是产品下载失败的修复，不据已通过源码Range把未到达的跨域/冻结步骤记为通过。完整日志ci-43360984198-desktop.log保留。
+
+只将开发观察器的总长条件改为None或固定长度，逐块实际字节仍不得超过固定3503/554058，落盘最终长度/Git对象/SHA256检查保持。增加未知Content-Length的真实transfer自编容器成功与多1字节拒绝/保留文件两例；未改生产或降低已有断言。Q专项target05退出0：78通过/37.57秒；P target31203退出0：78通过/41.70秒，XML/log保留；两轮并发运行，Ruff全量退出0。新head继续完整CI与真实公网验证，整体保持IN_PROGRESS。

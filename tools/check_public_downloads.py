@@ -93,7 +93,7 @@ def instrument_worker(test_root, hold):
         progress, checkpoint = options['progress'], options['checkpoint']
 
         def observed(value):
-            require(value['total'] == expected and value['received'] <= expected, 'Public fixture size changed')
+            require(value['total'] in {None, expected} and value['received'] <= expected, 'Public fixture size changed')
             stop = hold and not options['offset'] and value['received'] == transport.CHUNK
             if stop:
                 # The production worker rate-limits progress; make this real first block observable.

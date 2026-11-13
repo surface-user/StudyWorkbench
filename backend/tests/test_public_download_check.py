@@ -103,6 +103,41 @@ def test_real_transfer_first_block_is_saved_before_controlled_pause(probe, monke
     assert json.loads((tmp_path / 'body-bytes.json').read_text()) == len(prefix)
 
 
+@pytest.mark.parametrize('extra', [0, 1])
+def test_unknown_length_fixture_stays_bounded_and_keeps_real_bytes(probe, monkeypatch, tmp_path, extra):
+    from study_workbench import media_download_worker
+    size = probe.FIXTURES[probe.GREEN][0]
+    data = b'\0\0\0\x18ftypmp42' + b'x' * (size - 12 + extra)
+
+    class Connection(connection_type(data)):
+        def getresponse(self):
+            response = Response(data)
+            response.getheaders = lambda: [('Content-Type', 'video/mp4')]
+            return response
+
+    monkeypatch.setattr(probe.transport, 'PinnedHTTPS', Connection)
+    monkeypatch.setattr(probe.transport, 'resolve', lambda host: '8.8.8.8')
+    monkeypatch.setattr(media_download_worker, 'transfer', media_download_worker.transfer)
+    (tmp_path / 'body-bytes.json').write_text('0')
+    emitted, results = [], []
+
+    def worker():
+        results.append(media_download_worker.transfer(probe.RELATIVE, tmp_path / 'green.mp4', '.mp4', offset=0,
+                                                      checkpoint=lambda: None, progress=emitted.append))
+
+    monkeypatch.setattr(media_download_worker, 'worker', worker)
+    if extra:
+        with pytest.raises(RuntimeError, match='fixture size changed'):
+            probe.instrument_worker(tmp_path, hold=False)
+        assert results == []
+    else:
+        probe.instrument_worker(tmp_path, hold=False)
+        assert results[0]['size'] == size
+        assert results[0]['sha256'] == hashlib.sha256(data).hexdigest()
+        assert emitted[-1]['received'] == size and emitted[-1]['total'] is None
+    assert (tmp_path / 'green.mp4').read_bytes() == data
+
+
 @pytest.mark.parametrize('option', [[], ['--serve'], ['--worker']])
 def test_every_entry_requires_public_opt_in(probe, monkeypatch, tmp_path, option):
     monkeypatch.setattr(sys, 'argv', ['probe', '--test-root', str(tmp_path), *option])
