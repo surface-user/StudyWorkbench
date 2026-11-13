@@ -61,3 +61,9 @@ f481475a00b33acc9f35777a6b2717c3c77a7268的[PR CI 43073448556](https://github.co
 主Agent确认仅增强原断言输出完整任务状态/error；interrupted、取消及4项排队预算断言保持，不猜测修改生产逻辑。`Q -m pytest backend/tests/test_office_previews.py -q --basetemp=.local/api01a-office-diagnostic01 --junitxml=artifacts/api01a/office-diagnostic01.xml`退出0，13通过、16.47秒；该文件Ruff退出0。完整日志保存首次尝试因Windows命令行长度限制退出1（CreateProcessW 206），随后通过文件补丁写入忽略的artifacts路径成功，不影响验证结果。
 
 同一#34追加诊断和本报告，交付范围增至18文件；等待新最终head全CI。若再次失败，依据新增任务error继续查因。即使后续通过，仍保留这次无法归因的偶发失败，不宣称Office状态机缺陷已修复。任务继续REVIEW，审查暂缓、人工取消、未合并。
+
+### 2026-11-13 主Agent退出条件核验
+
+主Agent已核PR #34最终8b29a27008e64e0cce6615a2135edda1125a435d的[CI43091834219](https://github.com/surface-user/StudyWorkbench/actions/runs/43091834219)：三job/45步成功，push轮43091824865同样成功。原API-01要求为统一code/message/request_id并兼容detail/鉴权/空间/冲突/预算/幂等与调用方，已被本切片自动化和冻结HTTP覆盖，父API-01及API-01a均登记DONE。
+
+上文把额外细粒度业务码和跨版本演进列为父项阻塞超出了原定退出条件，本段修正该判断，不删除过程。Starlette升级后的组合回归属于REL-03c和后续集成，不能倒推本版契约未实现。原Office关闭偶发失败仍无法归因，保留原失败和加强诊断记录，不称修复。代码审查暂缓、人工取消，未合并/发行。
