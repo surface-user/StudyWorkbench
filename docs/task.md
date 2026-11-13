@@ -40,7 +40,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | DL-01 | DONE | 主Agent已核原定范围：#24交付公开下载/源码与冻结/独立hash/重启及备份恢复，#38补齐真实正向Range和重定向，父项开发交付完成；LW-07站点提取/质量/转码继续保留，审查暂缓、人工取消，未合并/发行 |
 | DL-01b 公网Range与重定向 | DONE | 主Agent已核[草稿PR #38](https://github.com/surface-user/StudyWorkbench/pull/38)最终842b19d的[CI43362970857](https://github.com/surface-user/StudyWorkbench/actions/runs/43362970857)三job/46步成功、原始桌面日志及摘要hash；源码真实206/同域与跨域302、新冻结同attempt/前缀恢复及独立hash通过。双Python全量各745；原MIME/未知长度/DNS失败保留，[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)区分冻结206推断与实际响应体计量 |
 | DL-02 | IN_PROGRESS | 用户已选B站、抖音、爱奇艺，B站先行；DL-02a共同契约/三站差异/组件候选评估先交付，具体有权下载且无需登录样本仍待确认；DL-02b未实现，父项不销项 |
-| DL-02a 共同契约与组件评估 | REVIEW | 仅规划文档：预览/确认/质量交接、全部提取请求受控、固定yt-dlp来源/许可/Windows及未验证项已形成；未增加依赖/API/队列实现。文档校验、独立草稿PR和当前head CI见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)，待主Agent核验后DONE；不以本项替代实际站点功能 |
+| DL-02a 共同契约与组件评估 | REVIEW | 仅规划文档：预览/确认/质量交接、全部提取请求受控、固定yt-dlp来源/许可/Windows及未验证项已形成；未增加依赖/API/队列实现。文档校验通过，已建[独立草稿PR #45](https://github.com/surface-user/StudyWorkbench/pull/45)，依赖#38；当前head CI及退出证据见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)和PR实时记录，待主Agent核验后DONE；不以本项替代实际站点功能 |
 | DL-02b 有限站点提取/质量选择 | READY | 三站范围已确定，B站先行；可先做元数据/质量预览及固定公开Referer/WBI受控设计，实际下载证据仍缺有权且无需登录样本。具体预算、全请求网络闭合、来源持久化与许可/漏洞须先完成，分轨依赖DL-03；临时匿名cookies与登录凭据分开评估，不读浏览器会话、不绕过付费/DRM，不以未定样本宣称通过 |
 | DL-03 | BLOCKED | 依赖DL-02a及选定站点格式/轨道交接契约、FFmpeg实际二进制/许可选择；不依赖整个DL-02完成，元数据预览可先行，完整站点下载再组合验证 |
 | LW-04a | DONE | TXT全文/原文行有限范围开发交付完成；双Python相关各58、Flutter专项19/完整200及静态检查通过，主Agent已核[草稿PR #29](https://github.com/surface-user/StudyWorkbench/pull/29)最终9027508的[CI43066543568](https://github.com/surface-user/StudyWorkbench/actions/runs/43066543568)三job/44步全成功；[原报告](../dev/records/2026-11-04-lw04-search/report.md)保留旧失败。审查暂缓、人工取消，未合并/发行 |

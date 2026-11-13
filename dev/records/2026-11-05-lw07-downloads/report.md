@@ -195,3 +195,5 @@ WPT同域302实际到达目标video/mp4，但该响应没有Content-Length，生
 本项无业务实现，新增行为测试不适用；完整业务回归由本PR当前head CI执行，普通CI不得因文档设计新增任意公网提取。#38限定分支公网步骤在本分支跳过，不重复宣称为本项真实站点验证；未核实前DL-02a保持REVIEW。
 
 实际在独立目录执行`Q .local/validate_dl02a.py`：首轮退出1，仅Git全局autocrlf对LF文件的转换警告被校验器当作stderr失败；没有文档空白错误。固定该次只读diff命令为`git -c core.autocrlf=false diff --no-index --check <原文件> <新文件>`，不改全局Git配置或放宽空白检查。复验退出0：451文件中仅预期4文档变化，82处本地引用/6处锚点存在，40个原任务标识保留，原报告全文前缀不变；每个no-index命令因存在差异退出1且stdout/stderr均空，聚合校验为0。摘要保存在`artifacts/dl02a/validation.json`，本地工具/产物不进入Git。候选官方文件均通过只读GitHub连接器取得，未执行第三方程序；共享Python环境不变。后续PR/最终head CI以独立PR实时记录核对，不沿用#38绿灯替代本项。
+
+已创建并附加[独立草稿PR #45](https://github.com/surface-user/StudyWorkbench/pull/45)，分支`codex/download-extractor-plan`，base为#38的精确842b19d，初始文档提交`bf748c80f602167f97f70e75e33a0b5bb06b74e5`。本链接补交后以PR最终head的检查为准，DL-02a待主Agent验收；不因文档完成登记实际站点下载通过，代码审查暂缓、人工取消，未合并/发行。
