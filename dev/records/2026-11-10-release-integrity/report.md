@@ -412,3 +412,51 @@ IQ tools/source_vulnerabilities.py --output artifacts/rel03b/source-vulns：退�
 
 实际提交[独立草稿PR #35](https://github.com/surface-user/StudyWorkbench/pull/35)，codex/pytest-vulnerability-fix基于#32最终89f0d775，实现提交e90e659fcd149b35f47ca8830a67989e1895c5a2。四文件范围/精确单行锁差异、原报告前缀、非03a/b任务行、UTF-8/LF/尾空白/相对链接检查通过；JUnit898条含77子测试的计数已核。最终head与完整CI在PR描述维护，主Agent核验前保持REVIEW；不为记录自身SHA反复触发提交。
 
+
+## 2026-11-13：REL-03c Starlette已知漏洞修复
+
+### 需求、设计与有限范围
+
+主Agent接受REL-03b后，依#35最终a73bedd24c228b61c9f1ccd4290152af2bace57b/tree7fb22b6ea827a0206e4c3a248467611615cd66e1建立独立副本.local/goal-20261112/starlette-fix，450个源码blob逐字节核对。根checkout和其他任务保持。先阅读AGENTS、requirements、architecture、question-content-spec、task及本切片相关API/依赖/证据规则；只修复03a已经记录的Starlette版本发现，不扩大成全栈升级或新框架。
+
+仅将backend/requirements.lock.txt的Starlette0.50.0升至1.3.1，FastAPI0.161.1与其他69个Python锁保持。官方同版本PyPI元数据说明FastAPI要求Starlette>=0.46.0，Starlette要求Python>=3.10、AnyIO>=3.6.2,<5和Python<3.13时typing-extensions>=4.10.0；现锁已满足。未启用full extra或新引入httpx2；TestClient兼容httpx0.28.1，但保留上游弃用警告。
+
+[官方1.3.1发行](https://github.com/Kludex/starlette/releases/tag/1.3.1)日期2026-06-12，[官方包元数据](https://pypi.org/pypi/starlette/1.3.1/json)记录OS Independent/Python3.12/3.13支持，wheel未撤回。官方files.pythonhosted.org下载73632字节，SHA256 c7372aae11c3c3f26a42df7bd626cec2f47d03483d261d369516a615a53714c6；BSD-3-Clause原文SHA256 dcb95677a02240243187e964f941847d19b17821cf99e5afae684fab328c19bf。维护/许可/Windows声明、真实回归和完整分发义务分开记录，不把包许可证标签视为完整发行审核。
+
+调用方检索覆盖backend业务中所有starlette、request.url、StaticFiles、HTTPEndpoint、request.form/Form引用：实际app.py读取request.url.path用于Origin拒绝；app/imports/media_library复用run_in_threadpool，request_limits复用JSONResponse。未发现业务直接使用后三类漏洞入口，不声称已复现这些攻击或证明全部传递可达性。影响范围为一个锁行、原API测试、原真实进程探针、依赖文档/任务/本报告；不改应用业务代码、错误契约、数据库、UI、CI配置或导出接口。
+
+### 旧红新绿与隔离环境
+
+以下工作目录均为该副本，原始日志/JUnit/包与查询字节位于artifacts/rel03c，未提交完整日志、下载包或测试数据。IQ/IP分别为本副本.local/starlette-{q,p}-isolated/Scripts/python.exe（3.13.17/3.12.7）；共享Q为根.local/release-venv/Scripts/python.exe、P为根.venv/Scripts/python.exe。设置PYTHONDONTWRITEBYTECODE=1与PYTHONUTF8=1；新venv仅安装固定官方Starlette1.3.1与既定pytest9.0.3，其他依赖通过本地.pth只读引用共享site-packages。
+
+- Q/P -m venv --without-pip .local/starlette-{q,p}-isolated；Q/P -m pip --isolated --disable-pip-version-check --python <新解释器> install --no-index --no-deps --no-cache-dir --no-user <已核Starlette wheel> <已核pytest9.0.3 wheel>；同一pip --python check：均退出0。记录setup-{q,p}.log及provenance.json。实际环境为FastAPI0.161.1/Starlette1.3.1/AnyIO4.15.1/httpx0.28.1/pytest9.0.3；共享Q/P各109个Starlette/pytest非缓存文件SHA256前后相同，未升级共享环境。
+- Q -m pytest backend/tests/test_api.py -q --basetemp=.local/rel03c-old-baseline --junitxml=artifacts/rel03c/old-api.xml：旧Starlette0.50退出1，6失败/6通过。含有效测试令牌的特制Host使Origin校验看见错误路径；畸形IPv6 Host造成未处理URL错误；无前导斜杠ASGI path能污染URL authority。原失败日志/JUnit保留。这是隔离测试入口的具体缺陷，不推断无需令牌的外网攻击能力。
+- IQ/IP -m pytest backend/tests/test_api.py backend/tests/test_source_sbom.py backend/tests/test_source_vulnerabilities.py -q --basetemp=.local/rel03c-{q,p}-targeted --junitxml=artifacts/rel03c/{q,p}-targeted.xml：均退出0，各89通过。7个新增用例覆盖五种Host的Origin拒绝、畸形Host受控400/合法带端口Host、ASGI path与authority分离；旧鉴权/判分/追加/重启/媒体206及416继续通过。ASGI直接构造的无斜杠路径不冒充实际HTTP服务器接受该输入。
+- IQ/IP -m pytest -q --basetemp=.local/rel03c-{q,p}-full --junitxml=artifacts/rel03c/{q,p}-full.xml：在允许创建隔离测试目录链接的受控权限运行，均退出0，各828通过及77子测试通过（JUnit905条，无失败/跳过）；Q375.68秒、P578.48秒。保留httpx/AnyIO弃用与重复ZIP夹具警告；未删除测试、降低断言或改写03b历史权限失败。
+- Q -m ruff check backend tools：退出0。锁内容assert确认精确一行版本变化；其余源码/锁未改。
+
+另从API-01的#34最终8b29a27008e64e0cce6615a2135edda1125a435d精确复制449文件至本任务.local/api-combination，仅覆盖本切片新锁与test_api.py。IQ/IP -m pytest backend/tests/test_api.py backend/tests/test_api_errors.py -q，分别使用独立basetemp及api-combo-{q,p}.xml：均退出0，各23通过，包含新error包装、原detail兼容、关联ID、401/403/400/404/409/413/422/500、脱敏和本次Host/path边界。此为明确组合的源码专项，不把#34全部功能或其他组合分支视为已经合并。
+
+### 真实进程与新冻结包
+
+IQ tools/check_backend_lifecycle.py：退出0。原探针增加6个真实HTTP Host/Origin断言，坏Host不能掩盖API Origin或引发未处理URL异常；其余独占锁、鉴权、客观/中文主观作答、EOF、重启/异常退出、两次搬迁的原件hash/收据/记录保留、DOCX/PDF拆题、媒体capability/状态及迁移父管道取消全部通过。未使用个人数据库。
+
+./packaging/windows/build-backend.ps1 -Python .local/starlette-q-isolated/Scripts/python.exe：退出0，干净新构建，43个冻结业务模块与当前源码一致。dist/study_backend/study_backend.exe为22568458字节，SHA256 3fba079e510e4550d086b7786973f937fa3c2a92e28efcd0e112d6bec82d50a2。独立读取PYZ并复用check_frozen_sources.equivalent核对全部23个已收集Starlette模块与固定官方wheel源码编译结果，嵌套代码/常量一致，明确__version__=1.3.1；记录frozen-starlette.json，不只凭构建命令推断新版已入包。
+
+IQ tools/check_backend_lifecycle.py --exe dist/study_backend/study_backend.exe：退出0，真实新冻结进程在去除开发Python/源码PATH条件下通过同一完整生命周期及新增Host/Origin检查。没有执行人工窗口、安装/干净机或Office整包验收，冻结成功不关闭这些范围。
+
+### SBOM与实际漏洞复查
+
+IQ tools/source_sbom.py --syft <根.local/release-tools/syft-1.57.1/syft.exe> --output artifacts/rel03c/source-sbom：退出0，136源包/8个SDK未知保持。独立对照03b源BOM，集合仅从pkg:pypi/starlette@0.50.0改为pkg:pypi/starlette@1.3.1；BOM SHA256 21a145015875e8d0c62cab8a2a11c886c1b0eb48bc6258fe79a799029abed340，comparison.json SHA256 f89e1c20be9b16f922a5d915b57f96dfb45243d9f5467e897f22e5fc5355488c。Python锁SHA256 8823dec8bd36cedab44ad894dbb018d442590187b23d5af837c1dbb2f2cb2512，pubspec锁仍c1ab979d33d15197f1018cae7ec752cfb0244523e26f3ed2c73ee1f761be2ce5。
+
+IQ tools/source_vulnerabilities.py --output artifacts/rel03c/source-vulns：2026-11-13T03:02:59Z起查询，退出3（设计语义为有限查询完成且无返回公告，不是全产品通过）；135包查询完成、无返回公告，9个Git/SDK排除不变。report.json SHA256 f7a6d67fe4c97d1d97145fa93c17a950b0c8f0db258b46c73bb694d93a3e56df，逐原始请求/响应hash已复核。数据库仍为在线观察，无固定snapshot或完整新鲜度证明；无公告返回不自动证明全部包映射/覆盖或不存在漏洞。
+
+另用原固定querybatch查询器在2026-11-13T03:13:54Z同时查Starlette0.50.0/1.3.1：旧版本仍返回03a所列五CVE对应10个GHSA/PYSEC记录，新版本为空，无分页遗漏。原response SHA256 3cf1641d60f1d668d4a1bafb5dcfc164ac16cd6cf3b9fd70bb66387e0161ebf8；comparison.json SHA256 4e3e2a0db95ac109831aaa02881daeda33b955e7b922ee4169ea9eec0c7d065d。该同批对照加强已知版本发现的关闭依据；不删除03a原发现，不声称Windows StaticFiles/HTTPEndpoint/form三类未使用入口均已复现。
+
+### 保留失败、限制与交付
+
+初次准备脚本按系统GBK读取含中文路径manifest退出1，显式-X utf8后450文件核验成功，未改共享编码。本机PyPI元数据连接先后出现TLS EOF及curl连接超时（exit28），受控权限重试仍失败；使用03a已存官方元数据并经当前官方网页核对相同版本/约束/下载hash，随后从其官方files.pythonhosted.org URL实际下载并核验成功，未关闭TLS证书校验。setup-run02.log保留完整TLS失败。初次证据核验误将BOM中的file组件当作均含purl而KeyError退出1，保留evidence-check.log；改为仅比较有purl的包身份后全部assert通过，未改BOM或产品断言。组合测试首次相对解释器路径拼写错误未启动测试，纠正为任务内实际解释器后才记录23项通过。
+
+REL-03b已由主Agent核验#35最终head CI三组成功，登记DONE。REL-03c实现/本地自动化已完成，状态REVIEW；需本项独立草稿PR、当前head CI和主Agent核验，不能据父#35绿灯销项。代码审查按用户要求暂缓、人工测试取消；本切片不合并或发行，不修改共享环境，不升级不相关依赖。完整最终组件SBOM/传递许可、Office/Java及冻结原生组件漏洞、签名/发行准备仍由父REL任务继续。
+
+实际提交[独立草稿PR #40](https://github.com/surface-user/StudyWorkbench/pull/40)，分支codex/starlette-vulnerability-fix，base为#35最终a73bedd，实现提交d66f636a81acbc0dc4082cf8c809b31cd2fa3f59；最终head与对应CI在PR描述维护，不为记录自身SHA反复提交。精确六文件变更、其余444个base blob未变、锁单行、文档相对链接/UTF-8/LF/尾空白及原报告前缀检查通过。首次检查脚本将Git的CRLF提示/差异退出码与文件换行混淆而退出1，保留diff-check.log及diff-check02.log；显式关闭本次diff的autocrlf并将本任务六文件写为LF后，git diff --no-index --check无诊断，完整检查退出0（diff-check03.log），没有修改Git配置或旧分支文件。

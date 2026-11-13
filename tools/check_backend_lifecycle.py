@@ -60,10 +60,12 @@ def main():
                 raise RuntimeError(process.stderr.read())
             port = json.loads(hello)["port"]
 
-            def request(path, body=None, bearer=token, origin=None, *, raw=None, binary=False, timeout=5):
+            def request(path, body=None, bearer=token, origin=None, *, host=None, raw=None, binary=False, timeout=5):
                 headers = {"Authorization": f"Bearer {bearer}", "Content-Type": "application/json"}
                 if origin:
                     headers["Origin"] = origin
+                if host is not None:
+                    headers["Host"] = host
                 if raw is not None:
                     headers["Content-Type"] = "application/octet-stream"
                 req = urllib.request.Request(f"http://127.0.0.1:{port}{path}", headers=headers,
@@ -93,6 +95,20 @@ def main():
                     raise AssertionError("Unauthorized request accepted")
                 except urllib.error.HTTPError as error:
                     assert error.code == status
+            for host, origin, status in [
+                ("127.0.0.1:80/?", "https://example.com", 403),
+                ("127.0.0.1:80/#", "https://example.com", 403),
+                ("127.0.0.1:80/other", "https://example.com", 403),
+                ("evil.example/path", "https://example.com", 403),
+                ("evil.example", None, 400),
+                ("[invalid", None, 400),
+            ]:
+                try:
+                    request("/api/health", host=host, origin=origin)
+                    raise AssertionError("Host/Origin boundary bypassed")
+                except urllib.error.HTTPError as error:
+                    assert error.code == status, (host, error.code)
+            print("PASS: malformed Host cannot hide API Origin boundary or cause an unhandled URL error")
             assert request("/api/attempts", {"question_id": "demo-integral", "response": {"selected": ["a"]}})["score"] == 1
             assert request("/api/attempts", {"question_id": "demo-proof", "response": {"text": "中文进程测试"}})["status"] == "pending_review"
             assert len(request("/api/attempts")) == baseline + 2
