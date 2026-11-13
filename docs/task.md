@@ -31,7 +31,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | OFF-02 | IN_PROGRESS | 用户委托技术判断后主Agent选择项目内Temurin 21.0.13+9 x64 JRE；先由OFF-02a准备固定组件，Office/CRT加载布局与冻结验证另行推进，整包仍未闭合 |
 | OFF-02a 固定Java组件准备 | DONE | 主Agent已核双Python专项各37、官方315文件逐字节/关键PE/release/java-version；[草稿PR #28](https://github.com/surface-user/StudyWorkbench/pull/28)最终2187fec的[CI #153](https://github.com/surface-user/StudyWorkbench/actions/runs/43065303373)三job/44步成功，有限任务开发交付完成，审查暂缓；不含Office运行/CRT布局集成 |
 | REL-01a 源码锁文件标准SBOM | DONE | 主Agent已核双Python专项各35、真实136包/8个SDK未知、官方Schema和本地/远端blob；[草稿PR #25](https://github.com/surface-user/StudyWorkbench/pull/25)最终1b52eb3的[CI #141](https://github.com/surface-user/StudyWorkbench/actions/runs/43060243273)三job/44步成功，开发交付完成，审查暂缓；未覆盖最终产品包 |
-| REL-01b 冻结后端SBOM与覆盖对照 | REVIEW | 基于#40最终b48b711已实现有限目录工具；双Python专项各140、真实969文件集合/hash、43业务源码、2721 PYZ/154 ZIP条目及官方1.6 Schema通过。15随包metadata/58 PE候选分层，2678模块与103 PYD未映射、4候选版本未知；源码head另核远端blob，完整REL-01不关闭。独立草稿PR/当前head CI与主Agent核验继续，见原发行报告 |
+| REL-01b 冻结后端SBOM与覆盖对照 | REVIEW | 基于#40最终b48b711已实现有限目录工具；双Python专项各140、真实969文件集合/hash、43业务源码、2721 PYZ/154 ZIP条目及官方1.6 Schema通过。15随包metadata/58 PE候选分层，2678模块与103 PYD未映射、4候选版本未知；源码head另核远端blob，完整REL-01不关闭。已创建[独立草稿PR #42](https://github.com/surface-user/StudyWorkbench/pull/42)，当前head CI与主Agent核验继续，见原发行报告 |
 | REL-01 完整源码与发行包SBOM | IN_PROGRESS | 先交付01a；最终覆盖仍依赖OFF-02及所有实际组件/安装器payload，不能据源锁文件或环境包表销项 |
 | REL-02、REL-03 | BLOCKED | 完整传递许可与漏洞检查依赖REL-01实际组件清单；源锁文件切片就绪后可开展相应子范围，整体保持未完成 |
 | REL-03a 源码锁文件漏洞查询 | DONE | 主Agent已核双Python专项各42及真实135包/原始report hash；[草稿PR #32](https://github.com/surface-user/StudyWorkbench/pull/32)最终89f0d775的[CI #168](https://github.com/surface-user/StudyWorkbench/actions/runs/43071363779)三job/44步成功，有限查询交付完成，审查暂缓；原2包12公告/6CVE、133包映射未证实、Git/8 SDK未知保留，不称全产品安全 |

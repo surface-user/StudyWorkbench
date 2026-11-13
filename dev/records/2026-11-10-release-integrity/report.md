@@ -497,3 +497,5 @@ real05 coverage.json SHA256 59ee081298406076d537aeac7dfd0b6fe72a6f79218b12a44116
 原失败保留：最初误读不存在的spec路径退出1，随后核实际build-backend.ps1；real01先拒绝合法PyInstaller runtime option、real02拒绝Rich动态模块连字符、real04误要求namespace零offset，均退出1，按实际固定格式补齐支持后real05通过，不跳过目录/版本/字节码保护。初轮双Python新测试各43通过/1失败：Windows ZipFile在创建夹具时规范化反斜线；改为保留实际原名的夹具，并让解析同时核orig_filename/filename，旧日志保留。初轮合跑双Python各130通过/2失败均为旧mklink /J夹具在受限进程中访问被拒，未删改旧断言；改用任务内全新临时目录和已授权本机测试权限后各132、139及最终140通过。早期ruff仅导入排序失败，修正后全量静态检查通过。原始失败不进入成功计数。
 
 实现、相关自动化及文档完成，REL-01b保持REVIEW；独立草稿PR/当前head CI与主Agent核验后才DONE。审查按用户要求暂缓、人工测试取消，未合并或发行。源码锁切片/此目录文件覆盖不关闭REL-01：剩余Python/native身份与来源、完整组件关系、前端/SDK/NuGet/CRT/WebView2/Office/Java/安装器payload仍需后续逐项核验，许可/漏洞/签名父任务保留。
+
+实际创建[独立草稿PR #42](https://github.com/surface-user/StudyWorkbench/pull/42)，分支codex/frozen-backend-sbom，base为#40最终b48b711，实现提交064a033444b7187967564ce330b5951c6391441d。精确六文件范围/其余447个base blob不变、原报告完整前缀、UTF-8/LF/尾空白与本地文档链接检查退出0；源码与候选均未改写。最终head/对应CI结果在PR实时说明维护，不为记录自身SHA反复提交；当前CI未知不能记通过。
