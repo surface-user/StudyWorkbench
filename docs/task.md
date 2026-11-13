@@ -35,7 +35,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | REL-02、REL-03 | BLOCKED | 完整传递许可与漏洞检查依赖REL-01实际组件清单；源锁文件切片就绪后可开展相应子范围，整体保持未完成 |
 | REL-03a 源码锁文件漏洞查询 | DONE | 主Agent已核双Python专项各42及真实135包/原始report hash；[草稿PR #32](https://github.com/surface-user/StudyWorkbench/pull/32)最终89f0d775的[CI #168](https://github.com/surface-user/StudyWorkbench/actions/runs/43071363779)三job/44步成功，有限查询交付完成，审查暂缓；原2包12公告/6CVE、133包映射未证实、Git/8 SDK未知保留，不称全产品安全 |
 | REL-03b pytest漏洞修复 | DONE | 主Agent已核双隔离环境/专项与全量失败节点复验、SBOM和旧新OSV证据；[草稿PR #35](https://github.com/surface-user/StudyWorkbench/pull/35)最终a73bedd的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43092294564)三组成功；开发交付完成，审查暂缓，Starlette由03c处理 |
-| REL-03c Starlette兼容修复 | REVIEW | 仅锁Starlette1.3.1；双Python全量各828及77子测试、专项各89、#34组合各23、源码/新冻结生命周期通过；OSV135包无公告返回、旧新同批10/0，仍非全产品安全结论；独立PR/当前head CI及主Agent核验继续，见原发行报告 |
+| REL-03c Starlette兼容修复 | REVIEW | 仅锁Starlette1.3.1；双Python全量各828及77子测试、专项各89、#34组合各23、源码/新冻结生命周期通过；OSV135包无公告返回、旧新同批10/0，仍非全产品安全结论；已提交[独立草稿PR #40](https://github.com/surface-user/StudyWorkbench/pull/40)，当前head CI及主Agent核验继续，见原发行报告 |
 | REL-04 | BLOCKED | 依赖REL-01至03；真实签名另缺发行身份，配置/篡改拒绝自动化不代表已签 |
 | REL-05 | BLOCKED | 依赖OFF-02与REL-01至04；候选组装完成后仍需REV-01，发布/合并未授权 |
 | FMT-01 | READY | 既有Office/XLSX转换与受限查看能力可用于自编复杂样本自动化；不依赖Java整包发行 |
