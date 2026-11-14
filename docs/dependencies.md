@@ -31,6 +31,10 @@
 
 玻璃库仅公开入口API、ref固定a0bc51acf22db1b867294f810157cfeba7e951fb，保留MIT通知，不改上游/缓存。Windows SDK原生Known Folder、OLE、Shell/Advapi32用于选择/拖放和默认目录，无新增第三方包。
 
+桌面实际复制来源另固定两份既有原件：Flutter3.47.1的[官方engine revision](https://raw.githubusercontent.com/flutter/flutter/3.47.1/bin/internal/engine.version)为5d531788691ec3404cac0cee66ead4007b177363，其[Windows x64 Release归档](https://storage.googleapis.com/flutter_infra_release/flutter/5d531788691ec3404cac0cee66ead4007b177363/windows-x64-release/windows-x64-flutter.zip)70289419字节/SHA256 a553d14c6087cf3f049ab1ddeedaf9e3216d341b39b036f7dc29cee52119fc4e；[WebView2 SDK1.0.2792.45 NuGet](https://api.nuget.org/v3-flatcontainer/microsoft.web.webview2/1.0.2792.45/microsoft.web.webview2.1.0.2792.45.nupkg)8474494字节/SHA256 02ffd77440c09b5ff60f5f06defdc3fb07fb5630077c7cf6115bf6be793f91e3。已核这两完整官方HTTPS原件与当前CI实际flutter_windows.dll/WebView2Loader.dll字节；加载器在同档两条x64路径相同，保留全部来源。归档pin不等于签名/可重现构建或全部Flutter/Dart/SDK/内嵌库身份认证；现有许可证与未完成发行义务保留。
+
+四个实际带资产的Pub包为cupertino_icons1.0.9、flutter_inappwebview6.1.5、flutter_inappwebview_web1.1.2、flutter_math_fork0.7.4，官方tar.gz完整hash核既有pubspec.lock，24实际资产逐字节对应；不按平台标签排除实际随Windows包分发的Web资产。两个Windows插件官方源档/CMake可核到原锁及缓存，只记生成器来源关联，不能由此证明插件机器码或所有头文件已认证。ICU仅与本地SDK缓存相同，完整官方SDK归档和独立ICU来源仍未知；本地Flutter/Dart版本字段不能证明AOT内嵌全部Dart运行时或75个解析包。未新增、升级或安装依赖，未改缓存；fonts/NOTICES/组合许可继续REL-02，不把缺身份标为UNLICENSED。
+
 Starlette官方wheel为73632字节，SHA256 c7372aae11c3c3f26a42df7bd626cec2f47d03483d261d369516a615a53714c6，包内BSD-3-Clause原文已保留；[同版本PyPI元数据](https://pypi.org/pypi/starlette/1.3.1/json)与实际下载字节核对。仅升级该传递依赖，FastAPI、AnyIO及httpx保持原锁；实际TestClient兼容现有httpx0.28.1但上游已给弃用提醒，不为消除警告新增httpx2。业务未使用StaticFiles、HTTPEndpoint或表单解析入口；未使用不等于全产品可达性已证实，已知公告、修复复扫与Host/path/Origin入口回归分别记录。
 
 ### 可选离线Office组件

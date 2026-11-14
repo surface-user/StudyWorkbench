@@ -170,6 +170,25 @@ python tools/source_licenses.py --package-config apps/desktop/.dart_tool/package
 
 项目代码MIT与`unimathsymbols.txt`的LPPL-1.3-or-later分开映射，保留数据作者、原头部日期及vendor修改后未更新通知的事实。补齐原文仍保留上游归档缺文、LPPL原Work/修改条件待核；此组件有issue，CLI仍退出2，完整产品/归档来源/分发义务仍false。该补充不向产品payload添加数据或修改原依赖，不证明HTML/MathML导出已受支持；最终发行复制/成员范围和义务另核。
 
+## 桌面实际文件与复制来源SBOM
+
+`tools/desktop_sbom.py`对一个已另核CI/run/head/tree和服务端digest的Windows产物离线运行；不启动exe、AOT、脚本或构建，不解包到缓存。CI的Release输入不是完整staging/安装器，源码锁/config或构建包目录也不是实际内嵌成员清单。调用者先用连接器取得固定artifact ZIP与公开服务元数据，再准备source-tree（commit/tree/普通blob entries）及provenance（run/artifact/checkout）快照；工具不联网认证这些声明。
+
+```powershell
+& $buildPython tools/desktop_sbom.py --artifact artifacts/windows-release-inputs.zip --provenance artifacts/ci-provenance.json --source-tree artifacts/verified-source-tree.json --engine-archive artifacts/sources/windows-x64-release-flutter.zip --webview-package artifacts/sources/microsoft.web.webview2.1.0.2792.45.nupkg --pub-archives artifacts/sources --sdk-root $verifiedLocalFlutterRoot --output artifacts/desktop-sbom-01
+$desktopSbomExit = $LASTEXITCODE
+```
+
+只将ZIP内`apps/desktop/build/windows/x64/runner/Release/`实际文件登记为桌面物理范围，其余backend/构建依赖分别列排除。固定全ZIP长度/digest、run/head/checkout tree与声明Git清单须相符；每个选中tracked lib/windows/assets/pubspec/工作流输入另核原Git blob与SHA256。有效Git tree声明不能证明全部实际编译器/SDK/标准头输入或签名构建，完整性字段保持false。相等的CI merge tree可以作另核来源证据，不只据artifact文件名认版本。
+
+ZIP/TAR从原字节有界读取，不落地解包：完整artifact/engine每份≤128MiB，WebView2/Pub每份≤32MiB；ZIP最多20000条/单成员256MiB/声明展开1GiB，ZIP读出和Pub gzip实际展开合计≤512MiB；Pub每份展开≤128MiB、单文件≤16MiB/20000条，拒绝危险原名、大小写重复、链接/特殊/加密项及不符长度。记录的输入最多20000文件/逻辑512MiB；普通metadata≤1MiB，provenance≤4MiB、Git清单≤16MiB，项目单文件≤8MiB，锁各≤1MiB，链接/重解析路径拒绝。输出为已存在父目录中的新目录，不得写SDK/cache或tracked源码；末尾复核所有输入/锁，失败不生成最终JSON/CDX。
+
+引擎与WebView2用[依赖登记](dependencies.md)的完整固定归档pin，NuGet元数据用禁止DTD/实体的解析器核唯一id/version；Pub实际资产包用原锁hash及档内pubspec精确名称/版本，不把整个环境投影到CDX。Pub资产只尝试其实际命名空间的原路径和lib原路径，保留全部相同候选；加载器两条相同源路径也不任选。`copied_source_bytes_verified`仅指该归档成员与实际文件字节相同，不表示C/C++/Dart源码与机器码等价。SDK metadata是本地上下文，ICU仅有本地缓存相等时仍无已认证身份；插件CMake只作版本锁定源档的描述性producer关联。
+
+`desktop.json`列全部实际路径/长度/hash、PE主机目标头、逐复制来源、项目输入、未知与排除范围；`desktop.cdx.json`为CycloneDX1.6物理file组件与实际复制provider子集。AOT/runner/插件生成二进制不凭名称猜版本，源不同的项目文件、子集字体/shader/manifest/NOTICES等仍未知；缺许可证字段代表未核，不填UNLICENSED。第三方归档或本地版本不冒充产品签名，不为文件所属擅造依赖边。
+
+退出1为失败、2为有限桌面范围完成，无完整发行通过0。完整产品、全上游、AOT源码等价、可重现构建及签名均false；backend、CRT staging、Office/Java、WebView2安装器及setup另核。官方[Windows构建源码](https://raw.githubusercontent.com/flutter/flutter/3.47.1/packages/flutter_tools/lib/src/windows/build_windows.dart)与[体积分析说明](https://docs.flutter.dev/perf/app-size)支持`--analyze-size`，但该参数改变构建并产生独立trace，不能将新trace套给旧app.so；本工具不执行或声称完成该后续AOT分析构建。CI短期归档可能过期，完整原始证据只在忽略artifacts保留，共享摘要不替代重新读取原件。
+
 ## 规划中
 
 自动升级/完整回滚产品流程、下载/转码组件、正式签名发行按专项实施。FFmpeg须先锁定实际构建开关与LGPL/GPL/nonfree及来源义务；本地生成样本不等于可随产品分发。

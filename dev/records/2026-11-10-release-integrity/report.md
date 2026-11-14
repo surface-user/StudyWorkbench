@@ -869,3 +869,40 @@ jre_dll_scope_probe.py按原两个域各追加固定86DLL，退出0：Java87根/
 有限实现/自动化/文档完成，OFF-02g保持REVIEW，待独立草稿PR/当前head CI及主Agent核验。原145未知继续阻断check_release；模板仍unclassified，runtime_exclusion_verified/product_release_ready均false。后续在包含#44+#48共同head再研究受控实际入口，Python/managed/x86各自独立切片，完整Office/SBOM/许可/漏洞/签名发行继续；审查暂缓、人工取消、未合并/发布。
 
 IQ artifacts/off02g/check_docs.py退出0：6文件范围、472个未变base blob、旧报告完整前缀、UTF-8/LF/逐文件git diff --check、85本地引用及46唯一调度行均通过。实际创建并附加[独立草稿PR #51](https://github.com/surface-user/StudyWorkbench/pull/51)，分支codex/office-template-evidence，首实现提交6a95b146701f13d1cb7e322b056abddd68d8d572/treefe3e19292117d33ba797887896f725b45de31e87。补入本交付链接后保持6文件，最终head/完整CI及有限核验结论在PR实时描述维护，不为记录自身最终SHA反复改变head；未改#48、原组件或门禁，未合并/发行。
+
+## 2026-11-14 REL-01f：当前桌面实际文件及复制来源SBOM
+
+基于主Agent已接受的#53最终b09da16b9ea23f4fcb81eb016f9602d84afa451c/treec2747215a6ae9187b28706234b70662190f54252建立desktop-origins精确497 blob副本，原根/所有旧包和失败不动。完整读此基线AGENTS、requirements、architecture、question-content-spec、task及相关打包/依赖/报告规范，先调查再经主Agent批准有限范围。#54原head已由主Agent只读核969实体/44TOC源/五节/DEBUG/双RECORD/58组件Schema及CI双1000/44步骤后有限接受DONE；该证据是#40旧43业务模块冻结源，不冒充本片#53的44模块。#54不并入本分支实现，任务表只同步已验收状态。
+
+本片7文件：新desktop_sbom.py/反例、现行打包/依赖指南、task、原报告及精选摘要。没有新依赖/缓存/系统设置/业务、锁或构建流程变化。不是完整staging/安装器SBOM，不执行应用、AOT、插件、CMake或新构建，不恢复人工/审查，不合并或发行。
+
+先核batch-three/four的本机desktop/build只有native_assets/test_cache/unit_test_assets，所留package_config为75项、Flutter3.47.1/Dart3.13.1，用于--no-pub组件测试；batch-five没有本地桌面Release。没有把它们或37a8d55旧包当当前发行。转用#53当前成功CI43580584516的artifact14108587888，名称精确windows-release-inputs-b09da16…、96034786字节、GitHub digest5610f2638ba945822171047d56d529bbd852b6335c1b2b04297f7a3ab05c2953。通过GitHub连接器下载原ZIP，文件provider临时下载链接不进Git/报告，不读本机凭据/gh/token。完整ZIP实际hash/长度等于服务元数据；原件只存忽略artifacts/rel01f。该3天产物截至2026-11-17，服务元数据不是签名构建证明。
+
+CI原desktop日志明确checkout merge8339e520574f34b13accc33e5384a2089cbcfc80；另读GitHub commit元数据，其tree精确等于#53 c2747215…，父为#49及#53。故tracked源码树一致，不只据artifact命名认源；实际工作区换行、编译器/SDK/全部头输入仍不能由tree证明。新工具另逐Git blob/SHA256核66个tracked lib/windows/assets/pubspec/工作流等项目输入，原路径大小写保留，不把此选择写成完整编译输入捕获。
+
+真实ZIP1151成员/214297444声明展开字节；所选Release实际41文件，排除1110非桌面文件（backend及构建依赖），不投影为桌面运行成员。data/app.so是实际9831304字节ELF，hashc33eefcdac5429ec316cbf7c6410232e7159688cf4c4a5dd1eae096809e0a344；runner141312字节、两插件968704/98304字节均按实际hash/AMD64 PE32+与生成角色记录，源等价/签名false，不能由文件名或package_config为其填入已认证包版本。NativeAssetsManifest声明空也不用于排除实际存在的插件。
+
+实际复制来源：
+
+- 官方Flutter3.47.1固定tag engine.version为5d531788691ec3404cac0cee66ead4007b177363；官方同revision Windows x64 Release ZIP70289419字节/SHA256 a553d14c6087cf3f049ab1ddeedaf9e3216d341b39b036f7dc29cee52119fc4e，目标flutter_windows.dll21273088字节/hash2d2e5e0b791c46afaefa1d159c92dda0a120a9d3f4a365d9dd91808fe0d24898与原档完整字节相同。只把该实际二进制作为engine provider，独立Dart运行时/整个SDK/内嵌库来源不因此认证。
+- 官方Microsoft.Web.WebView2 1.0.2792.45 NuGet8474494字节/SHA256 02ffd77440c09b5ff60f5f06defdc3fb07fb5630077c7cf6115bf6be793f91e3，与CI构建包内原nupkg完整相等。实际WebView2Loader.dll165440字节/hash9468470d6a4d11179ec179183d130465a380e0dedfdbe1fc2ab404c86c45a85e，对应同档build/native/x64及runtimes/win-x64/native两条路径，全部保留，不任选一个；其他架构不并入实际x64成员。
+- 官方pub.dev的cupertino_icons1.0.9、flutter_inappwebview6.1.5、flutter_inappwebview_web1.1.2、flutter_math_fork0.7.4完整tar.gz分别核原锁SHA256，档内pubspec唯一精确名称/版本。仅24个真实字体/HTML/CSS/JS资产逐字节对应，4包进入复制provider子集；Windows实际携带Web资产也保留，不按平台标签漏掉。包内原路径或lib路径均依实际命名空间比较，多个相同候选不任选归属；不认为这些包的全部Dart代码都进入AOT。
+- 两个Windows插件官方源档另外核原锁及CMake原字节，试探确认与本地缓存相同。生产报告仅作锁定producer源码关联，binary_source_equivalence_verified=false；不把CMake或NuGet构建目录存在当对应代码已嵌入证明。WIL/nlohmann等构建输入不投影为额外实际runtime组件。
+- ICU864880字节仅与本地SDK同路径缓存相同，报告其source identity仍null/官方档案false；本地版本字段不能认证独立ICU或Dart VM。三个项目Schema JSON与Git原LF文件只有CRLF换行差异，逐文件hash/原Git blob及source_bytes_identical=false保存，不规范化后算成逐字节相同。子集Material字体、编译shader/manifest/NOTICES等保留未知，未把NOTICES存在当完整许可通过。
+
+因此全部41物理文件有hash/角色；26与固定档成员精确相同（24 Pub+engine+loader），其余15身份未知，含1份只有本地ICU字节链。CDX1.6共47组件=41个file+6个实际provider，occurrences只指实际文件，未知无伪版本、无UNLICENSED，不擅造完整依赖边。copied_source_bytes_verified只描述复制来源的字节相等，AOT/原生机器码与源码等价仍false；整个产品/上游/签名/可重现/许可/漏洞均不认证。
+
+实现复用safe_name/no_links/bounded_file、原锁解析/重复键拒绝及既有PE库，标准CDX直接输出后另核官方Schema，不引入新scanner或依赖。ZIP/TAR原件只读、有数量/声明及实际展开/成员/总读取/源输入预算，拒绝危险原名、大小写重复、链接/特殊/加密成员，tar不落地extractall。NuGet XML禁DTD/实体并核唯一id/version；所有输入/锁在结束时再读核hash，出错不建最终输出。完整命令/上限与声明边界见打包指南，CLI只给1失败或2有限范围完成。
+
+工作目录desktop-origins；IQ/IP指starlette-fix/.local/starlette-q-isolated（CPython3.13.17）/starlette-p-isolated（3.12.7），pytest9.0.3；Q是根.local/release-venv/Scripts/python.exe，仅静态/辅助，环境不改。命令设PYTHONDONTWRITEBYTECODE=1，原始ZIP/源档/服务快照/完整报告/JUnit/日志只存artifacts/rel01f。各正式性能窗口期间仅文本/远端操作，在office_1114释放窗口后才运行本机hash/自动化，未为本片重构建Windows。
+
+- IQ/IP -X utf8 -m pytest backend/tests/test_desktop_sbom.py backend/tests/test_frozen_python_origins.py backend/tests/test_frozen_python_members.py backend/tests/test_frozen_sbom.py backend/tests/test_source_sbom.py backend/tests/test_release_inventory.py -q --basetemp=artifacts/rel01f/tmp-q03或tmp-p03 --junitxml=artifacts/rel01f/q03.xml或p03.xml：Windows原生测试权限各退出0，261通过（新增43+基线218），30.98/30.95秒，无失败/跳过。启动前估计260未作结果使用，按真实JUnit261记录。43新专项包括全物理范围/不投影构建包、caller源声明冲突、ZIP/TAR名称/链接/重复/预算、完整pin/元数据/PE不符、共享原档两路径、末尾每类输入变化拒绝、不执行自编PE/源码、CLI永不返回发行成功0。
+- IQ -X utf8 tools/desktop_sbom.py --artifact artifacts/rel01f/windows-release-inputs-b09da16b.zip --provenance artifacts/rel01f/provenance.json --source-tree artifacts/rel01f/source-tree.json --engine-archive artifacts/rel01f/sources/windows-x64-release-flutter.zip --webview-package artifacts/rel01f/sources/microsoft.web.webview2.1.0.2792.45.nupkg --pub-archives artifacts/rel01f/sources --sdk-root <既有固定Flutter根> --output artifacts/rel01f/real01：退出2，41文件/26复制/6provider；79输入/182802342逻辑字节末尾核，ZIP读出及Pub实际展开67717274字节。源/包/缓存/其他报告均不改。
+- IQ -X utf8 artifacts/rel01f/verify_real.py退出0：独立重读所有41文件、66项目Gitblob、26对应的原档字节/所有路径候选、15未认证状态、两插件源码关联、实际3JSON换行差异、NuGet CI原nupkg、每个CDX文件hash/身份occurrence集合，47组件通过固定官方1.6 Schema与离线spdx/jsf引用。支持--read-only完整核验并断言现有精选摘要字节，不写任何文件。没有只比数量或以旧包绿灯代替当次结果。
+- Q -m ruff check backend tools退出0；IQ tools/export_question_schema.py --check退出0。代码/协议/构建输入未变，本地不重复Flutter组件或Windows构建；本head CI仍完整执行对应步骤。
+
+real01 desktop.json SHA256 aa9eb107846077ef914eaba26995dba2c0cee085d9d5f7f8696bf24cf4d33b27；desktop.cdx.json SHA256 6b48db677eec04e8f984f6b97cd74fe65ef4e3292ec5c77f54175737b1fac0ed；精选desktop-sbom-summary.json SHA256 a1f30eaa34ce918ae810dcd457e3e748b5573fabf25e14ef56161eb83efcd28f。精选包含全部41路径/hash/角色、实际6provider与来源/未知范围、CI/Git/pin/报告摘要；绝对缓存路径、二进制/原源码档及完整日志不进Git。原件可过期，摘要不能替代重新读取或签名认证。
+
+保留失败：首次新目录下载因缺artifacts父目录退出1，未读写原包，补建本任务父目录后以xb成功下载；只读索引最初把Pub资源都按根路径查找，遇实际lib/assets路径退出1，按真实pubspec/档案成员核两个有依据候选，不模糊扫描任意相同文件；第二探针误要求Loader只能有一个来源，官方档实际两条x64同字节，改为保留两条后matches-probe03退出0。官方Flutter完整SDK release列表URL通过浏览及直接请求均不可取，直接请求404，未据本地SDK填造完整官方SDK认证；只采用已实际取得固定engine档及官方tag revision的有限证据。首轮Ruff报一处测试未使用变量，去掉后全量通过；43项首轮/修正后均通过。宽泛输入清单文本打印曾被工具截断，未将截断文本当读全，必读task分段完整重读；原输出/失败保留。
+
+有限实现、相关自动化、独立真实/Schema与文档就绪，REL-01f保持REVIEW；独立PR/本head CI及主Agent核验后才可登记DONE。后续--analyze-size须独立新编译才能产生新AOT包trace，不套给本次app.so；完整Dart/native源码等价、SDK/内嵌库/许可/签名及最终发行仍待其各自切片，审查暂缓、人工取消，未合并或发行。

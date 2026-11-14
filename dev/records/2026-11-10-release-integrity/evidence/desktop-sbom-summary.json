@@ -1,0 +1,362 @@
+{
+  "schema_version": 1,
+  "scope": "REL-01f one Windows desktop artifact and copied origins",
+  "source": {
+    "pr": 53,
+    "head": "b09da16b9ea23f4fcb81eb016f9602d84afa451c",
+    "tree": "c2747215a6ae9187b28706234b70662190f54252",
+    "checkout": {
+      "commit": "8339e520574f34b13accc33e5384a2089cbcfc80",
+      "tree": "c2747215a6ae9187b28706234b70662190f54252"
+    },
+    "run": 43580584516,
+    "artifact_id": 14108587888,
+    "artifact_bytes": 96034786,
+    "artifact_sha256": "5610f2638ba945822171047d56d529bbd852b6335c1b2b04297f7a3ab05c2953",
+    "service_metadata_authenticated_by_offline_tool": false
+  },
+  "results": {
+    "desktop_files": 41,
+    "desktop_bytes": 34567571,
+    "copied_archive_members": 26,
+    "observed_provider_packages": 6,
+    "local_ICU_match_only": 1,
+    "unverified_source_identities": 15,
+    "components": 47,
+    "official_cyclonedx_1_6_schema_valid": true,
+    "tracked_project_inputs": 66,
+    "source_inputs_rechecked": 79,
+    "input_logical_bytes": 182802342,
+    "actual_archive_bytes_read": 67717274,
+    "excluded_non_desktop_artifact_files": 1110,
+    "report_sha256": "aa9eb107846077ef914eaba26995dba2c0cee085d9d5f7f8696bf24cf4d33b27",
+    "bom_sha256": "6b48db677eec04e8f984f6b97cd74fe65ef4e3292ec5c77f54175737b1fac0ed"
+  },
+  "actual_files": {
+    "WebView2Loader.dll": {
+      "bytes": 165440,
+      "sha256": "9468470d6a4d11179ec179183d130465a380e0dedfdbe1fc2ab404c86c45a85e",
+      "role": "copied_nuget_loader",
+      "source_identity": "pkg:nuget/Microsoft.Web.WebView2@1.0.2792.45",
+      "copied_source_bytes_verified": true
+    },
+    "data/app.so": {
+      "bytes": 9831304,
+      "sha256": "c33eefcdac5429ec316cbf7c6410232e7159688cf4c4a5dd1eae096809e0a344",
+      "role": "generated_AOT",
+      "source_identity": null,
+      "copied_source_bytes_verified": false
+    },
+    "data/flutter_assets/AssetManifest.bin": {
+      "bytes": 3997,
+      "sha256": "1ce3dc7a9ceb9df569f455ce14196ffe0fb0ae47d0cb4d4530ce6b4deb251a17",
+      "role": "generated_or_unknown",
+      "source_identity": null,
+      "copied_source_bytes_verified": false
+    },
+    "data/flutter_assets/FontManifest.json": {
+      "bytes": 2846,
+      "sha256": "7a125b79cb28366a8e1484aa7e2c17f21c620113e0c77107a6cf8c656395952c",
+      "role": "generated_or_unknown",
+      "source_identity": null,
+      "copied_source_bytes_verified": false
+    },
+    "data/flutter_assets/NOTICES.Z": {
+      "bytes": 100711,
+      "sha256": "efde335c3823f606e8cff5ed20589bc8fe0053a34788eb7692dcf41864b903cd",
+      "role": "generated_or_unknown",
+      "source_identity": null,
+      "copied_source_bytes_verified": false
+    },
+    "data/flutter_assets/NativeAssetsManifest.json": {
+      "bytes": 45,
+      "sha256": "9548a31e4a048135c1d94f919328bfb62ae2c7bb3cab96557c7941daa97776cb",
+      "role": "generated_or_unknown",
+      "source_identity": null,
+      "copied_source_bytes_verified": false
+    },
+    "data/flutter_assets/assets/question-bundle-v1.schema.json": {
+      "bytes": 22241,
+      "sha256": "3f45ddc76dabd6c1e394bc2d8f030e358cbd585829fbd0262c0afd84461895d1",
+      "role": "generated_or_unknown",
+      "source_identity": null,
+      "copied_source_bytes_verified": false
+    },
+    "data/flutter_assets/assets/question-file-content-v1.schema.json": {
+      "bytes": 19274,
+      "sha256": "753950a1f4dc4fb5783ce4eac8f79d7333874cfdc44ad9a417f36b416af74ec0",
+      "role": "generated_or_unknown",
+      "source_identity": null,
+      "copied_source_bytes_verified": false
+    },
+    "data/flutter_assets/assets/question-v1.schema.json": {
+      "bytes": 19036,
+      "sha256": "c70bf3aeb6ed639beb7134153d6d293eebb80f704281faf89916e12125c91e76",
+      "role": "generated_or_unknown",
+      "source_identity": null,
+      "copied_source_bytes_verified": false
+    },
+    "data/flutter_assets/fonts/MaterialIcons-Regular.otf": {
+      "bytes": 6576,
+      "sha256": "2280fc202c5bc2b09756ec04f321e3ae38f3214ed21eb7c7399b8493dda13153",
+      "role": "generated_or_unknown",
+      "source_identity": null,
+      "copied_source_bytes_verified": false
+    },
+    "data/flutter_assets/packages/cupertino_icons/assets/CupertinoIcons.ttf": {
+      "bytes": 257628,
+      "sha256": "67c44fe9183b002e79dde7f6977e2988661c9a3e4a3c5fce968787efdbed823c",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/cupertino_icons@1.0.9?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_inappwebview/assets/t_rex_runner/t-rex.css": {
+      "bytes": 1688,
+      "sha256": "2e563220bd855e11f230dc27a0d6f2fd5b839a2996f86edc8025aab45e6fa5c3",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_inappwebview@6.1.5?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_inappwebview/assets/t_rex_runner/t-rex.html": {
+      "bytes": 82244,
+      "sha256": "dc72cfc1f1d2a5013bb9de34f8cacf5e26e542d7d713fcbe09b865b4aaca6ddf",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_inappwebview@6.1.5?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_inappwebview_web/assets/web/web_support.js": {
+      "bytes": 28409,
+      "sha256": "2f9ccef9db4da6b73d3c678ffe570aad402791b00dfa520730fdb66d0dc209fc",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_inappwebview_web@1.1.2?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_AMS-Regular.ttf": {
+      "bytes": 70936,
+      "sha256": "85f9f2224f9d30491039423bd936340739c6a4fdcf6f313bfdd9a23731785c6c",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Caligraphic-Bold.ttf": {
+      "bytes": 18208,
+      "sha256": "ed6f3b5e041d169286db66d08b4887959d12affa1b39428be03cff3df0b00e0c",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Caligraphic-Regular.ttf": {
+      "bytes": 17564,
+      "sha256": "0ea93868466abdda9d8a7ade5429c333d72604cb8027f45a89109fad56f37db2",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Fraktur-Bold.ttf": {
+      "bytes": 24400,
+      "sha256": "1c74228270fff6b69c11207af193ba4a9df3205679d2b5a59ea4c6afa47d5330",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Fraktur-Regular.ttf": {
+      "bytes": 23904,
+      "sha256": "7fb43e3bc460c918cc1bc285ba333d918aa94ffd785c61746f04217d2a07c561",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Main-Bold.ttf": {
+      "bytes": 59704,
+      "sha256": "afba779276abb90d01d7dd4fb5690842738900749074106ab2d95efde4f35863",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Main-BoldItalic.ttf": {
+      "bytes": 43364,
+      "sha256": "8f7ded0679aabf079c651e003d7bd02b749d62b06feb67cb7a089584bc8b74d9",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Main-Italic.ttf": {
+      "bytes": 46536,
+      "sha256": "5d1f693d3abbfe380ec17587d0127a14389d5d9ad63265575efd692b97c7b046",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Main-Regular.ttf": {
+      "bytes": 68376,
+      "sha256": "334f933a72d058b6c48afffacbdbc26d876a5836caab3ad9a3053e65ab00cd90",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Math-BoldItalic.ttf": {
+      "bytes": 38184,
+      "sha256": "30a340e7be0633c46ab02e8c785b70a0c2af9535b20731eef46edab2cb8e9ab9",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Math-Italic.ttf": {
+      "bytes": 39912,
+      "sha256": "d8864703a46f8f8480ce559f0b45e427ea45dc896c83b69650b8d6996b192261",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_SansSerif-Bold.ttf": {
+      "bytes": 32588,
+      "sha256": "2e16724cc46345311b9bba1df70305cbdd5a7d7c02fadb8012388e3b86a805a1",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_SansSerif-Italic.ttf": {
+      "bytes": 29860,
+      "sha256": "181f761261a61c2aca909519f10a1650e5d5c457bf8ab272d9218bb4f68fcb3b",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_SansSerif-Regular.ttf": {
+      "bytes": 28708,
+      "sha256": "b43cecc782fea7c1f765e3cd434c724230f3d427d8c8fd8c32112d82920f519d",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Script-Regular.ttf": {
+      "bytes": 23520,
+      "sha256": "076ecacccedc95379909bcb77ae8321b3c84e246ac585d7ad48b0d2dd4ce7ea7",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Size1-Regular.ttf": {
+      "bytes": 11932,
+      "sha256": "55d56f5a9989b75015060e0780a67d077a3e384dc53eeac750f45b1fc3bf80d0",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Size2-Regular.ttf": {
+      "bytes": 11080,
+      "sha256": "7a9f51ca341ba9367d7dd6897a80c7fa371694b0fa97ffd4444256cf8b000c68",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Size3-Regular.ttf": {
+      "bytes": 7028,
+      "sha256": "82af052b616478aa46a690a1f6337f23b529ee6fd7f6a58fa8939fee31c772e4",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Size4-Regular.ttf": {
+      "bytes": 10008,
+      "sha256": "bb58709dd6babc8831cbcd714db69a90ed60da20f4e37bf7b06e680ee007a180",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/packages/flutter_math_fork/lib/katex_fonts/fonts/KaTeX_Typewriter-Regular.ttf": {
+      "bytes": 34560,
+      "sha256": "ef8bbd91d323fef1ec40bc046fe1e90dfc6c332619c59d912a893eb9a9fcea1d",
+      "role": "copied_pub_asset",
+      "source_identity": "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev",
+      "copied_source_bytes_verified": true
+    },
+    "data/flutter_assets/shaders/ink_sparkle.frag": {
+      "bytes": 21856,
+      "sha256": "1fe8436a743884cb65078fe8c7b38e18f5365f2a2961270916f426fd13c604af",
+      "role": "generated_or_unknown",
+      "source_identity": null,
+      "copied_source_bytes_verified": false
+    },
+    "data/flutter_assets/shaders/stretch_effect.frag": {
+      "bytes": 17616,
+      "sha256": "bc7599dbbbaab310efe41520574138d21fb18a88c8fe4495ed79315309336f6f",
+      "role": "generated_or_unknown",
+      "source_identity": null,
+      "copied_source_bytes_verified": false
+    },
+    "data/icudtl.dat": {
+      "bytes": 864880,
+      "sha256": "325a86063d26334c2eabe1743cea073b612540fbf3d8fc2ef0b5708e3763a8c7",
+      "role": "local_sdk_cache_byte_match",
+      "source_identity": null,
+      "copied_source_bytes_verified": false
+    },
+    "flutter_inappwebview_windows_plugin.dll": {
+      "bytes": 968704,
+      "sha256": "e16d43972ea31d8074727f0d3b80c1e15c30db71998effd1d53345639e70d669",
+      "role": "generated_native_image",
+      "source_identity": null,
+      "copied_source_bytes_verified": false
+    },
+    "flutter_windows.dll": {
+      "bytes": 21273088,
+      "sha256": "2d2e5e0b791c46afaefa1d159c92dda0a120a9d3f4a365d9dd91808fe0d24898",
+      "role": "copied_engine_binary",
+      "source_identity": "pkg:generic/flutter-engine@5d531788691ec3404cac0cee66ead4007b177363",
+      "copied_source_bytes_verified": true
+    },
+    "study_workbench.exe": {
+      "bytes": 141312,
+      "sha256": "9da33733b569d29ac07a28c93ba0da9ab071925a1f4f68ca90cec28ffc0b2d6e",
+      "role": "generated_native_image",
+      "source_identity": null,
+      "copied_source_bytes_verified": false
+    },
+    "url_launcher_windows_plugin.dll": {
+      "bytes": 98304,
+      "sha256": "0cc56d0b87d61ecc75acfa5cabca7fdce9354a315f48c4bd0e83b1f28afe2cc9",
+      "role": "generated_native_image",
+      "source_identity": null,
+      "copied_source_bytes_verified": false
+    }
+  },
+  "observed_packages": [
+    "pkg:generic/flutter-engine@5d531788691ec3404cac0cee66ead4007b177363",
+    "pkg:nuget/Microsoft.Web.WebView2@1.0.2792.45",
+    "pkg:pub/cupertino_icons@1.0.9?hosted_url=pub.dev",
+    "pkg:pub/flutter_inappwebview@6.1.5?hosted_url=pub.dev",
+    "pkg:pub/flutter_inappwebview_web@1.1.2?hosted_url=pub.dev",
+    "pkg:pub/flutter_math_fork@0.7.4?hosted_url=pub.dev"
+  ],
+  "plugin_producer_associations": {
+    "flutter_inappwebview_windows_plugin.dll": {
+      "declared_package": "flutter_inappwebview_windows",
+      "declared_version": "0.6.0",
+      "archive_sha256": "8b4d3a46078a2cdc636c4a3d10d10f2a16882f6be607962dbfff8874d1642055",
+      "cmake_member": "windows/CMakeLists.txt",
+      "cmake_sha256": "73cfabae0fa0cbd346a5c7d605eebe1b1dee56e1878a7dfe84a72a0ad71d7f94",
+      "binary_source_equivalence_verified": false
+    },
+    "url_launcher_windows_plugin.dll": {
+      "declared_package": "url_launcher_windows",
+      "declared_version": "3.1.6",
+      "archive_sha256": "6c5ad3f22cd4c38e089b81963b3cd7bb83b111b2df5dce008bb066162f42e429",
+      "cmake_member": "windows/CMakeLists.txt",
+      "cmake_sha256": "fd3030d7565f31ab7a0d3a8d7ae2a7da660a2a17d29298b2798ca2e694ae5a9c",
+      "binary_source_equivalence_verified": false
+    }
+  },
+  "limitations": {
+    "product_sbom_complete": false,
+    "upstream_provenance_verified": false,
+    "AOT_source_equivalence_verified": false,
+    "signatures_verified": false,
+    "project_inputs_complete": false,
+    "local_ICU_official_archive_verified": false,
+    "project_JSON_LF_CRLF_differences": 3,
+    "license_status": "unknown, not UNLICENSED",
+    "package_config_membership_is_not_AOT_membership": true
+  },
+  "selection": "All actual desktop paths/hashes, copied-source roles and unresolved scope support this bounded artifact; binaries, complete logs, SDK/cache paths and source archives remain ignored artifacts."
+}
