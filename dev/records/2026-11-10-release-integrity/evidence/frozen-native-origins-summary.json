@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "scope": "REL-01e fixed PyInstaller sections and unidentified local CRT sources",
+  "baseline": {
+    "pr": 50,
+    "head": "0e295a70e9b054238e25cdc33fbad79ea7c49a37"
+  },
+  "payload": {
+    "physical_files": 969,
+    "exe_sha256": "3fba079e510e4550d086b7786973f937fa3c2a92e28efcd0e112d6bec82d50a2"
+  },
+  "collect": {
+    "sha256": "41939a00f9803dd7c966e5e8b82910c19579f15290dab86faf9baa41c5a9c64f",
+    "entries": 969,
+    "authenticated": false
+  },
+  "local_crt": {
+    "count": 44,
+    "observed_source_family": "caller local Codex runtime libheif directory",
+    "component_identity": null,
+    "component_version": null,
+    "official_archive": null,
+    "upstream_provenance_verified": false,
+    "license_verified": false,
+    "redistribution_permission_verified": false
+  },
+  "wheel": {
+    "name": "pyinstaller-6.22.3-py3-none-win_amd64.whl",
+    "sha256": "500bd58c7bf7e584a8435adccbd763a0b918d5c12b08d74ff50fd79b2915458b",
+    "bytes": 1454907,
+    "members": 571,
+    "expanded_bytes": 3179370,
+    "source": "https://pypi.org/pypi/pyinstaller/6.22.3/json",
+    "signature_verified": false
+  },
+  "bootloader": {
+    "source_sha256": "581ea23eb35cee8f9df8835c892e91416df95ca629b1a6050289aea19390e08d",
+    "identical_sections": [
+      ".text",
+      ".data",
+      ".pdata",
+      ".fptable",
+      ".reloc"
+    ],
+    "debug_timestamp_fields": [
+      {
+        "source_offset": 278548,
+        "target_offset": 278548,
+        "field": "IMAGE_DEBUG_DIRECTORY.TimeDateStamp",
+        "source_value": 1789248718,
+        "target_value": 1794540058,
+        "source_hex": "cec4a56a",
+        "target_hex": "1a82f66a",
+        "changed_byte_offsets": [
+          278548,
+          278549,
+          278550
+        ]
+      }
+    ],
+    "rdata_equal_except_confirmed_debug_timestamps": true,
+    "whole_bootloader_verified": false,
+    "reproducible_build_verified": false,
+    "headers_authenticated": false,
+    "generated_resources_authenticated": false,
+    "overlay_authenticated": false
+  },
+  "results": {
+    "report_sha256": "c2cb549ec09428498abe88d5f224ba895b43f2fde9d2aed1870d7372c204f4c5",
+    "bom_sha256": "abd73ab5c74ac7221a33758c9b710bbabe021183824ebaef559ed6787958d86a",
+    "base_origins_sha256": "26901b019cbe6356cf592ba58359fab78009bf28cb95bc17fbfc900804ffb0ed",
+    "base_bom_sha256": "64c2a8311bc4235d450e1bfa3c84d1f2845c9fbb03e1bdd55539fbe7e5f317dc",
+    "components": 58,
+    "official_cyclonedx_1_6_schema_valid": true,
+    "remaining_unmapped_physical": 46,
+    "native_input_files": 58,
+    "native_input_logical_bytes": 46127553
+  },
+  "product_sbom_complete": false,
+  "upstream_provenance_verified": false,
+  "selection": "Counts, exact pinned archive and code section evidence support only this bounded source trace; absolute caller paths and complete logs remain ignored artifacts."
+}

@@ -101,6 +101,23 @@ namespace条目仅记无代码类型、版本null及已验证子模块的构建�
 
 退出1为失败、2为有限来源对应完成。product_sbom_complete、upstream_provenance_verified、source_tree_authenticated仍为false；外层PE bootloader、未闭合CRT/native、生成容器身份、完整依赖边、许可/漏洞/签名及其他产品组件仍待核。原scanner输出、旧报告及产品包保持，不据增强子集批准发行。
 
+## 固定bootloader与CRT本地来源链
+
+在前节基础上，另提供实际构建的COLLECT-00.toc、[固定PyInstaller wheel](https://pypi.org/pypi/pyinstaller/6.22.3/json)和调用者明确指定的CRT来源根。来源根必须由实际COLLECT路径确定，不能猜System32；命令不安装wheel、不运行外来代码或修改冻结包：
+
+```powershell
+& $buildPython tools/frozen_native_origins.py --payload dist/study_backend --coverage artifacts/frozen-sbom-01/coverage.json --python-package .local/release-tools/python.3.13.17.zip --source-tree artifacts/verified-source-tree.json --collect-toc build/study_backend/COLLECT-00.toc --pyinstaller-wheel artifacts/pyinstaller-6.22.3-py3-none-win_amd64.whl --crt-source-root $verifiedCrtSourceRoot --output artifacts/frozen-native-origins-01
+$nativeOriginsExit = $LASTEXITCODE
+```
+
+TOC限1MiB、100000 AST节点、深度8和20000项，只接受字符串tuple/list字面量及既有四种条目类型；不执行表达式，拒绝危险目标名、重复大小写、非绝对或含上行的源路径，目标集合须等于全部实际payload。只对范围内api-ms-win-*及ucrtbase.dll读取显式来源根以内的普通文件并核完整字节，保留TOC原hash/条目索引/源路径与源和payload hash。根路径只声明本地来源，不证明包身份；记录component identity/version/官方archive为null、来源认证/许可/再分发资格false，仍列入未映射集合，不给未知CRT新建已认证CDX包。TOC本身不是签名构建证明。
+
+wheel要求[依赖登记](dependencies.md)中的完整固定hash和精确长度，文件读取上限8MiB；ZIP先沿用危险原名/大小写重复/链接/特殊/加密拒绝，最多10000成员、声明和实际读取各32MiB，单成员声明16MiB、所选源码/PE读取8MiB。安装和wheel原RECORD分别限4MiB/每份100000行，逐文件核原SHA256和长度，不能把安装新增脚本后的RECORD误当原wheel RECORD。实际安装METADATA与wheel原件整字节相同，名称规范化后唯一、版本精确；run.exe及静态winutils.py/building/api.py另须同时满足两套RECORD及wheel成员相同。源码只记录字节，不执行其构建函数。
+
+PE核AMD64/PE32+、最多16个非重叠有界节和16个DEBUG条目；执行节集合、入口及对应代码字节必须相同。每个节同时保留源/目标实际raw/virtual位置、长度、属性及hash，新增资源、其他数据差异、头和overlay分别记录。仅当成对DEBUG结构除TimeDateStamp外完全相同、完整4字节域在相同.rdata相对位置，且各时间值分别等于对应COFF时间时，才检查.rdata是否只存在这些确切字段差异；记录原新值/hex及每个改变字节的实际偏移。该字段检查不忽略任意.rdata变化，也不认证整个header、资源、overlay或可重现构建。
+
+新阶段先建立上述输入证据，再在新输出的python-origins内完整重跑前节，不读取旧成功JSON代替验证。最终复核所有新输入（最多128文件/逻辑128MiB）、payload、锁、coverage、声明Git清单及Python归档；发生变化时不生成最终native-origins.json/native-origins.cdx.json，局部旧阶段产物不表示整体通过。CDX仅为原已证子集增加PyInstaller官方wheel hash/分发链接及实际字节相等节的occurrences，不把部分节相等写成整个exe身份。退出1为失败、2为有限来源完成，完整产品/全上游来源/整个bootloader/可重现/许可/漏洞/签名认证均不成立；原未知集合及check_release门禁保持。
+
 ## 源码锁文件漏洞查询
 
 在确认两份锁文件仅包含可公开查询的依赖名后，以既有构建Python执行：
