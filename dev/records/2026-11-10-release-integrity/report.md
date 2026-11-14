@@ -575,3 +575,5 @@ real04 origins.json SHA25626901b019cbe6356cf592ba58359fab78009bf28cb95bc17fbfc90
 当前实现/相关自动化/文档完成，REL-01d保持REVIEW；独立草稿PR/当前head CI和主Agent核验后才DONE。增强来源子集不关闭完整REL-01/02/03：外层bootloader、44 CRT/native独立身份、生成容器、嵌入库/完整依赖边、其余产品组件、许可/漏洞/签名仍未闭合。审查暂缓、人工取消，未合并或发行，不清理数据或接模型。
 
 Q -X utf8 artifacts/rel01d/check_changes.py退出0：六文件范围、其余453个base blob保持、459最终文件、72本地文档链接/34调度行唯一性、UTF-8/LF/逐文件git diff --no-index --check及原报告完整前缀通过，运行依赖锁不变。辅助发布/原始证据均留忽略artifacts，最终PR与CI在实际交付后补充。
+
+独立草稿[PR #50](https://github.com/surface-user/StudyWorkbench/pull/50)已建立，分支codex/frozen-python-origins基于#47最终d6bef38，首次实现提交8395bd21dc33621778f3ad76ea4e35d12d3b1c55/tree8d957b4037b02543ce5def850c2692d75262ed40。本文补交付链接形成后续文档提交；最终head/tree与该head CI结果登记在PR描述，避免为记录自身hash反复改head。当前任务仍REVIEW，未合并或发行。
