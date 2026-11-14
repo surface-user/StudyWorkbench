@@ -1,0 +1,15 @@
+Bilibili preview adapter source notice
+
+StudyWorkbench's bilibili-preview-v1 reuses the WBI permutation/signing
+algorithm and references protocol fields from yt-dlp, fixed commit
+f264a6cbd1f630894da0f368df00f8aae50140e0, under the Unlicense.
+Source: https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/yt_dlp/extractor/bilibili.py
+Scope: selected WBI algorithm and protocol references in
+backend/study_workbench/bilibili_preview.py. This is not a clean-room claim.
+The full yt-dlp package, CLI, plugins, EJS, executables and updater are not
+adopted. StudyWorkbench maintains its own bounded transport/adapter.
+The exact upstream license text accompanies this notice as Unlicense.txt.
+
+Verified fixed source bytes:
+yt_dlp/extractor/bilibili.py: SHA256 b99ad995a016b11097cdadfb64bc6da55cd64129b76e7914eafbc7e45685ec33 (113650 bytes)
+LICENSE: SHA256 7e12e5df4bae12cb21581ba157ced20e1986a0508dd10d0e8a4ab9a4cf94e85c (1211 bytes)

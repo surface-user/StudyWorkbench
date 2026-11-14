@@ -1,0 +1,61 @@
+{
+  "scope": "DL-02b1 implemented preview boundaries; public positive evidence still pending",
+  "selection_reason": "Compact exact local exit evidence and explicit public limitation; raw logs/profiles stay ignored.",
+  "base_head": "8bebad8896da83db4ac45ea6f7f4aa41142901cd",
+  "base_tree": "a3c3ea71b40e7196e58a9c0d038861b63ff23084",
+  "extractor_version": "bilibili-preview-v1",
+  "protocol": [
+    "nav",
+    "wbi/view/detail",
+    "wbi/playurl"
+  ],
+  "source_origin_commit": "f264a6cbd1f630894da0f368df00f8aae50140e0",
+  "source_origin_license": "Unlicense; selected algorithm/protocol references only, not clean-room",
+  "local_backend_python313": {
+    "passed": 1049,
+    "subtests_passed": 77,
+    "exit": 0,
+    "junit_sha256": "0121c30f72d3f863facc4edfeb8733af35cfc96c0ff872d314ecab11a950f399"
+  },
+  "local_python312_targeted": {
+    "passed": 152,
+    "exit": 0,
+    "junit_sha256": "4b5b9a97146cb550ba2e173c26b10c9a9753c086ec98fa73c32d35d42abc61f6"
+  },
+  "flutter": {
+    "full_passed": 211,
+    "new_targeted": 8,
+    "combined_download_dialogs": 14,
+    "simulated_dpi": [
+      100,
+      200,
+      300
+    ],
+    "analyze_exit": 0,
+    "format_files": 90
+  },
+  "frozen": {
+    "business_modules_matched": 47,
+    "bytes": 22602465,
+    "exe_sha256": "65d63cf5c8cddc4549c217ca105abaca3c67421be37a525915dd128d2849f518",
+    "api_checks": 34,
+    "lifecycle_exit": 0,
+    "public_positive": false,
+    "observed_public_failure": "Original all-address public IPv4 guard rejected resolution"
+  },
+  "requirements_lock_unchanged": true,
+  "public_probe": {
+    "requires_explicit_opt_in": true,
+    "media_download_requested": false,
+    "fixture": "https://www.bilibili.com/video/BV1gi4y1V7Xx/",
+    "original_work": "Big Buck Bunny",
+    "author": "Blender Foundation",
+    "original_license_url": "https://peach.blender.org/about/",
+    "declared_original_license": "CC-BY-3.0",
+    "media_byte_correspondence_verified": false
+  },
+  "complete_site_download_implemented": false,
+  "review": "deferred by user",
+  "manual_testing": "cancelled by user",
+  "merged_or_released": false
+}

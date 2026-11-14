@@ -57,7 +57,9 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | DL-01a 公网下载与恢复证据 | DONE | 主Agent已核源码/冻结公网下载、独立摘要、重启/整库恢复及无强ETag拒绝；[草稿PR #24](https://github.com/surface-user/StudyWorkbench/pull/24)最终91db704的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43059706025)成功；该切片当时未覆盖的真实Range/重定向已由#38补齐，父DL-01已DONE |
 | DL-01b 公网Range与重定向 | DONE | 主Agent已核[草稿PR #38](https://github.com/surface-user/StudyWorkbench/pull/38)最终842b19d的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43362970857)三组46步成功及原始摘要；真实源码206与冻结恢复结果通过，旧DNS/MIME/探针失败保留。诊断工具未纳本组合，产品下载代码未变 |
 | DL-02 | IN_PROGRESS | 用户已选B站、抖音、爱奇艺，B站先行；#45共同设计已交付，DL-02b有限元数据/质量预览先实施，真实传输与DL-03格式交接后续继续，不以预览代替整个下载目标 |
-| DL-02a 站点提取共同设计 | DONE | 主Agent核[草稿PR #45](https://github.com/surface-user/StudyWorkbench/pull/45)最终517bcd4的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43367244690)三组成功及4文档/82引用/6锚点；规划契约未纳本组合，三站真实提取与组件采用仍未完成 |
+| DL-02a 站点提取共同设计 | DONE | 主Agent核[草稿PR #45](https://github.com/surface-user/StudyWorkbench/pull/45)最终517bcd4的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43367244690)三组成功及4文档/82引用/6锚点；共同契约已在本切片逐段采纳，三站真实提取与组件采用仍未完成 |
+| DL-02b 有限站点提取/质量选择 | IN_PROGRESS | B站普通单视频预览先实施；候选确认下载/来源持久化/固定headers直链、分轨交接与抖音/爱奇艺继续，不用预览销完整父项 |
+| DL-02b1 B站受控格式预览 | REVIEW | #46基线实现固定匿名API/同空间短期候选/取消/普通UI；本地1049+77子测试、IP152专项、Flutter211/14、47模块新冻结/API/生命周期通过。公网正向仍被本机DNS守卫阻断，独立PR当前head CI及限定CC样本源码/冻结结果待核，不登记支持或DONE，见[独立报告](../dev/records/2026-11-14-bilibili-preview/report.md) |
 | DL-03 | BLOCKED | 依赖明确的格式/轨道交接及FFmpeg实际二进制/许可选择，不要求整个DL-02完成，避免与DASH/HLS支持循环等待 |
 | LW-04a | DONE | 主Agent已核58×2专项、Flutter19/全量200及失败保留；[草稿PR #29](https://github.com/surface-user/StudyWorkbench/pull/29)最终9027508的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43066543568)成功；有界TXT全文/原文行回跳已纳本轮候选 |
 | LW-07a | DONE | 主Agent已核双Python专项各11、Flutter专项6/全量196及静态检查；[草稿PR #27](https://github.com/surface-user/StudyWorkbench/pull/27)最终6af0360的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43060817695)成功；50条历史分页/刷新/迟到响应开发交付完成，审查暂缓，见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md) |

@@ -237,6 +237,17 @@ POST /{id}/pause保留字节、请求暂停；ready拒绝409。POST /{id}/retry�
 
 源/重定向/DNS固定、TLS、字节/磁盘及超时约束见学习契约；当前源仅公网IPv4直链，源质量仅原文件。普通资源管理器提供下载入口，状态/暂停/重试/打开媒体；不暴露路径操作或Agent工具。
 
+
+## B站格式预览（本地实现，公网正向待验证）
+
+前缀W/media-site-previews，沿用Bearer/Host/Origin和活动空间校验。POST根路径仅接收url（≤8192字符）、16–100字符request_id及严格布尔rights_confirmed=true；额外字段拒绝。只接受HTTPS普通B站BV/av与b23.tv短链，普通链接规范为www.bilibili.com/video/ID并去除非用途query，多P拒绝。源是元数据读取，不接受自带headers、媒体目标或命令。
+
+POST返回{id,status,result,error,expires_in_seconds,extractor_version}；status为running/ready/failed/cancelled。相同空间/请求/规范化链接复用同条，参数变化409；同时2个进程/32条内存上限429。GET /{id}读取同结构；跨空间/不存在/10分钟已过期404。POST /{id}/cancel幂等取消并清空候选结果；关闭服务清空内存，重启ID失效，不自动联网。不是持久任务表或另一份下载队列。
+
+ready的result仅含title/video_id/source_host/extractor_version/duration_seconds/returned_formats_only与formats。每格式含format_id、delivery(dash_video/dash_audio/progressive/segments)、可空source_format_id/container/codecs/width/height/fps/size_bytes、requires_merge、download_supported和limitation。当前download_supported均false；format_id只在本次同空间候选有效，不是可提交任意媒体URL的授权。响应不携URL/query、fragments、headers、cookies、文件路径或会话令牌；原实际URL/普通视频cid只在服务器内存，等待未来确认下载契约接入，当前没有该确认接口。
+
+唯一主网络路径、固定来源、预算/取消/进程内存与显式拒绝见[契约](learning-workbench-contracts.md#普通b站格式预览的当前实现边界)。仅显示接口元数据不证明实际媒体可下载/解码；不将试看当完整资源，不自动选择其他质量或创建媒体记录。完整候选确认、直链headers、DASH/HLS合流和抖音/爱奇艺仍未实现。
+
 ## 规划中
 
 LW-00确定的markdown-notes、learning-marks及笔记关系、internal-links/resolve、learning-search已实现，见上文；离线整库恢复通过独立进程，不开放任意文件路径或网页业务桥。单空间合并仍未实现，不把资源export或只读包检查当作实际恢复结果。

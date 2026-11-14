@@ -65,4 +65,6 @@
 | LW-07 直接媒体下载（进行中） | [report](records/2026-11-05-lw07-downloads/report.md) | HTTPS传输/持久队列/普通UI切片，完整回归与真实来源待验证 |
 | LW-06 格式扩展（进行中） | [report](records/2026-11-04-lw06-formats/report.md) | UTF-8文本/XLSX及Office自动化矩阵；人工窗口测试已取消 |
 
+| B站受控格式预览（进行中） | [report](records/2026-11-14-bilibili-preview/report.md) | 固定API/短期候选/UI与取消；公网/冻结/独立PR另核，完整站点下载继续 |
+
 [历史索引](archive/README.md)默认不参与日常开发上下文。任务满足[退出条件](../docs/task.md#任务退出条件)后仍保留完成摘要和报告链接。

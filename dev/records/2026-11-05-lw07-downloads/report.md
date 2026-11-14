@@ -113,3 +113,8 @@ D F --no-version-check analyze --no-pub：退出0，无问题，101.6秒，analy
 最终D format --output=none --set-exit-if-changed lib test integration_test首次指出新增居中滚动行未格式化，退出1；按原格式器修正后退出0，87文件0变化。仅空白修正，不重复功能测试；当前head CI继续执行全套。此切片仍REVIEW，等待独立PR和主Agent验收，Windows本地发行构建未重跑，由当前head CI验证。
 
 实际交付：[独立草稿PR #27](https://github.com/surface-user/StudyWorkbench/pull/27)，分支codex/download-history-pagination，base为#23的2645366，实施提交390072640b0db6f4c5cdf831282602a4a4ee5c9f，八文件。补链接后的最终head CI以PR实时记录为准，未核实前保持REVIEW，主Agent检查后登记DONE；不以父head通过替代本项CI，未合并/发行。
+
+
+## 2026-11-14：B站格式预览独立实施
+
+主Agent已核#45共同设计的517bcd4当前head CI三组成功；该设计是后续输入，不等于实际站点下载。独立功能DL-02b1从已修复依赖的#46建立bili-preview-current，逐段采纳#45契约/候选评估，不覆盖新许可/漏洞状态。实现/测试/保留失败及新PR继续[独立功能报告](../2026-11-14-bilibili-preview/report.md)，完整DL-02的候选确认下载、DASH合流、抖音和爱奇艺继续保留。本段只建立追溯链接，不把#38/#45历史证据当当前组合产品已验证。
