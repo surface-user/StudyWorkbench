@@ -1,10 +1,10 @@
 Bilibili preview adapter source notice
 
-StudyWorkbench's bilibili-preview-v1 reuses the WBI permutation/signing
+StudyWorkbench's bilibili-preview-v1/v2 reuse the WBI permutation/signing
 algorithm and references protocol fields from yt-dlp, fixed commit
 f264a6cbd1f630894da0f368df00f8aae50140e0, under the Unlicense.
 Source: https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/yt_dlp/extractor/bilibili.py
-Scope: selected WBI algorithm and protocol references in
+Scope: selected WBI algorithm and public-page protocol/field references in
 backend/study_workbench/bilibili_preview.py. This is not a clean-room claim.
 The full yt-dlp package, CLI, plugins, EJS, executables and updater are not
 adopted. StudyWorkbench maintains its own bounded transport/adapter.

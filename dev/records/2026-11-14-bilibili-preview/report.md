@@ -1,6 +1,6 @@
 # DL-02b1：B站受控格式预览
 
-当前交付基线是#46的8bebad8896da83db4ac45ea6f7f4aa41142901cd，实现仅走nav→WBI view/detail→playurl。下列原#45及HTML轮记录保留失败沿革，不代表当前实现。草稿PR#52的d17cd3e当前CI43576361155公网步骤失败，任务退回IN_PROGRESS，补精确阶段/HTTP状态诊断及真实请求回归；不能仅凭generic非200推断外部权限或用户环境。完整DL-02仍未完成。代码审查按用户要求暂缓，人工测试已取消，未合并、未发行。
+当前交付基线是#46的8bebad8896da83db4ac45ea6f7f4aa41142901cd，最新实现为v2公开页面纯JSON→nav→playurl。下列原#45、旧HTML原型和v1 API-only记录保留失败沿革，不代表当前实现。草稿PR#52的d17/be316两次CI公网失败完整保留；be316源码/冻结精确定位view HTTP412后，对照固定源标准起点实施v2，当前IN_PROGRESS，新head公网正向仍待核，不推断登录/权限原因。完整DL-02仍未完成。代码审查按用户要求暂缓，人工测试已取消，未合并、未发行。
 
 ## 问题、基线与完整目标
 
@@ -84,3 +84,19 @@ Flutter：当前完整211项退出0，1分41秒；新界面8专项（含100/200/
 `./packaging/windows/build-backend.ps1 -Python .venv/Scripts/python.exe` 再次退出0，新47业务模块内嵌code/constants与当前源码一致；新exe22603563字节，SHA256 `74085005353f9087563adc5cd0e0b6088055c683180337104b4cdfd26562f78a`，覆盖的旧exe身份/失败证据仍由原摘要与日志保留。IQ `tools/check_api_errors.py --exe dist/study_backend/study_backend.exe --test-root .local/bili-frozen-api-diagnostic01` 退出0，34检查/18错误ID；冻结和源码分别运行 `tools/check_bilibili_previews.py --allow-public-fixture`，使用各自source/frozen-diagnostic01新test-root，均退出1且仍为本机原DNS公网守卫拒绝，error_diagnostic=null，未取得HTTP响应，不伪造阶段/状态。原始记录为artifacts/dl02b/{diagnostic-q02,diagnostic-p01,wire-p02,ruff-diagnostic02,frozen-build-diagnostic01,frozen-api-diagnostic01,public-source-diagnostic01,public-frozen-diagnostic01}对应txt/xml；精选[http-diagnostic-summary.json](evidence/http-diagnostic-summary.json)保存最终JUnit/模块/exe的hash及边界，SHA256 `4c1132e79273279b9f0ae251555775019cb536410dd95f024465743f11de56d9`。
 
 当前IN_PROGRESS：同PR推送新的受限诊断补丁后，核新head CI的真实源码/冻结阶段和状态，再根据事实定位普通请求兼容问题；尚不宣称外部权限阻塞，也不改入口、UA、网络门禁或公网退出条件。审查暂缓、人工取消、未合并或发行。
+
+## v1精确view412与标准公开页面v2
+
+be3169917b79ff4abfa865ac260bed48df0670d2/tree514d76d6227d467f916ed42c9ec9c7bd9fbf643b的[CI43578909355](https://github.com/surface-user/StudyWorkbench/actions/runs/43578909355) completed/failure：两后端各1073、Flutter211、Windows/COM/47模块冻结及既有离线回归成功；源码与冻结均stage=view/http_status=412。可由控制流确认nav成功返回WBI键，playurl尚未请求，不能归因其cid/play参数或推断具体权限原因。artifact [14108250440](https://github.com/surface-user/StudyWorkbench/actions/runs/43578909355/artifacts/14108250440)两份失败JSON已下载核验，875字节ZIP SHA256 `d83b3e8bdeeefcfe8e42719daa3e225eb33a0c0b02dcffa827881e1a2d4a25eb`，原d17和be316代码/失败zip/日志保留。
+
+固定f264a6c文件SHA b99ad995a016b11097cdadfb64bc6da55cd64129b76e7914eafbc7e45685ec33逐段对照：134–167的WBI图文件名拼接/64项置换/前32字符、按键排序、五字符!'()*过滤、round(time.time())严格整数和MD5(query+key)一致；view参数为platform=web+bvid或aid，playurl另有bvid/cid/fnval4048与上游dm_params/try_look差异。离线compare_fixed_wbi.py仅解析上游AST常量，没有执行上游程序；BV/av/play及五字符/中文/百分号四个固定向量和线缆query均一致，退出0，筛选比对保留在忽略的artifacts/dl02b/fixed-wbi-comparison.json。未在view412后补尚未请求的游客指纹/试看参数。
+
+已证实现依据差异在上游723–735：普通提取先正常GET公开页面及__INITIAL_STATE__，view/detail只在状态缺失时辅助查redirect_url，不能据该备用用法证明独立匿名元数据主路径。主Agent批准调整实现选择，唯一预声明链改为公开page→nav→playurl，仍是3次正常请求；不是收到拒绝后的自动备用切换。版本升bilibili-preview-v2，stage改为shortlink/page/nav/playurl；v1/view历史含义保持在原证据，不覆盖旧失败。
+
+旧HTML原型全页面regex可匹配注释/字符串伪锚点，raw_decode丢弃结束索引且只取第一赋值，存在数据来源歧义；它没有eval，未宣称这是已证RCE。v2不照搬：标准库HTMLParser只看无src且类型匹配的inline script，排除HTML注释/属性、模板/noscript/文本惰性区域；赋值须从脚本开头固定window.__INITIAL_STATE__开始。JSONDecoder严格重复字段/NaN/深度64/节点50000保护保留，raw_decode结束后只能是分号+空白；未知IIFE/尾表达式/第二赋值均拒绝，不猜测或执行尾部。最多128脚本并保留原2MiB单响应/8MiB累计/10次请求/3重定向/10秒I/O/45秒/Job1GiB4进程等预算，未加cookie、JS、图片/轨道请求或UA变更。AV→BV正常跳转仍检查原aid，所有身份/rights/单P/试看拒绝保持；不恢复__playinfo__备用分支。
+
+v2实际验证：IQ四文件专项沿用上节命令，独立 `.local/bili-v2-q02` basetemp/JUnit，退出0、160项；IP同四文件v2-p01退出0、160项；Ruff check backend tools退出0。新增注释/属性/src/JSON字符串/惰性区域伪锚点、多候选、重复字段、NaN、尾表达式、未知IIFE、脚本计数、AV原身份冲突及嵌入playinfo不回退断言，旧限制断言按相同语义迁移未删除。实际http.client全链捕获证明page/nav/play的三次域名Host/TLS-SNI、证书校验与批准IP连接，另有原编码值还原检查；仅离线捕获，不冒充站点正向。
+
+`build-backend.ps1 -Python .venv/Scripts/python.exe` 新v2冻结退出0、47模块内嵌code/constants一致；exe22605386字节/SHA256 `ab076dd690c4f2c2ece1544498f50777fd68b3ebbb4c1a71dc7a5b30b18f7fc3`。新冻结API检查34/18错误ID退出0，源码/冻结限定CC元数据探针分别新v201 test-root均退出1，仍为本机原DNS公网守卫拒绝，HTTP诊断null、版本v2；未将旧v1 exe或成功摘要当v2证据。原始txt/xml保存在artifacts/dl02b的v2-q02/v2-p01/ruff-v202/frozen-build-v201/frozen-api-v201/public-source-v201/public-frozen-v201。精选[v2-summary.json](evidence/v2-summary.json)与前两版摘要分别保留。
+
+office_1114正式性能窗口期间本任务暂停重构建/测试/大hash；其明确暂停后才执行约十余秒专项及78秒新冻结，全部结束后通知释放本机，后续只做文本/PR与远端CI。当前IN_PROGRESS，同PR新head公网仍必需；公开页面若非200或受限如实保留局部阻塞，后续独立DL-03格式/轨道交接继续，不重复打请求或降低门槛。任务详细DL-03旧“依赖整个DL-02”标签已与概览/契约统一为格式/轨道交接及二进制选择，避免循环依赖。

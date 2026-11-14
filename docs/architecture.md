@@ -30,7 +30,7 @@
 | 标签和媒体 | EditorTabBar/PageHost稳定实例、关闭释放、独立WebView和播放器能力 | page_host.dart、web_page.dart、media_library.py |
 | 授权与人工候选审核 | 内存显式授权/有界作答与确认版读取；外部候选修订、拒绝和独立MD采用收据；无模型调用 | agent_access.py、analysis_review.py、analysis_review_dialog.dart |
 | 直接媒体下载 | 持久任务/单worker/独占attempt、固定下载子进程/暂停与显式恢复、受管原件入库/媒体身份复用；首批无站点解析/转码 | media_download_http.py、media_download_worker.py、media_downloads.py、media_download_dialog.dart |
-| B站格式预览（本地实现，公网待验证） | 显式权利确认、固定匿名WBI API/短链、受限独立进程、同空间短期候选和取消；当前不确认下载 | bilibili_preview.py、media_site_previews.py、media_site_preview_worker.py、media_site_preview_dialog.dart |
+| B站格式预览（本地实现，公网待验证） | 显式权利确认、公开页面纯JSON/匿名WBI播放API/短链、受限独立进程、同空间短期候选和取消；当前不确认下载 | bilibili_preview.py、media_site_previews.py、media_site_preview_worker.py、media_site_preview_dialog.dart |
 
 资源身份、原件blob、题目ID、确认版ID、tab_id分开，不能用标题/hash代替身份。资源树是受管逻辑目录，不是任意系统文件夹的原地工作区。
 

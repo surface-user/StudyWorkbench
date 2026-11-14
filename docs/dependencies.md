@@ -104,7 +104,7 @@ webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-d
 
 ### B站预览的内嵌来源（部分采用，非整包运行依赖）
 
-bilibili-preview-v1使用原CPython标准库、固定公网TLS连接和自己的受限进程/业务接口；requirements及pubspec锁不变。WBI排列/签名和协议字段参考上述固定yt-dlp commit，原文件SHA256及范围见[来源通知](../packaging/licenses/bilibili-preview/NOTICE.txt)，[Unlicense原文](../packaging/licenses/bilibili-preview/Unlicense.txt)按原字节保留；不是clean-room或整套yt-dlp已采用的声明。维护风险是站点字段与访问策略会漂移，固定版本失败后不自动升级或换接口。实际Windows双Python/冻结/当前head CI和公网状态见[独立报告](../dev/records/2026-11-14-bilibili-preview/report.md)；未取得的正向不能写通过。完整产品SBOM/许可/漏洞仍按REL任务核验，不据无新增包就声明完整发行安全。
+bilibili-preview-v2使用原CPython标准库（HTMLParser/严格JSON、固定公网TLS连接）和自己的受限进程/业务接口；requirements及pubspec锁不变。公开页面字段与WBI排列/签名参考上述固定yt-dlp commit，原文件SHA256及范围见[来源通知](../packaging/licenses/bilibili-preview/NOTICE.txt)，[Unlicense原文](../packaging/licenses/bilibili-preview/Unlicense.txt)按原字节保留；不是clean-room或整套yt-dlp已采用的声明。维护风险是站点字段与访问策略会漂移，固定版本失败后不自动升级或换接口。实际Windows双Python/冻结/当前head CI和公网状态见[独立报告](../dev/records/2026-11-14-bilibili-preview/report.md)；未取得的正向不能写通过。完整产品SBOM/许可/漏洞仍按REL任务核验，不据无新增包就声明完整发行安全。
 
 ## 待验证与升级门禁
 

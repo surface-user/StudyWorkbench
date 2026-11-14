@@ -1,0 +1,84 @@
+{
+  "scope": "v2 standard public page -> nav -> playurl; limited format preview, not complete download",
+  "selection_reason": "Exact local source/frozen v2 evidence; v1 failures remain separately traceable.",
+  "fixed_reference": "yt-dlp f264a6cbd1f630894da0f368df00f8aae50140e0; Unlicense selected algorithm/protocol only",
+  "normal_requests": 3,
+  "html_parser": {
+    "stdlib_only": true,
+    "script_count_limit": 128,
+    "inline_script_only": true,
+    "inert_regions_excluded": true,
+    "fixed_assignment_at_script_start": true,
+    "strict_json_and_only_semicolon_whitespace_suffix": true,
+    "no_cleanup_iife_assumed": true,
+    "no_js_or_external_resource_execution": true
+  },
+  "http_stage_enum": [
+    "shortlink",
+    "page",
+    "nav",
+    "playurl"
+  ],
+  "http_status_strict_integer": [
+    100,
+    599
+  ],
+  "local_python313": {
+    "passed": 160,
+    "exit": 0,
+    "junit_sha256": "73111cec275b6dd5dd2e502789841170f09f3f070495a499665c0a371fa176d4"
+  },
+  "local_python312": {
+    "passed": 160,
+    "exit": 0,
+    "junit_sha256": "fc18f64ee302b4a7fe355c98a6b035e3be1b44210f31da9ad8a584c7dcffe7ee"
+  },
+  "actual_http_client_full_chain_capture": {
+    "normal_requests": 3,
+    "domain_host_and_sni_each_hop": true,
+    "tls_verification_enabled": true,
+    "ip_only_socket_target": true,
+    "query_encoding_preserved": true,
+    "real_network_contacted": false
+  },
+  "frozen": {
+    "business_modules_matched": 47,
+    "exe_bytes": 22605386,
+    "exe_sha256": "ab076dd690c4f2c2ece1544498f50777fd68b3ebbb4c1a71dc7a5b30b18f7fc3",
+    "api_checks": 34,
+    "api_exit": 0
+  },
+  "local_source_and_frozen_public": {
+    "exit_each": 1,
+    "observed_failure": "Original public IPv4 DNS guard rejected resolution",
+    "http_status_observed": false,
+    "positive": false
+  },
+  "prior_v1_public_ci_failures": [
+    {
+      "head": "d17cd3eeb116ec92e7fd5ca656d4775006c66e50",
+      "run": 43576361155,
+      "stage_status_not_recorded": true
+    },
+    {
+      "head": "be3169917b79ff4abfa865ac260bed48df0670d2",
+      "run": 43578909355,
+      "source_and_frozen": {
+        "stage": "view",
+        "http_status": 412
+      },
+      "artifact_zip_sha256": "d83b3e8bdeeefcfe8e42719daa3e225eb33a0c0b02dcffa827881e1a2d4a25eb"
+    }
+  ],
+  "runtime_locks_and_original_unlicense_unchanged": true,
+  "ui_source_unchanged": true,
+  "ua_headers_dns_tls_request_byte_time_guards_unchanged": true,
+  "cookies_try_look_dm_params_fallback_not_added": true,
+  "public_positive": false,
+  "task_status": "IN_PROGRESS",
+  "complete_DL02_done": false,
+  "next": "Same PR new head CI public source/frozen page result; no gate weakening",
+  "review": "deferred by user",
+  "manual": "cancelled by user",
+  "merged_or_released": false
+}

@@ -147,9 +147,9 @@ def test_real_fixed_worker_is_job_owned_and_does_not_inherit_proxy_or_token(monk
     assert seen[0]['PYTHONNOUSERSITE'] == '1'
 
 
-@pytest.mark.parametrize('diagnostic', [{'stage': 'view', 'http_status': 412},
-                                      {'stage': 'view', 'http_status': '412'},
-                                      {'stage': 'view', 'http_status': 412, 'url': 'must-not-reflect'}])
+@pytest.mark.parametrize('diagnostic', [{'stage': 'page', 'http_status': 412},
+                                      {'stage': 'page', 'http_status': '412'},
+                                      {'stage': 'page', 'http_status': 412, 'url': 'must-not-reflect'}])
 def test_real_ipc_diagnostics_are_typed_filtered_and_do_not_change_ui_error(monkeypatch, tmp_path, diagnostic):
     actual = subprocess.Popen
     packet = json.dumps({'error': 'untrusted https://private.invalid/?secret=fixture', 'error_diagnostic': diagnostic})
@@ -163,7 +163,7 @@ def test_real_ipc_diagnostics_are_typed_filtered_and_do_not_change_ui_error(monk
         value = finished(c, identifier)
         assert value['status'] == 'failed' and value['result'] is None
         assert 'private.invalid' not in json.dumps(value) and 'must-not-reflect' not in json.dumps(value)
-        if diagnostic == {'stage': 'view', 'http_status': 412}:
+        if diagnostic == {'stage': 'page', 'http_status': 412}:
             assert value['error_diagnostic'] == diagnostic
             assert value['error'] == '该视频暂不可预览，可能需要权限或访问限制'
         else:

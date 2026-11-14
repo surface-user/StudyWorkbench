@@ -59,7 +59,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | DL-02 | IN_PROGRESS | 用户已选B站、抖音、爱奇艺，B站先行；#45共同设计已交付，DL-02b有限元数据/质量预览先实施，真实传输与DL-03格式交接后续继续，不以预览代替整个下载目标 |
 | DL-02a 站点提取共同设计 | DONE | 主Agent核[草稿PR #45](https://github.com/surface-user/StudyWorkbench/pull/45)最终517bcd4的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43367244690)三组成功及4文档/82引用/6锚点；共同契约已在本切片逐段采纳，三站真实提取与组件采用仍未完成 |
 | DL-02b 有限站点提取/质量选择 | IN_PROGRESS | B站普通单视频预览先实施；候选确认下载/来源持久化/固定headers直链、分轨交接与抖音/爱奇艺继续，不用预览销完整父项 |
-| DL-02b1 B站受控格式预览 | IN_PROGRESS | [PR#52](https://github.com/surface-user/StudyWorkbench/pull/52) d17cd3e的两版后端各1049、Flutter211/Windows/47模块冻结回归通过，但CI43576361155的源码/冻结公网预览均HTTP非200，缺少精确阶段/状态，未断言权限原因；补固定枚举诊断及真实HTTP Host/编码/TLS回归，同PR新head CI继续，不登记支持或DONE，见[独立报告](../dev/records/2026-11-14-bilibili-preview/report.md) |
+| DL-02b1 B站受控格式预览 | IN_PROGRESS | [PR#52](https://github.com/surface-user/StudyWorkbench/pull/52)保留d17/be316两次公网失败；be316两版各1073、Flutter211/Windows/47模块冻结回归通过，源码/冻结均view HTTP412。固定源对照后实施v2公开页面纯JSON→nav→playurl，严格脚本来源/尾部与全部原网络/预算/权利拒绝保持；同PR新冻结/当前head CI继续，不登记支持或DONE，见[独立报告](../dev/records/2026-11-14-bilibili-preview/report.md) |
 | DL-03 | BLOCKED | 依赖明确的格式/轨道交接及FFmpeg实际二进制/许可选择，不要求整个DL-02完成，避免与DASH/HLS支持循环等待 |
 | LW-04a | DONE | 主Agent已核58×2专项、Flutter19/全量200及失败保留；[草稿PR #29](https://github.com/surface-user/StudyWorkbench/pull/29)最终9027508的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43066543568)成功；有界TXT全文/原文行回跳已纳本轮候选 |
 | LW-07a | DONE | 主Agent已核双Python专项各11、Flutter专项6/全量196及静态检查；[草稿PR #27](https://github.com/surface-user/StudyWorkbench/pull/27)最终6af0360的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43060817695)成功；50条历史分页/刷新/迟到响应开发交付完成，审查暂缓，见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md) |
@@ -133,7 +133,7 @@ LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人�
 | PAR-03 / P2，属M2-04 | 更大文档/分块任务 | 待设计；原件/页区间/进度与取消/重启/幂等/预算契约先行，不直接放宽25秒/20页等原保护；旧小文件回归保持 |
 | DL-01 / P1，属LW-07 | 当前直接HTTPS下载公网证据补齐 | DONE；#24已核同一CC0源的源码/冻结TLS下载、独立hash、入库、重启/完整恢复；#38已核真实源码Range/If-Range/206、同域/跨域302与未注入冻结恢复，并通过当前head CI。冻结206由严格产品校验和最终文件结果推断，原DNS及探针失败保留，见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)及#38最终核验；不扩展站点/转码，不放宽网络门禁 |
 | DL-02 / P2，属M4/LW-07，依赖来源/组件设计 | 站点提取与质量选择；传输/UI可再拆PR | 用户已选B站/抖音/爱奇艺，先B站；#45共同受控设计已DONE，B站有限元数据/质量预览实施先行。实际来源/授权样本、原子候选确认、直链headers与分轨交接/合流、实际固定组件许可及Windows验证继续，不能用预览代替完整下载目标 |
-| DL-03 / P2，属M4，依赖DL-02及二进制选择 | FFmpeg合流/转码与入库 | 待设计；审查实际构建开关/来源及LGPL/GPL/nonfree义务，命令参数受控、超时/取消/失败原件保留、磁盘预算与备份覆盖；不得据本机生成样本假称可分发 |
+| DL-03 / P2，属M4，依赖格式/轨道交接及二进制选择 | FFmpeg合流/转码与入库 | 待设计；审查实际构建开关/来源及LGPL/GPL/nonfree义务，命令参数受控、超时/取消/失败原件保留、磁盘预算与备份覆盖；不得据本机生成样本假称可分发 |
 | PLAN-04 / 后续，属既有规划 | M2-05恢复策略、M3-03、WebView/媒体矩阵、R6剩余 | 继续保留原任务；M2-05不重复#8–#15，恢复/清理需先定身份/关系与同意边界；R6维持无模型，新增场景/凭据另明确。各项先定有限切片再实施/分别PR；不把“其他功能”视为无限授权 |
 
 先交付PLAN-03；开发优先顺序为OFF-01/02与REL-01至03，随后REL-04准备及FMT-01/PAR-01、DL-01，再逐项细化OCR/分块/站点/转码和PLAN-04。最终REL-05在实际纳入发行的组件与功能稳定后收口；未进入候选包的规划不得冒充发行已支持。每个实现切片分别PR/当前head CI，不把整表塞成一次大PR。

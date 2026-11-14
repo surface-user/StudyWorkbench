@@ -32,6 +32,10 @@ def encoded(value):
     return json.dumps(value, ensure_ascii=False).encode('utf-8')
 
 
+def html(value):
+    return b'<!doctype html><script>window.__INITIAL_STATE__=' + encoded(value) + b';</script>'
+
+
 class Response:
     def __init__(self, data, mime='application/json', status=200, extra=()):
         self.data, self.position, self.status = data, 0, status
@@ -50,9 +54,7 @@ def network(monkeypatch, source, *, page_extra='', responses=None):
     state, nav, play = source
     if page_extra:
         state['videoData']['ignored_script'] = page_extra
-    view = {'code': state.get('error', {}).get('trueCode', 0),
-            'data': {'View': state.get('videoData'), 'extra': state.get('extra')}}
-    defaults = [Response(encoded(nav)), Response(encoded(view)), Response(encoded(play))]
+    defaults = [Response(html(state), mime='text/html'), Response(encoded(nav)), Response(encoded(play))]
     pending, calls, closed = list(responses or defaults), [], []
 
     class Connection:
@@ -76,7 +78,7 @@ def network(monkeypatch, source, *, page_extra='', responses=None):
     return calls, closed, pending
 
 
-def test_fixed_nav_view_and_signed_playinfo_only(monkeypatch, source):
+def test_fixed_page_nav_and_signed_playinfo_only(monkeypatch, source):
     calls, closed, pending = network(monkeypatch, source, page_extra='throw new Error("must not execute");')
     result = preview.extract(PAGE)
     assert result['title'] == '自编公开视频样本' and result['video_id'] == 'BV1234567890'
@@ -85,7 +87,7 @@ def test_fixed_nav_view_and_signed_playinfo_only(monkeypatch, source):
     assert result['formats'][0]['height'] == 720
     assert result['formats'][1]['container'] == 'm4a'
     assert len(calls) == len(closed) == 3 and not pending
-    assert [c[0] for c in calls] == ['api.bilibili.com'] * 3
+    assert [c[0] for c in calls] == ['www.bilibili.com', 'api.bilibili.com', 'api.bilibili.com']
     assert all(c[3]['User-Agent'] == preview.USER_AGENT for c in calls)
     assert all(c[1] == 'GET' and c[3]['Accept-Encoding'] == 'identity' for c in calls)
     assert all('Cookie' not in c[3] and 'Authorization' not in c[3] for c in calls)
@@ -93,10 +95,10 @@ def test_fixed_nav_view_and_signed_playinfo_only(monkeypatch, source):
     assert 'try_look' not in calls[2][2] and 'dm_img' not in calls[2][2]
 
 
-@pytest.mark.parametrize('stage,index', [('nav', 0), ('view', 1), ('playurl', 2), ('shortlink', 0)])
+@pytest.mark.parametrize('stage,index', [('page', 0), ('nav', 1), ('playurl', 2), ('shortlink', 0)])
 def test_non200_keeps_exact_fixed_diagnostic_and_does_not_retry(monkeypatch, source, stage, index):
     state, nav, _ = source
-    responses = [Response(encoded(nav)), Response(encoded({'code': 0, 'data': {'View': state['videoData']}}))][:index]
+    responses = [Response(html(state), mime='text/html'), Response(encoded(nav))][:index]
     responses.append(Response(b'remote body https://private.invalid/?secret=fixture', status=412))
     calls, _, pending = network(monkeypatch, source, responses=responses)
     with pytest.raises(preview.PreviewHTTPError) as caught:
@@ -107,6 +109,7 @@ def test_non200_keeps_exact_fixed_diagnostic_and_does_not_retry(monkeypatch, sou
 
 
 @pytest.mark.parametrize('value', [None, [], {}, {'stage': 'nav'}, {'stage': [], 'http_status': 412},
+                                  {'stage': 'view', 'http_status': 412},
                                   {'stage': 'https://private.invalid/', 'http_status': 412},
                                   {'stage': 'nav', 'http_status': True}, {'stage': 'nav', 'http_status': '412'},
                                   {'stage': 'nav', 'http_status': 99}, {'stage': 'nav', 'http_status': 600},
@@ -115,7 +118,7 @@ def test_http_diagnostic_accepts_only_two_typed_enumerated_fields(value):
     assert preview.safe_http_diagnostic(value) is None
 
 
-@pytest.mark.parametrize('stage', ['shortlink', 'nav', 'view', 'playurl'])
+@pytest.mark.parametrize('stage', ['shortlink', 'page', 'nav', 'playurl'])
 def test_http_diagnostic_copies_only_exact_safe_fields(stage):
     for status in (100, 200, 412, 599):
         value = {'stage': stage, 'http_status': status}
@@ -147,7 +150,7 @@ def test_actual_http_client_keeps_domain_host_sni_and_encoded_target(monkeypatch
     monkeypatch.setattr(transport.socket, 'create_connection', connect)
     monkeypatch.setattr(transport.ssl.SSLContext, 'wrap_socket', wrap)
     monkeypatch.setattr(preview, 'resolve', lambda host: '93.184.216.34')
-    target = preview.VIEW + '?' + preview.sign({'bvid': 'BV1234567890', 'test': 'a/b 中文 & + %'}, 'fixed-key')
+    target = preview.PLAY + '?' + preview.sign({'bvid': 'BV1234567890', 'test': 'a/b 中文 & + %'}, 'fixed-key')
     canonical, _, path_query = transport.parse_url(target)
     assert preview.Client(lambda: None).fetch(target) == (b'{}', canonical)
     wire = b''.join(packets)
@@ -166,19 +169,65 @@ def test_actual_http_client_keeps_domain_host_sni_and_encoded_target(monkeypatch
     assert tls == [('api.bilibili.com', True, transport.ssl.CERT_REQUIRED)]
 
 
+def test_actual_http_client_page_nav_play_chain_keeps_each_domain(monkeypatch, source):
+    bodies = [html(source[0]), encoded(source[1]), encoded(source[2])]
+    responses = iter([b'HTTP/1.1 200 OK\r\nContent-Type: ' + mime + b'\r\nContent-Length: ' +
+                      str(len(body)).encode('ascii') + b'\r\nConnection: close\r\n\r\n' + body
+                      for mime, body in zip([b'text/html', b'application/json', b'application/json'], bodies)])
+    sockets, addresses, resolved, names = [], [], [], []
+
+    class Socket:
+        def __init__(self):
+            self.response, self.sent = next(responses), []
+
+        def sendall(self, data):
+            self.sent.append(data)
+
+        def makefile(self, mode):
+            return BytesIO(self.response)
+
+        def close(self):
+            pass
+
+    def connect(address, timeout):
+        addresses.append((address, timeout))
+        sock = Socket()
+        sockets.append(sock)
+        return sock
+
+    def wrap(context, sock, *, server_hostname):
+        assert context.check_hostname and context.verify_mode == transport.ssl.CERT_REQUIRED
+        names.append(server_hostname)
+        return sock
+
+    monkeypatch.setattr(transport.socket, 'create_connection', connect)
+    monkeypatch.setattr(transport.ssl.SSLContext, 'wrap_socket', wrap)
+    monkeypatch.setattr(preview, 'resolve', lambda host: resolved.append(host) or '93.184.216.34')
+    result = preview.extract(PAGE)
+    assert len(result['formats']) == 2 and result['extractor_version'] == 'bilibili-preview-v2'
+    assert resolved == names == ['www.bilibili.com', 'api.bilibili.com', 'api.bilibili.com']
+    assert addresses == [(('93.184.216.34', 443), 10)] * 3
+    wires = [b''.join(sock.sent) for sock in sockets]
+    assert wires[0].startswith(b'GET /video/BV1234567890 HTTP/1.1\r\nHost: www.bilibili.com\r\n')
+    assert wires[1].startswith(b'GET /x/web-interface/nav HTTP/1.1\r\nHost: api.bilibili.com\r\n')
+    assert wires[2].startswith(b'GET /x/player/wbi/playurl?bvid=BV1234567890&cid=9&fnval=4048&')
+    assert b'\r\nHost: api.bilibili.com\r\n' in wires[2]
+    assert all(b'Cookie:' not in wire and b'Authorization:' not in wire for wire in wires)
+
+
 def test_worker_preserves_only_safe_http_diagnostic(monkeypatch, capsys):
     from study_workbench import media_site_preview_worker as worker
 
     monkeypatch.setattr(worker.sys, 'stdin', SimpleNamespace(buffer=BytesIO(encoded({'url': PAGE}) + b'\n'), read=lambda: ''))
 
     def extract(*_a, **_k):
-        raise preview.PreviewHTTPError('view', 412)
+        raise preview.PreviewHTTPError('page', 412)
 
     monkeypatch.setattr(worker, 'extract', extract)
     worker.worker()
     packet = json.loads(capsys.readouterr().out)
     assert set(packet) == {'error', 'error_diagnostic'}
-    assert packet['error_diagnostic'] == {'stage': 'view', 'http_status': 412}
+    assert packet['error_diagnostic'] == {'stage': 'page', 'http_status': 412}
     assert packet['error'] == '该视频暂不可预览，可能需要权限或访问限制'
 
 
@@ -241,14 +290,14 @@ def test_redirect_destination_is_checked_before_dns(monkeypatch, source, target)
 def test_valid_short_redirect_keeps_fixed_headers_and_connection_policy(monkeypatch, source):
     state, nav, play = source
     responses = [Response(b'', status=302, extra=[('Location', PAGE)]),
-                 Response(encoded(nav)), Response(encoded({'code': 0, 'data': {'View': state['videoData']}})),
+                 Response(html(state), mime='text/html'), Response(encoded(nav)),
                  Response(encoded(play))]
     calls, closed, pending = network(monkeypatch, source, responses=responses)
     resolved = []
     monkeypatch.setattr(preview, 'resolve', lambda host: resolved.append(host) or '93.184.216.34')
     result = preview.extract('https://b23.tv/selfauthored')
     assert result['video_id'] == 'BV1234567890' and len(calls) == len(closed) == 4 and not pending
-    assert resolved == ['b23.tv', 'api.bilibili.com', 'api.bilibili.com', 'api.bilibili.com']
+    assert resolved == ['b23.tv', 'www.bilibili.com', 'api.bilibili.com', 'api.bilibili.com']
 
 
 @pytest.mark.parametrize('kind', ['compressed', 'duplicate_length', 'too_big', 'formats', 'title'])
@@ -287,12 +336,12 @@ def test_parent_cancellation_prevents_another_request(monkeypatch, source):
     assert not calls
 
 
-def test_only_predeclared_api_paths_receive_requests(monkeypatch, source):
+def test_only_predeclared_page_and_api_paths_receive_requests(monkeypatch, source):
     calls, _, pending = network(monkeypatch, source)
     result = preview.extract(PAGE)
     assert len(result['formats']) == 2 and result['format_source'] == 'wbi_api'
-    assert calls[0][2] == '/x/web-interface/nav'
-    assert calls[1][2].startswith('/x/web-interface/wbi/view/detail?')
+    assert calls[0][2] == '/video/BV1234567890'
+    assert calls[1][2] == '/x/web-interface/nav'
     assert calls[2][2].startswith('/x/player/wbi/playurl?')
     assert len(calls) == 3 and not pending
 
@@ -311,7 +360,7 @@ def test_explicit_api_restriction_does_not_try_other_endpoints(monkeypatch, sour
     calls, _, _ = network(monkeypatch, source)
     with pytest.raises(preview.DownloadError):
         preview.extract(PAGE)
-    assert len(calls) == (2 if kind == 'access_denied' else 3)
+    assert len(calls) == (1 if kind == 'access_denied' else 3)
 
 
 @pytest.mark.parametrize('addresses', [['127.0.0.1'], ['198.18.0.1'], ['93.184.216.34', '10.0.0.1']])
@@ -375,16 +424,16 @@ def test_av_identity_and_tracking_parameters_are_not_forwarded(monkeypatch, sour
     result = preview.extract('https://bilibili.com/video/av7?spm_id_from=private-tracker')
     assert result['video_id'] == 'BV1234567890' and result['source_cid'] == 9
     assert result['source_url'] == 'https://www.bilibili.com/video/av7'
-    assert 'aid=7' in calls[1][2] and 'bvid=' not in calls[1][2]
+    assert calls[0][2] == '/video/av7'
+    assert 'bvid=BV1234567890' in calls[2][2] and 'cid=9' in calls[2][2]
     assert all('private-tracker' not in str(call) for call in calls)
 
 
-def test_view_data_shape_change_is_a_bounded_error(monkeypatch, source):
-    calls, _, _ = network(monkeypatch, source, responses=[Response(encoded(source[1])),
-        Response(encoded({'code': 0, 'data': None}))])
+def test_page_data_shape_change_is_a_bounded_error(monkeypatch, source):
+    calls, _, _ = network(monkeypatch, source, responses=[Response(html({'videoData': None}), mime='text/html')])
     with pytest.raises(preview.DownloadError):
         preview.extract(PAGE)
-    assert len(calls) == 2
+    assert len(calls) == 1
 
 
 def test_navigation_rejection_stops_before_any_alternate_request(monkeypatch, source):
@@ -392,4 +441,81 @@ def test_navigation_rejection_stops_before_any_alternate_request(monkeypatch, so
     calls, _, _ = network(monkeypatch, source)
     with pytest.raises(preview.DownloadError, match='暂不允许预览'):
         preview.extract(PAGE)
-    assert len(calls) == 1
+    assert len(calls) == 2
+
+
+@pytest.mark.parametrize('kind', ['comment', 'attribute', 'external_script', 'quoted_anchor', 'json_script',
+                                  'template', 'noscript', 'textarea', 'title', 'plaintext', 'prefix_comment',
+                                  'duplicate_scripts', 'second_assignment', 'tail_expression', 'cleanup_iife',
+                                  'duplicate_json', 'nonfinite_json', 'unclosed_script', 'script_count'])
+def test_html_state_must_be_one_complete_inline_json_assignment(monkeypatch, source, kind):
+    state = source[0]
+    assignment = 'window.__INITIAL_STATE__=' + encoded(state).decode('utf-8') + ';'
+    page = '<script>' + assignment + '</script>'
+    if kind == 'comment':
+        page = '<!--' + page + '-->'
+    elif kind == 'attribute':
+        page = "<div title='" + assignment + "'></div>"
+    elif kind == 'external_script':
+        page = '<script src="https://external.invalid/script.js">' + assignment + '</script>'
+    elif kind == 'quoted_anchor':
+        page = '<script>' + json.dumps(assignment) + ';</script>'
+    elif kind == 'json_script':
+        page = '<script type="application/json">' + assignment + '</script>'
+    elif kind in {'template', 'noscript', 'textarea', 'title', 'plaintext'}:
+        page = '<' + kind + '>' + page + '</' + kind + '>'
+    elif kind == 'prefix_comment':
+        page = '<script>/* ignored */' + assignment + '</script>'
+    elif kind == 'duplicate_scripts':
+        page *= 2
+    elif kind == 'second_assignment':
+        page = '<script>' + assignment * 2 + '</script>'
+    elif kind == 'tail_expression':
+        page = '<script>' + assignment[:-1] + '+{};</script>'
+    elif kind == 'cleanup_iife':
+        page = '<script>' + assignment + '(function(){})()</script>'
+    elif kind == 'duplicate_json':
+        page = '<script>window.__INITIAL_STATE__={"videoData":{},"videoData":' + encoded(state['videoData']).decode('utf-8') + '};</script>'
+    elif kind == 'nonfinite_json':
+        page = '<script>window.__INITIAL_STATE__={"extra":NaN};</script>'
+    elif kind == 'unclosed_script':
+        page = '<script>' + assignment
+    elif kind == 'script_count':
+        page = '<script>ignored</script>' * 128 + page
+    calls, _, pending = network(monkeypatch, source, responses=[Response(page.encode('utf-8'), mime='text/html')])
+    with pytest.raises(preview.DownloadError):
+        preview.extract(PAGE)
+    assert len(calls) == 1 and not pending
+
+
+def test_json_string_anchor_is_data_and_whitespace_suffix_is_allowed(monkeypatch, source):
+    source[0]['videoData']['title'] = 'A&B window.__INITIAL_STATE__={}; 普通文本'
+    page = html(source[0]).replace(b';</script>', b'; \t\r\n</script>')
+    calls, _, _ = network(monkeypatch, source, responses=[Response(page, mime='text/html'),
+        Response(encoded(source[1])), Response(encoded(source[2]))])
+    result = preview.extract(PAGE)
+    assert result['title'] == source[0]['videoData']['title'] and len(calls) == 3
+
+
+def test_html_embedded_playinfo_is_never_a_fallback_after_api_refusal(monkeypatch, source):
+    embedded = b'<script>window.__playinfo__=' + encoded(source[2]) + b';</script>'
+    source[2]['code'] = -403
+    calls, _, _ = network(monkeypatch, source, responses=[Response(html(source[0]) + embedded, mime='text/html'),
+        Response(encoded(source[1])), Response(encoded(source[2]))])
+    with pytest.raises(preview.DownloadError):
+        preview.extract(PAGE)
+    assert len(calls) == 3
+
+
+@pytest.mark.parametrize('aid', [7, 8])
+def test_av_to_bv_redirect_still_checks_original_numeric_identity(monkeypatch, source, aid):
+    source[0]['videoData']['aid'] = aid
+    calls, _, _ = network(monkeypatch, source, responses=[Response(b'', status=302, extra=[('Location', PAGE)]),
+        Response(html(source[0]), mime='text/html'), Response(encoded(source[1])), Response(encoded(source[2]))])
+    if aid == 7:
+        assert preview.extract('https://www.bilibili.com/video/av7')['video_id'] == 'BV1234567890'
+        assert len(calls) == 4
+    else:
+        with pytest.raises(preview.DownloadError, match='身份'):
+            preview.extract('https://www.bilibili.com/video/av7')
+        assert len(calls) == 2

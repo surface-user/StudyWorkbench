@@ -193,7 +193,9 @@ LW-07首批采用用户确认有权下载的直接HTTPS媒体文件，只保留�
 
 #### 普通B站格式预览的当前实现边界
 
-适配版本固定为bilibili-preview-v1，借鉴yt-dlp固定f264a6c的Unlicense WBI算法/字段，不引入其整套运行包或宣称clean-room。正常BV/av链接只用于取视频ID，不请求其HTML；b23.tv只跟随受控HTTP重定向到普通BV/av。唯一主路径为匿名nav→WBI view/detail→WBI playurl；全部实际请求经相同HTTPS/443、精确站点域、全IPv4预检/固定连接和原域TLS入口，固定兼容User-Agent仍标识StudyWorkbench、固定公开Referer/Origin。拒绝后不更换通道、cookies或挑战策略，不执行脚本/插件，不请求图片/字幕/媒体轨道。
+适配版本固定为bilibili-preview-v2，借鉴yt-dlp固定f264a6c的Unlicense WBI算法/字段，不引入其整套运行包或宣称clean-room。b23.tv只跟随受控HTTP重定向到普通BV/av；唯一预声明主路径为已确认的普通公开video页面→匿名nav→WBI playurl，不调用view/detail备用API。全部实际请求经相同HTTPS/443、精确站点域、全IPv4预检/固定连接和原域TLS入口，固定兼容User-Agent仍标识StudyWorkbench、固定公开Referer/Origin。拒绝后不更换通道、cookies或挑战策略，不执行脚本/插件，不请求图片/字幕/媒体轨道。
+
+公开页面由标准库HTMLParser仅提取无src的inline JavaScript脚本，排除HTML注释/属性、外部脚本、JSON字符串伪锚点及template/noscript/文本区域。固定赋值必须从脚本开头的window.__INITIAL_STATE__开始，JSONDecoder.raw_decode只接严格JSON对象，结束后仅允许分号和空白；不猜测cleanup IIFE或任意尾部语句。多个候选/重复赋值、重复JSON字段、NaN/Infinity、超深/超节点和超过128脚本均拒绝。只读videoData指定字段，保留原请求BV/av与aid/bvid/cid身份对应；正常AV跳转到BV仍须原aid一致。页面错误/权限/受限/多P/付费即停，嵌入__playinfo__不作为播放API拒绝后的回退。上述是有界静态数据提取，网站变更时受控失败；未取得的实时HTML/格式正向不能写成兼容已证。
 
 请求体只接受链接、严格权利确认与幂等request_id；同空间临时预览最多32条、同时2个进程，10分钟有效，过期立即拒绝并由惰性启动的维护线程约1秒内回收，重启/关闭清空。只在用户按钮操作后启动；相同请求和规范化链接重试复用该条，参数变化409。候选URL只在服务器内存，不进入普通响应、数据库或库备份。URL变化/撤销确认/关闭及空间或后端变化撤销旧预览，迟到结果不应用。
 

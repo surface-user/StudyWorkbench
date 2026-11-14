@@ -97,7 +97,7 @@ def main():
                     diagnostic = value.get('error_diagnostic')
                     if diagnostic is not None:
                         assert (isinstance(diagnostic, dict) and set(diagnostic) == {'stage', 'http_status'}
-                                and type(diagnostic['stage']) is str and diagnostic['stage'] in {'shortlink', 'nav', 'view', 'playurl'}
+                                and type(diagnostic['stage']) is str and diagnostic['stage'] in {'shortlink', 'page', 'nav', 'playurl'}
                                 and type(diagnostic['http_status']) is int and 100 <= diagnostic['http_status'] <= 599)
                     print(json.dumps({'frozen': bool(args.exe), 'error_diagnostic': diagnostic}), flush=True)
                     (root / 'failed-preview.json').write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')

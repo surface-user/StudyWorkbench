@@ -6,20 +6,20 @@ import math
 import re
 import time
 from fractions import Fraction
+from html.parser import HTMLParser
 from urllib.parse import parse_qs, urlencode, urljoin, urlsplit
 
 from .media_download_http import DownloadError, PinnedHTTPS, parse_url, resolve
 
-VERSION = 'bilibili-preview-v1'
+VERSION = 'bilibili-preview-v2'
 RESPONSE_LIMIT = 2 * 1024 * 1024
 TOTAL_LIMIT = 8 * 1024 * 1024
 OUTPUT_LIMIT = 128 * 1024
 NAV = 'https://api.bilibili.com/x/web-interface/nav'
-VIEW = 'https://api.bilibili.com/x/web-interface/wbi/view/detail'
 PLAY = 'https://api.bilibili.com/x/player/wbi/playurl'
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) StudyWorkbench/1.0'
-HTTP_STAGES = {'/x/web-interface/nav': 'nav', '/x/web-interface/wbi/view/detail': 'view',
-               '/x/player/wbi/playurl': 'playurl'}
+HTTP_STAGES = {'/x/web-interface/nav': 'nav', '/x/player/wbi/playurl': 'playurl'}
+INITIAL_ASSIGNMENT = re.compile(r'\A[ \t\r\n]*window\.__INITIAL_STATE__[ \t\r\n]*=[ \t\r\n]*')
 # yt-dlp f264a6cbd1f630894da0f368df00f8aae50140e0, extractor/bilibili.py:134-167.
 MIXIN = (46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35, 27, 43, 5, 49,
          33, 9, 42, 19, 29, 28, 14, 39, 12, 38, 41, 13, 37, 48, 7, 16, 24, 55, 40,
@@ -29,7 +29,7 @@ MIXIN = (46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35, 27, 43, 5,
 
 def safe_http_diagnostic(value):
     if (not isinstance(value, dict) or set(value) != {'stage', 'http_status'}
-            or type(value['stage']) is not str or value['stage'] not in {'shortlink', 'nav', 'view', 'playurl'}
+            or type(value['stage']) is not str or value['stage'] not in {'shortlink', 'page', 'nav', 'playurl'}
             or type(value['http_status']) is not int or not 100 <= value['http_status'] <= 599):
         return None
     return dict(stage=value['stage'], http_status=value['http_status'])
@@ -60,18 +60,21 @@ class Client:
     def __init__(self, checkpoint):
         self.checkpoint, self.requests, self.received = checkpoint, 0, 0
 
-    def fetch(self, url, *, short=False):
-        current = page_url(url) if short else url
+    def fetch(self, url, *, short=False, page=False):
+        current = page_url(url, short=short) if short or page else url
         expected_path = urlsplit(url).path
         for redirects in range(4):
             self.checkpoint()
             current, host, target = parse_url(current)
-            if short:
+            if page:
+                current = page_url(current, short=False)
+                current, host, target = parse_url(current)
+            elif short:
                 canonical = page_url(current)
                 if host != 'b23.tv':
                     return b'', canonical
             elif host != 'api.bilibili.com' or urlsplit(current).path != expected_path or expected_path not in {
-                    '/x/web-interface/nav', '/x/web-interface/wbi/view/detail', '/x/player/wbi/playurl'}:
+                    '/x/web-interface/nav', '/x/player/wbi/playurl'}:
                 raise DownloadError('预览接口重定向到了不支持的位置')
             self.requests += 1
             if self.requests > 10:
@@ -100,7 +103,7 @@ class Client:
                     current = urljoin(current, values['location'])
                     continue
                 if response.status != 200:
-                    raise PreviewHTTPError('shortlink' if short else HTTP_STAGES[expected_path], response.status)
+                    raise PreviewHTTPError('page' if page else 'shortlink' if short else HTTP_STAGES[expected_path], response.status)
                 if short:
                     raise DownloadError('短链未返回受支持的普通视频重定向，未执行脚本')
                 if 'content-range' in values:
@@ -112,7 +115,7 @@ class Client:
                         or length is not None and (not re.fullmatch('[0-9]{1,10}', length) or int(length) > RESPONSE_LIMIT)):
                     raise DownloadError('预览响应编码、长度或2MiB预算不符合要求')
                 mime = values.get('content-type', '').split(';', 1)[0].strip().lower()
-                if mime != 'application/json':
+                if mime != ('text/html' if page else 'application/json'):
                     raise DownloadError('站点未返回预期的页面或JSON，未执行挑战内容')
                 data = bytearray()
                 while True:
@@ -145,10 +148,56 @@ def reject_constant(_):
     raise ValueError('Non-finite JSON constant')
 
 
-def source_json(raw):
+class InitialStateParser(HTMLParser):
+    """Collect one inert JSON assignment, without evaluating or fetching scripts."""
+    INERT = {'template', 'noscript', 'textarea', 'title', 'style', 'xmp', 'iframe', 'noembed', 'noframes', 'plaintext'}
+
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self.inert, self.script, self.candidate, self.scripts = [], None, None, 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in self.INERT:
+            self.inert.append(tag)
+        if tag == 'script':
+            self.scripts += 1
+            if self.scripts > 128:
+                raise DownloadError('页面脚本数量超过128项')
+            kinds = [value for key, value in attrs if key == 'type']
+            inline = not any(key == 'src' for key, _ in attrs)
+            self.script = [] if inline and not self.inert and (not kinds or len(kinds) == 1 and
+                kinds[0] in {'text/javascript', 'application/javascript'}) else None
+
+    def handle_data(self, data):
+        if self.script is not None:
+            self.script.append(data)
+
+    def handle_endtag(self, tag):
+        if tag == 'script' and self.script is not None:
+            text, self.script = ''.join(self.script), None
+            if INITIAL_ASSIGNMENT.match(text):
+                if self.candidate is not None:
+                    raise DownloadError('页面包含多个视频数据赋值，未选择其一')
+                self.candidate = text
+        if self.inert and tag == self.inert[-1] and tag != 'plaintext':
+            self.inert.pop()
+
+
+def source_json(raw, *, page=False):
     text = raw.decode('utf-8')
     decoder = json.JSONDecoder(object_pairs_hook=object_pairs, parse_constant=reject_constant)
-    value = decoder.decode(text)
+    if page:
+        parser = InitialStateParser()
+        parser.feed(text)
+        parser.close()
+        if parser.candidate is None:
+            raise DownloadError('页面没有受支持的独立视频JSON数据，未执行脚本或挑战')
+        script = parser.candidate
+        value, end = decoder.raw_decode(script, INITIAL_ASSIGNMENT.match(script).end())
+        if script[end:].strip(' \t\r\n') != ';':
+            raise DownloadError('页面视频JSON赋值尾部不受支持，未执行其他代码')
+    else:
+        value = decoder.decode(text)
     pending, count = [(value, 0)], 0
     while pending:
         item, depth = pending.pop()
@@ -270,23 +319,12 @@ def extract(url, *, checkpoint=lambda: None):
         canonical = page_url(url)
         if urlsplit(canonical).hostname == 'b23.tv':
             _, canonical = client.fetch(canonical, short=True)
-        nav, _ = client.fetch(NAV)
-        session = source_json(nav)
-        if type(session.get('code')) is not int or session['code'] not in {0, -101}:
-            raise DownloadError('站点暂不允许预览，请稍后重试；未尝试其他访问方式')
-        images = session['data']['wbi_img']
-        keys = ''.join(urlsplit(images[name]).path.rsplit('/', 1)[-1].split('.')[0] for name in ('img_url', 'sub_url'))
-        if not re.fullmatch('[0-9a-f]{64}', keys):
-            raise DownloadError('站点WBI字段已变化')
-        key = ''.join(keys[index] for index in MIXIN)[:32]
         expected = urlsplit(canonical).path.rsplit('/', 1)[-1]
-        query = {'platform': 'web', 'bvid' if expected.startswith('BV') else 'aid':
-                 expected if expected.startswith('BV') else expected[2:]}
-        raw, _ = client.fetch(VIEW + '?' + sign(query, key))
-        view = source_json(raw)
-        if type(view.get('code')) is not int or view['code'] != 0 or not isinstance(view.get('data'), dict):
+        page, canonical = client.fetch(canonical, page=True)
+        state = source_json(page, page=True)
+        if state.get('error') not in (None, {}):
             raise DownloadError('站点明确限制访问或视频不存在，未尝试其他访问方式')
-        video = view.get('data', {}).get('View')
+        video = state.get('videoData')
         if not isinstance(video, dict) or not isinstance(video.get('rights'), dict):
             raise DownloadError('仅支持普通单视频，站点数据缺失或已变化')
         identifier = plain(video.get('bvid'), 12)
@@ -303,6 +341,15 @@ def extract(url, *, checkpoint=lambda: None):
             raise DownloadError('暂不支持付费、专属、互动或跳转到其他类型的视频')
         title = plain(video.get('title'), 512)
         duration = number(video.get('duration'), maximum=7 * 86400)
+        nav, _ = client.fetch(NAV)
+        session = source_json(nav)
+        if type(session.get('code')) is not int or session['code'] not in {0, -101}:
+            raise DownloadError('站点暂不允许预览，请稍后重试；未尝试其他访问方式')
+        images = session['data']['wbi_img']
+        keys = ''.join(urlsplit(images[name]).path.rsplit('/', 1)[-1].split('.')[0] for name in ('img_url', 'sub_url'))
+        if not re.fullmatch('[0-9a-f]{64}', keys):
+            raise DownloadError('站点WBI字段已变化')
+        key = ''.join(keys[index] for index in MIXIN)[:32]
         raw, _ = client.fetch(PLAY + '?' + sign({'bvid': identifier, 'cid': cid, 'fnval': 4048}, key))
         response = source_json(raw)
         if type(response.get('code')) is not int or response['code'] != 0 or not isinstance(response.get('data'), dict):
