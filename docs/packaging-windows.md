@@ -65,6 +65,23 @@ source head和预期exe hash是调用者声明，工具不认证远端Git或构�
 
 退出1表示检查失败；退出2表示有限扫描/对照完成但完整产品SBOM仍不完整，固定product_sbom_complete=false，不返回发行通过码。CLI核对范围/身份，交付另用固定官方1.6 Schema验证实际输出。未知版本/来源/模块映射、完整依赖边、传递许可/漏洞/签名、前端/其他组件与安装器payload继续分别处理；不替代check_release，也不改变现有打包或产品流程。
 
+## 冻结Python成员与本地构建源对应
+
+使用与该冻结包一致的CPython补丁版本及实际锁定构建环境，以前一命令生成的coverage.json为输入；`$buildPython`须指向该环境，工具不会安装/升级依赖或执行候选包代码：
+
+```powershell
+& $buildPython tools/frozen_python_members.py --payload dist/study_backend --coverage artifacts/frozen-sbom-01/coverage.json --output artifacts/frozen-members-01
+$membersExit = $LASTEXITCODE
+```
+
+输入coverage最多16MiB，输出须在payload之外、目录不存在且父目录存在。重新核实体集合/hash、锁、随包METADATA、全部内嵌目录及业务源码；不能只凭一份旧报告或caller head认定输入。对源锁中精确名称/版本的唯一安装分发读取原始METADATA/RECORD，RECORD每份最多4MiB、总100000行，选中构建源最多20000文件/逻辑1GiB；编译源码每份最多8MiB，其他文件最多256MiB。越界/链接/重解析、重复或畸形RECORD、被选中文件hash/长度不符、预算越界均失败。合法控制台脚本的../路径只计为忽略，绝不沿其读取site-packages之外的文件；没有RECORD SHA256的候选列为未验证。
+
+仅为实际存在的PYZ模块或实体文件建立对应。先核本地源文件与RECORD SHA256/长度，再将源码静态编译，与冻结code object的嵌套代码/常量/异常表比较；分别记录等价的优化等级0/1/2，多个等级相等时不推断当时的真实选项。实体文件须路径对应且字节SHA256相等。一个成员若对应多个构建包，保留全部候选并标歧义，不任选归属；namespace无代码不据前缀分包。没有实际唯一对应的环境包不投影为发行成员，不能因某包被匹配就声称它的全部文件都随包。
+
+members.json保存逐实际位置、PURL、源文件/RECORD/METADATA hash、未映射与歧义；python-members.cdx.json为这些唯一对应成员的CycloneDX1.6子集，以occurrence关联实际模块/文件位置。元数据hash不放成整个包的archive hash。工具末尾复核payload/coverage/锁/业务源码和选中的构建证据未变，失败不生成成功报告。
+
+CLI退出1表示失败，退出2表示有限对应完成；product_sbom_complete、upstream_provenance_verified及source_head_authenticated保持false。本地安装文件与RECORD/冻结代码相等不等于官方wheel/源码归档认证、完整包所有权、运行时可达性或完整依赖关系。未映射stdlib、基础ZIP、CArchive脚本/bootloader、原生DLL及其他产品组件继续后续核对；本命令不修改原始scanner输出、打包内容或check_release，不代替许可/漏洞/签名检查。
+
 ## 源码锁文件漏洞查询
 
 在确认两份锁文件仅包含可公开查询的依赖名后，以既有构建Python执行：

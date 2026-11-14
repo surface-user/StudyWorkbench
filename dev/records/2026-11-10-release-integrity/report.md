@@ -499,3 +499,41 @@ real05 coverage.json SHA256 59ee081298406076d537aeac7dfd0b6fe72a6f79218b12a44116
 实现、相关自动化及文档完成，REL-01b保持REVIEW；独立草稿PR/当前head CI与主Agent核验后才DONE。审查按用户要求暂缓、人工测试取消，未合并或发行。源码锁切片/此目录文件覆盖不关闭REL-01：剩余Python/native身份与来源、完整组件关系、前端/SDK/NuGet/CRT/WebView2/Office/Java/安装器payload仍需后续逐项核验，许可/漏洞/签名父任务保留。
 
 实际创建[独立草稿PR #42](https://github.com/surface-user/StudyWorkbench/pull/42)，分支codex/frozen-backend-sbom，base为#40最终b48b711，实现提交064a033444b7187967564ce330b5951c6391441d。精确六文件范围/其余447个base blob不变、原报告完整前缀、UTF-8/LF/尾空白与本地文档链接检查退出0；源码与候选均未改写。最终head/对应CI结果在PR实时说明维护，不为记录自身SHA反复提交；当前CI未知不能记通过。
+
+
+## 2026-11-14：REL-01c 冻结Python成员与构建源身份对应
+
+主Agent已核#42最终fb5b7a2e44377abc7b53c7eb4a3ed54166112a67及CI43366003202三组44步成功，登记REL-01b有限开发交付DONE。其文件目录覆盖不是全部包身份，2678个非业务PYZ模块、103PYD和其他非PE数据归属仍待核；完整REL-01不关闭。继续使用既有.local/goal-20261112/frozen-identities副本，开始前逐453个本地文件核对#42远端tree62d7092a309713630d3f103fd97b3b0d9b59dd20，全部Git blob相等，没有覆盖旧实现。root、#42、共享环境及原冻结payload保持。
+
+已读本副本AGENTS、现行需求/架构/题目协议/task、打包指南和dev证据规范。实现前先运行忽略artifacts/rel01c/probe.py的只读探针：固定#40原冻结exe SHA2563fba079e510e4550d086b7786973f937fa3c2a92e28efcd0e112d6bec82d50a2，复用现有嵌入目录/业务静态核验；从精确源锁版本的实际安装METADATA/原始RECORD建立本地来源索引，只在实际PYZ静态代码等价或实体文件字节hash相同且RECORD hash/长度通过时记候选对应，优化等级0/1/2分别记录。不会执行包内代码，不以所有环境包或模块名前缀直接认定发行成员；探针结果用于最小设计，产品实现尚未开始，先报主Agent。
+
+
+### 实现和实际边界
+
+主Agent确认上述只读设计后，实现tools/frozen_python_members.py及独立测试，另同步打包指南/task/本报告和[精选摘要](evidence/frozen-python-members-summary.json)，共六文件；不改原扫描器/打包参数、产品入口/数据库、依赖锁或其他任务。调用方只有新增显式开发CLI，无产品路径或exports需要接入。复用原inventory/embedded/metadata/bounded_inflate/equivalent/no_links与重复JSON键守卫，Python标准库读取实际构建环境，不增加依赖或联网。
+
+消费REL-01b coverage后先重新核固定payload集合/hash、锁、随包metadata、内嵌目录和43业务源码。以实际PYZ名/实体路径筛选RECORD后才读取构建文件；不会扫描所有环境文件当成发行内容。原始METADATA必须名称/版本唯一且与源锁匹配，候选源文件先核RECORD SHA256及长度，再进行静态code等价或实体字节比较；代码从不执行。每条匹配保存PURL、实际位置、源文件/metadata/RECORD hash及所有等价编译优化等级，多候选则保留歧义。最终源复核保持每个输入原有大小预算，不能用较宽的二进制预算读增长后的metadata/源码。
+
+输入coverage上限16MiB，RECORD/metadata各4MiB、全RECORD共100000行；选中构建证据20000文件/逻辑1GiB，编译输入8MiB/文件，其他源文件256MiB/文件。复用内嵌8MiB有界解压。记录预算计算只含需要读取的构建证据；合法../Scripts或其他不安全RECORD路径不沿出site-packages读取，没有SHA256的候选明确未验证。输出新目录保留失败现场，但观察到任一源/payload/锁/coverage变化不写最终JSON。
+
+members.json完整列出本地包与逐成员证据/未知；python-members.cdx.json仅为唯一对应成员的CycloneDX1.6子集，以occurrence关联实际位置。元数据hash不是包归档hash，不放在component hashes冒充归档。固定product_sbom_complete、upstream_provenance_verified、source_head_authenticated=false；退出1为失败、2为有限对应完成，不返回发行通过码。namespace、stdlib/基础ZIP、CArchive启动脚本/bootloader及其他未映射内容继续。METADATA/RECORD和字节/代码相等不证明官方来源、完整所有权、整包随带、运行时可达性或完整依赖边。
+
+### 当前结果与实际命令
+
+工作目录为本frozen-identities副本。IQ/IP为starlette-fix/.local/starlette-q-isolated（3.13.17）/starlette-p-isolated（3.12.7），pytest9.0.3，只读复用而不升级共享Q/P；Q为根.local/release-venv/Scripts/python.exe，仅运行既有Ruff或辅助验证。命令均设置PYTHONDONTWRITEBYTECODE=1，原始JSON/JUnit/log均在artifacts/rel01c，不提交完整日志/安装内容。
+
+- IQ/IP -X utf8 -m pytest backend/tests/test_frozen_python_members.py backend/tests/test_frozen_sbom.py backend/tests/test_source_sbom.py backend/tests/test_release_inventory.py -q --basetemp=artifacts/rel01c/tmp-q03或tmp-p03 --junitxml=artifacts/rel01c/q03.xml或p03.xml：原生测试权限各退出0、176通过（当时36新+原140），11.70/12.04秒，无失败或跳过。新增对应覆盖不执行夹具代码、实际成员与未使用环境包分离、共享归属歧义、原件不变、源码/数据差异不归属、RECORD/metadata完整性、输入/输出边界、精确版本、预算和期间变更拒绝。没有删除旧测试或降低断言。
+- 后续只调整fixture模块复用/import后，IQ/IP新专项各36通过；补充末尾来源复核继续遵守各自原预算的保护及2负例后，IQ/IP -X utf8 -m pytest backend/tests/test_frozen_python_members.py -q --basetemp=artifacts/rel01c/tmp-q05或tmp-p05 --junitxml=artifacts/rel01c/q05.xml或p05.xml：各退出0、最终38新专项通过，8.58/9.40秒。先前原140测试对应函数未变，不以旧176当成一次最终178全跑；完整本head全量另由CI执行。
+- Q -m ruff check backend tools：最终退出0（ruff03.log）；IQ tools/export_question_schema.py --check：退出0，Schema无漂移。工具未改业务代码，不在本地重复全产品功能/窗口/新冻结构建，独立PR当前CI仍须运行全部后端/桌面/冻结链。
+- IQ -X utf8 tools/frozen_python_members.py --payload ../starlette-fix/dist/study_backend --coverage ../frozen-sbom/artifacts/rel01b/real05/coverage.json --output artifacts/rel01c/real04：退出2（设计语义为有限成功），70个精确锁版本的实际环境包中只有55个获得实际唯一成员对应，2358个非业务PYZ模块与861实体，另有43业务源码原核；320非业务模块、108实体、154基础ZIP成员保持未映射，无歧义。检查14072条RECORD、3344份选中构建证据/124220456字节，前后payload/锁/coverage/业务源码及构建证据不变。pytest9.0.3和setuptools84.2.1均在实际成员中，不因开发分类漏掉。匹配源码的等价优化等级可不唯一，不声称真实编译选项已认证。
+- IQ -X utf8 artifacts/rel01c/verify_real.py：退出0（verify-real01.log）。本次55组件CDX通过原固定官方1.6 Schema及离线spdx/jsf引用；三份Schema的hash与REL-01a/01b记录一致，无网络解析回退。全部2358模块/861实体/PURL/源文件hash/等价等级及全部未映射集合与先前独立probe.py算法逐项一致；另核70包原metadata/RECORD hash、代码本身hash、CDX occurrence集合与所报匹配精确一致。不是只核组件数量。
+
+real04 members.json SHA256 77a42b28da7b3db61309a43146bdcebe67a0016e23454299d59a81e30a6efb5f；python-members.cdx.json SHA256 7b0c7b10f0e0fa7b53791082d14b1314dfafcc8879253df1512d0a149ecc0ef2；精选摘要SHA256 ebfb23c50531fb999ed09308bd8c74d07628b9c188d2110659fd392a81c64d9b。摘要只保留公共PURL、源/输入/输出hash、计数及未知，不含个人路径或安装源全文；完整成员位置/原始输出留artifacts。
+
+### 保留失败和交付状态
+
+首轮新增专项q01为34通过/2失败：共享来源夹具未将其METADATA列入RECORD，以及长度负例误按不匹配的字节数替换；仅修正夹具，保留原断言和日志。q02/p02各174通过/2失败，均为既有mklink /J夹具在受限进程中访问拒绝；改用全新任务目录及已授权原生测试权限后上述176×2通过，未跳过链接保护。早期Ruff仅import排序、未用Path和pytest fixture导入遮蔽；复用既有fixture模块对象后最终无诊断，未加广泛忽略。real01/02/03为中间实现的有限成功，原目录保留；最终以末尾输入预算保护的real04和本次校验为准。
+
+当前REL-01c实现/相关自动化和文档完成，REVIEW；仍需独立草稿PR、其最终head CI和主Agent核验后DONE。原REL-01b的2678非业务模块身份缺口本次有限减少为320，108实体（含53 DLL/19 PYD/17 PY/其他）仍未归属，完整来源/关系及其他发行组件仍未闭合，父REL-01/02/03保持。审查暂缓、人工取消，未合并或发行，不做数据清理或接模型。
+
+Q -X utf8 artifacts/rel01c/check_changes.py退出0：六文件范围、其余450个base blob保持、456最终文件、71本地文档链接/33调度行唯一性、UTF-8/LF/逐文件git diff --no-index --check及原报告前缀检查通过；两份运行依赖锁不变。检查/发布辅助文件仅在忽略artifacts中，不纳产品或Git。
