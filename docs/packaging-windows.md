@@ -48,6 +48,8 @@ check_release遇到任一闭包外未分类PE即拒绝发行并输出partial及�
 
 Office子进程才接收包内JAVA_HOME、UNO_JAVA_JFW_JREHOME文件URI和headless参数，PATH只包含Office程序、包内Java bin/server与系统目录；不继承JAVA_TOOL_OPTIONS或其他外来Java启动参数，不改主后端DLL目录或系统配置。用同版本LibreOffice的[Java框架直接模式](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/include/jvmfwk/framework.hxx)显式选JRE，输入限制、宏/脚本保护与进程预算保持。原不含Java组件仍支持，不自动发现开发机Java。
 
+源码与冻结helper共用固定bootstrap命令：配置仅从包内share/registry的schema/data/resource层和本任务profile读取，不加载HKLM/HKCU策略或扩展配置层；UNO服务/类型限定原包7份services及3份types注册文件，Java类型仅原包两份jar，不展开用户/共享/捆绑扩展unorc。所有路径由已核组件和任务目录生成file URI，不接HTTP/文档传入的bootstrap参数；环境从SystemRoot/WINDIR重新建立，不继承URE_BOOTSTRAP、INIFILENAME等配置来源。profile显式清空ooSetupConnectionURL；强制策略隔离由省略外来配置层实现，不依赖空值覆盖finalized策略。转换选项升v4，旧缓存与文件保留但须重新生成后使用。该措施不删除原组件、扩展文件或许可，不构成Windows文件/网络沙箱，也不证明TWAIN等所有动态路径不可达；证据及未验边界继续原报告。
+
 组合目录可交给原build-release.ps1的-OfficeRuntime入口，默认主包行为保持。实际加载、转换及限制见[发行任务报告](../dev/records/2026-11-10-release-integrity/report.md)。完整PE进程加载域/延迟导入门禁、发行SBOM、传递许可/源码义务、漏洞和签名仍须分别完成；本步骤不等于Office整包可发行或干净机验证。
 
 ## 源码锁文件SBOM
@@ -65,6 +67,23 @@ Office子进程才接收包内JAVA_HOME、UNO_JAVA_JFW_JREHOME文件URI和headle
 固定两个cataloger、显式配置、清除继承的SYFT配置环境变量、关闭更新与enrich/远端许可查询；生成CycloneDX 1.6 source.cdx.json，逐项核对包PURL/名称/版本/Git提交或host、来源文件及文件SHA256，额外/缺失/重复/不一致均失败。成功后复核原锁未变化，报告源范围、全部未知边界及SBOM hash。包集合与输入hash可重复核对；工具生成的时间戳/UUID会变化，不承诺文件字节完全相同。
 
 这是包含开发/构建/跨平台依赖的源码锁文件清单，未分类为最终运行时成员；没有冻结/原生、Flutter/Dart SDK实际版本、NuGet/CRT/WebView2/Office/Java及安装器payload覆盖，也没有完整依赖边、许可证原文/义务或漏洞结论。Syft推断的CPE不等于确认漏洞匹配。本命令不替代原check_release门禁；完整REL-01仍需对照实际发行包，REL-02/03单独处理许可与漏洞。
+
+## 冻结后端SBOM与覆盖对照
+
+对一个已核构建来源的后端onedir目录运行以下独立命令；`$verifiedSourceHead`和`$verifiedExeSha256`分别由该次构建的精确源码提交和exe字节提供。使用与冻结字节码一致的固定CPython 3.13.17，不执行候选包内代码：
+
+```powershell
+.local/release-venv/Scripts/python.exe tools/frozen_sbom.py --payload dist/study_backend --source-head $verifiedSourceHead --exe-sha256 $verifiedExeSha256 --syft .local/release-tools/syft-1.57.1/syft.exe --output artifacts/frozen-sbom-01
+$coverageExit = $LASTEXITCODE
+```
+
+输出须为payload外的新目录，父目录须存在。复用固定Syft exe hash、锁解析及staging文件/链接拒绝；本清单也包含已存在的根build-inventory.json。限20000实体文件、每文件256MiB、总3GiB；原件不复制、修改或执行。扫描仅启用Python installed/PE/binary cataloger及全部文件SHA256，关闭更新/enrich/远端许可查询并清除继承SYFT配置变量。保留原始backend.cdx.json（CycloneDX 1.6）、backend.syft.json及日志；coverage.json逐项核对实体路径集合/hash、实际随包METADATA身份与源码锁，以及两种扫描输出中的候选身份/位置。缺失、额外、重复、错版本或内容变化失败，不输出成功对照。
+
+静态读取CArchive/PYZ和base_library.zip目录，检查容器范围、数量、重复/重叠和名称；不落地提取或运行代码。PYZ记录的是压缩字节hash，不冒称全部解压代码身份；namespace条目无内容。ZIP限单成员8MiB/总256MiB，记录实际读出的字节hash，成员仍不据名称认定包来源。全部study_workbench模块须与当前源码按嵌套代码/常量/异常表相等，另存源码SHA256/Git blob。结束复核payload、锁及业务源码不变；不声称原子文件系统快照。
+
+source head和预期exe hash是调用者声明，工具不认证远端Git或构建来源；实际交付仍须把记录的源码blob核对到指定head/tree及构建证据。METADATA只证明随包声明，不能代表全部冻结Python成员或官方归档认证；PE资源版本/PURL/CPE保留为未核候选，PYD、内嵌模块及源锁中未观察到METADATA的包分别列缺口，不能把“缺元数据”写成“未打包”。文件覆盖数量不是完整包身份覆盖。latex2mathml的项目MIT声明不能覆盖其上游内嵌数据的LPPL及修改来源待核事项；此工具不添加当前未用的HTML/MathML导出资源。
+
+退出1表示检查失败；退出2表示有限扫描/对照完成但完整产品SBOM仍不完整，固定product_sbom_complete=false，不返回发行通过码。CLI核对范围/身份，交付另用固定官方1.6 Schema验证实际输出。未知版本/来源/模块映射、完整依赖边、传递许可/漏洞/签名、前端/其他组件与安装器payload继续分别处理；不替代check_release，也不改变现有打包或产品流程。
 
 ## 源码锁文件漏洞查询
 
@@ -94,6 +113,10 @@ python tools/source_licenses.py --package-config apps/desktop/.dart_tool/package
 输入锁各限1MiB，其他证据文件各限4MiB；Dart每包许可发现限10000条。拒绝链接/重解析、源文件越界及已有输出；按内容SHA256保存原字节，报告记录每包版本、来源、原相对路径、长度/hash和缺证项，不输出本机绝对目录。末尾复核锁/config未变；错误保留现场且不生成成功report。执行依赖稳定的本地构建目录，不构成原子快照或恶意构建依赖沙箱。
 
 退出0仅表示选定本地证据无已发现缺口，退出2表示报告已生成但有缺文/版本/RECORD缺证，退出1表示输入/完整性错误。report始终明确`product_licenses_complete=false`、`archive_provenance_verified=false`、`distribution_obligations_reviewed=false`；8类SDK锁占位另列未知。命名发现可能漏掉源文件内嵌或其他名称的通知，缺证不得以元数据标签代替原文。最终产品成员、完整官方来源、组合许可/源码提供义务、NOTICE及Office/Java/native/安装器仍由REL-01/02后续核验。
+
+精确版本`latex2mathml3.81.1`另有[固定来源补充](../packaging/licenses/latex2mathml-3.81.1/provenance.json)：官方wheel/sdist都漏带项目LICENSE，经固定tag的九个package文件逐字节核对后，收集器将本地九文件与已记录SHA256比较，再复制固定MIT和LPPL原文。任一package文件、许可文本、版本或来源配置不符即失败；采集中再次核配置及package文件未变。补充记录标记`repository_supplement`，不伪装为installed RECORD文件，也不成为其他版本或其他包的兜底。
+
+项目代码MIT与`unimathsymbols.txt`的LPPL-1.3-or-later分开映射，保留数据作者、原头部日期及vendor修改后未更新通知的事实。补齐原文仍保留上游归档缺文、LPPL原Work/修改条件待核；此组件有issue，CLI仍退出2，完整产品/归档来源/分发义务仍false。该补充不向产品payload添加数据或修改原依赖，不证明HTML/MathML导出已受支持；最终发行复制/成员范围和义务另核。
 
 ## 规划中
 

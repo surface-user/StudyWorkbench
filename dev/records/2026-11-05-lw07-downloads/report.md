@@ -113,3 +113,101 @@ D F --no-version-check analyze --no-pub：退出0，无问题，101.6秒，analy
 最终D format --output=none --set-exit-if-changed lib test integration_test首次指出新增居中滚动行未格式化，退出1；按原格式器修正后退出0，87文件0变化。仅空白修正，不重复功能测试；当前head CI继续执行全套。此切片仍REVIEW，等待独立PR和主Agent验收，Windows本地发行构建未重跑，由当前head CI验证。
 
 实际交付：[独立草稿PR #27](https://github.com/surface-user/StudyWorkbench/pull/27)，分支codex/download-history-pagination，base为#23的2645366，实施提交390072640b0db6f4c5cdf831282602a4a4ee5c9f，八文件。补链接后的最终head CI以PR实时记录为准，未核实前保持REVIEW，主Agent检查后登记DONE；不以父head通过替代本项CI，未合并/发行。
+
+### DL-01b最终验证与主Agent验收（2026-11-13）
+
+[PR #38](https://github.com/surface-user/StudyWorkbench/pull/38)最终head `842b19df5100e55960f98269283743d37d63433b`的[PR CI43362970857](https://github.com/surface-user/StudyWorkbench/actions/runs/43362970857)三job/46步骤全部成功，公网步骤实际执行。Python3.12为745通过/433.52秒，3.13.17为745通过/386.97秒；桌面构建、新冻结44模块源码一致、既有探针与公开下载验证均成功。
+
+源码真实持久队列写入256KiB后显式暂停，新进程以相同attempt/路径/前缀发出Range/If-Range，取得206及291914字节；WPT同域302和跨域302至固定MDN对象完成，独立重下SHA256一致。另一次真实源码暂停由未经注入的冻结exe恢复，受限PATH、相同attempt/前缀、最终大小/hash与入库通过。冻结206由严格生产范围校验、44模块一致和最终结果推断，未直接抓包；不混作直接响应观测。
+
+源码观察器累计1665678字节，另一冻结恢复前缀262144字节，冻结实际追加291914字节，合计2219736响应体字节；不计TLS/报头。源码硬限5MiB，冻结原512MiB/15分钟保护不变，外部观察不构成5MiB硬保证。花视频SHA256 `c6f8a348953395598a9a73b9bab1676436410797bce9f398f4be1531d6e76dda`，冻结exeSHA256 `d5b706aa36d88ff597d046ce4a5665aff3f0fefc1254133693e89f1717bf9911`。
+
+原始日志与筛选摘要保存在原独立副本`download-range/artifacts/dl01b/`，摘要`ci-public-summary-842b19d.json` SHA256 `cbdfa5cbe5211ca53dc9bcafdd707097fbfdc78c73fa6684542920cc7359fce8`。主Agent独立核对head/CI、原桌面日志和摘要hash后，在PR描述登记DL-01b DONE；结合#24已交付的原范围，父DL-01 DONE。此前失败及当时状态段落保留，LW-07后续站点/质量/转码不销项；审查暂缓、人工取消，未合并/发行。
+
+## DL-02a：共同契约与固定组件候选评估（2026-11-13）
+
+本项只交付设计文档。基线为#38精确head `842b19df5100e55960f98269283743d37d63433b`，451个受跟踪文件逐一校验Git blob后复制到独立`.local/goal-20261112/download-extractor-plan`，不移动#38、根工作区或共享环境。修改范围仅现有契约、依赖登记、task和本报告，无产品代码/API/DB/UI/依赖/工作流改动。
+
+### 范围核对与最小设计
+
+完整读取AGENTS、requirements、architecture、question-content-spec、task及现行下载/API/数据/安全约束；基线task的DL-02、路线第3节、契约第8/10节和ADR0014均未指定网站及具体授权来源。早期方向输入也只提出待定项，不能把“Seal交互参考”或上游支持列表当成站点决策。主Agent询问后，用户明确回复“B站,抖音,爱奇艺,”，按此范围先从B站推进；本版已登记三站，不再写目标站点未知。尚缺自己发布或已获准下载、无需登录的单视频样本，实际下载不得以等待超时或上游测试URL代替授权。
+
+共同契约采用：明确发起提取→有界纯文本质量预览→用户确认→复用现有持久任务。现有直链的无特殊headers单文件条件只界定可直接复用范围；用户已选B站，公开固定Referer/Origin、WBI参数可在服务端精确域/用途白名单及逐跳校验下另作普通能力设计，不构成永久阻断。元数据预览先行；分轨/HLS/DASH依赖DL-03的传输/合流，其前置改为明确的格式交接而非整个DL-02完成，避免循环。临时匿名站点cookies与登录凭据区分，后续先定任务隔离/生命周期/域范围，本项不启用或读取浏览器会话。短期候选引用绑定空间/来源/版本/格式，重启/过期重新确认；成功创建的同幂等请求优先返回原任务。媒体传输、512MiB与15分钟、强ETag/206/前缀hash、失败字节和身份/备份规则保持。实际来源追溯与原子登记、预算、API/表结构仍在实施前设计，本项不预建协议名称或迁移。
+
+提取器的页面/API/所有内部请求也必须执行现有公网IPv4固定地址与TLS/每跳守卫。固定源码适配是候选路径；独立进程/Job只是期限与生命周期约束，不能冒充完整OS网络沙箱。stock CLI的metadata/skip-download模式仍会联网，其配置、插件、外部进程、远程组件和默认请求处理均须纳入验证；输入/最终URL检查不足。无法证明全部实际请求受控的提取器不得纳入支持，不能用换代理、浏览器cookies或关闭TLS绕过。
+
+### 固定官方来源与分发差异
+
+使用GitHub连接器只读获取[2026.10.26 release](https://api.github.com/repos/yt-dlp/yt-dlp/releases/tags/2026.10.26)及[tag ref](https://api.github.com/repos/yt-dlp/yt-dlp/git/ref/tags/2026.10.26)，指向commit `f264a6cbd1f630894da0f368df00f8aae50140e0`；发布时间2026-10-26T22:25:26Z。固定commit的README、LICENSE、pyproject、THIRD_PARTY_LICENSES、YoutubeDL、networking/common与_urllib、plugins、__init__用于下述有限评估，未下载/安装/执行发行二进制。
+
+- 官方文档将Git/PyPI源码与wheel的Unlicense，和PyInstaller成品的GPLv3+组合明确区分；release tarball另含ISC/MIT的JS代码。产品分发对象尚未选定，不能把“yt-dlp Unlicense”套到Windows exe。
+- Python要求≥3.11与本项目3.12/3.13名义匹配；官方Windows x64成品声明Win10+。这不是本项目源码或冻结集成实测。release API的大小/digest见[依赖登记](../../../docs/dependencies.md#站点提取候选未采用)，只是官方元数据，未取成品字节核验。上游提供SHA2校验清单及GPG签名，但本轮没有下载验签，不称供应链通过。
+- 基础Python依赖为空不等于站点能力无需可选组件。default extra含yt-dlp-ejs 0.8.0；上游说明完整YouTube支持另需EJS和JS引擎。EJS/JS运行时/浏览器仿真/FFmpeg均未选用，传递许可和实际配置未审。固定版本也不等于无漏洞，本轮未运行扫描或最终SBOM。
+- `YoutubeDL.build_request_director`能够选择request handlers，默认使用已注册handlers；`urlopen`处理认证等输入，plugins具有发现/加载路径。这支持“可调查固定源码适配”的判断，不证明所有提取器仅走此入口。所选站点确定后还须检查实际提取器调用路径和禁止回退/外部程序，普通CLI参数不能代替这项证明。
+
+补读同commit的bilibili.py、tiktok.py与iqiyi.py后，三站分别列入[依赖登记](../../../docs/dependencies.md#站点提取候选未采用)：BiliBiliIE带Referer、WBI签名及DASH/多段候选；DouyinIE缺详情时要求fresh cookies；国内IqiyiIE走HTTP并返回m3u8，国际IqIE另用PhantomJS签名。这里只观察第三方提取器，未据此确认网站官方允许调用或下载权限。普通固定headers/分轨/匿名会话分别设计，不能混同权限突破；当前不启用cookies/挑战脚本、HTTP降级、付费/DRM绕过，不将YouTube EJS或国际iq.com暗中加到用户范围。
+
+本切片更新文档入口中的陈旧“下载队列未实现”为“标准库直链队列已实现、yt-dlp未接入”；不将候选提升为采用项。不引入依赖、不下载exe、不读取个人库、不接模型/登录/DRM。DL-02a可作为有限文档交付，父DL-02/实际DL-02b和DL-03仍未实现；审查暂缓、人工取消，未合并/发行。
+
+### 文档验证与交付
+
+本项无业务实现，新增行为测试不适用；完整业务回归由本PR当前head CI执行，普通CI不得因文档设计新增任意公网提取。#38限定分支公网步骤在本分支跳过，不重复宣称为本项真实站点验证；未核实前DL-02a保持REVIEW。
+
+实际在独立目录执行`Q .local/validate_dl02a.py`：首轮退出1，仅Git全局autocrlf对LF文件的转换警告被校验器当作stderr失败；没有文档空白错误。固定该次只读diff命令为`git -c core.autocrlf=false diff --no-index --check <原文件> <新文件>`，不改全局Git配置或放宽空白检查。复验退出0：451文件中仅预期4文档变化，82处本地引用/6处锚点存在，40个原任务标识保留，原报告全文前缀不变；每个no-index命令因存在差异退出1且stdout/stderr均空，聚合校验为0。摘要保存在`artifacts/dl02a/validation.json`，本地工具/产物不进入Git。候选官方文件均通过只读GitHub连接器取得，未执行第三方程序；共享Python环境不变。后续PR/最终head CI以独立PR实时记录核对，不沿用#38绿灯替代本项。
+
+已创建并附加[独立草稿PR #45](https://github.com/surface-user/StudyWorkbench/pull/45)，分支`codex/download-extractor-plan`，base为#38的精确842b19d，初始文档提交`bf748c80f602167f97f70e75e33a0b5bb06b74e5`。本链接补交后以PR最终head的检查为准，DL-02a待主Agent验收；不因文档完成登记实际站点下载通过，代码审查暂缓、人工取消，未合并/发行。
+
+## 2026-11-13 DL-01b：固定公网Range与重定向探针
+
+独立副本`.local/goal-20261112/download-range`基于PR #34最终8b29a27008e64e0cce6615a2135edda1125a435d；远端449个Git blob与本地逐项一致，未覆盖根checkout及其他任务副本。主Agent已核API-01/01a原退出条件和该head CI，任务表及原API报告同步DONE，保留旧偶发Office关闭失败，不把额外细粒度业务码强加为父项未完成条件。DL-01a源码/冻结公开下载与备份恢复由[PR #24](https://github.com/surface-user/StudyWorkbench/pull/24)交付，本切片补真实正向Range和重定向；不因文档基线较旧而重复开发下载业务。
+
+### 范围与固定样本
+
+- 只增加`tools/check_public_downloads.py`开发探针、离线探针测试、显式CI步骤及使用/任务/本报告；生产下载器、接口、数据库、Flutter和依赖锁未改。
+- MDN [flower.webm](https://github.com/mdn/interactive-examples/blob/9991b045e1561681d3ffc66215b92f68531ec97b/live-examples/media/cc0-videos/flower.webm)，固定commit9991b045e1561681d3ffc66215b92f68531ec97b，554058字节，Git blob `5b8edf7d8384c057dfb13627073288cebfb54d74`。[该commit LICENSE](https://github.com/mdn/interactive-examples/blob/9991b045e1561681d3ffc66215b92f68531ec97b/LICENSE)为CC0-1.0。固定raw URL为传输源，独立对象身份校验必须包含Git blob头，不把Git SHA误当文件原始SHA1。
+- WPT `/media/2x2-green.mp4`是3503字节的程序生成单帧样本，Git blob `157361c2ddc97fc1179006ab1dfa9639fe14950f`；[引入提交2305706](https://github.com/web-platform-tests/wpt/commit/23057064c87f42aba0615705b11570ace9cb4324)保留生成命令。[WPT LICENSE](https://github.com/web-platform-tests/wpt/blob/master/LICENSE.md)为BSD-3-Clause，版权所有web-platform-tests contributors；不把其称为CC0。只临时下载测试，不随Git/安装包/CI构建输入分发样本；部署内容变化则对象hash检查失败。
+- 使用WPT现行[common/redirect.py](https://github.com/web-platform-tests/wpt/blob/master/common/redirect.py)的`location`参数分别验证同域相对跳转到green和跨域到固定MDN文件。开发日志须实际看到302/指定Location，随后生产传输再验每跳DNS/TLS和最终对象hash，仍最多3次重定向。
+
+### 验证设计与边界
+
+先通过产品`resolve/PinnedHTTPS`预检HEAD固定长度/强ETag、If-Range单字节206。真实源码后端用HTTP API创建持久任务，原worker和transfer实际写入首个256KiB；开发入口仅让该进度可观察并等待普通pause。暂停API/原进度处理落库后关闭进程；新源码进程显式resume，核同attempt/路径/前缀、实际Range/If-Range及206范围，独立重下核固定Git对象和SHA256。两个重定向也经过普通任务/入库，重复花视频复用媒体身份。
+
+`--exe`再用另一份真实源码下载前缀，通过未经注入的冻结后端恢复。冻结子进程PATH仅System32，清除PYTHONPATH/PYTHONHOME，独立cwd；不需要系统Python/开发包。其206结果是结合固定冻结源码校验、产品强ETag/Content-Range拒绝逻辑与最终同attempt/前缀/hash推断，并非直接抓包观察冻结响应。源码观察器不替换DNS/TLS或响应内容，不伪造部分文件、SQL状态或服务端Range。
+
+源码观察器限制累计响应体读取5MiB，并拒绝超过固定样本长度的响应。全流程预期约2.2MiB响应体，5MiB为探针预期总预算。冻结保持产品512MiB/15分钟原保护，外部轮询见长度偏离请求暂停并失败；不声称轮询可硬保证5MiB。汇总分别列源码读取量与冻结文件实际追加量，不将TLS报头/握手开销计入响应体。后端/工作子进程、目标文件和库均属本次新目录，不读个人资料。
+
+公网步骤只在本证据分支`codex/public-download-range`的PR事件显式开启；普通pytest和其他分支不联网，不为触发任务合并main。[GitHub官方说明](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow)要求workflow_dispatch工作流先位于默认分支，因此本次不依赖尚未合并的新手工工作流。CI只在控制台输出筛选过的固定公开响应元数据/摘要，不上传下载媒体/个人库。
+
+### 本地实际命令与结果
+
+以下在本独立源码目录执行；Q为根`.local/release-venv/Scripts/python.exe`3.13.17，P为根`.venv/Scripts/python.exe`3.12.7，共享依赖均未升级。产物为本目录`artifacts/dl01b/`。
+
+- 首轮`Q -m pytest backend/tests/test_public_download_check.py backend/tests/test_media_download_http.py backend/tests/test_media_downloads.py -q --basetemp=.local/dl01b-target01 --junitxml=artifacts/dl01b/target01.xml`退出0：66通过，13.27秒。补冻结入口后target02同专项退出0，66通过，14.85秒。
+- 补错误Range/预算停止/真实后端跨进程后，同专项Q使用target03目录与XML/log退出0：73通过，18.10秒；P使用target31201目录与XML/log退出0：73通过，20.93秒。原Starlette/anyio弃用警告保留。覆盖固定对象hash与原始SHA1区分、变长/同长损坏、逐块预算、真实transfer首块落盘/hash、不联网opt-in拒绝、旧目录保留、假206/ETag/范围/长度拒绝、超预期暂停及真实源码后端启动/关闭/重启。普通下载安全/队列既有断言全保留。
+- 首次Ruff退出1，仅脚本设置自身backend搜索路径后导入的E402；按开发入口需要局部注明，不全局关闭规则。`Q -m ruff check backend tools`最终退出0，ruff01.log。初始化基线校验曾漏显式UTF-8退出1，补正确解码后449文件全相同；无源码覆盖。
+- `Q tools/check_public_downloads.py --allow-public-fixtures --test-root .local/dl01b-public01`退出1，在原resolve拒绝，未发送媒体请求；首次控制台编码显示不完整。设置PYTHONUTF8=1后用全新public02再跑同命令仍退出1，public02.log保留完整错误。系统DNS实查raw.githubusercontent.com=`198.18.0.14`、wpt.live=`198.18.0.28`，dns02.json；不改hosts/代理，不放宽禁止网段，不据离线73项称公网通过。
+- 无生产改动，复用PR #34既有冻结包仅作入口验证：`Q tools/check_frozen_sources.py --exe ../api-errors/dist/study_backend/study_backend.exe`退出0，44冻结模块与本源码匹配；开发探针的原冻结入口实际启动、health、空下载列表、父管道关闭退出全部通过，frozen-source01.log/frozen-entry01.log。此处没有公网Range，当前head CI将重新构建后执行完整公网探针。
+
+实现/离线相关自动化已完成，真实公网正向Range/重定向/新冻结恢复仍等待本PR限定CI验证，DL-01b保持IN_PROGRESS，不销父DL-01。失败现场和历史Commons缺强ETag/DNS证据保留；审查暂缓、人工取消、未合并/发行，不引入站点提取/转码/模型。
+
+交付前7文件逐项git diff --no-index --check无诊断、72处本地Markdown目标存在，delivery-validation01.log，聚合退出0；全量Ruff和Question Schema漂移检查均退出0。未修改产品/UI，不另跑本地Flutter或重建重复冻结包，当前head CI继续全套后端/桌面/新冻结与公网步骤。
+
+已创建[独立草稿PR #38](https://github.com/surface-user/StudyWorkbench/pull/38)，分支codex/public-download-range，base为#34最终8b29a27；初始实现提交9746c207411e0e8244bbf9c06701907c4405df77，7文件。PR限定公网步骤在PR事件执行，push轮不将跳过记为通过。补交本链接后的当前head完整CI、公网结果及主Agent核验结论以PR实时记录为准，未核实前保持IN_PROGRESS，不使用父head或旧实现head绿灯代替；未合并/发行。
+
+### 初轮公网MIME拒绝及固定托管修正
+
+初始9746c20的[PR CI43358807604](https://github.com/surface-user/StudyWorkbench/actions/runs/43358807604)，以及链接跟进bb402e5的[PR CI43359034632](https://github.com/surface-user/StudyWorkbench/actions/runs/43359034632)，均实际连通公开IPv4；HEAD长度554058、强ETag和`bytes=0-0`的206/Content-Range全部通过。随后普通任务GET被产品拒绝“下载响应不是所选媒体格式”，两轮公网步骤退出1，未达到真实暂停/续传。初版日志没有保留Content-Type具体值，因此不补造其具体MIME；这里只确认不在产品允许集合。两份完整desktop日志保留于artifacts/dl01b/ci-<run>-desktop.log；不是DNS失败，也不能据前置206称整项通过。
+
+bb402e5的Python3.12完整CI为740通过，357.82秒；3.13完整pytest/R1–R5同样通过，桌面Flutter/Windows构建/44模块冻结/既有冻结探针均通过，但公网失败使整个PR轮不通过。原head与新head的结果分开，不能用push跳过公网的绿灯抵销。
+
+只修正测试来源：将传输固定为`https://mdn.github.io/shared-assets/videos/flower.webm`。[MDN官方shared-assets说明](https://github.com/mdn/shared-assets/blob/main/README.md)明确指定此托管域；其videos目录元数据为同一554058字节/Git blob `5b8edf7d8384c057dfb13627073288cebfb54d74`，保留上述固定旧commit的CC0来源及对象身份约束。托管URL可能更新，任何不同字节继续失败；不改生产MIME、DNS、TLS、Range守卫。预检现在提前验证HEAD/206的MIME，选取日志增加Content-Type，错误MIME不读媒体正文；不增加自动选源或降级绕过。
+
+新增3项MIME拒绝用例后，Q同专项target04退出0：76通过、18.24秒；P target31202退出0：76通过、20.90秒，XML/log保留；Ruff全量退出0。新固定域本地public03实际仍在resolve被拒，退出1，mdn.github.io=`198.18.0.70`，public03.log/dns03.json保留；未绕过本机网络，等待新head CI实测。
+
+### WPT未知长度响应与探针修正
+
+098ba18的[PR CI43360984198](https://github.com/surface-user/StudyWorkbench/actions/runs/43360984198)中，两组后端全部成功：Python3.12为743通过/424.04秒，3.13.17为743通过/449.20秒；R1–R5/JUnit及桌面公网之前各步骤通过。公网阶段实际从MDN取得video/webm、554058字节和强ETag，源码真实首块256KiB暂停后，新进程发出`Range: bytes=262144-`与相同If-Range，返回206、291914字节、`Content-Range: bytes 262144-554057/554058`；同attempt/前缀及固定Git对象校验后进入重定向阶段。
+
+WPT同域302实际到达目标video/mp4，但该响应没有Content-Length，生产下载器合法报告`total=None`；开发观察器把未知总长度误判为固定样本变长，抛出`Public fixture size changed`，公网步骤退出1。不是产品下载失败的修复，不据已通过源码Range把未到达的跨域/冻结步骤记为通过。完整日志ci-43360984198-desktop.log保留。
+
+只将开发观察器的总长条件改为None或固定长度，逐块实际字节仍不得超过固定3503/554058，落盘最终长度/Git对象/SHA256检查保持。增加未知Content-Length的真实transfer自编容器成功与多1字节拒绝/保留文件两例；未改生产或降低已有断言。Q专项target05退出0：78通过/37.57秒；P target31203退出0：78通过/41.70秒，XML/log保留；两轮并发运行，Ruff全量退出0。新head继续完整CI与真实公网验证，整体保持IN_PROGRESS。
