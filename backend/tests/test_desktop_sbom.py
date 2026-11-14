@@ -139,7 +139,115 @@ def desktop(tmp_path, collector, monkeypatch):
 
 def run(d):
     return d['tool'].generate(*(d[k] for k in ('artifact', 'provenance_file', 'source_tree_file', 'source',
-        'engine_archive', 'webview_package', 'pub_archives', 'sdk', 'output')))
+        'engine_archive', 'webview_package', 'pub_archives', 'sdk', 'output')), icu_archive=d.get('icu_archive'))
+
+
+def pin_icu(d, monkeypatch, contents=None, extra=None):
+    path = d['artifact'].parent / 'host-artifacts.zip'
+    path.write_bytes(zip_bytes(contents if contents is not None else {
+        'icudtl.dat': d['payload']['data/icudtl.dat'], 'compiler.exe': b'Must not execute or project as a member'}, extra))
+    d['icu_archive'] = path
+    monkeypatch.setattr(d['tool'], 'ICU_ARCHIVE_BYTES', path.stat().st_size)
+    monkeypatch.setattr(d['tool'], 'ICU_ARCHIVE_SHA256', d['tool'].sha256(path.read_bytes()))
+    return path
+
+
+def test_icu_official_archive_provider_does_not_certify_independent_icu_or_use_cache(desktop, monkeypatch):
+    d, tool = desktop, desktop['tool']
+    path = pin_icu(d, monkeypatch)
+    (d['sdk'] / 'bin/cache/artifacts/engine/windows-x64/icudtl.dat').unlink()
+    r = run(d)
+    p = r['physical_files']['data/icudtl.dat']
+    identity = 'pkg:generic/flutter-host-artifacts@' + tool.ENGINE_REVISION
+    assert p['source_identity'] == identity and p['copied_source_bytes_verified']
+    assert p['role'] == 'copied_host_archive_icu_data' and p['icu_version'] is None
+    assert not p['independent_icu_identity_verified'] and not p['license_obligations_verified'] and not p['publisher_signature_verified']
+    assert p['sources'] == [{'member': 'icudtl.dat', 'sha256': tool.sha256(d['payload']['data/icudtl.dat']),
+                            'archive_sha256': tool.sha256(path.read_bytes()), 'archive_bytes': path.stat().st_size,
+                            'archive_url': tool.ICU_ARCHIVE_URL, 'official_archive_verified': True}]
+    assert len(r['physical_files']) == 10 and len(r['copied_member_packages']) == 4
+    assert not r['upstream_provenance_verified'] and not r['product_sbom_complete'] and not r['AOT_source_equivalence_verified']
+    bom = json.loads((d['output'] / 'desktop.cdx.json').read_bytes())
+    provider = next(c for c in bom['components'] if c.get('purl') == identity)
+    assert provider['name'] == 'flutter-host-artifacts' and provider['version'] == tool.ENGINE_REVISION
+    assert provider['evidence']['occurrences'] == [{'location': 'data/icudtl.dat'}]
+    assert provider['hashes'] == [{'alg': 'SHA-256', 'content': tool.ICU_ARCHIVE_SHA256}]
+    assert {'name': 'studyworkbench:identity-scope', 'value': 'archive-provider-not-independent-ICU-package'} in provider['properties']
+    assert len(bom['components']) == 14 and 'licenses' not in provider
+    assert not any(c['name'] == 'compiler.exe' for c in bom['components'])
+
+
+@pytest.mark.parametrize('pin', ['ICU_ARCHIVE_BYTES', 'ICU_ARCHIVE_SHA256'])
+def test_wrong_configured_icu_archive_never_falls_back_to_matching_cache(desktop, monkeypatch, pin):
+    pin_icu(desktop, monkeypatch)
+    monkeypatch.setattr(desktop['tool'], pin, 1 if pin.endswith('BYTES') else '0' * 64)
+    with pytest.raises(ValueError, match='Wrong fixed ICU host archive'):
+        run(desktop)
+    assert not desktop['output'].exists()
+
+
+@pytest.mark.parametrize('kind', ['missing', 'directory', 'traversal', 'duplicate', 'symlink', 'encrypted'])
+def test_fixed_icu_archive_still_checks_all_zip_entries_and_member_type(desktop, monkeypatch, kind):
+    d = desktop
+    contents = {'icudtl.dat': d['payload']['data/icudtl.dat']}
+    extra = None
+    if kind == 'missing':
+        contents = {'other.dat': b'No selected member'}
+    elif kind == 'directory':
+        contents = {'icudtl.dat/': b''}
+    elif kind in ('traversal', 'duplicate'):
+        extra = '../outside' if kind == 'traversal' else 'ICUDTL.DAT'
+    elif kind == 'symlink':
+        extra = zipfile.ZipInfo('link')
+        extra.create_system, extra.external_attr = 3, (stat.S_IFLNK | 0o777) << 16
+    path = pin_icu(d, monkeypatch, contents, extra)
+    if kind == 'encrypted':
+        raw = bytearray(path.read_bytes())
+        at = raw.index(b'PK\x01\x02')
+        raw[at + 8] |= 1
+        path.write_bytes(raw)
+        monkeypatch.setattr(d['tool'], 'ICU_ARCHIVE_SHA256', d['tool'].sha256(raw))
+    with pytest.raises((ValueError, KeyError)):
+        run(d)
+    assert not d['output'].exists()
+
+
+def test_actual_icu_mismatch_does_not_use_local_cache_or_silently_report_unknown(desktop, monkeypatch):
+    pin_icu(desktop, monkeypatch, {'icudtl.dat': b'Other official member fixture'})
+    with pytest.raises(ValueError, match='Actual ICU bytes differ'):
+        run(desktop)
+    assert not desktop['output'].exists()
+
+
+def test_icu_archive_missing_path_does_not_use_matching_local_cache(desktop):
+    desktop['icu_archive'] = desktop['artifact'].parent / 'missing.zip'
+    with pytest.raises(OSError):
+        run(desktop)
+    assert not desktop['output'].exists()
+
+
+@pytest.mark.parametrize('limit', ['MAX_READ_BYTES', 'MAX_MEMBER_BYTES'])
+def test_icu_member_is_subject_to_shared_declared_and_actual_read_budgets(desktop, monkeypatch, limit):
+    pin_icu(desktop, monkeypatch)
+    monkeypatch.setattr(desktop['tool'], limit, 1)
+    with pytest.raises(ValueError, match='budget'):
+        run(desktop)
+    assert not desktop['output'].exists()
+
+
+def test_icu_archive_is_rechecked_after_other_sources_are_matched(desktop, monkeypatch):
+    d, tool = desktop, desktop['tool']
+    path = pin_icu(d, monkeypatch)
+    original = tool.pub_contents
+
+    def mutate(raw, budget):
+        result = original(raw, budget)
+        path.write_bytes(path.read_bytes() + b'changed after read')
+        return result
+    monkeypatch.setattr(tool, 'pub_contents', mutate)
+    with pytest.raises(ValueError, match='changed'):
+        run(d)
+    assert not d['output'].exists()
 
 
 def test_actual_files_and_archives_do_not_project_build_packages_or_generated_code(desktop):
@@ -337,13 +445,16 @@ def test_source_growth_cannot_read_past_remaining_total_input_budget(desktop, mo
     assert not d['output'].exists()
 
 
-def test_cli_returns_only_incomplete_success_and_refuses_existing_output(desktop, monkeypatch):
+@pytest.mark.parametrize('official_icu', [False, True])
+def test_cli_returns_only_incomplete_success_and_refuses_existing_output(desktop, monkeypatch, official_icu):
     d = desktop
     argv = ['tool']
     for flag, key in [('artifact', 'artifact'), ('provenance', 'provenance_file'), ('source-tree', 'source_tree_file'),
         ('source', 'source'), ('engine-archive', 'engine_archive'), ('webview-package', 'webview_package'),
         ('pub-archives', 'pub_archives'), ('sdk-root', 'sdk'), ('output', 'output')]:
         argv += ['--' + flag, str(d[key])]
+    if official_icu:
+        argv += ['--icu-archive', str(pin_icu(d, monkeypatch))]
     monkeypatch.setattr(sys, 'argv', argv)
     assert d['tool'].main() == 2
     with pytest.raises(SystemExit) as exc:

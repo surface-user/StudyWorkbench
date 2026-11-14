@@ -175,7 +175,7 @@ python tools/source_licenses.py --package-config apps/desktop/.dart_tool/package
 `tools/desktop_sbom.py`对一个已另核CI/run/head/tree和服务端digest的Windows产物离线运行；不启动exe、AOT、脚本或构建，不解包到缓存。CI的Release输入不是完整staging/安装器，源码锁/config或构建包目录也不是实际内嵌成员清单。调用者先用连接器取得固定artifact ZIP与公开服务元数据，再准备source-tree（commit/tree/普通blob entries）及provenance（run/artifact/checkout）快照；工具不联网认证这些声明。
 
 ```powershell
-& $buildPython tools/desktop_sbom.py --artifact artifacts/windows-release-inputs.zip --provenance artifacts/ci-provenance.json --source-tree artifacts/verified-source-tree.json --engine-archive artifacts/sources/windows-x64-release-flutter.zip --webview-package artifacts/sources/microsoft.web.webview2.1.0.2792.45.nupkg --pub-archives artifacts/sources --sdk-root $verifiedLocalFlutterRoot --output artifacts/desktop-sbom-01
+& $buildPython tools/desktop_sbom.py --artifact artifacts/windows-release-inputs.zip --provenance artifacts/ci-provenance.json --source-tree artifacts/verified-source-tree.json --engine-archive artifacts/sources/windows-x64-release-flutter.zip --webview-package artifacts/sources/microsoft.web.webview2.1.0.2792.45.nupkg --pub-archives artifacts/sources --sdk-root $verifiedLocalFlutterRoot --icu-archive artifacts/sources/windows-x64-artifacts.zip --output artifacts/desktop-sbom-01
 $desktopSbomExit = $LASTEXITCODE
 ```
 
@@ -184,6 +184,8 @@ $desktopSbomExit = $LASTEXITCODE
 ZIP/TAR从原字节有界读取，不落地解包：完整artifact/engine每份≤128MiB，WebView2/Pub每份≤32MiB；ZIP最多20000条/单成员256MiB/声明展开1GiB，ZIP读出和Pub gzip实际展开合计≤512MiB；Pub每份展开≤128MiB、单文件≤16MiB/20000条，拒绝危险原名、大小写重复、链接/特殊/加密项及不符长度。记录的输入最多20000文件/逻辑512MiB，首次读取的单文件上限同时受剩余总预算约束，不能只凭较早stat允许文件增长后超读；普通metadata≤1MiB，provenance≤4MiB、Git清单≤16MiB，项目单文件≤8MiB，锁各≤1MiB，链接/重解析路径拒绝。输出为已存在父目录中的新目录，不得写SDK/cache或tracked源码；末尾复核所有输入/锁，失败不生成最终JSON/CDX。
 
 引擎与WebView2用[依赖登记](dependencies.md)的完整固定归档pin，NuGet元数据用禁止DTD/实体的解析器核唯一id/version；Pub实际资产包用原锁hash及档内pubspec精确名称/版本，不把整个环境投影到CDX。Pub资产只尝试其实际命名空间的原路径和lib原路径，保留全部相同候选；加载器两条相同源路径也不任选。`copied_source_bytes_verified`仅指该归档成员与实际文件字节相同，不表示C/C++/Dart源码与机器码等价。SDK metadata是本地上下文，ICU仅有本地缓存相等时仍无已认证身份；插件CMake只作版本锁定源档的描述性producer关联。
+
+可选`--icu-archive`接受依赖登记固定engine的windows-x64/artifacts.zip，完整长度/SHA256先核，复用上述128MiB原档、ZIP名称/条数/展开、剩余源输入和实际读取预算；仅从归档读唯一icudtl.dat并与实际桌面成员精确比较，前后复核该原档。提供参数时不读取本地ICU缓存、不回退；路径缺失、pin/安全检查或成员字节不符都失败。未提供参数保留旧模式，只报告本地缓存相同且来源未知。新provider为flutter-host-artifacts@engine归档身份，其occurrence仅该ICU文件，不把档内compiler/其他成员投影为内嵌依赖；独立ICU版本null、上游身份/许可/签名false。完整官方SDK/AOT/插件等仍按各自缺口保留。
 
 `desktop.json`列全部实际路径/长度/hash、PE主机目标头、逐复制来源、项目输入、未知与排除范围；`desktop.cdx.json`为CycloneDX1.6物理file组件与实际复制provider子集。AOT/runner/插件生成二进制不凭名称猜版本，源不同的项目文件、子集字体/shader/manifest/NOTICES等仍未知；缺许可证字段代表未核，不填UNLICENSED。第三方归档或本地版本不冒充产品签名，不为文件所属擅造依赖边。
 

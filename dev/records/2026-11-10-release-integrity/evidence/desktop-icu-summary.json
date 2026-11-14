@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "scope": "REL-01g actual ICU copied member and fixed official host archive provider",
+  "source": {
+    "pr": 53,
+    "head": "b09da16b9ea23f4fcb81eb016f9602d84afa451c",
+    "tree": "c2747215a6ae9187b28706234b70662190f54252",
+    "checkout": {
+      "commit": "8339e520574f34b13accc33e5384a2089cbcfc80",
+      "tree": "c2747215a6ae9187b28706234b70662190f54252"
+    },
+    "run": 43580584516,
+    "artifact_id": 14108587888,
+    "artifact_bytes": 96034786,
+    "artifact_sha256": "5610f2638ba945822171047d56d529bbd852b6335c1b2b04297f7a3ab05c2953",
+    "service_metadata_authenticated_by_offline_tool": false
+  },
+  "icu": {
+    "bytes": 864880,
+    "sha256": "325a86063d26334c2eabe1743cea073b612540fbf3d8fc2ef0b5708e3763a8c7",
+    "artifact_member": "apps/desktop/build/windows/x64/runner/Release/data/icudtl.dat",
+    "source_identity": "pkg:generic/flutter-host-artifacts@5d531788691ec3404cac0cee66ead4007b177363",
+    "copied_source_bytes_verified": true,
+    "sources": [
+      {
+        "member": "icudtl.dat",
+        "sha256": "325a86063d26334c2eabe1743cea073b612540fbf3d8fc2ef0b5708e3763a8c7",
+        "archive_sha256": "fd626db3afddcc37dcf052f1a26cc43834ac6dcc4c45d8e0a5c10e6a2272b3df",
+        "archive_bytes": 30535798,
+        "archive_url": "https://storage.googleapis.com/flutter_infra_release/flutter/5d531788691ec3404cac0cee66ead4007b177363/windows-x64/artifacts.zip",
+        "official_archive_verified": true
+      }
+    ],
+    "role": "copied_host_archive_icu_data",
+    "independent_icu_identity_verified": false,
+    "icu_version": null,
+    "license_obligations_verified": false,
+    "publisher_signature_verified": false
+  },
+  "recipe_sources": [
+    {
+      "path": "bin/internal/engine.version",
+      "url": "https://raw.githubusercontent.com/flutter/flutter/3.47.1/bin/internal/engine.version",
+      "bytes": 41,
+      "sha256": "144ae524ef0de952422aee9d9745f72e0c4551fdfe4b77620ca7e1d40932d3d0",
+      "local_bytes": 42,
+      "local_sha256": "3bc3429fed66bb7a1b3716b98f803ff7000f6aa660b1940fed345e9f6f4183c5",
+      "local_LF_equivalent": true
+    },
+    {
+      "path": "packages/flutter_tools/lib/src/flutter_cache.dart",
+      "url": "https://raw.githubusercontent.com/flutter/flutter/3.47.1/packages/flutter_tools/lib/src/flutter_cache.dart",
+      "bytes": 31470,
+      "sha256": "a0eb7d8ba0457cd6a00e2c6f922f8baaf73ba6caf96a875767f080ab92a4ee64",
+      "local_bytes": 32416,
+      "local_sha256": "e64e4386dc73839cc24287008f5ab6ed4f056595e9da66a11aee850d07df0d01",
+      "local_LF_equivalent": true
+    },
+    {
+      "path": "packages/flutter_tools/lib/src/cache.dart",
+      "url": "https://raw.githubusercontent.com/flutter/flutter/3.47.1/packages/flutter_tools/lib/src/cache.dart",
+      "bytes": 60003,
+      "sha256": "36c8addec9a603f8e5d89288059d7def5406b09de28ab78544e3129db76d83b8",
+      "local_bytes": 61779,
+      "local_sha256": "453ec94b8504e6c6f89e2c27c2d29f9e9eda46d18a65fc45a44e852efdfdb311",
+      "local_LF_equivalent": true
+    },
+    {
+      "path": "packages/flutter_tools/lib/src/artifacts.dart",
+      "url": "https://raw.githubusercontent.com/flutter/flutter/3.47.1/packages/flutter_tools/lib/src/artifacts.dart",
+      "bytes": 59578,
+      "sha256": "82dbfed8548965ebfc3c2d96947b83d244aa74cb2dbb048cab6f173e59dad399",
+      "local_bytes": 61183,
+      "local_sha256": "f8e9f8019cd433a0a363dc050bd63e8f77d184da9a8604ddd93e5b3f0ed8e866",
+      "local_LF_equivalent": true
+    },
+    {
+      "path": "packages/flutter_tools/lib/src/build_system/targets/windows.dart",
+      "url": "https://raw.githubusercontent.com/flutter/flutter/3.47.1/packages/flutter_tools/lib/src/build_system/targets/windows.dart",
+      "bytes": 7451,
+      "sha256": "3230ecad096c0374cd15ec146605698391526f34c47ef99a61a596984d07a799",
+      "local_bytes": 7695,
+      "local_sha256": "096c0b7980dc8f343c96fea42a93b8ddd006094edec1689a016f087818fab49f",
+      "local_LF_equivalent": true
+    },
+    {
+      "path": "packages/flutter_tools/lib/src/build_system/targets/desktop.dart",
+      "url": "https://raw.githubusercontent.com/flutter/flutter/3.47.1/packages/flutter_tools/lib/src/build_system/targets/desktop.dart",
+      "bytes": 3177,
+      "sha256": "783f94016448f2487b05e68dae3f9bda88f3390c006b37ed8dab61b94570518d",
+      "local_bytes": 3259,
+      "local_sha256": "fffca7e90b11e458c49a69b7825565e290ae9408313a3bde8a88813c262d200a",
+      "local_LF_equivalent": true
+    }
+  ],
+  "recipe_interpretation": "Fixed FlutterSdk shared windows-x64/artifacts.zip recipe uses engine.version; Windows unpack selects Artifact.icuData without build mode, then installs ephemeral icudtl.dat into data. Separate debug/profile/release engine ZIPs do not supply this shared ICU path. Local CRLF-to-LF correspondence is contextual and does not assert original byte identity.",
+  "results": {
+    "desktop_files": 41,
+    "copied_archive_members": 27,
+    "observed_archive_providers": 7,
+    "unverified_source_identities": 14,
+    "components": 48,
+    "official_cyclonedx_1_6_schema_valid": true,
+    "tracked_project_inputs": 66,
+    "source_inputs_rechecked": 79,
+    "input_logical_bytes": 212473260,
+    "actual_archive_bytes_read": 68582154,
+    "excluded_non_desktop_artifact_files": 1110,
+    "report_sha256": "a2d3a92da99a0da700a32048468a4b6fb9fbae263e8253503d7b0ea3d7d348e6",
+    "bom_sha256": "81b340db3240d5e36339284a3672359640d1db29a5a0c16c9fe20c9fdefc00cb"
+  },
+  "remaining_unidentified_files": [
+    "data/app.so",
+    "data/flutter_assets/AssetManifest.bin",
+    "data/flutter_assets/FontManifest.json",
+    "data/flutter_assets/NOTICES.Z",
+    "data/flutter_assets/NativeAssetsManifest.json",
+    "data/flutter_assets/assets/question-bundle-v1.schema.json",
+    "data/flutter_assets/assets/question-file-content-v1.schema.json",
+    "data/flutter_assets/assets/question-v1.schema.json",
+    "data/flutter_assets/fonts/MaterialIcons-Regular.otf",
+    "data/flutter_assets/shaders/ink_sparkle.frag",
+    "data/flutter_assets/shaders/stretch_effect.frag",
+    "flutter_inappwebview_windows_plugin.dll",
+    "study_workbench.exe",
+    "url_launcher_windows_plugin.dll"
+  ],
+  "prior_selected_summary_sha256": "243b3401fabbe05099d8040ac2cf8e80ab10f493d44656f2fd059b2e6125ea81",
+  "limitations": {
+    "product_sbom_complete": false,
+    "upstream_provenance_verified": false,
+    "independent_icu_identity_verified": false,
+    "independent_icu_version": null,
+    "license_obligations_verified": false,
+    "signatures_verified": false,
+    "AOT_source_equivalence_verified": false,
+    "reproducible_build_verified": false,
+    "project_inputs_complete": false,
+    "archive_provider_is_not_independent_ICU_identity": true,
+    "LICENSE_artifacts_presence_is_not_license_completion": true,
+    "project_JSON_LF_CRLF_differences": 3,
+    "license_status": "unknown, not UNLICENSED"
+  },
+  "selection": "Fixed official archive pin, actual ICU member and unchanged remaining unknown scope; complete logs, recipe originals, binaries and archives remain ignored artifacts."
+}

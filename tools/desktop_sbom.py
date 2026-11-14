@@ -28,6 +28,10 @@ ENGINE_BYTES = 70289419
 ENGINE_SHA256 = 'a553d14c6087cf3f049ab1ddeedaf9e3216d341b39b036f7dc29cee52119fc4e'
 ENGINE_URL = ('https://storage.googleapis.com/flutter_infra_release/flutter/' + ENGINE_REVISION
               + '/windows-x64-release/windows-x64-flutter.zip')
+ICU_ARCHIVE_BYTES = 30535798
+ICU_ARCHIVE_SHA256 = 'fd626db3afddcc37dcf052f1a26cc43834ac6dcc4c45d8e0a5c10e6a2272b3df'
+ICU_ARCHIVE_URL = ('https://storage.googleapis.com/flutter_infra_release/flutter/' + ENGINE_REVISION
+                   + '/windows-x64/artifacts.zip')
 WEBVIEW_VERSION = '1.0.2792.45'
 WEBVIEW_BYTES = 8474494
 WEBVIEW_SHA256 = '02ffd77440c09b5ff60f5f06defdc3fb07fb5630077c7cf6115bf6be793f91e3'
@@ -47,7 +51,7 @@ LIMITATIONS = [
     'A matching checkout Git tree identifies tracked inputs, not every SDK/toolchain/header or actual compiler read.',
     'Only observed copied assets/binaries are associated with package archives; package_config, lock or cache membership is not AOT membership.',
     'Generated AOT, runner/plugins, fonts/shaders/manifests/notices and differing project bytes retain unknown source equivalence.',
-    'The local ICU cache match does not authenticate its official archive, independent ICU identity or SDK-wide provenance.',
+    'Without the optional fixed host archive, ICU has only a local cache comparison; archive correspondence does not identify its independent ICU version, license obligations or SDK-wide provenance.',
     'Archive pins and partial byte correspondence do not certify signatures, dependency edges, native embedded libraries, licenses or vulnerabilities.',
     'The backend, build-only packages, CRT staging, Office/Java, WebView2 installer and final setup are outside this desktop subset.',
     'Before/after hashes detect observed changes, not an atomic snapshot or reproducible build.',
@@ -115,7 +119,7 @@ def pe_header(raw):
         pe.close()
 
 
-def generate(artifact, provenance_file, source_tree_file, source, engine_archive, webview_package, pub_archives, sdk, output):
+def generate(artifact, provenance_file, source_tree_file, source, engine_archive, webview_package, pub_archives, sdk, output, icu_archive=None):
     artifact, provenance_file, source_tree_file, source, engine_archive, webview_package, pub_archives, sdk, output = [
         Path(os.path.abspath(p)) for p in (artifact, provenance_file, source_tree_file, source, engine_archive,
                                          webview_package, pub_archives, sdk, output)]
@@ -185,8 +189,18 @@ def generate(artifact, provenance_file, source_tree_file, source, engine_archive
     sdk_metadata = json.loads(remember(sdk / 'bin/cache/flutter.version.json', 1024 * 1024), object_pairs_hook=unique_object)
     if sdk_metadata['frameworkVersion'] != '3.47.1' or sdk_metadata['engineRevision'] != ENGINE_REVISION:
         raise ValueError('Local SDK context differs from fixed engine declaration')
-    icu = remember(sdk / 'bin/cache/artifacts/engine/windows-x64/icudtl.dat', 16 * 1024 * 1024)
+    if icu_archive is None:
+        icu = remember(sdk / 'bin/cache/artifacts/engine/windows-x64/icudtl.dat', 16 * 1024 * 1024)
+        icu_archive_raw = None
+    else:
+        icu_archive_raw = remember(Path(os.path.abspath(icu_archive)), MAX_ARCHIVE_BYTES)
+        if (len(icu_archive_raw), sha256(icu_archive_raw)) != (ICU_ARCHIVE_BYTES, ICU_ARCHIVE_SHA256):
+            raise ValueError('Wrong fixed ICU host archive')
     budget, physical, packages, pub_cache, producer_sources = [0], {}, {}, {}, {}
+    if icu_archive_raw is not None:
+        with zipfile.ZipFile(io.BytesIO(icu_archive_raw)) as shared:
+            icu_info = zip_index(shared)['icudtl.dat']
+            icu = read_zip(shared, icu_info, budget)
 
     def pub_source(package):
         if package in pub_cache:
@@ -274,8 +288,22 @@ def generate(artifact, provenance_file, source_tree_file, source, engine_archive
                     proof.update(source_identity=identity, copied_source_bytes_verified=True, role='copied_nuget_loader',
                                  sources=[{'member': n, 'sha256': sha256(raw), 'archive_sha256': WEBVIEW_SHA256} for n in matches])
                     packages[identity] = {'name': 'Microsoft.Web.WebView2', 'version': WEBVIEW_VERSION, 'hashes': WEBVIEW_SHA256, 'locations': [relative], 'url': WEBVIEW_URL}
-            elif relative == 'data/icudtl.dat' and raw == icu:
-                proof.update(role='local_sdk_cache_byte_match', sources=[{'member': 'bin/cache/artifacts/engine/windows-x64/icudtl.dat', 'sha256': sha256(icu), 'official_archive_verified': False}])
+            elif relative == 'data/icudtl.dat':
+                proof.update(independent_icu_identity_verified=False, icu_version=None,
+                             license_obligations_verified=False, publisher_signature_verified=False)
+                if icu_archive_raw is not None:
+                    if raw != icu:
+                        raise ValueError('Actual ICU bytes differ from fixed host archive member')
+                    identity = 'pkg:generic/flutter-host-artifacts@' + ENGINE_REVISION
+                    proof.update(source_identity=identity, copied_source_bytes_verified=True, role='copied_host_archive_icu_data',
+                                 sources=[{'member': icu_info.filename, 'sha256': sha256(icu), 'archive_sha256': ICU_ARCHIVE_SHA256,
+                                           'archive_bytes': ICU_ARCHIVE_BYTES, 'archive_url': ICU_ARCHIVE_URL,
+                                           'official_archive_verified': True}])
+                    packages[identity] = {'name': 'flutter-host-artifacts', 'version': ENGINE_REVISION,
+                                          'hashes': ICU_ARCHIVE_SHA256, 'locations': [relative], 'url': ICU_ARCHIVE_URL,
+                                          'identity_scope': 'archive-provider-not-independent-ICU-package'}
+                elif raw == icu:
+                    proof.update(role='local_sdk_cache_byte_match', sources=[{'member': 'bin/cache/artifacts/engine/windows-x64/icudtl.dat', 'sha256': sha256(icu), 'official_archive_verified': False}])
             elif relative.startswith('data/flutter_assets/assets/'):
                 source_name = 'apps/desktop/assets/' + relative.removeprefix('data/flutter_assets/assets/')
                 if source_name in project:
@@ -310,6 +338,8 @@ def generate(artifact, provenance_file, source_tree_file, source, engine_archive
                                     {'name': 'studyworkbench:publisher-signature-verified', 'value': 'false'}]}
         if 'url' in data:
             component['externalReferences'] = [{'type': 'distribution', 'url': data['url']}]
+        if 'identity_scope' in data:
+            component['properties'].append({'name': 'studyworkbench:identity-scope', 'value': data['identity_scope']})
         components.append(component)
     bom = {'bomFormat': 'CycloneDX', 'specVersion': '1.6', 'version': 1,
            'metadata': {'properties': [{'name': 'studyworkbench:product-sbom-complete', 'value': 'false'},
@@ -339,10 +369,11 @@ def main():
     for name in ('artifact', 'provenance', 'source-tree', 'engine-archive', 'webview-package', 'pub-archives', 'sdk-root', 'output'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--source', type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument('--icu-archive', type=Path, help='Optional fixed Windows shared host archive; no cache fallback on failure')
     args = parser.parse_args()
     try:
         report = generate(args.artifact, args.provenance, args.source_tree, args.source, args.engine_archive,
-                          args.webview_package, args.pub_archives, args.sdk_root, args.output)
+                          args.webview_package, args.pub_archives, args.sdk_root, args.output, args.icu_archive)
     except (OSError, ValueError, TypeError, KeyError, EOFError, SyntaxError, struct.error, yaml.YAMLError,
             zipfile.BadZipFile, tarfile.TarError, pefile.PEFormatError, DefusedXmlException) as exc:
         parser.exit(1, f'Desktop SBOM failed: {exc}\n')
