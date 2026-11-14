@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "scope": "DL-03b1 authenticated source preparation only; no product binary",
+  "version": "9.0.2",
+  "official_source": "https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz",
+  "archive_bytes": 12040788,
+  "archive_sha256": "8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e",
+  "release_signer": "FCF986EA15E6E293A5644F10B4322F04D67658D8",
+  "pgp": {
+    "homedir": "new project-owned .pgp03",
+    "personal_keyring_used": false,
+    "steps": [
+      {
+        "name": "dearmor",
+        "exit": 0
+      },
+      {
+        "name": "fingerprint",
+        "exit": 0
+      },
+      {
+        "name": "verify",
+        "exit": 0
+      }
+    ],
+    "selected_status": [
+      "GOODSIG B4322F04D67658D8",
+      "VALIDSIG FCF986EA15E6E293A5644F10B4322F04D67658D8"
+    ],
+    "trust_scope": "fixed official fingerprint, no web-of-trust claim"
+  },
+  "git": {
+    "tag": "n9.0.2",
+    "tag_object": "ce8f11b9fac4cd7ccfb41ca7c01bc17f5cda8cc3",
+    "commit": "946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+    "association_scope": "four source blobs only; tar signature is separate"
+  },
+  "source": {
+    "files": 10399,
+    "snapshot_sha256": "7a65ea9dcb64a778fe393c2582628c4ab339092971e0916422c63dd44833d81c",
+    "prepare_exit": 0,
+    "verify_exit": 0,
+    "configure_executed_by_preparation_tool": false
+  },
+  "tests": {
+    "q03": {
+      "exit": 0,
+      "passed": 26,
+      "skipped": 1
+    },
+    "p01": {
+      "exit": 0,
+      "passed": 26,
+      "skipped": 1
+    },
+    "skip": "Windows user lacks file-symlink privilege; actual NTFS directory junction rejection passed",
+    "ruff_exit": 0,
+    "q04": {
+      "exit": 0,
+      "passed": 26,
+      "skipped": 1
+    }
+  },
+  "failures_retained": [
+    "restricted MSYS named-object failure; native retry succeeded",
+    "gpg original homedir conversion failed",
+    "gpg second homedir socket-path length failed; explicit short no-agent keyring succeeded",
+    "source-q01 file-symlink fixture WinError1314",
+    "source-q02 junction fixture PowerShell argument bug; fixed fixture, no weaker guard",
+    "MSVC configure exit1: localized banner not recognized; actual compiler/link test failed",
+    "MinGW configure01 exit1: MSYS /tmp unavailable",
+    "MinGW configure02 exit1: inherited user TEMP unavailable",
+    "MinGW configure03 exit0 but unacceptable component set and sed warnings; make not run"
+  ],
+  "binary": {
+    "produced": false,
+    "adopted": false,
+    "product_frozen_integration": false,
+    "crt_source_license_closure": false
+  },
+  "selection": {
+    "reason": "Small sanitized facts supporting source authenticity and scope; no full raw logs, source archive, binary or environment",
+    "raw_root": "artifacts/dl03b/ (ignored)",
+    "recorded_date": "2026-11-14",
+    "raw_files": [
+      {
+        "path": "artifacts/dl03b/source-receipt.json",
+        "bytes": 702,
+        "sha256": "ae7ae1d06c973aef9e9dcec788f565c6136883ac49898834d33fddc92c38d2c3"
+      },
+      {
+        "path": "artifacts/dl03b/gpg07-dearmor.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "artifacts/dl03b/gpg08-fingerprints.txt",
+        "bytes": 382,
+        "sha256": "5315040d1b3ef7a1f263dee8610fd3d0261e835a6644dbeb8a771d3d5f148413"
+      },
+      {
+        "path": "artifacts/dl03b/gpg09-verify.txt",
+        "bytes": 708,
+        "sha256": "9a6f9fab714d144b6fed921be6e263d6ede36829eb2dd5a1ce1b1e801cd6e447"
+      },
+      {
+        "path": "artifacts/dl03b/source-prepare01.txt",
+        "bytes": 202,
+        "sha256": "147c5367f98618a9a3fb056cc4ff1335a25f96f81b5137bd0b1345700eaf5840"
+      },
+      {
+        "path": "artifacts/dl03b/source-verify01.txt",
+        "bytes": 202,
+        "sha256": "147c5367f98618a9a3fb056cc4ff1335a25f96f81b5137bd0b1345700eaf5840"
+      },
+      {
+        "path": "artifacts/dl03b/source-q01.xml",
+        "bytes": 6600,
+        "sha256": "f313bb18c631022a379d5bc1541f1dbf8194701b0ba40ad4d2990766ae0416cb"
+      },
+      {
+        "path": "artifacts/dl03b/source-q02.xml",
+        "bytes": 6849,
+        "sha256": "405650e4f6c32bff85fe6c362c0c8171400ff822fcd79ac5195eb14caa392089"
+      },
+      {
+        "path": "artifacts/dl03b/source-q03.xml",
+        "bytes": 4478,
+        "sha256": "15116ceb9a620187f298a42938de3e40f984156ffbc364fe57aca1b8ed0bf7b6"
+      },
+      {
+        "path": "artifacts/dl03b/source-p01.xml",
+        "bytes": 4478,
+        "sha256": "800b90b403844f960e63790a7a912cf97af8817aa917e27da03e02937d29894f"
+      },
+      {
+        "path": "artifacts/dl03b/configure-msvc-01.txt",
+        "bytes": 525,
+        "sha256": "614e3ab061cc3fe766b0af91bb2f6ee42e0bb4ab615cc014e0307f7bdd1dc7d8"
+      },
+      {
+        "path": "artifacts/dl03b/configure-mingw-01.txt",
+        "bytes": 367,
+        "sha256": "a800d33ad74217f2e52586252e28817236c3fd1e82e2c8c32e8be62dea0d1dd7"
+      },
+      {
+        "path": "artifacts/dl03b/configure-mingw-02.txt",
+        "bytes": 543,
+        "sha256": "65910041f05cfbe24fcc3a19d65ea2dba2ed292fbc9f0cb18fd639b908b384ff"
+      },
+      {
+        "path": "artifacts/dl03b/configure-mingw-03.txt",
+        "bytes": 34734,
+        "sha256": "2be8c07ecfa3898f9838d48165def362e5b7aefddf912d27892059e91145ac2d"
+      },
+      {
+        "path": "artifacts/dl03b/source-q04.xml",
+        "bytes": 4478,
+        "sha256": "0a29810b086a445c350019430fe627fac2e8533bbb3cb024afd0fbddd0a0cea5"
+      }
+    ]
+  }
+}

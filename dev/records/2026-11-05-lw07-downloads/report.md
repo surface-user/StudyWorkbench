@@ -241,3 +241,43 @@ source_snapshot明确严格版本/站点联合、字段白名单、16KiB及B站�
 基线复制由Node原生fs读写与crypto.createHash('sha1')逐497文件验证，成功；未调用根git checkout/add/reset，也未修改根旧checkout。首次插入补丁因精确锚点少“集合”二字匹配失败、未部分应用；核实际行后重试成功，不涉及业务测试失败或断言变化。专项文档范围/空白/本地引用/锚点/原报告前缀/旧任务与两锁保持检查、Question Schema漂移及独立PR/current-head CI另记。业务代码完全不变，不为文档切片重复本机构建或业务测试；CI仍执行基线完整自动化。审查按用户要求暂缓，人工取消，未合并或发行；DL-03a在当前head CI与主Agent核验前不记DONE。
 
 最终文档检查在独立media-track-contracts目录运行 `../starlette-fix/.local/starlette-q-isolated/Scripts/python.exe .local/validate_docs.py` 退出0：497基线blob重新匹配、仅指定4文档变化/493不变，逐4文件 `git -c core.autocrlf=false diff --no-index --check` 无诊断（有差异退出1但无空白错误，聚合0），96本地Markdown目标/10锚点全部存在，65种旧任务ID/原报告完整字节前缀及两锁保持。Python3.13.17同一独立IQ环境、PYTHONPATH=backend、PYTHONDONTWRITEBYTECODE=1运行 `-X utf8 tools/export_question_schema.py --check` 退出0，Question schemas are current。检查脚本、摘要与日志仅放.local/artifacts，未把测试profile或原件入Git；此次没有新增可执行功能，未另造镜像实现的测试。DL-03a本地设计/文档自动化完成，调度REVIEW；当前head CI继续全量后端/桌面/新冻结，未执行或跳过的公网项不记通过，#52三次失败继续局部BLOCKED。
+
+
+## 2026-11-14 DL-03b1：官方FFmpeg源码认证与安全准备（有限实现交付）
+
+主Agent已有限接受DL-03a [PR#57](https://github.com/surface-user/StudyWorkbench/pull/57)最终747c0bf907d6aad8fa64b730d9112d04b0ce9026、tree d042ccfa563201468bf143b8414de623074006a6、CI43584717946三job成功；它只是共同设计。此次在全新ffmpeg-component副本逐497原blob核对，未碰根旧checkout或#52/#57旧head。DL-02b1仍是普通公开页HTTP412的局部BLOCKED，三份失败不清除。本轮b1不等待三站公网，先交可审计的认证输入/离线安全准备；b2真实native组件与CRT闭包继续，c产品源/冻结执行尚未实现。
+
+### 输入、认证与许可范围
+
+官方[download](https://ffmpeg.org/download.html)/[release index](https://ffmpeg.org/releases/)实际稳定9.0.2（2026-09-18），未盲升或采用PATH二进制。固定tar 12040788字节/SHA256 8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e；asc 520字节/SHA256 d617fd94ea354dadd2a8bb16243d37c44e1e9729b06b6ad58fe30bfb0fa943f2；官方公钥1709字节/SHA256 397b3becedcd5a98769967ff1ff8501ddc89f8368b8f766e4701377d7dbaabe5。正常HTTPS固定URL/禁止redirect、32MiB上限抓取仅用于开发输入获取，不是产品下载器，也没有下载媒体。原包/asc/key只在忽略的.local/upstream，未改缓存/安装。
+
+GnuPG2.4.9在项目内全新短homedir .pgp03核官方固定指纹FCF986EA15E6E293A5644F10B4322F04D67658D8。共用参数：`--no-options --homedir <项目POSIX短路径> --batch --no-autostart --no-auto-key-retrieve --no-auto-check-trustdb --no-default-keyring --keyring <该homedir>/release-key.gpg --trust-model always --status-fd 1`；在upstream cwd依次`--dearmor --output <该keyring> ffmpeg-devel.asc`、`--with-colons --fingerprint`、`--verify ffmpeg-9.0.2.tar.xz.asc ffmpeg-9.0.2.tar.xz`，退出均0，严格仅一个VALIDSIG且完整40hex匹配；GOODSIG与unknown trust警告保留。不读写个人keyring、不启动agent、不声称web-of-trust建立；信任来源是官方固定指纹。
+
+n9.0.2 tag object ce8f11b9fac4cd7ccfb41ca7c01bc17f5cda8cc3指向commit946fcce07b6dcd0331c8cc609192aeff5e1924f8；GitHub verified tag元数据与tar RSA认证各记范围。实际从认证tar展开的configure/fftools/ffmpeg.c/fftools/ffprobe.c/LICENSE.md与固定Git四blob逐匹配（工具常量有完整SHA），只证明这些关联，未捏造全tar等同Git全树。官方[许可](https://ffmpeg.org/legal.html)明确主体LGPL与可选GPL；原tar完整保留所有COPYING/LICENSE及源码，不把整个原包称单一LGPL，不将CLI/共享库链接或对应源码义务当法律通过。官方[安全页](https://ffmpeg.org/security.html)作维护来源，不是最终二进制/所有内嵌库漏洞认证。
+
+### b1实施与实际自动化
+
+新增开发工具`tools/prepare_ffmpeg_component.py`和专项`backend/tests/test_ffmpeg_component.py`，没有产品API、表迁移、UI、运行依赖、任意命令入口或二进制。工具先固定整个tar大小/hash再解析，严格拒绝链接/reparse、特殊成员/sparse、路径穿越/设备名/大小写/父子冲突，最多20000成员、单项8MiB、总展开256MiB。目标必须全新，失败不删原件或部分。每个原文件记录size/SHA256/Git blob；版本化source-lock的derived digest在payload外，preimage仅UTF-8/sort_keys/compact/非NaN payload，自身hash不参与。verify从固定原tar重建期望，再校验实际完整文件集合和所有原bytes，不能通过篡改后自重算清单逃过。
+
+工具本身只离线展开/核证，未调用GPG/configure/外部程序；固定hash来源是上面的真实PGP核证，不声称每次工具运行都重新验PGP。手工开发构建探针只能在此前认证成功后启动。实际prepare-source/verify-source各退出0，10399原文件，canonical source snapshot SHA256 7a65ea9dcb64a778fe393c2582628c4ab339092971e0916422c63dd44833d81c。源目录保持未构建，构建尝试全部out-of-tree。
+
+命令均在独立ffmpeg-component根：IQ=../starlette-fix/.local/starlette-q-isolated/Scripts/python.exe（3.13.17），IP=对应starlette-p-isolated（3.12.7），既有锁环境未改。
+
+- IQ `-X utf8 tools/prepare_ffmpeg_component.py prepare-source --package .local/upstream/ffmpeg-9.0.2.tar.xz --directory .local/upstream/source`，退出0；随后同参数verify-source退出0，原记录分别artifacts/dl03b/source-prepare01.txt、source-verify01.txt。
+- IQ `-X utf8 -m pytest -q backend/tests/test_ffmpeg_component.py --basetemp=.local/ffmpeg-source-q03 --junitxml=artifacts/dl03b/source-q03.xml`，退出0，26通过/1skip；IP对应p01目录/XML同命令退出0，26通过/1skip。覆盖改原包先拒/安全展开、路径/链接/特殊文件/预算/原文件缺失、额外/变更/自重签伪造、重复JSON/NaN/自包含hash等。
+- skip仅因本机用户无法创建文件symlink的WinError1314，不记该用例通过；真实Windows目录junction创建成功，沿根目录reparse拒绝真实通过。文件symlink用例仍保留供具备权限环境执行，不调系统Developer Mode/权限。最初q01为25通过/1失败（fixture权限），q02为25通过/1skip/1失败（PowerShell位置参数fixture写错），全部XML/日志保留；仅修fixture引用/针对明确1314 skip，产品拒绝断言没有降低。
+- 既有release-venv `-m ruff check tools/prepare_ffmpeg_component.py backend/tests/test_ffmpeg_component.py`，退出0。最终范围/文档/Question Schema与当前head全CI另记，不把本地专项当全产品验证。
+
+### 真实构建失败与后续
+
+只读确认Git-Bash5.2.37、GNUmake4.4.1、VS2022 17.14/MSVC14.44.35207（cl19.44.35219）、现有SDK与MinGW GCC13.2.0。未安装系统工具/语言包/NASM/额外编码器。受限执行MSYS命名对象NtCreateDirectoryObject先失败，原生同一已有工具复验成功；原失败保留，不假称工具缺失。PGP首轮D:/homedir误作相对路径失败、次轮POSIX长homedir agent socket路径失败，随后新短homedir显式公钥/no-agent模式才成功，均保留。
+
+MSVC configure-msvc-01退出1：实际cl中文banner前缀，官方probe_cc固定grep ^Microsoft即便VSLANG=1033也不能匹配（本机只有2052资源），误用-o产生LNK1136，真实编译链接失败未绕过。原配置/错误保留，未改官方源。MinGW新独立01/02退出1分别为MSYS /tmp不可建、继承个人TEMP不可写；第03仅把TEMP/TMP和MSYS TMPDIR定到项目新目录、child环境allowlist后configure退出0，但实际生成大量decoder/filter/bsf和file以外本地协议，且既有MinGW sed有表达式警告，不符合最小能力；未执行make。没有产出/采用binary，尚未核CRT原许可/精确来源/对应源码。原config.log可能含继承环境，只留忽略artifacts/.local原件，不上传完整内容。
+
+主Agent同意b1先有限独立交付，b2继续调查MSVC一个banner识别点的派生兼容补丁。任何派生源码须新目录、原configure/补丁/结果hash及其余原bytes证明，不伪造compiler结果、不改C实现/实际编译链接检测，不动原件/缓存/上游。真实b2仍须实际禁GPL/nonfree/version3/autodetect/network/x86asm/外部库、最小demux/mux/parser/codec、实际-protocols/PE/DLL/CRT/许可与对应源码/漏洞/供源核证，未闭合不进产品payload。
+
+即便后续编译无HTTP等网络协议，file可触达UNC，不能称OS网络隔离；c仍要固定受管本地路径、拒UNC/设备/外链/dref/外部引用、任意参数，Job/EOF/取消/预算及源冻结执行。组件开发探针不替代产品证明；MP4/WebM/M4A stream-copy/remux/probe、DASH/三站真实下载/HLS/转码均未因b1完成。证据只选[源码准备摘要](evidence/ffmpeg-source-preparation.json)的固定输入、PGP白名单状态、原文件hash与命令结果；理由是支持认证/安全准备的有限结论，未塞tar/二进制/完整日志或环境。审查按用户要求暂缓，人工按11-06取消，未合并/发行；b1等待PR/current CI与主Agent核验，不提前DONE。
+
+最终六文件交付检查：IQ `-X utf8 .local/validate_delivery.py` 退出0，497基线blob逐核，仅3原文档修改/494原文件不变，加3新文件；91本地引用/9锚点、68种原任务ID、原报告完整前缀、两锁/运行代码保持；逐文件no-index diff --check无空白错误。相同IQ环境Question Schema `--check`退出0。最终代码专项q04退出0（26通过/1权限skip），Ruff再核退出0；未以重复运行抹去q01/q02失败。b1进入REVIEW，PR和当前head CI仍待交付，b2/c不因此完成。
+
+首次GitHub create_tree被自动审批拒绝，原因为project source/reports/evidence上传的精确payload与目标未核定；首次未上传/未建commit、分支或PR。随后只读核根origin为https://github.com/surface-user/StudyWorkbench.git、已接受#57同公开repo/精确base；六文件仅3既有文档+开发工具/测试/精选摘要，无上游tar/源码包、原config.log/环境、实际PGP key块、私钥/token/个人DB或媒体。PGP公开签名键只记录公开指纹/输入hash，不属私钥。逐文件SHA256/Gitblob/字节数、494不变与报告前缀已核；按用户每小项PR和主Agentb1授权，原连接器同一create_tree在证据补全后获自动审批通过（tree4f9f9f543e5d606abd603d25993150c862c41493），未换通道或规避限制。该树不是已交PR，当前CI另核。

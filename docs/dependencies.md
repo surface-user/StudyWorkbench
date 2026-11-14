@@ -114,6 +114,16 @@ webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-d
 
 二进制采用另交付版本/hash/实际协议、demux/codec能力、无外部引用/网络负例、源/冻结执行、许可/漏洞/完整性和供源证据。仅本地固定remux配方先行，转码/额外编码器、HLS/分段和硬件解码分别设计；不暗用系统PATH上的程序或自动更新/下载组件。
 
+### FFmpeg 9.0.2源准备（DL-03b1，开发工具；产品二进制未采用）
+
+采用固定官方源码作为后续最小本地构建的输入，不增加产品运行依赖。版本9.0.2、官方tar.xz为12040788字节，SHA256为`8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e`；来源[官方release](https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz)，签名/公钥按[官方下载页](https://ffmpeg.org/download.html)固定发布指纹`FCF986EA15E6E293A5644F10B4322F04D67658D8`。本轮独立项目keyring实核PGP成功，未使用个人keyring；n9.0.2关联Git commit为`946fcce07b6dcd0331c8cc609192aeff5e1924f8`，tar认证与Git标签认证范围分开，仅逐configure、ffmpeg.c、ffprobe.c、LICENSE.md四个原blob交叉关联，不把四文件证明说成Git全树等同tar。精选证据及失败边界见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)。
+
+`tools/prepare_ffmpeg_component.py`仅用既有CPython标准库和项目文件遍历入口，提供离线`prepare-source`/`verify-source`。先核整个原包固定size/hash，再严格筛tar根、相对路径/大小/总数/总量、普通文件/目录、大小写冲突/父子冲突、链接/reparse，目标必须全新；保留全部原文件与失败部分，不覆盖原件。source-lock使用schema_version=1，SHA256 preimage仅为排序/紧凑/UTF-8 canonical payload，派生snapshot_sha256在外层，不进入自身preimage。复验从固定原tar重新生成期望清单，核每个文件、实际全集与四个Git blob；修改后重算自签清单也不能蒙混通过。工具本身不联网、不调用GPG、configure或任意外部命令；此处固定包hash来自本轮实际官方签名核证，不以运行时未核PGP充当每次执行都已验签。
+
+在已有受支持Python中，从仓库根显式执行`python tools/prepare_ffmpeg_component.py prepare-source --package <已获取的固定tar.xz> --directory <不存在的新目录>`，复验用`verify-source`相同参数。输入包和父目录必须本地既有且无链接，输出保持项目内新目录；没有自动下载/安装/更新。开发机MSVC中文banner识别失败和MinGW实际配置超出最小集合均保留，未产出或锁定可用二进制。Windows支持当前只证明源码准备与真实NTFS junction拒绝，不代表ffmpeg可执行组件或产品冻结接入。
+
+原包含多种许可的完整源码；LGPL主体与可选GPL部分仍按[官方许可](https://ffmpeg.org/legal.html)及全部原文区分，不能把整个tar称单一LGPL。官方[安全页](https://ffmpeg.org/security.html)是维护/公告入口，不构成9.0.2或未来实际构建零漏洞证明。b2仍须真实最小无网络build/协议/codec枚举、PE/CRT及内嵌库原许可/对应源码/构建补丁与再分发义务/漏洞核证；c再做固定受管本地路径/参数、UNC/dref/外部引用拒绝、Job/取消/预算、源码/冻结及原子入库。file协议不能代替OS网络隔离。未闭合前不进入产品包/SBOM已采用集合、不登记可发行或站点下载成功。
+
 ## 待验证与升级门禁
 
 源码依赖漏洞查询使用项目内tools/source_vulnerabilities.py 1.0及[OSV v1官方API](https://google.github.io/osv.dev/api/)，复用既有锁文件解析，仅发送公开PyPI/pub.dev包名、生态和精确版本，后续只取返回公告ID。网络使用Python标准库，没有新运行依赖、第三方扫描器安装或源码上传；查询器及解析器文件SHA256、Python版本随报告固定。OSV当前维护[数据来源](https://google.github.io/osv.dev/data/)包括GitHub/PyPI公告，PyPI与Pub为其支持的生态；公告数据来源许可与应用依赖许可是不同事项，原始返回保留在忽略的artifacts，不随产品分发。
