@@ -537,3 +537,5 @@ real04 members.json SHA256 77a42b28da7b3db61309a43146bdcebe67a0016e23454299d59a8
 当前REL-01c实现/相关自动化和文档完成，REVIEW；仍需独立草稿PR、其最终head CI和主Agent核验后DONE。原REL-01b的2678非业务模块身份缺口本次有限减少为320，108实体（含53 DLL/19 PYD/17 PY/其他）仍未归属，完整来源/关系及其他发行组件仍未闭合，父REL-01/02/03保持。审查暂缓、人工取消，未合并或发行，不做数据清理或接模型。
 
 Q -X utf8 artifacts/rel01c/check_changes.py退出0：六文件范围、其余450个base blob保持、456最终文件、71本地文档链接/33调度行唯一性、UTF-8/LF/逐文件git diff --no-index --check及原报告前缀检查通过；两份运行依赖锁不变。检查/发布辅助文件仅在忽略artifacts中，不纳产品或Git。
+
+实际创建[独立草稿PR #47](https://github.com/surface-user/StudyWorkbench/pull/47)，分支codex/frozen-python-members，base为#42最终fb5b7a2，实现提交5d0e7d90f30d6cdcd4f03e19a67120f846d107ee；本次仅补PR链接，功能和原自动化证据保持。最终head与当前CI在PR说明维护，不为写入自身最终SHA重复生成文档head，未核CI前保持REVIEW。
