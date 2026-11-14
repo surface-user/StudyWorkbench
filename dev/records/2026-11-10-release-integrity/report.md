@@ -539,3 +539,41 @@ real04 members.json SHA256 77a42b28da7b3db61309a43146bdcebe67a0016e23454299d59a8
 Q -X utf8 artifacts/rel01c/check_changes.py退出0：六文件范围、其余450个base blob保持、456最终文件、71本地文档链接/33调度行唯一性、UTF-8/LF/逐文件git diff --no-index --check及原报告前缀检查通过；两份运行依赖锁不变。检查/发布辅助文件仅在忽略artifacts中，不纳产品或Git。
 
 实际创建[独立草稿PR #47](https://github.com/surface-user/StudyWorkbench/pull/47)，分支codex/frozen-python-members，base为#42最终fb5b7a2，实现提交5d0e7d90f30d6cdcd4f03e19a67120f846d107ee；本次仅补PR链接，功能和原自动化证据保持。最终head与当前CI在PR说明维护，不为写入自身最终SHA重复生成文档head，未核CI前保持REVIEW。
+
+
+## 2026-11-14：REL-01d 固定Python归档与剩余成员来源
+
+主Agent已核#47最终d6bef38cda64a4c643bbceb58ef95be6c3363245、CI43570337629三组44步、双Python918及最终38专项，并在只读副本重跑全部身份/未知/官方Schema校验后登记REL-01c有限开发交付DONE。使用#47远端tree90b1082a7886d52efbe207a7bcda92edc3cd2809的456个精确blob，在新frozen-origins副本继续，旧#47和原冻结包保持。此前只读remaining-probe/record/relocated诊断作为输入，尚不视为本工具已支持。
+
+已读取现行task/AGENTS及对应需求、架构、题目协议、打包与证据规范；本切片先IN_PROGRESS，先报最小设计再实现。范围针对固定CPython NuGet源码/二进制、项目迁移及HTML/入口、RECORD元数据自身、扁平DLL的共同来源和无代码namespace。必须单独列CArchive启动代码，不把外层PE bootloader、全部CRT/native或签名混作已认证；完整REL-01/02/03继续。
+
+
+### REL-01d实现与实际结果
+
+主Agent批准六文件有限设计后新增tools/frozen_python_origins.py和专项测试，更新打包指南/task/本报告及[精选摘要](evidence/frozen-python-origins-summary.json)。只提供显式开发CLI，无产品调用方/exports/API/数据库或打包payload变化，无新增依赖或共享环境修改。复用既有成员生成器、文件/归档/静态code比较、RECORD与defusedxml等已锁定组件；旧#47及原冻结包只读保持。先重新执行#47全体对应，再补来源，旧局部JSON存在不代表增强整体成功。
+
+实际CArchive12项中11项代码全有静态来源：struct来自固定NuGet；4份pyimod、bootstrap及4个runtime hook共9项来自实际PyInstaller6.22.3分发的metadata/RECORD/源文件；frozen_entry来自项目Git blob。PYZ是容器。对应来源均比较完整嵌套code/常量/异常表及各等价优化等级，不执行模块，不因名字像PyInstaller就赋予版本。9个namespace均无存储代码，分别描述已证子模块的构建分发关联，namespace版本null、不认证所有权。
+
+固定NuGet SHA与prepare-tools.ps1一致，核python.nuspec唯一id/version及解释器补丁版本。压缩64MiB、20000成员、声明与实际读取各256MiB、每成员16MiB/编译8MiB，拒绝原名规范化、路径/大小写重复、链接/特殊/加密成员及DTD/实体；不解包。XML包括UTF16实体和重复标识拒绝。Windows单一大小写无关匹配仍记录真实成员名，不能用大小写差异漏掉同字节的CRT文件。Git声明最多16MiB/20000普通文件，source head/tree只是caller声明；逐本地源、payload及声明Git blob/代码对应，远端认证继续由实际交付单独核验。
+
+15份RECORD self行的hash/size本来为空，依据[安装记录规范](https://packaging.python.org/en/latest/specifications/recording-installed-packages/#the-record-file)将其原metadata文件与实际分发字节另行对应，明确record_self_hash_declared=false，不写回第三方文件或生成伪self hash。自报非空错误hash仍被原成员门禁拒绝，不将例外推广到普通无hash源码。两个移位DLL按字节追溯原RECORD路径，MSVCP保留NumPy及pandas两来源，不任选owner。CArchive初始化代码与外层native bootloader是不同证据，背景参考[PyInstaller启动说明](https://pyinstaller.org/en/stable/advanced-topics.html#the-bootstrap-process-in-detail)，本工具不把前者相等当后者已认证。
+
+增强阶段在末尾复核所有选中构建输入，包括前阶段已读但未能匹配的输入；另核原payload/coverage/锁、固定档案、Git清单、项目源及前阶段生成的两份JSON。沿用每输入原有大小上限、总20000源文件/逻辑1GiB与100000 RECORD行，失败不生成增强origins.json/CDX。所有证据字段为原字节/hash和实际位置，未认证项保持false，无发行通过0返回码。
+
+工作目录为frozen-origins。IQ/IP指starlette-fix/.local/starlette-q-isolated（3.13.17）/starlette-p-isolated（3.12.7，pytest9.0.3），只读复用。Q指根.local/release-venv/Scripts/python.exe用于现有Ruff。命令均设PYTHONDONTWRITEBYTECODE=1；原始日志/JSON/JUnit在artifacts/rel01d，不纳Git。
+
+- IQ/IP -X utf8 -m pytest backend/tests/test_frozen_python_origins.py backend/tests/test_frozen_python_members.py backend/tests/test_frozen_sbom.py backend/tests/test_source_sbom.py backend/tests/test_release_inventory.py -q --basetemp=artifacts/rel01d/tmp-q03或tmp-p03 --junitxml=artifacts/rel01d/q03.xml或p03.xml：原生测试权限各退出0、216通过（当时38新+原178），26.46/26.94秒，无失败/跳过。覆盖不执行样本代码、所有来源类型/共享DLL/namespace类型、caller Git边界、ZIP名字/大小写/链接/元数据/UTF16实体、各种预算、阶段输出/源变更拒绝、错误runtime源码不按前缀归属、base pyc魔数及真实代码差异、假RECORD self hash拒绝和CLI非发行成功码。
+- 随后补强前阶段未匹配源的增强末尾稳定性，并加1项负例；IQ/IP -X utf8 -m pytest backend/tests/test_frozen_python_origins.py -q --basetemp=artifacts/rel01d/tmp-q04或tmp-p04 --junitxml=artifacts/rel01d/q04.xml或p04.xml：各退出0、最终39新专项通过，23.55/24.51秒。未把早期216写成一次最终217全跑；既有178函数未改，完整本head全量另由CI执行。
+- Q -m ruff check backend tools最终退出0（ruff-final2.log）；IQ tools/export_question_schema.py --check退出0。没有业务/构建输入变化，不在本地重复全产品/桌面/冻结运行；当前head CI仍须完整执行。
+- IQ -X utf8 tools/frozen_python_origins.py --payload ../starlette-fix/dist/study_backend --coverage ../frozen-sbom/artifacts/rel01b/real05/coverage.json --python-package <根.local/release-tools/python.3.13.17.zip> --source-tree ../frozen-sbom/artifacts/rel01b/source-tree.json --output artifacts/rel01d/real04：退出2（有限来源成功），无解包或执行。新增311 PYZ代码、154基础ZIP代码、62实体，11 CArchive代码来源与9无代码namespace描述。实体含19项目资产、15 RECORD自身、26 NuGet及2移位DLL；后者为3条来源证据（MSVCP共同来源）。新认出的NuGet26比原探针24多2，为VCRUNTIME140/140_1实际小写文件名的完整字节对应；这不证明内嵌native各自身份/许可/签名已完成。58个增强CDX组件，仍未知46实体，即44 CRT文件及EXE/ZIP生成容器两项，完整产品/上游/Git认证均false。
+- IQ -X utf8 artifacts/rel01d/verify_real.py退出0（verify-real01.log）。58组件通过固定官方1.6 Schema和离线spdx/jsf引用；每个新增PYZ/ZIP/source hash/优化等级、19Git资产、15 RECORD与移位DLL所有来源、11启动代码及9namespace描述都与此前独立只读探针逐项相等，另重核NuGet原档/所有493个实际读取成员及实际payload文件hash。增强CDX每个occurrence集合与来源和旧55组件精确相等；Git/metadata hash未充当包归档hash。没有只凭数量验证。
+
+real04 origins.json SHA25626901b019cbe6356cf592ba58359fab78009bf28cb95bc17fbfc900804ffb0ed；python-origins.cdx.json SHA25664c2a8311bc4235d450e1bfa3c84d1f2845c9fbb03e1bdd55539fbe7e5f317dc；精选摘要SHA25684d25079d56550692ef9bde92cb8a57765127b149429a8078db139096ef5e24b。前阶段完整members/BOM分别仍等于#47的77a42b28...和7b0c7b10...原哈希；本次再次索引14072条RECORD，增强复核3416份源/124813247逻辑字节。NuGet原档14826465字节/1340成员/39613524展开字节。原目录、锁及payload前后无观察到变化；不是原子快照、完整依赖/来源或安全认证。
+
+保留失败：只读CArchive探针初按四元组解包实际五字段toc而退出1，按实际reader结构改为读取末项类型后全部11代码对应；carchive-probe01.log保留。增强real01因NuGet对VCRUNTIME大小写保守拒绝，按唯一大小写无关成员并核完整字节修正，原失败不抹去。首轮新测试q01为35通过/1失败：测试误期待伪造的非空RECORD self hash继续生成报告，实际原门禁正确拒绝；修正为要求异常及无增强报告，未放宽产品断言。Ruff首轮只import排序等3项，自动整理后无诊断。real02/03是中间有限成功，最后以包括未匹配源稳定性保护的real04为准；首次该补强补丁因import排序上下文不匹配被工具拒绝，未改源文件，按实际位置应用后专项通过。所有旧日志保留。
+
+当前实现/相关自动化/文档完成，REL-01d保持REVIEW；独立草稿PR/当前head CI和主Agent核验后才DONE。增强来源子集不关闭完整REL-01/02/03：外层bootloader、44 CRT/native独立身份、生成容器、嵌入库/完整依赖边、其余产品组件、许可/漏洞/签名仍未闭合。审查暂缓、人工取消，未合并或发行，不清理数据或接模型。
+
+Q -X utf8 artifacts/rel01d/check_changes.py退出0：六文件范围、其余453个base blob保持、459最终文件、72本地文档链接/34调度行唯一性、UTF-8/LF/逐文件git diff --no-index --check及原报告完整前缀通过，运行依赖锁不变。辅助发布/原始证据均留忽略artifacts，最终PR与CI在实际交付后补充。
+
+独立草稿[PR #50](https://github.com/surface-user/StudyWorkbench/pull/50)已建立，分支codex/frozen-python-origins基于#47最终d6bef38，首次实现提交8395bd21dc33621778f3ad76ea4e35d12d3b1c55/tree8d957b4037b02543ce5def850c2692d75262ed40。本文补交付链接形成后续文档提交；最终head/tree与该head CI结果登记在PR描述，避免为记录自身hash反复改head。当前任务仍REVIEW，未合并或发行。
