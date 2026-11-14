@@ -256,6 +256,20 @@ DELETE /{id}撤销；POST /{id}/read-attempts读取原范围作答摘要（id/qu
 
 POST /{id}/read-analysis-context返回schema_version=1、workspace_id、scope=summary或content、attempts、question_versions、context_sha256及binary_attachments_read=false/latest_reviews_included=false。仅include_content=true含作答response和实际确认版content/attachments元数据；正文每条≤64KiB、整体UTF-8 JSON≤1MiB，超限413，读前/后复核授权。旧question_version_id=null保持历史未知；不读当前题目冒充历史，不取二进制附件、最新人工评分、事件或笔记。MD/版本元数据损坏409并保留记录。
 
+### 资料授权与读取（当前API已实现，普通资料确认UI待实施）
+
+同一W/agent-grants的POST根路径按purpose封闭区分旧analyze_attempts和新read_resources。新请求只接收purpose、selections（1–100项，以kind/id去重）、confirm=true、expires_in_seconds（严格整数1–900，默认300）；共享100份活动授权，所有额外字段拒绝。返回id/purpose/selections/expires_in_seconds/transport=local_only；撤销复用DELETE /{id}，两用途不可互读，新grant不能用于analysis-drafts。没有模型或远端工具。
+
+selection固定kind=resource_node/legacy_note/learning_mark、严格资源ID、mode=metadata或text（默认metadata）。metadata不能带正文参数，返回数据库安全元数据而不打开正文；不验证原件存在/hash，也不读取目标链接或附件。元数据变化后原grant拒绝。text按类型要求：
+
+- resource_node：representation=original_text或working_text及严格小写64位expected_sha256。仅UTF-8 MD/Markdown/TXT/JSON/CSV/LOG/VTT/SRT；working_text仅已有已保存MD工作文件，不创建/保存草稿。可选严格line从1开始，仅MD/Markdown/TXT；按LF分行、去一尾CR，末尾空行保留，绑定整个权威文件hash，不自动换成最新版本。
+- legacy_note：expected_revision为普通note_revision修订hash；先核结构≤64KiB，再按已知富内容schema/depth限制投影文字/公式/表格文字/标签。未知结构拒绝，不读附件或其他关联笔记。
+- learning_mark：expected_revision为严格正整数；仅本条当前备注、标题和已保存v1 anchor。position_status=missing/removed/not_checked，position_verified=false；不读取目标正文或声称位置仍有效，不加载旧creation_content。
+
+POST /{id}/read-resources无选择参数，返回schema_version=1/purpose/workspace_id/resources/context_sha256/binary_attachments_read=false/links_followed=false。resources固定按kind/id排序，含kind/id/mode/metadata/citation及显式text；citation只含对应身份、权威hash/修订及可选行/行hash。context_sha256按既有规范UTF-8 JSON计算，前像排除该派生字段本身，仅表示字节一致性，不证明可信。响应不返回实际文件路径或访问能力。
+
+一次请求每份正文≤64KiB、最终JSON含引用/hash≤1MiB；源文件≤1MiB、累计实际文件读取含核验重读≤16MiB。整体超限413，不截断或返回部分资料。空间/墓碑/版本、文件hash及读取中变化前后检查，非法格式422、缺失/越界身份404、版本/结构/路径冲突409；已授权资料变更须另确认。受管路径拒绝绝对/ADS/重解析点，打开后必须普通文件；不提供全局原子文件系统快照。授权和指纹只留内存，不改持久学习数据、迁移或备份格式，重启失效；返回前复核授权，已返回字节不可召回。细节见[Agent契约](agent-design.md#通用资料受控读取契约r6-01)。
+
 前缀W/analysis-drafts，仅普通用户业务UI使用，无模型/Agent采用工具：
 
 - POST根路径：grant_id、context_sha256、request_id（16–100字母数字下划线/连字符）、title（1–200）、body（1–16000字符且≤64KiB）、source_label（≤200）。保存时重读授权上下文并核hash；固定origin=external_candidate、verification=unverified，保留引用，不存grant/上下文正文镜像。同空间同请求同内容幂等；不同内容409。已有请求查询不重新读取已撤销授权；待处理最多1000条。

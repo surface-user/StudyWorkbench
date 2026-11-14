@@ -34,6 +34,7 @@ def main():
     private = 'private-fixture-https://example.invalid/?secret=not-echoed'
     checks = 0
     node = None
+    surviving_grant = None
     for restart in (False, True):
         token = secrets.token_urlsafe(32)
         process = subprocess.Popen(command + ['--data-dir', str(root / 'data'), '--media', str(media)],
@@ -104,6 +105,32 @@ def main():
             error('/api/workspaces/missing/nodes/' + node, 404, 'not_found')
             document, _ = request(prefix + '/nodes/' + node + '/document')
             assert 'kept' in document['text']
+            grants = prefix + '/agent-grants'
+            if restart:
+                error(grants + '/' + surviving_grant + '/read-resources', 404, 'not_found', {})
+            selection = {'kind': 'resource_node', 'id': node}
+            metadata, _ = request(grants, {'purpose': 'read_resources', 'confirm': True, 'selections': [selection]})
+            surviving_grant = metadata['id']
+            context, _ = request(grants + '/' + surviving_grant + '/read-resources', {})
+            assert context['purpose'] == 'read_resources' and 'text' not in context['resources'][0]
+            assert context['links_followed'] is context['binary_attachments_read'] is False
+            error(grants + '/' + surviving_grant + '/read-attempts', 404, 'not_found', {})
+            error(grants + '/' + surviving_grant + '/read-analysis-context', 404, 'not_found', {})
+            error(grants, 422, 'validation_failed', {'purpose': 'read_resources', 'confirm': True,
+                'selections': [{**selection, 'path': private}]})
+            text_grant, _ = request(grants, {'purpose': 'read_resources', 'confirm': True,
+                'selections': [{**selection, 'mode': 'text', 'representation': 'original_text',
+                    'expected_sha256': context['resources'][0]['metadata']['original_sha256']}]})
+            selected, _ = request(grants + '/' + text_grant['id'] + '/read-resources', {})
+            assert 'kept' in selected['resources'][0]['text']
+            assert selected['resources'][0]['citation']['authority'] == 'original_text'
+            error(grants + '/' + text_grant['id'] + '/read-resources', 401, 'unauthorized', {},
+                headers={'Authorization': ''})
+            error(grants + '/' + text_grant['id'] + '/read-resources', 403, 'forbidden', {},
+                headers={'Origin': private})
+            value, _ = request(grants + '/' + text_grant['id'], method='DELETE')
+            assert value == {'revoked': True}
+            error(grants + '/' + text_grant['id'] + '/read-resources', 404, 'not_found', {})
             player, _ = request('/api/player', raw=True)
             capability = player.decode().split('?cap=', 1)[1].split("'", 1)[0]
             chunk, headers = request('/media/demo?cap=' + capability, expected=206,
@@ -126,6 +153,7 @@ def main():
             assert process.returncode == 0, 'Backend exited unexpectedly'
             assert not process.stderr.read().strip(), 'Backend emitted unexpected stderr'
     print(json.dumps(dict(checks=checks, unique_error_ids=len(identifiers), restarted=True,
+                         resource_grants_checked=True, resource_grants_not_restored=True,
                          receipts_preserved=True, media_range_preserved=True, frozen=bool(args.exe))))
 
 
