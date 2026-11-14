@@ -52,6 +52,7 @@
 | 资料树删除 | [report](records/2026-10-30-resource-removal/report.md) | — |
 | 统一资源导入 | [report](records/2026-10-30-unified-resource-import/report.md) | [迁移前独立PR跟进](records/2026-10-30-unified-resource-import/pr-review.md)，保留原拆分，后续写report |
 | R6 本地授权切片 | [report](records/2026-11-03-r6-agent-access/report.md) | evidence/仅存已筛选证据 |
+| R6-01 通用资料受控读取 | [report](records/2026-11-14-resource-read/report.md) | 本地授权契约、后续API/UI和无模型回归，同任务持续记录 |
 | PLAN-02 学习工作台方向 | [report](records/2026-11-03-learning-workbench-direction/report.md) | [原始差异评估](records/2026-11-03-learning-workbench-direction/gap-review.md)，讨论来源 |
 | LW-00 学习流程设计 | [report](records/2026-11-03-lw00-contracts/report.md) | 含设计自审，现行契约在docs |
 | LW-01 自由笔记 | [report](records/2026-11-03-lw01-notes/report.md) | 同任务重试/失败与末轮结果均在原报告 |
