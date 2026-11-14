@@ -730,3 +730,142 @@ Q为根.local/release-venv/Scripts/python.exe（3.13.17）；IQ/IP为starlette-f
 当前REL-02b1实现/相关自动化/文档完成，REVIEW，等待独立草稿PR/当前head CI；LPPL原Work/修改条件及实际payload许可仍在父REL-02b/REL-02，不能因取得两份文本销项。审查暂缓、人工取消、未合并或发行。PR最终head/运行和有限验收结果在PR描述维护，不为写入自身SHA循环制造提交。
 
 提交前逐文件Git空白检查首次在官方LPPL原文末尾空行报告退出3；该文件许可明确禁止修改许可文本，因此保留原19036字节及官方SHA256不变，不将这条原版格式诊断记为修复或普通空白通过。辅助核证改为对这一个逐字原件强制官方完整hash，其他8份变更继续原git diff --no-index --check；源码/测试/文档没有放宽。Q -X utf8 artifacts/goal-20261112/check_license_supplement.py聚合退出0：478文件/预期9变更/469原blob保持、84本地引用、46调度行唯一及旧报告完整前缀、两锁不变核对通过。
+
+
+## 2026-11-14：REL-01c 冻结Python成员与构建源身份对应
+
+主Agent已核#42最终fb5b7a2e44377abc7b53c7eb4a3ed54166112a67及CI43366003202三组44步成功，登记REL-01b有限开发交付DONE。其文件目录覆盖不是全部包身份，2678个非业务PYZ模块、103PYD和其他非PE数据归属仍待核；完整REL-01不关闭。继续使用既有.local/goal-20261112/frozen-identities副本，开始前逐453个本地文件核对#42远端tree62d7092a309713630d3f103fd97b3b0d9b59dd20，全部Git blob相等，没有覆盖旧实现。root、#42、共享环境及原冻结payload保持。
+
+已读本副本AGENTS、现行需求/架构/题目协议/task、打包指南和dev证据规范。实现前先运行忽略artifacts/rel01c/probe.py的只读探针：固定#40原冻结exe SHA2563fba079e510e4550d086b7786973f937fa3c2a92e28efcd0e112d6bec82d50a2，复用现有嵌入目录/业务静态核验；从精确源锁版本的实际安装METADATA/原始RECORD建立本地来源索引，只在实际PYZ静态代码等价或实体文件字节hash相同且RECORD hash/长度通过时记候选对应，优化等级0/1/2分别记录。不会执行包内代码，不以所有环境包或模块名前缀直接认定发行成员；探针结果用于最小设计，产品实现尚未开始，先报主Agent。
+
+
+### 实现和实际边界
+
+主Agent确认上述只读设计后，实现tools/frozen_python_members.py及独立测试，另同步打包指南/task/本报告和[精选摘要](evidence/frozen-python-members-summary.json)，共六文件；不改原扫描器/打包参数、产品入口/数据库、依赖锁或其他任务。调用方只有新增显式开发CLI，无产品路径或exports需要接入。复用原inventory/embedded/metadata/bounded_inflate/equivalent/no_links与重复JSON键守卫，Python标准库读取实际构建环境，不增加依赖或联网。
+
+消费REL-01b coverage后先重新核固定payload集合/hash、锁、随包metadata、内嵌目录和43业务源码。以实际PYZ名/实体路径筛选RECORD后才读取构建文件；不会扫描所有环境文件当成发行内容。原始METADATA必须名称/版本唯一且与源锁匹配，候选源文件先核RECORD SHA256及长度，再进行静态code等价或实体字节比较；代码从不执行。每条匹配保存PURL、实际位置、源文件/metadata/RECORD hash及所有等价编译优化等级，多候选则保留歧义。最终源复核保持每个输入原有大小预算，不能用较宽的二进制预算读增长后的metadata/源码。
+
+输入coverage上限16MiB，RECORD/metadata各4MiB、全RECORD共100000行；选中构建证据20000文件/逻辑1GiB，编译输入8MiB/文件，其他源文件256MiB/文件。复用内嵌8MiB有界解压。记录预算计算只含需要读取的构建证据；合法../Scripts或其他不安全RECORD路径不沿出site-packages读取，没有SHA256的候选明确未验证。输出新目录保留失败现场，但观察到任一源/payload/锁/coverage变化不写最终JSON。
+
+members.json完整列出本地包与逐成员证据/未知；python-members.cdx.json仅为唯一对应成员的CycloneDX1.6子集，以occurrence关联实际位置。元数据hash不是包归档hash，不放在component hashes冒充归档。固定product_sbom_complete、upstream_provenance_verified、source_head_authenticated=false；退出1为失败、2为有限对应完成，不返回发行通过码。namespace、stdlib/基础ZIP、CArchive启动脚本/bootloader及其他未映射内容继续。METADATA/RECORD和字节/代码相等不证明官方来源、完整所有权、整包随带、运行时可达性或完整依赖边。
+
+### 当前结果与实际命令
+
+工作目录为本frozen-identities副本。IQ/IP为starlette-fix/.local/starlette-q-isolated（3.13.17）/starlette-p-isolated（3.12.7），pytest9.0.3，只读复用而不升级共享Q/P；Q为根.local/release-venv/Scripts/python.exe，仅运行既有Ruff或辅助验证。命令均设置PYTHONDONTWRITEBYTECODE=1，原始JSON/JUnit/log均在artifacts/rel01c，不提交完整日志/安装内容。
+
+- IQ/IP -X utf8 -m pytest backend/tests/test_frozen_python_members.py backend/tests/test_frozen_sbom.py backend/tests/test_source_sbom.py backend/tests/test_release_inventory.py -q --basetemp=artifacts/rel01c/tmp-q03或tmp-p03 --junitxml=artifacts/rel01c/q03.xml或p03.xml：原生测试权限各退出0、176通过（当时36新+原140），11.70/12.04秒，无失败或跳过。新增对应覆盖不执行夹具代码、实际成员与未使用环境包分离、共享归属歧义、原件不变、源码/数据差异不归属、RECORD/metadata完整性、输入/输出边界、精确版本、预算和期间变更拒绝。没有删除旧测试或降低断言。
+- 后续只调整fixture模块复用/import后，IQ/IP新专项各36通过；补充末尾来源复核继续遵守各自原预算的保护及2负例后，IQ/IP -X utf8 -m pytest backend/tests/test_frozen_python_members.py -q --basetemp=artifacts/rel01c/tmp-q05或tmp-p05 --junitxml=artifacts/rel01c/q05.xml或p05.xml：各退出0、最终38新专项通过，8.58/9.40秒。先前原140测试对应函数未变，不以旧176当成一次最终178全跑；完整本head全量另由CI执行。
+- Q -m ruff check backend tools：最终退出0（ruff03.log）；IQ tools/export_question_schema.py --check：退出0，Schema无漂移。工具未改业务代码，不在本地重复全产品功能/窗口/新冻结构建，独立PR当前CI仍须运行全部后端/桌面/冻结链。
+- IQ -X utf8 tools/frozen_python_members.py --payload ../starlette-fix/dist/study_backend --coverage ../frozen-sbom/artifacts/rel01b/real05/coverage.json --output artifacts/rel01c/real04：退出2（设计语义为有限成功），70个精确锁版本的实际环境包中只有55个获得实际唯一成员对应，2358个非业务PYZ模块与861实体，另有43业务源码原核；320非业务模块、108实体、154基础ZIP成员保持未映射，无歧义。检查14072条RECORD、3344份选中构建证据/124220456字节，前后payload/锁/coverage/业务源码及构建证据不变。pytest9.0.3和setuptools84.2.1均在实际成员中，不因开发分类漏掉。匹配源码的等价优化等级可不唯一，不声称真实编译选项已认证。
+- IQ -X utf8 artifacts/rel01c/verify_real.py：退出0（verify-real01.log）。本次55组件CDX通过原固定官方1.6 Schema及离线spdx/jsf引用；三份Schema的hash与REL-01a/01b记录一致，无网络解析回退。全部2358模块/861实体/PURL/源文件hash/等价等级及全部未映射集合与先前独立probe.py算法逐项一致；另核70包原metadata/RECORD hash、代码本身hash、CDX occurrence集合与所报匹配精确一致。不是只核组件数量。
+
+real04 members.json SHA256 77a42b28da7b3db61309a43146bdcebe67a0016e23454299d59a81e30a6efb5f；python-members.cdx.json SHA256 7b0c7b10f0e0fa7b53791082d14b1314dfafcc8879253df1512d0a149ecc0ef2；精选摘要SHA256 ebfb23c50531fb999ed09308bd8c74d07628b9c188d2110659fd392a81c64d9b。摘要只保留公共PURL、源/输入/输出hash、计数及未知，不含个人路径或安装源全文；完整成员位置/原始输出留artifacts。
+
+### 保留失败和交付状态
+
+首轮新增专项q01为34通过/2失败：共享来源夹具未将其METADATA列入RECORD，以及长度负例误按不匹配的字节数替换；仅修正夹具，保留原断言和日志。q02/p02各174通过/2失败，均为既有mklink /J夹具在受限进程中访问拒绝；改用全新任务目录及已授权原生测试权限后上述176×2通过，未跳过链接保护。早期Ruff仅import排序、未用Path和pytest fixture导入遮蔽；复用既有fixture模块对象后最终无诊断，未加广泛忽略。real01/02/03为中间实现的有限成功，原目录保留；最终以末尾输入预算保护的real04和本次校验为准。
+
+当前REL-01c实现/相关自动化和文档完成，REVIEW；仍需独立草稿PR、其最终head CI和主Agent核验后DONE。原REL-01b的2678非业务模块身份缺口本次有限减少为320，108实体（含53 DLL/19 PYD/17 PY/其他）仍未归属，完整来源/关系及其他发行组件仍未闭合，父REL-01/02/03保持。审查暂缓、人工取消，未合并或发行，不做数据清理或接模型。
+
+Q -X utf8 artifacts/rel01c/check_changes.py退出0：六文件范围、其余450个base blob保持、456最终文件、71本地文档链接/33调度行唯一性、UTF-8/LF/逐文件git diff --no-index --check及原报告前缀检查通过；两份运行依赖锁不变。检查/发布辅助文件仅在忽略artifacts中，不纳产品或Git。
+
+实际创建[独立草稿PR #47](https://github.com/surface-user/StudyWorkbench/pull/47)，分支codex/frozen-python-members，base为#42最终fb5b7a2，实现提交5d0e7d90f30d6cdcd4f03e19a67120f846d107ee；本次仅补PR链接，功能和原自动化证据保持。最终head与当前CI在PR说明维护，不为写入自身最终SHA重复生成文档head，未核CI前保持REVIEW。
+
+
+## 2026-11-14：REL-01d 固定Python归档与剩余成员来源
+
+主Agent已核#47最终d6bef38cda64a4c643bbceb58ef95be6c3363245、CI43570337629三组44步、双Python918及最终38专项，并在只读副本重跑全部身份/未知/官方Schema校验后登记REL-01c有限开发交付DONE。使用#47远端tree90b1082a7886d52efbe207a7bcda92edc3cd2809的456个精确blob，在新frozen-origins副本继续，旧#47和原冻结包保持。此前只读remaining-probe/record/relocated诊断作为输入，尚不视为本工具已支持。
+
+已读取现行task/AGENTS及对应需求、架构、题目协议、打包与证据规范；本切片先IN_PROGRESS，先报最小设计再实现。范围针对固定CPython NuGet源码/二进制、项目迁移及HTML/入口、RECORD元数据自身、扁平DLL的共同来源和无代码namespace。必须单独列CArchive启动代码，不把外层PE bootloader、全部CRT/native或签名混作已认证；完整REL-01/02/03继续。
+
+
+### REL-01d实现与实际结果
+
+主Agent批准六文件有限设计后新增tools/frozen_python_origins.py和专项测试，更新打包指南/task/本报告及[精选摘要](evidence/frozen-python-origins-summary.json)。只提供显式开发CLI，无产品调用方/exports/API/数据库或打包payload变化，无新增依赖或共享环境修改。复用既有成员生成器、文件/归档/静态code比较、RECORD与defusedxml等已锁定组件；旧#47及原冻结包只读保持。先重新执行#47全体对应，再补来源，旧局部JSON存在不代表增强整体成功。
+
+实际CArchive12项中11项代码全有静态来源：struct来自固定NuGet；4份pyimod、bootstrap及4个runtime hook共9项来自实际PyInstaller6.22.3分发的metadata/RECORD/源文件；frozen_entry来自项目Git blob。PYZ是容器。对应来源均比较完整嵌套code/常量/异常表及各等价优化等级，不执行模块，不因名字像PyInstaller就赋予版本。9个namespace均无存储代码，分别描述已证子模块的构建分发关联，namespace版本null、不认证所有权。
+
+固定NuGet SHA与prepare-tools.ps1一致，核python.nuspec唯一id/version及解释器补丁版本。压缩64MiB、20000成员、声明与实际读取各256MiB、每成员16MiB/编译8MiB，拒绝原名规范化、路径/大小写重复、链接/特殊/加密成员及DTD/实体；不解包。XML包括UTF16实体和重复标识拒绝。Windows单一大小写无关匹配仍记录真实成员名，不能用大小写差异漏掉同字节的CRT文件。Git声明最多16MiB/20000普通文件，source head/tree只是caller声明；逐本地源、payload及声明Git blob/代码对应，远端认证继续由实际交付单独核验。
+
+15份RECORD self行的hash/size本来为空，依据[安装记录规范](https://packaging.python.org/en/latest/specifications/recording-installed-packages/#the-record-file)将其原metadata文件与实际分发字节另行对应，明确record_self_hash_declared=false，不写回第三方文件或生成伪self hash。自报非空错误hash仍被原成员门禁拒绝，不将例外推广到普通无hash源码。两个移位DLL按字节追溯原RECORD路径，MSVCP保留NumPy及pandas两来源，不任选owner。CArchive初始化代码与外层native bootloader是不同证据，背景参考[PyInstaller启动说明](https://pyinstaller.org/en/stable/advanced-topics.html#the-bootstrap-process-in-detail)，本工具不把前者相等当后者已认证。
+
+增强阶段在末尾复核所有选中构建输入，包括前阶段已读但未能匹配的输入；另核原payload/coverage/锁、固定档案、Git清单、项目源及前阶段生成的两份JSON。沿用每输入原有大小上限、总20000源文件/逻辑1GiB与100000 RECORD行，失败不生成增强origins.json/CDX。所有证据字段为原字节/hash和实际位置，未认证项保持false，无发行通过0返回码。
+
+工作目录为frozen-origins。IQ/IP指starlette-fix/.local/starlette-q-isolated（3.13.17）/starlette-p-isolated（3.12.7，pytest9.0.3），只读复用。Q指根.local/release-venv/Scripts/python.exe用于现有Ruff。命令均设PYTHONDONTWRITEBYTECODE=1；原始日志/JSON/JUnit在artifacts/rel01d，不纳Git。
+
+- IQ/IP -X utf8 -m pytest backend/tests/test_frozen_python_origins.py backend/tests/test_frozen_python_members.py backend/tests/test_frozen_sbom.py backend/tests/test_source_sbom.py backend/tests/test_release_inventory.py -q --basetemp=artifacts/rel01d/tmp-q03或tmp-p03 --junitxml=artifacts/rel01d/q03.xml或p03.xml：原生测试权限各退出0、216通过（当时38新+原178），26.46/26.94秒，无失败/跳过。覆盖不执行样本代码、所有来源类型/共享DLL/namespace类型、caller Git边界、ZIP名字/大小写/链接/元数据/UTF16实体、各种预算、阶段输出/源变更拒绝、错误runtime源码不按前缀归属、base pyc魔数及真实代码差异、假RECORD self hash拒绝和CLI非发行成功码。
+- 随后补强前阶段未匹配源的增强末尾稳定性，并加1项负例；IQ/IP -X utf8 -m pytest backend/tests/test_frozen_python_origins.py -q --basetemp=artifacts/rel01d/tmp-q04或tmp-p04 --junitxml=artifacts/rel01d/q04.xml或p04.xml：各退出0、最终39新专项通过，23.55/24.51秒。未把早期216写成一次最终217全跑；既有178函数未改，完整本head全量另由CI执行。
+- Q -m ruff check backend tools最终退出0（ruff-final2.log）；IQ tools/export_question_schema.py --check退出0。没有业务/构建输入变化，不在本地重复全产品/桌面/冻结运行；当前head CI仍须完整执行。
+- IQ -X utf8 tools/frozen_python_origins.py --payload ../starlette-fix/dist/study_backend --coverage ../frozen-sbom/artifacts/rel01b/real05/coverage.json --python-package <根.local/release-tools/python.3.13.17.zip> --source-tree ../frozen-sbom/artifacts/rel01b/source-tree.json --output artifacts/rel01d/real04：退出2（有限来源成功），无解包或执行。新增311 PYZ代码、154基础ZIP代码、62实体，11 CArchive代码来源与9无代码namespace描述。实体含19项目资产、15 RECORD自身、26 NuGet及2移位DLL；后者为3条来源证据（MSVCP共同来源）。新认出的NuGet26比原探针24多2，为VCRUNTIME140/140_1实际小写文件名的完整字节对应；这不证明内嵌native各自身份/许可/签名已完成。58个增强CDX组件，仍未知46实体，即44 CRT文件及EXE/ZIP生成容器两项，完整产品/上游/Git认证均false。
+- IQ -X utf8 artifacts/rel01d/verify_real.py退出0（verify-real01.log）。58组件通过固定官方1.6 Schema和离线spdx/jsf引用；每个新增PYZ/ZIP/source hash/优化等级、19Git资产、15 RECORD与移位DLL所有来源、11启动代码及9namespace描述都与此前独立只读探针逐项相等，另重核NuGet原档/所有493个实际读取成员及实际payload文件hash。增强CDX每个occurrence集合与来源和旧55组件精确相等；Git/metadata hash未充当包归档hash。没有只凭数量验证。
+
+real04 origins.json SHA25626901b019cbe6356cf592ba58359fab78009bf28cb95bc17fbfc900804ffb0ed；python-origins.cdx.json SHA25664c2a8311bc4235d450e1bfa3c84d1f2845c9fbb03e1bdd55539fbe7e5f317dc；精选摘要SHA25684d25079d56550692ef9bde92cb8a57765127b149429a8078db139096ef5e24b。前阶段完整members/BOM分别仍等于#47的77a42b28...和7b0c7b10...原哈希；本次再次索引14072条RECORD，增强复核3416份源/124813247逻辑字节。NuGet原档14826465字节/1340成员/39613524展开字节。原目录、锁及payload前后无观察到变化；不是原子快照、完整依赖/来源或安全认证。
+
+保留失败：只读CArchive探针初按四元组解包实际五字段toc而退出1，按实际reader结构改为读取末项类型后全部11代码对应；carchive-probe01.log保留。增强real01因NuGet对VCRUNTIME大小写保守拒绝，按唯一大小写无关成员并核完整字节修正，原失败不抹去。首轮新测试q01为35通过/1失败：测试误期待伪造的非空RECORD self hash继续生成报告，实际原门禁正确拒绝；修正为要求异常及无增强报告，未放宽产品断言。Ruff首轮只import排序等3项，自动整理后无诊断。real02/03是中间有限成功，最后以包括未匹配源稳定性保护的real04为准；首次该补强补丁因import排序上下文不匹配被工具拒绝，未改源文件，按实际位置应用后专项通过。所有旧日志保留。
+
+当前实现/相关自动化/文档完成，REL-01d保持REVIEW；独立草稿PR/当前head CI和主Agent核验后才DONE。增强来源子集不关闭完整REL-01/02/03：外层bootloader、44 CRT/native独立身份、生成容器、嵌入库/完整依赖边、其余产品组件、许可/漏洞/签名仍未闭合。审查暂缓、人工取消，未合并或发行，不清理数据或接模型。
+
+Q -X utf8 artifacts/rel01d/check_changes.py退出0：六文件范围、其余453个base blob保持、459最终文件、72本地文档链接/34调度行唯一性、UTF-8/LF/逐文件git diff --no-index --check及原报告完整前缀通过，运行依赖锁不变。辅助发布/原始证据均留忽略artifacts，最终PR与CI在实际交付后补充。
+
+独立草稿[PR #50](https://github.com/surface-user/StudyWorkbench/pull/50)已建立，分支codex/frozen-python-origins基于#47最终d6bef38，首次实现提交8395bd21dc33621778f3ad76ea4e35d12d3b1c55/tree8d957b4037b02543ce5def850c2692d75262ed40。本文补交付链接形成后续文档提交；最终head/tree与该head CI结果登记在PR描述，避免为记录自身hash反复改head。当前任务仍REVIEW，未合并或发行。
+
+
+## 2026-11-14：OFF-02f 固定JRE动态库加载根
+
+从INT-03/#43精确c666db99e54b5cd62d9f194a4357c9eea9051da9/tree590513029371e666192c4e52f4c67890923731af逐Git blob复制474文件到独立office-jre-domain，原根、#43/#44和组件不动。主Agent已核#43当前CI三组45步成功；#44配置隔离另已核三组44步、45×2及实际进程证据DONE，但本副本不假称已纳其代码。完整读取现行规范及工具/调用方后，任务先登记IN_PROGRESS，设计与只读试探由主Agent确认后实施。
+
+范围为native_dependencies.py、专项测试、打包指南/task、原报告及一份精选摘要。两个调用方check_native_dependencies/check_release继续复用共享工具；不改产品、包布局、组件/原清单或Windows设置。新增精确Java原锁/86DLL路径/hash/AMD64校验，仅把这些包内DLL作为保守额外入口，沿用Java的bin/bin-server及bin私有CRT、Office的program/bin/bin-server及program私有CRT。12个其他JRE EXE、TWAIN/x86/托管程序集/模板等未知不豁免。
+
+只读诊断在根artifacts/goal-20261114。office_static_domains_probe.py退出0，351 PE/223未知与原锁一致；JRE90候选在假设域内闭合，其中78 DLL/12 EXE。其他program、System64及Python目录的假设闭合不作为已证路径；11个CLI/策略PE另核CLR header，policy.1.0.cli_cppuhelper.dll确实32BITREQUIRED，不能据托管格式推定宿主存在或x64兼容。
+
+固定java/release的SOURCE=2ab10ca20c19解析到官方adoptium/jdk21u完整2ab10ca20c191701c3a9f3153bfc6e93d63714c1。Windows java_md.c、HotSpot os_windows.cpp、NativeLibraries.c/java均取固定源并按Git blob核原bytes：JRE由java.home形成bin的boot路径，NativeLibraries先SYS后USER，JNI转JVM_LoadLibrary，Windows实现使用普通LoadLibrary。USER_PATHS仍可含Windows/Sun/Java及系统/当前目录；本项只保守核包内静态导入，不宣称全部DLL都实际运行或任意动态路径已隔离，SxS/已加载模块/转发与系统来源限制继续。
+
+jre_dll_scope_probe.py按原两个域各追加固定86DLL，退出0：Java87根/87节点/390边，Office147根/205节点/1844边，原未知精确新增覆盖78、剩145。首次辅助计算误将两个域各自新增节点并集当全局新覆盖，断言失败；改为与原unknown集合求交后通过，没有改组件/门禁。取源曾遇web缓存/404和文本当JSON错误，artifact写入多余EOF识别后恢复原Git bytes；GitHub一次瞬态无结构返回同端点重试成功，失败均保留。
+
+实现须拒绝Java锁/集合/hash/路径/架构变化，普通与延迟导入全核，不能借另一域或主机CRT补缺口。145剩余仍使check_release拒绝，完整Office/SBOM/许可/漏洞/签名发行不销项。代码审查暂缓、人工取消，不合并或发行。
+
+
+### OFF-02f 实际验证与交付准备
+
+工作目录为office-jre-domain。IQ/IP分别使用starlette-fix/.local/starlette-q-isolated/Scripts/python.exe（3.13.17）与starlette-p-isolated/Scripts/python.exe（3.12.7），pytest9.0.3；只读复用既有环境，不升级共享Q/P。Q为根.local/release-venv/Scripts/python.exe，仅用于已有静态工具。
+
+- IQ -X utf8 -m pytest backend/tests/test_native_dependencies.py -q --basetemp=.local/off02f-initial --junitxml=artifacts/off02f/initial.xml：退出0，先核48项旧用例。新增13项后，IQ/IP -X utf8 -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py -q --basetemp=.local/off02f-q02或p02 --junitxml=artifacts/off02f/q02.xml或p02.xml：各退出0，115通过，无失败/跳过（61原生域、54发行清单）。覆盖精确Java锁/集/路径/hash/架构/release、两个原域的不同CRT实际目标、额外EXE未知与原保护。初轮q01的113通过/2失败均为旧mklink /J在受限进程权限拒绝，原断言保留，换本任务新目录与已授权本机测试权限后通过，不将原失败计入成功。
+- IQ tools/check_native_dependencies.py --office <根.local/release-tools/libreoffice-java-26.8.1-21.0.13>，退出0；先完整核19743文件和原组件hash，再得到351 PE、86固定DLL、Java87根/87节点/390边、Office147根/205节点/1844边。普通与延迟导入均沿原目录/CRT规则，原223未知精确新增78、剩145，12个额外JRE EXE及TWAIN仍未知。输出632306字节，SHA256 bc533a095743014549a8981b43305ebcda905a91bbc4420a25701e66702b3762。这是有限诊断成功，pe_coverage仍partial，不是发行通过码。
+- IQ artifacts/off02f/verify_real.py：退出0，原新报告集合/目录/CRT规则逐项相符；9项负例包括真实PE内存元数据的缺失/hash/架构/移动/新增、两份新小副本的Java锁/release篡改，以及Java/Office各自缺CRT不得借另一域或系统填补。原89份选中文件（完整86DLL、Java锁、release及组合锁）前后hash相同。没有写原组件、启动Java工具/Office、执行扫描器或删除字节；这些负例不冒充OS实际加载失败。
+- Q -m ruff check backend tools及Q tools/export_question_schema.py --check：各退出0。产品源码与打包参数逐base blob保持，不在本地重复构建/运行已测业务，当前head CI仍须执行完整双Python、桌面/Windows与冻结检查。两个共享调用方及check_release的任何unknown拒绝代码保持原样；本诊断没有组装完整产品stage或执行该发行stage检查，145非空仍构成其阻断输入。
+- IQ artifacts/off02f/select_evidence.py：退出0，生成[精选摘要](evidence/off02f-jre-dll-summary.json)，SHA256 24e375c85de51ef74da231fdf3e6a8b01ae388c1a3de88d8c72392745ec3319d；包含固定上游4源文件URL/blob/hash、86 DLL原映射、真实计数/新增路径、负例、JUnit/hash与限制。全部原始632KB图、PE/CLR试探、日志和上游全文留忽略的artifacts，不提交整个原始目录。
+
+实现/相关自动化/文档完成，OFF-02f保持REVIEW；独立草稿PR/当前head CI和主Agent核验后才登记DONE。完整Office剩145候选、未知动态加载/系统叶子及完整SBOM/许可/漏洞/签名发行继续，审查暂缓、人工取消、未合并或发行。
+
+提交前IQ artifacts/off02f/check_docs.py退出0：精确6文件范围、其余469个base blob不变、原报告完整前缀、UTF-8/LF/逐文件git diff --check、84本地引用与45调度行唯一性通过；两份依赖锁、产品Office源码和check_release/check_native_dependencies调用方字节与#43相同。即将创建独立草稿PR，最终head/CI及主Agent验收在PR实时说明维护，不为写自身最终SHA反复提交。
+
+实际创建[独立草稿PR #48](https://github.com/surface-user/StudyWorkbench/pull/48)，分支codex/office-jre-dll-domains，base为#43精确c666db9，首实现提交51471f79c275a1ad7e0d560c600ccf995e69d05f/tree589d16089258adea9abd7c48af8b70888b05d271。补本交付链接后核最终head CI，结果在PR实时说明维护，不再为写自身最终SHA改变head；当前REVIEW不因草稿PR存在而销项。六文件范围保持，未提交原始artifacts/组件或改变原产品，未合并/发行。
+
+
+## 2026-11-14：OFF-02g Office Python模板来源与角色证据
+
+主Agent已核OFF-02f/#48最终c1877b719889c28fc96e0504be5bc05ed7a2ffb8、CI43570645325三组45步/984×2、115×2及实际86DLL/78覆盖/145未知与原CRT规则，登记有限任务DONE。本任务从该精确tree094e7fd045526bb6b797e95fdc12e20e95136bab逐475 Git blob复制到独立office-template-evidence；原分支/组件不变。现行规范和工具/调用方已读取，先登记IN_PROGRESS，有限设计由主Agent确认后实施。
+
+本项只新增离线来源/角色证据工具与测试，配套打包指南/task/本报告/精选摘要共6文件；native_dependencies与check_release、产品代码/依赖/打包不改。输入为固定Office-Java组件、固定23,160,540字节的官方CPython3.13.15源码及新输出目录。复用普通文件/重解析拒绝、固定hash及组件清单检查：完整核组件原清单/实际集合和文件hash，再逐两wheel对实际pip415/setuptools252成员验证。原source archive先后hash相等，selected wheel≤8MiB/4000成员、单成员≤4MiB、selected≤1500、manifest≤4MiB/组件≤20000文件、报告≤2MiB，不提取或执行源码。
+
+实施前只读补证在根artifacts/goal-20261114。固定LO source bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1的download.lst/UnpackedTarball_python3.mk指定Python-3.13.15.tar.xz SHA1e66a7945a48390ee4c2a4268a0e4185884059a13c4aab6d148aa208deea4a76及setuptools79.0.1/pip26.2.1两个源wheel；只下载原包并核hash，内存读取wheel，未安装/执行。实际pip415全等同；setuptools252中250全同、jaraco/text/__init__.py精确等于LO单补丁效果、Lorem文本精确为单改名；无未解释实际文件。此为所选包目录的source-distribution对应，不能把其缺metadata猜成完整安装发行身份，其他分发内容与全部Python组件仍非本范围。
+
+14个PE模板还与固定上游Git资产逐blob相同：setuptools v79.0.1→607f6be776db97d83c9cc54e0eaa578567dcc44c，launcher.c blob b87cb32ad65b70ddf53c59317eed2433d9b3bd42；distlib0.4.2→8183ea60e83bf021bf7d6903f4a6b3c8df0905a6，PC/launcher.c blob727f79165c8d328843598cace030e630045be066。对应C源用于解释成品启动器必要条件（distlib的附加archive/shebang，setuptools的同目录-script.py/pyw），不是可重现编译证明。producer从资源读bytes，生成另外命名exe/ZIP或配套脚本；原模板无ZIP/overlay，伴随脚本须另核。
+
+不得据目录名、原样本未运行、源码关联或缺附加数据直接豁免runtime。当前#48产品仍v3，#44受控配置只在独立分支；本工具固定runtime_classification=unclassified、runtime_exclusion_verified=false、product_release_ready=false，145未知保留。后续须在含#44+#48的共同已验head另绑定实际产品入口和运行时分类。无新增模型/依赖/命令执行，审查暂缓、人工取消、未合并或发行。
+
+### OFF-02g 实际验证与交付准备
+
+工作目录office-template-evidence；IQ/IP仍只读复用starlette-fix/.local/starlette-{q,p}-isolated/Scripts/python.exe（3.13.17/3.12.7，pytest9.0.3）。新增27项自写惰性样本，不含可运行启动器或个人原件；producer/package fixture若被执行立即抛错。普通/延迟导入及发行清单115项旧检查全部保留。
+
+- IQ/IP -X utf8 -m pytest backend/tests/test_office_template_evidence.py backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py -q --basetemp=.local/off02g-q06或p06 --junitxml=artifacts/off02g/q06.xml或p06.xml：各退出0，142通过，失败/错误/跳过均0。覆盖固定输入/hash、源metadata、缺producer/模板、精确patch/rename、合法空包文件、重复/规范化NUL/越界/链接ZIP、tar链接/重复/越界/展开预算、已有/组件内输出保护、源/选中成员/伴随脚本在采集时变化，以及生成成品ZIP/trailer/脚本不得混为原模板。重复ZIP的预期构造警告保留。链接边界在本任务全新临时目录按既有本机测试权限核验，不触碰原组件或共享环境。
+- 首轮q01为25通过/1失败：ZipInfo构造器先移除NUL，未生成预期畸形输入；改成在本地/中心文件名原字节注入NUL，拒绝断言不变。q04为141通过/1失败：Python3.13的tar写入器不再接受非零size但无fileobj，Python3.12当时通过；改为只写超预算原header，不分配声称的65MiB内容，两个版本均核由采集器先拒绝。其余中间q02/q03/p03/p04/q05/p05均保留，最终q06/p06为本轮证据。不删除或把旧失败改为成功。
+- IQ -X utf8 tools/office_template_evidence.py --office <根.local/release-tools/libreoffice-java-26.8.1-21.0.13> --python-source <根.local/release-tools/cpython31315-source/Python-3.13.15.tar.xz> --output artifacts/off02g/real02：退出0。固定23,160,540字节源码SHA256 1e66a7945a48390ee4c2a4268a0e4185884059a13c4aab6d148aa208deea4a76、组合清单SHA256 156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9及19743实际文件核验通过；只读tar≤50000成员/单64MiB/总声明展开512MiB、wheel≤8MiB/4000成员/总64MiB/实际单4MiB，重核CRC/实际长度和所有路径。原输出real01退出1，因14个合法空__init__.py被read_file误拒；仅为与固定源和组件hash相符的成员允许空字节，锁/归档仍拒空，并补fixture回归，原失败目录/log保留。
+- real02逐实际pip415文件全等；setuptools252中250全等，唯一patch精确输入636614a9747fa2b5280da6384a43d17ba65985be4750707f021f5108db15ca1a→输出c9e90f78f9ca8155e9fbc24fa46c33ffc0c50553f4f8a96f855233da5eba5991；唯一Lorem改名内容SHA256 37fedcffbf73c4eb9f058f47677cb33203a436ff9390e4d38a8e01c9dad28e0b。没有模糊patch或未解释的实际成员，source distribution版本来自精确源wheel METADATA，未声称完整安装分发。14PE均无ZIP/overlay，6个distlib原模板缺archive trailer，8个setuptools原模板缺同名-script.py(w)；两个producer源码身份均与源wheel相同。
+- distlib C源的APPENDED_ARCHIVE分支先从自身查archive/shebang，再走Python启动；setuptools C源先按自身路径派生-script.py(w)，缺脚本在调用Python前失败。14模板同时逐Git blob核固定上游资产相同，相关C源、LO download/unpack/patch的原bytes也逐Git blob核对。但该关联不构成从C重编译PE的证明，必要成品数据缺失也不构成产品运行时不可达证明；没有执行源码、PE模板、生成启动器、pip安装或Office。
+- Q（根.local/release-venv/Scripts/python.exe）-m ruff check backend tools与Q tools/export_question_schema.py --check均退出0。首次Q路径少算一级目录而命令未启动、一次rg范围倒置而搜索报错，修正路径/表达式后通过，未改环境/断言。产品、依赖、native_dependencies/check_release/check_native_dependencies与#48全部逐blob保持；不重复构建未变业务，本PR当前head仍须执行完整CI。
+- IQ artifacts/off02g/select_evidence.py退出0，筛出[共享摘要](evidence/off02g-python-template-summary.json)，15,623字节/SHA256 243e04df4ae1671f2c570470a8b1562b486fa8fba8e6367e786189c045fb1d69。原完整report 280,945字节/SHA256 b61561d36bac3bb09fbe668987ed1d80661e77b923bef4f9e0d88a6b59310870及667行映射、源C全文、tar/wheel试探和全日志只留忽略的artifacts；精选仅保留支持来源/结构结论的版本/hash/条件、14资产、2producer、JUnit和限制，未提交源码归档或组件。
+
+有限实现/自动化/文档完成，OFF-02g保持REVIEW，待独立草稿PR/当前head CI及主Agent核验。原145未知继续阻断check_release；模板仍unclassified，runtime_exclusion_verified/product_release_ready均false。后续在包含#44+#48共同head再研究受控实际入口，Python/managed/x86各自独立切片，完整Office/SBOM/许可/漏洞/签名发行继续；审查暂缓、人工取消、未合并/发布。
+
+IQ artifacts/off02g/check_docs.py退出0：6文件范围、472个未变base blob、旧报告完整前缀、UTF-8/LF/逐文件git diff --check、85本地引用及46唯一调度行均通过。实际创建并附加[独立草稿PR #51](https://github.com/surface-user/StudyWorkbench/pull/51)，分支codex/office-template-evidence，首实现提交6a95b146701f13d1cb7e322b056abddd68d8d572/treefe3e19292117d33ba797887896f725b45de31e87。补入本交付链接后保持6文件，最终head/完整CI及有限核验结论在PR实时描述维护，不为记录自身最终SHA反复改变head；未改#48、原组件或门禁，未合并/发行。
