@@ -606,3 +606,33 @@ REL-03b已由主Agent核验#35最终head CI三组成功，登记DONE。REL-03c�
 最终源码（含报告schema_version/采集器hash字段）再次运行同57项，Q/P的licenses-{q,p}-final及q-final/p-final日志均退出0；Q -m ruff check backend tools退出0。六文件范围、原报告前缀、未改依赖锁、UTF-8/LF/尾空白及Markdown相对链接检查通过。首次检查驱动把git diff --no-index --check的有差异退出1误作失败（stdout/stderr均空）；按该命令差异语义接受0/1且必须无诊断，未更改源码或忽略空白报错，保留首次驱动失败。
 
 实际交付[独立草稿PR #41](https://github.com/surface-user/StudyWorkbench/pull/41)，分支codex/source-license-evidence基于#35最终a73bedd，实现提交0506a79e4a11370a0afed8c5a05cda173bb263e7。首次共享摘要采用Windows默认CRLF，被提交检查拒绝；仅将新摘要规范化为LF后，六文件/69链接检查退出0。原始采集report及hash未改。最终head CI和有限交付结论在PR描述持续更新，不记完整许可义务已完成。
+
+
+## 2026-11-14：OFF-02f 固定JRE动态库加载根
+
+从INT-03/#43精确c666db99e54b5cd62d9f194a4357c9eea9051da9/tree590513029371e666192c4e52f4c67890923731af逐Git blob复制474文件到独立office-jre-domain，原根、#43/#44和组件不动。主Agent已核#43当前CI三组45步成功；#44配置隔离另已核三组44步、45×2及实际进程证据DONE，但本副本不假称已纳其代码。完整读取现行规范及工具/调用方后，任务先登记IN_PROGRESS，设计与只读试探由主Agent确认后实施。
+
+范围为native_dependencies.py、专项测试、打包指南/task、原报告及一份精选摘要。两个调用方check_native_dependencies/check_release继续复用共享工具；不改产品、包布局、组件/原清单或Windows设置。新增精确Java原锁/86DLL路径/hash/AMD64校验，仅把这些包内DLL作为保守额外入口，沿用Java的bin/bin-server及bin私有CRT、Office的program/bin/bin-server及program私有CRT。12个其他JRE EXE、TWAIN/x86/托管程序集/模板等未知不豁免。
+
+只读诊断在根artifacts/goal-20261114。office_static_domains_probe.py退出0，351 PE/223未知与原锁一致；JRE90候选在假设域内闭合，其中78 DLL/12 EXE。其他program、System64及Python目录的假设闭合不作为已证路径；11个CLI/策略PE另核CLR header，policy.1.0.cli_cppuhelper.dll确实32BITREQUIRED，不能据托管格式推定宿主存在或x64兼容。
+
+固定java/release的SOURCE=2ab10ca20c19解析到官方adoptium/jdk21u完整2ab10ca20c191701c3a9f3153bfc6e93d63714c1。Windows java_md.c、HotSpot os_windows.cpp、NativeLibraries.c/java均取固定源并按Git blob核原bytes：JRE由java.home形成bin的boot路径，NativeLibraries先SYS后USER，JNI转JVM_LoadLibrary，Windows实现使用普通LoadLibrary。USER_PATHS仍可含Windows/Sun/Java及系统/当前目录；本项只保守核包内静态导入，不宣称全部DLL都实际运行或任意动态路径已隔离，SxS/已加载模块/转发与系统来源限制继续。
+
+jre_dll_scope_probe.py按原两个域各追加固定86DLL，退出0：Java87根/87节点/390边，Office147根/205节点/1844边，原未知精确新增覆盖78、剩145。首次辅助计算误将两个域各自新增节点并集当全局新覆盖，断言失败；改为与原unknown集合求交后通过，没有改组件/门禁。取源曾遇web缓存/404和文本当JSON错误，artifact写入多余EOF识别后恢复原Git bytes；GitHub一次瞬态无结构返回同端点重试成功，失败均保留。
+
+实现须拒绝Java锁/集合/hash/路径/架构变化，普通与延迟导入全核，不能借另一域或主机CRT补缺口。145剩余仍使check_release拒绝，完整Office/SBOM/许可/漏洞/签名发行不销项。代码审查暂缓、人工取消，不合并或发行。
+
+
+### OFF-02f 实际验证与交付准备
+
+工作目录为office-jre-domain。IQ/IP分别使用starlette-fix/.local/starlette-q-isolated/Scripts/python.exe（3.13.17）与starlette-p-isolated/Scripts/python.exe（3.12.7），pytest9.0.3；只读复用既有环境，不升级共享Q/P。Q为根.local/release-venv/Scripts/python.exe，仅用于已有静态工具。
+
+- IQ -X utf8 -m pytest backend/tests/test_native_dependencies.py -q --basetemp=.local/off02f-initial --junitxml=artifacts/off02f/initial.xml：退出0，先核48项旧用例。新增13项后，IQ/IP -X utf8 -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py -q --basetemp=.local/off02f-q02或p02 --junitxml=artifacts/off02f/q02.xml或p02.xml：各退出0，115通过，无失败/跳过（61原生域、54发行清单）。覆盖精确Java锁/集/路径/hash/架构/release、两个原域的不同CRT实际目标、额外EXE未知与原保护。初轮q01的113通过/2失败均为旧mklink /J在受限进程权限拒绝，原断言保留，换本任务新目录与已授权本机测试权限后通过，不将原失败计入成功。
+- IQ tools/check_native_dependencies.py --office <根.local/release-tools/libreoffice-java-26.8.1-21.0.13>，退出0；先完整核19743文件和原组件hash，再得到351 PE、86固定DLL、Java87根/87节点/390边、Office147根/205节点/1844边。普通与延迟导入均沿原目录/CRT规则，原223未知精确新增78、剩145，12个额外JRE EXE及TWAIN仍未知。输出632306字节，SHA256 bc533a095743014549a8981b43305ebcda905a91bbc4420a25701e66702b3762。这是有限诊断成功，pe_coverage仍partial，不是发行通过码。
+- IQ artifacts/off02f/verify_real.py：退出0，原新报告集合/目录/CRT规则逐项相符；9项负例包括真实PE内存元数据的缺失/hash/架构/移动/新增、两份新小副本的Java锁/release篡改，以及Java/Office各自缺CRT不得借另一域或系统填补。原89份选中文件（完整86DLL、Java锁、release及组合锁）前后hash相同。没有写原组件、启动Java工具/Office、执行扫描器或删除字节；这些负例不冒充OS实际加载失败。
+- Q -m ruff check backend tools及Q tools/export_question_schema.py --check：各退出0。产品源码与打包参数逐base blob保持，不在本地重复构建/运行已测业务，当前head CI仍须执行完整双Python、桌面/Windows与冻结检查。两个共享调用方及check_release的任何unknown拒绝代码保持原样；本诊断没有组装完整产品stage或执行该发行stage检查，145非空仍构成其阻断输入。
+- IQ artifacts/off02f/select_evidence.py：退出0，生成[精选摘要](evidence/off02f-jre-dll-summary.json)，SHA256 24e375c85de51ef74da231fdf3e6a8b01ae388c1a3de88d8c72392745ec3319d；包含固定上游4源文件URL/blob/hash、86 DLL原映射、真实计数/新增路径、负例、JUnit/hash与限制。全部原始632KB图、PE/CLR试探、日志和上游全文留忽略的artifacts，不提交整个原始目录。
+
+实现/相关自动化/文档完成，OFF-02f保持REVIEW；独立草稿PR/当前head CI和主Agent核验后才登记DONE。完整Office剩145候选、未知动态加载/系统叶子及完整SBOM/许可/漏洞/签名发行继续，审查暂缓、人工取消、未合并或发行。
+
+提交前IQ artifacts/off02f/check_docs.py退出0：精确6文件范围、其余469个base blob不变、原报告完整前缀、UTF-8/LF/逐文件git diff --check、84本地引用与45调度行唯一性通过；两份依赖锁、产品Office源码和check_release/check_native_dependencies调用方字节与#43相同。即将创建独立草稿PR，最终head/CI及主Agent验收在PR实时说明维护，不为写自身最终SHA反复提交。

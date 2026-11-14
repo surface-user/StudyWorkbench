@@ -1,6 +1,6 @@
 # 当前任务与交付状态
 
-更新日期：2026-11-13。本表分开实现、自动化、审查、人工及交付；自动化数字属于各报告的当时版本，不代表本轮重跑或当前全产品通过。历史完整清单见[迁移前快照](../dev/archive/baseline-20261030/docs/task.md)，默认无需读取。
+更新日期：2026-11-14。本表分开实现、自动化、审查、人工及交付；自动化数字属于各报告的当时版本，不代表本轮重跑或当前全产品通过。历史完整清单见[迁移前快照](../dev/archive/baseline-20261030/docs/task.md)，默认无需读取。
 
 ## 当前安排
 
@@ -28,18 +28,19 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 |---|---|---|
 | PLAN-06 并行调度登记 | DONE | 主Agent已核[草稿PR #23](https://github.com/surface-user/StudyWorkbench/pull/23)最终2645366的[CI #133](https://github.com/surface-user/StudyWorkbench/actions/runs/43057985634)成功；本轮继续维护原表和独立PR，不代表功能全部完成 |
 | OFF-01 | DONE | #22诊断开发交付已完成；本轮另核该head CI，OFF-02缺口仍保留 |
-| OFF-02 | IN_PROGRESS | 项目内Temurin固定准备、Office/Java/CRT组合与源码/冻结运行已由#28/#33交付；#36/#39加载域仍有223未知，配置继承边界另在OFF-02e处理，不安装系统Java，不记整包发行完成 |
+| OFF-02 | IN_PROGRESS | 固定Java/Office组合及已交付PE/UNO域保留；本OFF-02f另核86 DLL保守入口后仍145未知、待本项PR/CI，#44配置隔离已交付但代码未纳本#43派生副本；整包发行仍未完成 |
 | OFF-02a 固定Java组件准备 | DONE | 主Agent已核37×2专项、315文件及关键PE/hash；[草稿PR #28](https://github.com/surface-user/StudyWorkbench/pull/28)最终2187fec的[CI #153](https://github.com/surface-user/StudyWorkbench/actions/runs/43065303373)成功；固定准备工具已纳本轮候选，整包OFF-02继续 |
 | REL-03a 源锁文件漏洞查询 | DONE | 主Agent已核42×2专项/实际135包查询和原始证据hash；[草稿PR #32](https://github.com/surface-user/StudyWorkbench/pull/32)最终89f0d77的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43071363779)成功；2包12公告/6CVE待处理，Git/SDK/数据库快照/最终包仍不完整，父REL-03不销项 |
 | INT-01 首批组合回归 | DONE | 主Agent已核[草稿PR #31](https://github.com/surface-user/StudyWorkbench/pull/31)最终b8d534a的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43069606085)三组成功；本地760及77子测试通过，已交付有限首批组合；报告继续[批次记录](../dev/records/2026-11-12-parallel-batch/report.md) |
 | OFF-02b Office配套Java/CRT组合 | DONE | 主Agent已核38×2专项、19742文件/原生框架及源码/新冻结转换；[草稿PR #33](https://github.com/surface-user/StudyWorkbench/pull/33)最终e0a3fcf的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43072881498)三组44步成功；有限组合运行时开发交付完成，完整加载域/发行仍在OFF-02c及REL任务继续 |
 | OFF-02c PE加载域门禁 | DONE | 主Agent核双Python各84、实际351 PE/277未知及严格拒绝；[草稿PR #36](https://github.com/surface-user/StudyWorkbench/pull/36)最终fbbc847的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43092944364)第二次三组44步通过，原上传失败保留；已纳本组合，完整OFF-02仍未闭合 |
 | OFF-02d 固定UNO注册加载域 | DONE | 主Agent核双Python各102、固定53入口/新增54覆盖/223未知及5负例；[草稿PR #39](https://github.com/surface-user/StudyWorkbench/pull/39)最终2da4306的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43359332568)三组44步成功，已纳本组合，未知仍阻断发行 |
-| OFF-02e 受控Office配置来源 | IN_PROGRESS | 独立office-config副本基于#33，限定固定配置/注册来源并排除宿主策略及扩展继承，先核实际bootstrap优先级；尚未纳本组合，不新增扫描支持或豁免TWAIN |
+| OFF-02e 受控Office配置来源 | DONE | 主Agent已核[草稿PR #44](https://github.com/surface-user/StudyWorkbench/pull/44)最终f473abc的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43367142676)三组44步、45×2及源码/冻结实际参数环境；该独立分支代码未纳本#43派生副本，完整Office继续 |
+| OFF-02f 固定JRE动态库加载根 | REVIEW | 固定Java锁/86DLL/路径/hash/AMD64与release核验，沿用两原域及各自CRT；双Python115×2、真实351 PE/新覆盖78/剩145及9负例、89原文件hash保持通过，续[原报告](../dev/records/2026-11-10-release-integrity/report.md)。独立PR/current-head CI待核，不豁免12额外Java EXE/TWAIN等 |
 | REL-03b pytest漏洞修复 | DONE | 主Agent已核独立环境/原失败复验、SBOM及OSV旧新版本对照；[草稿PR #35](https://github.com/surface-user/StudyWorkbench/pull/35)最终a73bedd的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43092294564)三组通过，本组合锁为9.0.3 |
 | REL-03c Starlette漏洞修复 | DONE | 主Agent核双Python各828及77子测试、89专项/23兼容组合与实际冻结/135包查询；[草稿PR #40](https://github.com/surface-user/StudyWorkbench/pull/40)最终b48b711的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43359261755)三组44步成功，本组合已纳1.3.1；原发现/在线覆盖未知保留 |
 | INT-02 第二批组合回归 | DONE | 主Agent核[草稿PR #37](https://github.com/surface-user/StudyWorkbench/pull/37)最终54d26ec及[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43093356970)第二次三组44步通过；原上传失败保留，本地882及77子测试/Flutter200，见[批次报告](../dev/records/2026-11-12-parallel-batch/report.md) |
-| INT-03 第三批组合回归 | REVIEW | 在#37精确源码上组合已验收#34/#35/#36/#39/#40/#41；本地971及77子测试、Flutter203、44模块新冻结/API/生命周期/Office矩阵通过，见[批次报告](../dev/records/2026-11-12-parallel-batch/report.md)。独立PR最终head CI另核，完整发行父项不销项 |
+| INT-03 第三批组合回归 | DONE | 主Agent已核[草稿PR #43](https://github.com/surface-user/StudyWorkbench/pull/43)最终c666db9的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43365961531)三组45步成功；本地971及77子测试、Flutter203与44模块新冻结链通过，完整发行父项不销项 |
 | REL-01a 源码锁文件标准SBOM | DONE | 主Agent已核双Python专项各35、136源码包/8个SDK未知、官方Schema；[草稿PR #25](https://github.com/surface-user/StudyWorkbench/pull/25)最终1b52eb3的[CI #141](https://github.com/surface-user/StudyWorkbench/actions/runs/43060243273)成功；仅源码范围，父REL-01仍未完成 |
 | REL-01b 冻结后端SBOM | IN_PROGRESS | 独立frozen-sbom副本基于#40，先核969物理文件、实际metadata/PE候选与内嵌目录覆盖；来源/版本或映射未知保留，不以环境列表或文件数冒充完整发行包身份 |
 | REL-01 完整源码与发行包SBOM | IN_PROGRESS | 先交付01a；最终覆盖仍依赖OFF-02及所有实际组件/安装器payload，不能据源锁文件或环境包表销项 |

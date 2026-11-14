@@ -28,6 +28,39 @@ OFFICE_UNO_FILES = {
     'program/services/scriptproviderforpython.rdb': 'ed096e982ec7996361fcd1159b270f8169aa9547a09463a6a006bff5057a3c2d',
     'program/services/services.rdb': 'bc996be9362ebf3a9c6be11d4c3c9fef26941182743c70d1649a6e5fe317f094',
 }
+OFFICE_JAVA_LOCK_SHA256 = '159433e3a2fc9f2a9c4f633a613d3db5aaca29d1b52caa64e3a63755ac8e1907'
+
+
+def office_java_libraries(payload, nodes, office):
+    path = payload.get(office + 'java/java-runtime-lock.json')
+    if path is None:
+        raise ValueError('Missing fixed Java component inventory')
+    with path.open('rb') as stream:
+        raw = stream.read(1024 * 1024 + 1)
+    if len(raw) > 1024 * 1024 or hashlib.sha256(raw).hexdigest() != OFFICE_JAVA_LOCK_SHA256:
+        raise ValueError('Java component inventory changed; renew loading evidence')
+    manifest = json.loads(raw)
+    expected = {office + 'java/' + name.casefold(): digest for name, digest in manifest['files'].items()
+                if name.casefold().endswith('.dll')}
+    actual = {name for name in nodes if name.startswith(office + 'java/') and name.endswith('.dll')}
+    if actual != expected.keys():
+        raise ValueError('Java DLL set changed; renew loading evidence')
+    directories = {office + 'java/bin', office + 'java/bin/server'}
+    for name, digest in expected.items():
+        node = nodes[name]
+        if str(PurePosixPath(name).parent) not in directories or node['sha256'] != digest:
+            raise ValueError('Java DLL path or bytes changed: ' + node['path'])
+        if node['machine'] != 0x8664 or node['magic'] != 0x20B:
+            raise ValueError('Expected x64 PE32+ Java DLL: ' + node['path'])
+    release = payload.get(office + 'java/release')
+    if release is None:
+        raise ValueError('Missing fixed Java release identity')
+    with release.open('rb') as stream:
+        data = stream.read(65536 + 1)
+    if len(data) > 65536 or hashlib.sha256(data).hexdigest() != manifest['files']['release']:
+        raise ValueError('Java release identity changed')
+    return dict(component_inventory_sha256=OFFICE_JAVA_LOCK_SHA256,
+                release_sha256=manifest['files']['release'], dlls=dict(sorted(expected.items())))
 
 
 def office_uno_entries(payload, office):
@@ -171,6 +204,7 @@ def inspect_dependencies(payload, system):
     nodes = pe_nodes(payload)
     registrations = registered_directories(payload)
     domains = {}
+    java_libraries = None
     main = [name for name in nodes if '/' not in name]
     if main:
         domains['main'] = closure(nodes, main, ['.'], ['.'], system)
@@ -219,9 +253,9 @@ def inspect_dependencies(payload, system):
                        'jvmaccesslo.dll', 'javaloaderlo.dll', 'juh.dll', 'juhx.dll', 'java_uno.dll']
         roots = [program + '/' + name for name in entry_names]
         if any(name.startswith(java + '/') for name in nodes):
-            roots.extend([java + '/' + name for name in ('jawt.dll', 'java.dll', 'awt.dll')])
-            roots.append(server + '/jvm.dll')
-            domains['java'] = closure(nodes, [java + '/java.exe', java + '/jawt.dll', server + '/jvm.dll'],
+            java_libraries = office_java_libraries(payload, nodes, office)
+            roots.extend(java_libraries['dlls'])
+            domains['java'] = closure(nodes, [java + '/java.exe', *java_libraries['dlls']],
                                       [java, server], [java], system)
         uno_entries = office_uno_entries(payload, office)
         domains['office'] = closure(nodes, sorted(set(roots) | uno_entries.keys()),
@@ -234,6 +268,7 @@ def inspect_dependencies(payload, system):
                 pe_coverage='partial' if len(covered) < len(nodes) else 'all-images-in-declared-static-domains',
                 delay_edges=sum(kind == 'delay' for node in nodes.values() for _, kind in node['edges']),
                 domains=domains,
+                pinned_java_libraries=java_libraries,
                 unproven_runtime_candidates=[dict(path=node['path'], machine=hex(node['machine']))
                                              for name, node in nodes.items() if name not in covered],
                 limitations=['Images outside declared domains remain unclassified; reachability does not prove they never execute.',
