@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'backend.dart';
+import 'media_site_preview_dialog.dart';
 
 class MediaDownloadDialog extends StatefulWidget {
   const MediaDownloadDialog({
@@ -155,7 +156,22 @@ class _MediaDownloadDialogState extends State<MediaDownloadDialog> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Text(
-                    '仅下载有权获取的 HTTPS 媒体直链，保存到当前空间根目录。支持 MP4/WebM/M4A 原始文件，最多512MiB；不支持站点解析、登录、DRM或转码。',
+                    '下载已获授权的 HTTPS 媒体直链，保存到当前空间根目录。支持 MP4/WebM/M4A 原始文件，最多512MiB。B站链接可单独预览格式，站点视频下载尚未接入。',
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton(
+                      onPressed: busy
+                          ? null
+                          : () => showDialog<void>(
+                              context: context,
+                              builder: (_) => MediaSitePreviewDialog(
+                                backend: widget.backend,
+                                workspaceId: widget.workspaceId,
+                              ),
+                            ),
+                      child: const Text('预览B站视频格式'),
+                    ),
                   ),
                   TextField(
                     controller: url,

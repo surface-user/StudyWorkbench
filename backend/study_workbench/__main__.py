@@ -22,6 +22,10 @@ def main():
         from .media_download_worker import worker
         worker()
         return
+    if sys.argv[1:] == ['--preview-media']:
+        from .media_site_preview_worker import worker
+        worker()
+        return
     if len(sys.argv) == 3 and sys.argv[1] == '--inspect-backup':
         from .backup_archive import inspect_archive
         manifest = inspect_archive(Path(sys.argv[2]))

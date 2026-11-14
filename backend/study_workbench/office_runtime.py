@@ -158,6 +158,11 @@ class WindowsProcessJob:
             _winapi.CloseHandle(thread)
         return OfficeProcess(handle, pid, command)
 
+    def attach(self, process):
+        """Attach a fixed worker that is still waiting for its input pipe."""
+        if not self.kernel.AssignProcessToJobObject(self.handle, process._handle):
+            raise OSError('无法隔离本次预览进程')
+
     def close(self):
         if self.handle:
             self.kernel.CloseHandle(self.handle)

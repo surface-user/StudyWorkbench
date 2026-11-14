@@ -85,6 +85,29 @@ jobs:
         working-directory: .
       - run: .venv/Scripts/python.exe tools/check_document_workers.py --exe dist/study_backend/study_backend.exe
         working-directory: .
+      - name: Explicit Bilibili public metadata preview
+        if: github.event_name == 'pull_request' && github.head_ref == 'codex/bilibili-preview'
+        working-directory: .
+        timeout-minutes: 4
+        shell: pwsh
+        run: |
+          .venv/Scripts/python.exe tools/check_bilibili_previews.py --allow-public-fixture --test-root .local/ci-bilibili-source
+          $sourceResult = $LASTEXITCODE
+          .venv/Scripts/python.exe tools/check_bilibili_previews.py --allow-public-fixture --exe dist/study_backend/study_backend.exe --test-root .local/ci-bilibili-frozen
+          $frozenResult = $LASTEXITCODE
+          if ($sourceResult -ne 0 -or $frozenResult -ne 0) { exit 1 }
+          exit 0
+      - name: Retain Bilibili metadata diagnostic results
+        if: always() && github.event_name == 'pull_request' && github.head_ref == 'codex/bilibili-preview'
+        uses: actions/upload-artifact@v4
+        with:
+          name: bilibili-metadata-preview-${{ github.event.pull_request.head.sha }}
+          path: |
+            .local/ci-bilibili-source/summary.json
+            .local/ci-bilibili-source/failed-preview.json
+            .local/ci-bilibili-frozen/summary.json
+            .local/ci-bilibili-frozen/failed-preview.json
+          if-no-files-found: warn
       - name: Retain Windows Release inputs for local manual-test packaging
         uses: actions/upload-artifact@v4
         with:
