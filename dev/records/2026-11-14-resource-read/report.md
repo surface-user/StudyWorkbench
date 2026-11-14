@@ -62,3 +62,33 @@ Q/P分别执行`-X utf8 -m pytest -q --basetemp=.local/full-q01`或`full-p01`，
 本次实际新study_backend.exe为22589083字节，SHA256=c66a0be1f525c1b1a6e822ce09186e9bacbf9e3a70b27df4bb2a35d0a984ca9c；45模块核源和frozen HTTP57对应该包。不是旧#49/#53包，不宣称已组合后续其他平行PR、完整SBOM/签名或发行。当前task转REVIEW，独立草稿PR及当前head CI继续核验，c/d仍不冒充已完成。
 
 根执行`artifacts/goal-20261112/check_resource_read_api.py`退出0：501文件/10变更/491原blob保持，135本地引用/7锚点、61唯一调度行和48任务前缀集合保持；旧报告完整前缀、两依赖锁/工作流保持，Git diff --no-index --check逐变更文件通过。发布仅这10个源码/测试/现行文档/原报告，生成包、日志、样本库和临时grant不上传。全部原工作区未提交文件保持。独立PR只交付本API，不组合平行Office/下载/SBOM任务。
+
+## R6-01e1 PDF及Office派生页文字层设计
+
+### 基线与只读调查
+
+主Agent批准先设计原PDF或已ready Office派生PDF的单明确页文字层。本切片先只读#58最终13f4163/tree4faa168的精确499文件副本resource-read-formats-plan，完整读取AGENTS、requirements/architecture/question-content-spec/task和Agent契约、学习锚点、API/数据模型及相关源码。随后按主Agent要求改用刚发布[PR #63](https://github.com/surface-user/StudyWorkbench/pull/63)最终ca61a8da28c87c90236217d7c1d57b8c0582c4de/tree1c911618af5dd3359e17e4932ca1abdc54ca9331，逐501原blob新建resource-read-pdf-plan；旧副本/根/父API工作目录均保留，不覆盖其他任务。父#63当前CI43594836585当时仍运行，不能先记b DONE或用父绿灯代替本项CI。
+
+新基线AGENTS/requirements/question-content-spec与已完整读取的#58逐字节相同；新architecture/agent-design完整重读，task/API/模型及父报告所有变化逐项重读。API/架构/数据模型保持#63首批资料文本API已实现状态，不将本设计的拟议字段写成现有接口。agent-design开头两句继承的“通用资料未实现/旧笔记标记未入grant”与其正文及#63代码不符，在本次同一现行契约内收敛为已实现首批文本API、其余UI/格式仍规划中。
+
+实际调查入口：documents.py、document_view_worker.py、document_files.py、office_previews.py、learning_marks.py、imports.read_resource、db.DocumentPreview及父#63 resource_grants。PDF普通查看仅页数/位图；拆题提取会整篇扫描、生成图片/候选，不具备授权单页正文/引用边界；DOCX结构没有可信原页码。Office read_pdf核源/派生hash但按普通阅读上限读取，无授权共享16MiB预算；不能未经适配直接当正文提供器。LearningAnchor v1已有pdf_page和office_pdf_page，后者明确源hash/派生hash/preview_id，不需要伪造行/区域或改变书签协议。
+
+只读搜索最初猜resource_access.py不存在，改用实际resource_grants.py；无源码/断言变更。稳定版pypdfium2在线文档显示5.15.2，不能当已锁5.14.0；另核已安装5.14.0的textpage.py原始源码及[同版本官方源码](https://raw.githubusercontent.com/pypdfium2-team/pypdfium2/5.14.0/src/pypdfium2/_helpers/textpage.py)：get_text_range仅UCS-2、默认ignore且可能增删字符，GetBoundedText为先计数/后UTF-16分配。故设计要求预算内精确分配/严格解码，不直接复用默认丢字符或无上限辅助函数；PDFium取字不提供布局/阅读顺序分析，不承诺视觉保真。
+
+### 设计范围及触点
+
+单一现行规划契约写agent-design的R6-01e1小节，task拆e1/e2/e3，本报告只记录依据/命令与限制。批准最小三文档，无新报告或dev索引重写；已有索引已指本原报告。原b报告完整保留，所有产品/测试、锁、工作流、API/架构/数据模型原blob保持，不新增依赖、迁移、持久正文或授权记录。
+
+设计固定每节点一页、原PDF或原件/ready派生版本、原生页级引用、提取版本/文字hash及空文字状态；允许读取所选二进制源但不返回/读取附件，不能用附件false掩盖PDF源已读。保留64KiB单正文/1MiB上下文/共享16MiB含重读，8MiB组合上限不逐选择重置；实际打开/增长、子进程剩余deadline及有界stdout均须后续实现证明。单页严格Unicode、无文字/失败不自动OCR、无Office自动转换或latest替换，其他格式仍保留。具体字段/预算/负例仅见现行契约，不在报告维护另一份平行规范。
+
+后续e2触点为#63封闭选择/共享读取预算适配、新PDFium取字worker及固定内部CLI分派、版本/引用校验、API/负例；e3触点为普通资料确认UI、取消/撤销/迟到响应及源码/新冻结无模型组合。旧文本/作答授权、候选采用、普通查看/书签、数据保护和两用途隔离必须保持；本e1不实现这些产品触点，不接模型/凭据/远端，不执行用户文件、Office、OCR或实际窗口。
+
+### 验证与交付边界
+
+计划核三文件白名单、501基线/498未变blob、原报告完整前缀、UTF-8/LF/Git空白、本地引用/锚点、唯一任务及e1/e2/e3依赖，另运行既有Schema漂移检查。此为只定义规划的文档改动，所有产品/测试原blob不变，不另写镜像设计的测试或重复本地产品构建；当前head CI仍须完整执行。实际结果和独立草稿PR另记，未知/失败不先写通过。
+
+R6-01e保持IN_PROGRESS，e1设计完成后REVIEW待独立PR/本head CI及主Agent有限核验；父#63也须当前CI成功后方可根验收。e2/e3和其余格式正文未实现，不把e1设计当e或整个R6完成。代码审查按用户要求暂缓、人工取消不补记通过；不合并或发行。
+
+在resource-read-pdf-plan执行工具Python `-X utf8 artifacts/r601e1/check_changes.py`退出0：仅三文档/498原blob保持/501最终文件，90本地引用及全部被引用标题锚点、64唯一调度行、Git diff --no-index --check、UTF-8/LF、两锁及原b报告完整前缀保持均通过。IQ `-X utf8 tools/export_question_schema.py --check`退出0：Question schemas are current。没有本地产品/模型/窗口测试结论；因产品/测试/协议文件均未变，本地不重复其测试或构建，当前head完整CI另核，不能用设计检查冒充提供器实现验证。
+
+独立草稿[PR #64](https://github.com/surface-user/StudyWorkbench/pull/64)已建立并附当前任务，分支codex/resource-pdf-read-plan依赖#63的codex/resource-read-api精确ca61a8d，首次设计提交06f06d1623030a327e80f1d87fe4d6b2a7fe95af/tree4aafe2d2559346208f24809068b632ce7753c8d7。后续文档提交只补实际PR链接；最终head/tree与该head CI记录PR正文，避免记录自身hash反复改头。e1保持REVIEW，父#63及本项当前CI/主Agent有限核验未取得前不登记DONE；e整体及e2/e3仍未完成。
