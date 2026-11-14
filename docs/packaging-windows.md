@@ -95,6 +95,10 @@ python tools/source_licenses.py --package-config apps/desktop/.dart_tool/package
 
 退出0仅表示选定本地证据无已发现缺口，退出2表示报告已生成但有缺文/版本/RECORD缺证，退出1表示输入/完整性错误。report始终明确`product_licenses_complete=false`、`archive_provenance_verified=false`、`distribution_obligations_reviewed=false`；8类SDK锁占位另列未知。命名发现可能漏掉源文件内嵌或其他名称的通知，缺证不得以元数据标签代替原文。最终产品成员、完整官方来源、组合许可/源码提供义务、NOTICE及Office/Java/native/安装器仍由REL-01/02后续核验。
 
+精确版本`latex2mathml3.81.1`另有[固定来源补充](../packaging/licenses/latex2mathml-3.81.1/provenance.json)：官方wheel/sdist都漏带项目LICENSE，经固定tag的九个package文件逐字节核对后，收集器将本地九文件与已记录SHA256比较，再复制固定MIT和LPPL原文。任一package文件、许可文本、版本或来源配置不符即失败；采集中再次核配置及package文件未变。补充记录标记`repository_supplement`，不伪装为installed RECORD文件，也不成为其他版本或其他包的兜底。
+
+项目代码MIT与`unimathsymbols.txt`的LPPL-1.3-or-later分开映射，保留数据作者、原头部日期及vendor修改后未更新通知的事实。补齐原文仍保留上游归档缺文、LPPL原Work/修改条件待核；此组件有issue，CLI仍退出2，完整产品/归档来源/分发义务仍false。该补充不向产品payload添加数据或修改原依赖，不证明HTML/MathML导出已受支持；最终发行复制/成员范围和义务另核。
+
 ## 规划中
 
 自动升级/完整回滚产品流程、下载/转码组件、正式签名发行按专项实施。FFmpeg须先锁定实际构建开关与LGPL/GPL/nonfree及来源义务；本地生成样本不等于可随产品分发。
