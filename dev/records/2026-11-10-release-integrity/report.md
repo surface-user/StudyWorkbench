@@ -610,3 +610,7 @@ real02 native-origins.json SHA256 c2cb549ec09428498abe88d5f224ba895b43f2fde9d2ae
 本次实现/相关自动化/独立真实来源与Schema及文档已就绪，REL-01e转REVIEW；独立PR、本head CI和主Agent退出核验仍待完成。审查暂缓、人工取消，44 CRT官方来源/身份/许可、生成容器及其余产品SBOM仍未知，不发发行通过结论。
 
 文档初检check-changes01退出1：Windows默认write_text将精选摘要换行转成CRLF，违反Git/LF约束；先把初版完整留artifacts/rel01e/summary-first-crlf.json，再只规范摘要LF并固定辅助脚本newline，未改JSON语义/原报告或包。最终精选摘要hash以上述0610605f…为准，初版3b40380a…及失败日志保留。
+
+Q -X utf8 artifacts/rel01e/check_changes.py复核退出0：7文件范围、其余455个base blob保持、462最终文件、79本地文档链接/35调度行唯一性、UTF-8/LF/逐文件git diff --no-index --check及原报告完整前缀通过，两份运行锁不变。
+
+独立草稿[PR #54](https://github.com/surface-user/StudyWorkbench/pull/54)已建立，codex/frozen-native-origins基于#50最终0e295a7，首次实现提交3a2fc2b056de58e13f1a1a10bf62bf0916cf60df/tree62fa8771ee8375d7bae1e529afb888a8ded7fb7e。本次补实际交付链接形成后续文档提交；最终head/tree/该head CI登记在PR描述，避免为记录自身hash反复改head。REL-01e仍REVIEW，未合并或发行。
