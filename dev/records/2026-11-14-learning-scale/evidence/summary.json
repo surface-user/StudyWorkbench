@@ -1,0 +1,764 @@
+{
+  "scope": "Six pre-registered local Windows learning-read cases; not universal performance or learning-effect certification",
+  "selection_reason": "Retain identities, oracle results, p95 and process memory bounds; full timing samples, generated data and stderr remain ignored local artifacts.",
+  "base_head": "68eaabd43de808ff0b258ebc4e854a4b355194bd",
+  "base_tree": "740ffd2116ee97782c3cd04d21a77dea5ead4aa5",
+  "runs": [
+    {
+      "mode": "source",
+      "attempts": 1000,
+      "foreign_attempts": 100,
+      "events": 10000,
+      "observed_window_utc": {
+        "start": "2026-11-14T10:07:05.726953+00:00",
+        "end": "2026-11-14T10:07:25.113459+00:00",
+        "scope": "directory creation through report write; includes preparation and shutdown"
+      },
+      "raw_report_sha256": "4711f0809201158c735c9df4868344da7e824367a98e315c56679ab3b15bbe23",
+      "collector_sha256": "0b1094436e5fd5689ea721b11ecf62e142f3f383b38f2cee475ad61b3d6c6599",
+      "environment": {
+        "os": "Windows-11-10.0.26200-SP0",
+        "python": "3.13.17",
+        "logical_processors": 24,
+        "processor": "Intel(R) Core(TM) i7-14650HX",
+        "physical_ram_bytes": 16944848896
+      },
+      "correctness": {
+        "history_pages": 10,
+        "event_pages": 100,
+        "statistics": {
+          "questions": 102,
+          "attempts": 1000,
+          "due": 77,
+          "wrong": 50,
+          "mastered": 25,
+          "pending_review": 25,
+          "subjects": [
+            "Synthetic scale",
+            "数学一/高等数学"
+          ],
+          "knowledge_points": [
+            {
+              "subject": "Synthetic scale",
+              "name": "group-0",
+              "questions": 25,
+              "mastered": 25,
+              "wrong": 0
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-1",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 25
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-2",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 0
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-3",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 25
+            },
+            {
+              "subject": "数学一/高等数学",
+              "name": "定积分",
+              "questions": 2,
+              "mastered": 0,
+              "wrong": 0
+            }
+          ]
+        },
+        "old_cursor_boundary_verified": true,
+        "projection_consistent_across_all_pages": true
+      },
+      "metrics": {
+        "history": {
+          "p95_ms": 35.3082999936305,
+          "threshold_ms": 500,
+          "samples": 30
+        },
+        "statistics": {
+          "p95_ms": 38.665399988531135,
+          "threshold_ms": 5000,
+          "samples": 30
+        },
+        "study": {
+          "p95_ms": 40.250600010040216,
+          "threshold_ms": 5000,
+          "samples": 30
+        },
+        "record": {
+          "p95_ms": 105.0420999963535,
+          "threshold_ms": 2000,
+          "samples": 30
+        }
+      },
+      "memory": {
+        "image_name": "python.exe",
+        "image_sha256": "7c2fc2b303a4ee3cc14cc17b47bc6e8bca98c78792edd123b846a560da44b203",
+        "identity_method": "exact-loopback-listener+held-process-handle+image+launcher-ancestry",
+        "baseline_private_bytes": 81195008,
+        "peak_working_set_bytes": 105418752,
+        "observed_private_bytes": 86917120,
+        "samples": 358,
+        "observed_private_growth_bytes": 5722112
+      },
+      "service_is_launcher": false,
+      "verified_ancestry_depth": 1,
+      "readonly_logical_sha256": "62f579b7f5e852a7034cf68a03c8d0f88ca3ac9327c50a26efe00ecb5f7946b4",
+      "originals_sha256": {
+        "data/workspaces/default/originals/scale-note.txt": "3e02d1dceca279dcd565d96559bfeffc3f8d3f05bd54a22e54d4499d387121b4",
+        "data/workspaces/dd8b4fbb7cb54a41bd5772a7c1f68965/originals/scale-note.txt": "3e02d1dceca279dcd565d96559bfeffc3f8d3f05bd54a22e54d4499d387121b4"
+      },
+      "controlled_append_id": 1101,
+      "full_traversal_seconds": 8.813591300000553,
+      "frozen_exe_sha256": null,
+      "frozen_payload_identity": null,
+      "frozen_build_by_this_tool": false,
+      "temp_policy": "per-case-owned-runtime-tmp; write/delete probe; SQLite temp_store unmodified"
+    },
+    {
+      "mode": "source",
+      "attempts": 10000,
+      "foreign_attempts": 1000,
+      "events": 10000,
+      "observed_window_utc": {
+        "start": "2026-11-14T10:07:47.348620+00:00",
+        "end": "2026-11-14T10:08:14.409952+00:00",
+        "scope": "directory creation through report write; includes preparation and shutdown"
+      },
+      "raw_report_sha256": "b5aa09b2a99578fc546a3dadbcd7b07ea9d0fcadcd7b2bb769cac00d111238bc",
+      "collector_sha256": "0b1094436e5fd5689ea721b11ecf62e142f3f383b38f2cee475ad61b3d6c6599",
+      "environment": {
+        "os": "Windows-11-10.0.26200-SP0",
+        "python": "3.13.17",
+        "logical_processors": 24,
+        "processor": "Intel(R) Core(TM) i7-14650HX",
+        "physical_ram_bytes": 16944848896
+      },
+      "correctness": {
+        "history_pages": 100,
+        "event_pages": 100,
+        "statistics": {
+          "questions": 102,
+          "attempts": 10000,
+          "due": 77,
+          "wrong": 50,
+          "mastered": 25,
+          "pending_review": 25,
+          "subjects": [
+            "Synthetic scale",
+            "数学一/高等数学"
+          ],
+          "knowledge_points": [
+            {
+              "subject": "Synthetic scale",
+              "name": "group-0",
+              "questions": 25,
+              "mastered": 25,
+              "wrong": 0
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-1",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 25
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-2",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 0
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-3",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 25
+            },
+            {
+              "subject": "数学一/高等数学",
+              "name": "定积分",
+              "questions": 2,
+              "mastered": 0,
+              "wrong": 0
+            }
+          ]
+        },
+        "old_cursor_boundary_verified": true,
+        "projection_consistent_across_all_pages": true
+      },
+      "metrics": {
+        "history": {
+          "p95_ms": 37.74360001261812,
+          "threshold_ms": 500,
+          "samples": 30
+        },
+        "statistics": {
+          "p95_ms": 107.4874999903841,
+          "threshold_ms": 5000,
+          "samples": 30
+        },
+        "study": {
+          "p95_ms": 107.20460000447929,
+          "threshold_ms": 5000,
+          "samples": 30
+        },
+        "record": {
+          "p95_ms": 103.51080000691582,
+          "threshold_ms": 2000,
+          "samples": 30
+        }
+      },
+      "memory": {
+        "image_name": "python.exe",
+        "image_sha256": "7c2fc2b303a4ee3cc14cc17b47bc6e8bca98c78792edd123b846a560da44b203",
+        "identity_method": "exact-loopback-listener+held-process-handle+image+launcher-ancestry",
+        "baseline_private_bytes": 81014784,
+        "peak_working_set_bytes": 104939520,
+        "observed_private_bytes": 86441984,
+        "samples": 470,
+        "observed_private_growth_bytes": 5427200
+      },
+      "service_is_launcher": false,
+      "verified_ancestry_depth": 1,
+      "readonly_logical_sha256": "d86ad133a4a516ef55974bcb16a27cd8ce7bc22b688ef291012158f377b6bb3d",
+      "originals_sha256": {
+        "data/workspaces/e5b0a491ee7f4f7b8e5d0ba39609cdb8/originals/scale-note.txt": "3e02d1dceca279dcd565d96559bfeffc3f8d3f05bd54a22e54d4499d387121b4",
+        "data/workspaces/default/originals/scale-note.txt": "3e02d1dceca279dcd565d96559bfeffc3f8d3f05bd54a22e54d4499d387121b4"
+      },
+      "controlled_append_id": 11001,
+      "full_traversal_seconds": 12.024038499992457,
+      "frozen_exe_sha256": null,
+      "frozen_payload_identity": null,
+      "frozen_build_by_this_tool": false,
+      "temp_policy": "per-case-owned-runtime-tmp; write/delete probe; SQLite temp_store unmodified"
+    },
+    {
+      "mode": "source",
+      "attempts": 100000,
+      "foreign_attempts": 10000,
+      "events": 10000,
+      "observed_window_utc": {
+        "start": "2026-11-14T10:08:41.096344+00:00",
+        "end": "2026-11-14T10:10:07.485322+00:00",
+        "scope": "directory creation through report write; includes preparation and shutdown"
+      },
+      "raw_report_sha256": "d8b08ef7d679e475ffb969af2e31f5adbb69249db0fd6c348ea13c2f63fc2436",
+      "collector_sha256": "0b1094436e5fd5689ea721b11ecf62e142f3f383b38f2cee475ad61b3d6c6599",
+      "environment": {
+        "os": "Windows-11-10.0.26200-SP0",
+        "python": "3.13.17",
+        "logical_processors": 24,
+        "processor": "Intel(R) Core(TM) i7-14650HX",
+        "physical_ram_bytes": 16944848896
+      },
+      "correctness": {
+        "history_pages": 1000,
+        "event_pages": 100,
+        "statistics": {
+          "questions": 102,
+          "attempts": 100000,
+          "due": 77,
+          "wrong": 50,
+          "mastered": 25,
+          "pending_review": 25,
+          "subjects": [
+            "Synthetic scale",
+            "数学一/高等数学"
+          ],
+          "knowledge_points": [
+            {
+              "subject": "Synthetic scale",
+              "name": "group-0",
+              "questions": 25,
+              "mastered": 25,
+              "wrong": 0
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-1",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 25
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-2",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 0
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-3",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 25
+            },
+            {
+              "subject": "数学一/高等数学",
+              "name": "定积分",
+              "questions": 2,
+              "mastered": 0,
+              "wrong": 0
+            }
+          ]
+        },
+        "old_cursor_boundary_verified": true,
+        "projection_consistent_across_all_pages": true
+      },
+      "metrics": {
+        "history": {
+          "p95_ms": 31.92569999373518,
+          "threshold_ms": 500,
+          "samples": 30
+        },
+        "statistics": {
+          "p95_ms": 541.8251999944914,
+          "threshold_ms": 5000,
+          "samples": 30
+        },
+        "study": {
+          "p95_ms": 533.2285999902524,
+          "threshold_ms": 5000,
+          "samples": 30
+        },
+        "record": {
+          "p95_ms": 79.21680000436027,
+          "threshold_ms": 2000,
+          "samples": 30
+        }
+      },
+      "memory": {
+        "image_name": "python.exe",
+        "image_sha256": "7c2fc2b303a4ee3cc14cc17b47bc6e8bca98c78792edd123b846a560da44b203",
+        "identity_method": "exact-loopback-listener+held-process-handle+image+launcher-ancestry",
+        "baseline_private_bytes": 81006592,
+        "peak_working_set_bytes": 110219264,
+        "observed_private_bytes": 92127232,
+        "samples": 1279,
+        "observed_private_growth_bytes": 11120640
+      },
+      "service_is_launcher": false,
+      "verified_ancestry_depth": 1,
+      "readonly_logical_sha256": "89926addb819e478cf51fed7e109269ef25258c65c19ed09c308fe9d4362b396",
+      "originals_sha256": {
+        "data/workspaces/default/originals/scale-note.txt": "3e02d1dceca279dcd565d96559bfeffc3f8d3f05bd54a22e54d4499d387121b4",
+        "data/workspaces/b2d751fb85204a07b3d0e70b0a9c1dfa/originals/scale-note.txt": "3e02d1dceca279dcd565d96559bfeffc3f8d3f05bd54a22e54d4499d387121b4"
+      },
+      "controlled_append_id": 110001,
+      "full_traversal_seconds": 35.85589130000153,
+      "frozen_exe_sha256": null,
+      "frozen_payload_identity": null,
+      "frozen_build_by_this_tool": false,
+      "temp_policy": "per-case-owned-runtime-tmp; write/delete probe; SQLite temp_store unmodified"
+    },
+    {
+      "mode": "frozen",
+      "attempts": 1000,
+      "foreign_attempts": 100,
+      "events": 10000,
+      "observed_window_utc": {
+        "start": "2026-11-14T10:07:26.115657+00:00",
+        "end": "2026-11-14T10:07:46.503410+00:00",
+        "scope": "directory creation through report write; includes preparation and shutdown"
+      },
+      "raw_report_sha256": "4a7f9b0065a14a07907fced6381c56bf99e986540dce8b77f79217d559a4fa8e",
+      "collector_sha256": "0b1094436e5fd5689ea721b11ecf62e142f3f383b38f2cee475ad61b3d6c6599",
+      "environment": {
+        "os": "Windows-11-10.0.26200-SP0",
+        "python": "3.13.17",
+        "logical_processors": 24,
+        "processor": "Intel(R) Core(TM) i7-14650HX",
+        "physical_ram_bytes": 16944848896
+      },
+      "correctness": {
+        "history_pages": 10,
+        "event_pages": 100,
+        "statistics": {
+          "questions": 102,
+          "attempts": 1000,
+          "due": 77,
+          "wrong": 50,
+          "mastered": 25,
+          "pending_review": 25,
+          "subjects": [
+            "Synthetic scale",
+            "数学一/高等数学"
+          ],
+          "knowledge_points": [
+            {
+              "subject": "Synthetic scale",
+              "name": "group-0",
+              "questions": 25,
+              "mastered": 25,
+              "wrong": 0
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-1",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 25
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-2",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 0
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-3",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 25
+            },
+            {
+              "subject": "数学一/高等数学",
+              "name": "定积分",
+              "questions": 2,
+              "mastered": 0,
+              "wrong": 0
+            }
+          ]
+        },
+        "old_cursor_boundary_verified": true,
+        "projection_consistent_across_all_pages": true
+      },
+      "metrics": {
+        "history": {
+          "p95_ms": 36.840899992967024,
+          "threshold_ms": 500,
+          "samples": 30
+        },
+        "statistics": {
+          "p95_ms": 39.259500001207925,
+          "threshold_ms": 5000,
+          "samples": 30
+        },
+        "study": {
+          "p95_ms": 38.703199999872595,
+          "threshold_ms": 5000,
+          "samples": 30
+        },
+        "record": {
+          "p95_ms": 94.57659999316093,
+          "threshold_ms": 2000,
+          "samples": 30
+        }
+      },
+      "memory": {
+        "image_name": "study_backend.exe",
+        "image_sha256": "68f0a3cb710bb7bafb273c14ccfe44cd7b27b097ee228b11201976be0fc299c3",
+        "identity_method": "exact-loopback-listener+held-process-handle+image+launcher-ancestry",
+        "baseline_private_bytes": 86376448,
+        "peak_working_set_bytes": 112115712,
+        "observed_private_bytes": 92905472,
+        "samples": 353,
+        "observed_private_growth_bytes": 6529024
+      },
+      "service_is_launcher": true,
+      "verified_ancestry_depth": 0,
+      "readonly_logical_sha256": "d7bae629b080e4e176ffef47ad16d9d3685210215bcb59f6a0fa0fb2faeaf07d",
+      "originals_sha256": {
+        "data/workspaces/ec06ba3d86b545eb97db012f21019d63/originals/scale-note.txt": "3e02d1dceca279dcd565d96559bfeffc3f8d3f05bd54a22e54d4499d387121b4",
+        "data/workspaces/default/originals/scale-note.txt": "3e02d1dceca279dcd565d96559bfeffc3f8d3f05bd54a22e54d4499d387121b4"
+      },
+      "controlled_append_id": 1101,
+      "full_traversal_seconds": 8.801136900001438,
+      "frozen_exe_sha256": "68f0a3cb710bb7bafb273c14ccfe44cd7b27b097ee228b11201976be0fc299c3",
+      "frozen_payload_identity": "9f6a0ff3beca35a75f59b5f21aa1e1a64b6e907f480cfe1a59e85a51d0b56d0d",
+      "frozen_build_by_this_tool": false,
+      "temp_policy": "per-case-owned-runtime-tmp; write/delete probe; SQLite temp_store unmodified"
+    },
+    {
+      "mode": "frozen",
+      "attempts": 10000,
+      "foreign_attempts": 1000,
+      "events": 10000,
+      "observed_window_utc": {
+        "start": "2026-11-14T10:08:15.360282+00:00",
+        "end": "2026-11-14T10:08:40.165369+00:00",
+        "scope": "directory creation through report write; includes preparation and shutdown"
+      },
+      "raw_report_sha256": "381b06220bf58aa734a419216d7a2235fa69dfb0fefe6e55d6b16cc7463e82c4",
+      "collector_sha256": "0b1094436e5fd5689ea721b11ecf62e142f3f383b38f2cee475ad61b3d6c6599",
+      "environment": {
+        "os": "Windows-11-10.0.26200-SP0",
+        "python": "3.13.17",
+        "logical_processors": 24,
+        "processor": "Intel(R) Core(TM) i7-14650HX",
+        "physical_ram_bytes": 16944848896
+      },
+      "correctness": {
+        "history_pages": 100,
+        "event_pages": 100,
+        "statistics": {
+          "questions": 102,
+          "attempts": 10000,
+          "due": 77,
+          "wrong": 50,
+          "mastered": 25,
+          "pending_review": 25,
+          "subjects": [
+            "Synthetic scale",
+            "数学一/高等数学"
+          ],
+          "knowledge_points": [
+            {
+              "subject": "Synthetic scale",
+              "name": "group-0",
+              "questions": 25,
+              "mastered": 25,
+              "wrong": 0
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-1",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 25
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-2",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 0
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-3",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 25
+            },
+            {
+              "subject": "数学一/高等数学",
+              "name": "定积分",
+              "questions": 2,
+              "mastered": 0,
+              "wrong": 0
+            }
+          ]
+        },
+        "old_cursor_boundary_verified": true,
+        "projection_consistent_across_all_pages": true
+      },
+      "metrics": {
+        "history": {
+          "p95_ms": 36.30629999679513,
+          "threshold_ms": 500,
+          "samples": 30
+        },
+        "statistics": {
+          "p95_ms": 100.2784000011161,
+          "threshold_ms": 5000,
+          "samples": 30
+        },
+        "study": {
+          "p95_ms": 108.74989999865647,
+          "threshold_ms": 5000,
+          "samples": 30
+        },
+        "record": {
+          "p95_ms": 117.43209999985993,
+          "threshold_ms": 2000,
+          "samples": 30
+        }
+      },
+      "memory": {
+        "image_name": "study_backend.exe",
+        "image_sha256": "68f0a3cb710bb7bafb273c14ccfe44cd7b27b097ee228b11201976be0fc299c3",
+        "identity_method": "exact-loopback-listener+held-process-handle+image+launcher-ancestry",
+        "baseline_private_bytes": 86749184,
+        "peak_working_set_bytes": 113168384,
+        "observed_private_bytes": 94425088,
+        "samples": 427,
+        "observed_private_growth_bytes": 7675904
+      },
+      "service_is_launcher": true,
+      "verified_ancestry_depth": 0,
+      "readonly_logical_sha256": "6d0672a0796066af23ff9a536fff2b0e7a20217d337e83fad6903cba29651086",
+      "originals_sha256": {
+        "data/workspaces/default/originals/scale-note.txt": "3e02d1dceca279dcd565d96559bfeffc3f8d3f05bd54a22e54d4499d387121b4",
+        "data/workspaces/8638002a8e484c3b9d4c0fac46502b18/originals/scale-note.txt": "3e02d1dceca279dcd565d96559bfeffc3f8d3f05bd54a22e54d4499d387121b4"
+      },
+      "controlled_append_id": 11001,
+      "full_traversal_seconds": 9.93134629999986,
+      "frozen_exe_sha256": "68f0a3cb710bb7bafb273c14ccfe44cd7b27b097ee228b11201976be0fc299c3",
+      "frozen_payload_identity": "9f6a0ff3beca35a75f59b5f21aa1e1a64b6e907f480cfe1a59e85a51d0b56d0d",
+      "frozen_build_by_this_tool": false,
+      "temp_policy": "per-case-owned-runtime-tmp; write/delete probe; SQLite temp_store unmodified"
+    },
+    {
+      "mode": "frozen",
+      "attempts": 100000,
+      "foreign_attempts": 10000,
+      "events": 10000,
+      "observed_window_utc": {
+        "start": "2026-11-14T10:10:08.313510+00:00",
+        "end": "2026-11-14T10:11:30.171907+00:00",
+        "scope": "directory creation through report write; includes preparation and shutdown"
+      },
+      "raw_report_sha256": "18808bda4261e8acbb954377c0b2b52a55170d68ef3effcce5d0c0913fc6afc2",
+      "collector_sha256": "0b1094436e5fd5689ea721b11ecf62e142f3f383b38f2cee475ad61b3d6c6599",
+      "environment": {
+        "os": "Windows-11-10.0.26200-SP0",
+        "python": "3.13.17",
+        "logical_processors": 24,
+        "processor": "Intel(R) Core(TM) i7-14650HX",
+        "physical_ram_bytes": 16944848896
+      },
+      "correctness": {
+        "history_pages": 1000,
+        "event_pages": 100,
+        "statistics": {
+          "questions": 102,
+          "attempts": 100000,
+          "due": 77,
+          "wrong": 50,
+          "mastered": 25,
+          "pending_review": 25,
+          "subjects": [
+            "Synthetic scale",
+            "数学一/高等数学"
+          ],
+          "knowledge_points": [
+            {
+              "subject": "Synthetic scale",
+              "name": "group-0",
+              "questions": 25,
+              "mastered": 25,
+              "wrong": 0
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-1",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 25
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-2",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 0
+            },
+            {
+              "subject": "Synthetic scale",
+              "name": "group-3",
+              "questions": 25,
+              "mastered": 0,
+              "wrong": 25
+            },
+            {
+              "subject": "数学一/高等数学",
+              "name": "定积分",
+              "questions": 2,
+              "mastered": 0,
+              "wrong": 0
+            }
+          ]
+        },
+        "old_cursor_boundary_verified": true,
+        "projection_consistent_across_all_pages": true
+      },
+      "metrics": {
+        "history": {
+          "p95_ms": 34.343399995123036,
+          "threshold_ms": 500,
+          "samples": 30
+        },
+        "statistics": {
+          "p95_ms": 636.8253000109689,
+          "threshold_ms": 5000,
+          "samples": 30
+        },
+        "study": {
+          "p95_ms": 487.5642999977572,
+          "threshold_ms": 5000,
+          "samples": 30
+        },
+        "record": {
+          "p95_ms": 79.65929999772925,
+          "threshold_ms": 2000,
+          "samples": 30
+        }
+      },
+      "memory": {
+        "image_name": "study_backend.exe",
+        "image_sha256": "68f0a3cb710bb7bafb273c14ccfe44cd7b27b097ee228b11201976be0fc299c3",
+        "identity_method": "exact-loopback-listener+held-process-handle+image+launcher-ancestry",
+        "baseline_private_bytes": 86773760,
+        "peak_working_set_bytes": 118239232,
+        "observed_private_bytes": 99385344,
+        "samples": 1231,
+        "observed_private_growth_bytes": 12611584
+      },
+      "service_is_launcher": true,
+      "verified_ancestry_depth": 0,
+      "readonly_logical_sha256": "88d740e2c0223d277cbc861edbb848408676e4c5b67a2b61e499b505e8530b2e",
+      "originals_sha256": {
+        "data/workspaces/default/originals/scale-note.txt": "3e02d1dceca279dcd565d96559bfeffc3f8d3f05bd54a22e54d4499d387121b4",
+        "data/workspaces/84d28af197024e528d8cf0d69a35c0c1/originals/scale-note.txt": "3e02d1dceca279dcd565d96559bfeffc3f8d3f05bd54a22e54d4499d387121b4"
+      },
+      "controlled_append_id": 110001,
+      "full_traversal_seconds": 33.60278119999566,
+      "frozen_exe_sha256": "68f0a3cb710bb7bafb273c14ccfe44cd7b27b097ee228b11201976be0fc299c3",
+      "frozen_payload_identity": "9f6a0ff3beca35a75f59b5f21aa1e1a64b6e907f480cfe1a59e85a51d0b56d0d",
+      "frozen_build_by_this_tool": false,
+      "temp_policy": "per-case-owned-runtime-tmp; write/delete probe; SQLite temp_store unmodified"
+    }
+  ],
+  "tests": [
+    {
+      "python": "3.13.17",
+      "tests": 39,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "0f38221cb46e183da5f87b00bcfe8916803dad001f27fa66c44c3901a9d7567a"
+    },
+    {
+      "python": "3.12.7",
+      "tests": 39,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "31ccee3277c5fca3bc535a1c04202618c2df228377d33c75db51d8e66ea6b907"
+    }
+  ],
+  "invalid_first_source1000_report_sha256": "86d7c2296317b29b864ffdd1a70705cdbbd8007a27b6ab393dc583526faa55d3",
+  "invalid_reason": "The first source 1k run sampled the Windows venv launcher, not the actual listener; its passed flag is rejected and all six cases are recollected.",
+  "retained_environment_failure": {
+    "source100000_report_sha256": "193e4624a9de204a5f55025f3a995f3ea804537ad4d1524175008f09df731cd6",
+    "diagnostic_stack_sha256": "e1603c13b1070899154d1a857223f013b44e68db9091b48129ac6519ed6f7185",
+    "restricted_temp_probe_sha256": "aa1386c263be82ec84e41be22800f9bbfc46895ca7b74a825c5d82b2de636e2b",
+    "native_temp_probe_sha256": "36a5032860bc26996d6671e7b67421390d8bbf835347dde45e8aa9aefa3f7282",
+    "diagnosis": "Inherited native-process TEMP existed but was not writable; SQLite disk spill failed. Product query, temp_store and original failed data unchanged."
+  },
+  "limitations": [
+    "Existing #49 frozen package is matched to unchanged business source; it was not built by this task.",
+    "Known agent heavy work was paused for each coordinated window; unrelated Windows/background user workload is not controlled.",
+    "Warm-cache single-client measurements on one workstation; no million-record, cold-cache or multi-user claim.",
+    "OS working-set peak includes startup; 50ms private sampling can miss brief private-memory peaks.",
+    "Listener ownership checks and sampling add observation overhead; one exact service PID is measured, never descendant sums.",
+    "Synthetic missing-note history is created then removed in fixture construction, never accepted as an invalid append API call.",
+    "Correctness CI is separate from local performance; review deferred, manual cancelled, no merge or release."
+  ]
+}
