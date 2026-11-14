@@ -181,7 +181,7 @@ $desktopSbomExit = $LASTEXITCODE
 
 只将ZIP内`apps/desktop/build/windows/x64/runner/Release/`实际文件登记为桌面物理范围，其余backend/构建依赖分别列排除。固定全ZIP长度/digest、run/head/checkout tree与声明Git清单须相符；每个选中tracked lib/windows/assets/pubspec/工作流输入另核原Git blob与SHA256。有效Git tree声明不能证明全部实际编译器/SDK/标准头输入或签名构建，完整性字段保持false。相等的CI merge tree可以作另核来源证据，不只据artifact文件名认版本。
 
-ZIP/TAR从原字节有界读取，不落地解包：完整artifact/engine每份≤128MiB，WebView2/Pub每份≤32MiB；ZIP最多20000条/单成员256MiB/声明展开1GiB，ZIP读出和Pub gzip实际展开合计≤512MiB；Pub每份展开≤128MiB、单文件≤16MiB/20000条，拒绝危险原名、大小写重复、链接/特殊/加密项及不符长度。记录的输入最多20000文件/逻辑512MiB；普通metadata≤1MiB，provenance≤4MiB、Git清单≤16MiB，项目单文件≤8MiB，锁各≤1MiB，链接/重解析路径拒绝。输出为已存在父目录中的新目录，不得写SDK/cache或tracked源码；末尾复核所有输入/锁，失败不生成最终JSON/CDX。
+ZIP/TAR从原字节有界读取，不落地解包：完整artifact/engine每份≤128MiB，WebView2/Pub每份≤32MiB；ZIP最多20000条/单成员256MiB/声明展开1GiB，ZIP读出和Pub gzip实际展开合计≤512MiB；Pub每份展开≤128MiB、单文件≤16MiB/20000条，拒绝危险原名、大小写重复、链接/特殊/加密项及不符长度。记录的输入最多20000文件/逻辑512MiB，首次读取的单文件上限同时受剩余总预算约束，不能只凭较早stat允许文件增长后超读；普通metadata≤1MiB，provenance≤4MiB、Git清单≤16MiB，项目单文件≤8MiB，锁各≤1MiB，链接/重解析路径拒绝。输出为已存在父目录中的新目录，不得写SDK/cache或tracked源码；末尾复核所有输入/锁，失败不生成最终JSON/CDX。
 
 引擎与WebView2用[依赖登记](dependencies.md)的完整固定归档pin，NuGet元数据用禁止DTD/实体的解析器核唯一id/version；Pub实际资产包用原锁hash及档内pubspec精确名称/版本，不把整个环境投影到CDX。Pub资产只尝试其实际命名空间的原路径和lib原路径，保留全部相同候选；加载器两条相同源路径也不任选。`copied_source_bytes_verified`仅指该归档成员与实际文件字节相同，不表示C/C++/Dart源码与机器码等价。SDK metadata是本地上下文，ICU仅有本地缓存相等时仍无已认证身份；插件CMake只作版本锁定源档的描述性producer关联。
 

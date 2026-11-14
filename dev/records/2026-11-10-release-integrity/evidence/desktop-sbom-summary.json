@@ -29,7 +29,7 @@
     "input_logical_bytes": 182802342,
     "actual_archive_bytes_read": 67717274,
     "excluded_non_desktop_artifact_files": 1110,
-    "report_sha256": "aa9eb107846077ef914eaba26995dba2c0cee085d9d5f7f8696bf24cf4d33b27",
+    "report_sha256": "35fa55e8b146b060883236a36f8b200dc13358a485d8cc5baca4070083c5a9fb",
     "bom_sha256": "6b48db677eec04e8f984f6b97cd74fe65ef4e3292ec5c77f54175737b1fac0ed"
   },
   "actual_files": {

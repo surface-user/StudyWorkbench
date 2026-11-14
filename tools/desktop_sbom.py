@@ -130,6 +130,8 @@ def generate(artifact, provenance_file, source_tree_file, source, engine_archive
         no_links(path)
         if path not in inputs and (len(inputs) >= MAX_INPUT_FILES or input_bytes + path.stat().st_size > MAX_INPUT_BYTES):
             raise ValueError('Source input count/byte budget exceeded')
+        if path not in inputs:
+            limit = min(limit, MAX_INPUT_BYTES - input_bytes)
         raw = bounded_file(path, limit)
         if path in inputs and inputs[path]['sha256'] != sha256(raw):
             raise ValueError('Source input changed during matching')

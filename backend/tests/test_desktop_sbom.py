@@ -317,6 +317,26 @@ def test_tar_gzip_actual_budget_is_independent_of_declared_tar_members(desktop, 
         tool.pub_contents(gzip.compress(b'0' * 1000), [0])
 
 
+def test_source_growth_cannot_read_past_remaining_total_input_budget(desktop, monkeypatch):
+    d, tool = desktop, desktop['tool']
+    limit = d['provenance_file'].stat().st_size + 1
+    monkeypatch.setattr(tool, 'MAX_INPUT_BYTES', limit)
+    original, read_sizes = tool.bounded_file, []
+
+    def growing(path, read_limit):
+        if path == d['provenance_file']:
+            path.write_bytes(path.read_bytes() + b' ' * 20)
+            raw = original(path, read_limit)
+            read_sizes.append(len(raw))
+            return raw
+        return original(path, read_limit)
+    monkeypatch.setattr(tool, 'bounded_file', growing)
+    with pytest.raises(ValueError, match='budget|exceeds'):
+        run(d)
+    assert sum(read_sizes) <= limit
+    assert not d['output'].exists()
+
+
 def test_cli_returns_only_incomplete_success_and_refuses_existing_output(desktop, monkeypatch):
     d = desktop
     argv = ['tool']

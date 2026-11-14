@@ -910,3 +910,11 @@ real01 desktop.json SHA256 aa9eb107846077ef914eaba26995dba2c0cee085d9d5f7f8696bf
 Q -X utf8 artifacts/rel01f/check_changes.py退出0：7文件范围、493个未变base blob、500最终文件、104本地文档引用、56唯一调度行、UTF-8/LF/逐文件git diff --no-index --check、旧报告完整前缀及两份锁保持均通过。完整原始输入和辅助发布文件留忽略artifacts。
 
 独立草稿[PR #59](https://github.com/surface-user/StudyWorkbench/pull/59)已建立，codex/desktop-artifact-sbom基于#53最终b09da16，首次实现提交db00f1ee7dd6035001b9cdb49ca19a6c862821d8/treedce369d725b084b9c49a0c0772cd492442e0559c。补入实际交付链接形成后续文档提交；最终head/tree及该head CI登记在PR描述，避免为记录自身hash反复改head。REL-01f仍REVIEW，不合并或发行。
+
+发布后末尾边界核对发现总源输入预算可进一步收紧：原先先按stat预检，读取间隙若增长，虽然源hash或后续读取会拒绝整体，仍可能先读过剩余逻辑预算。首次新输入现在把单次bounded_file上限收紧为剩余总预算；新增真实增长负例，验证小于新文件长度的剩余预算在读取前即拒绝，没有超预算read返回。未弱化已有完整性断言，范围仍7文件；此前984fcfd的CI43586212699保留，但不能代替必要修正后新head的CI。
+
+- 最终IQ/IP同上六个关联文件的pytest命令，改用tmp-q04/tmp-p04及q04.xml/p04.xml：各退出0，262通过（新增44+基线218），30.09/29.84秒；既有261/43结果作为历史保留，不冒充最终计数。Q全Ruff退出0（ruff-final02.log）。
+- IQ同一真实CLI改用新output artifacts/rel01f/real02：退出2。41文件/26复制/15未知、47组件及CDX字节、66项目/79输入/原件hash和预算计数均保持；report因collector修正更新为SHA256 35fa55e8b146b060883236a36f8b200dc13358a485d8cc5baca4070083c5a9fb，CDX仍6b48db677eec04e8f984f6b97cd74fe65ef4e3292ec5c77f54175737b1fac0ed。
+- IQ artifacts/rel01f/verify_real.py再次退出0（verify-real02.log），按最终real02完整逐项核证及官方Schema；最终精选摘要SHA256 243b3401fabbe05099d8040ac2cf8e80ab10f493d44656f2fd059b2e6125ea81。初版摘要a1f30eaa…另留artifacts/rel01f/summary-real01.json，原real01/日志及helper快照保留；当前helper的--read-only核最终real02和新摘要且零写入。
+
+task/指南同步最终262/44及预算边界，独立PR随后追加必要修正提交并核该head完整CI；最终状态仍REVIEW等主Agent退出核验。实际产物仍是已明确的#53 CI artifact，未改源包/缓存或把新计数当完整发行认证。
