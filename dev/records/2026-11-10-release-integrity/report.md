@@ -606,3 +606,34 @@ REL-03b已由主Agent核验#35最终head CI三组成功，登记DONE。REL-03c�
 最终源码（含报告schema_version/采集器hash字段）再次运行同57项，Q/P的licenses-{q,p}-final及q-final/p-final日志均退出0；Q -m ruff check backend tools退出0。六文件范围、原报告前缀、未改依赖锁、UTF-8/LF/尾空白及Markdown相对链接检查通过。首次检查驱动把git diff --no-index --check的有差异退出1误作失败（stdout/stderr均空）；按该命令差异语义接受0/1且必须无诊断，未更改源码或忽略空白报错，保留首次驱动失败。
 
 实际交付[独立草稿PR #41](https://github.com/surface-user/StudyWorkbench/pull/41)，分支codex/source-license-evidence基于#35最终a73bedd，实现提交0506a79e4a11370a0afed8c5a05cda173bb263e7。首次共享摘要采用Windows默认CRLF，被提交检查拒绝；仅将新摘要规范化为LF后，六文件/69链接检查退出0。原始采集report及hash未改。最终head CI和有限交付结论在PR描述持续更新，不记完整许可义务已完成。
+
+
+## 2026-11-13：REL-02b1 固定上游许可原文及内嵌声明
+
+从INT-03/#43精确c666db99e54b5cd62d9f194a4357c9eea9051da9/tree590513029371e666192c4e52f4c67890923731af复制474个已核Git blob到独立source-license-supplement，保留原分支/根文件与历史失败。该组合本地回归通过、其当前head CI仍跟进；本切片依赖已交付#41许可采集能力，不将父CI未知当成功。读取现行任务、规范及工具/调用方后，先登记IN_PROGRESS。
+
+范围限定已有source_licenses开发采集器、其专项测试、三份固定许可来源资料、打包指南/task和本报告。不改产品下载/解析/运行依赖、打包payload或原第三方文件。复用现有文件边界、内容hash及证据复制，只针对精确latex2mathml3.81.1九个已核package文件追加仓库来源的许可原文；元数据的原MIT声明保留，同时独立记录unimathsymbols数据的LPPL-1.3-or-later及未闭合义务。原发行归档缺文事实不清除，不把补充原文伪装为installed RECORD中的文件；全产品许可/归档来源/分发义务仍false，LPPL原Work来源及vendor修改条件保留在父REL-02b。
+
+来源沿用并独立重核#40只读调查的官方wheel/sdist哈希、固定tag九文件Git blob及MIT原文；两归档均缺LICENSE。MIT原文来自固定fb724a91658cf41d2fad0192da0845b05446f208/LICENSE，LPPL1.3c原文来自latex-project.org固定版本URL，逐原字节复制，不重新排版许可文本。LPPL许可明确允许原样复制许可文本；这不等于其数据分发条件已满足。根辅助prepare_license_supplement.py逐九文件核wheel/sdist/tag一致，退出0，不解包到共享环境或修改产品。
+
+本轮再次读取官方LPPL原文和原作者LUCR入口；后者仍跳到个人主页，不把HTML或第三方镜像自动当原Work。需要保留原作取得方式、修改通知等未闭合事项，不能仅补MIT就关闭完整REL-02。
+
+
+### 2026-11-14：REL-02b1 实际核验与交付
+
+调用方只在collect→python_evidence中增加精确latex2mathml3.81.1补充，其余版本/包保留原缺文行为。采集器只读本仓库来源配置/原许可和本地package九文件；核PURL、九文件hash、文本hash/长度与路径边界，采集中再次核来源配置和package不变。不存在通用main许可证兜底、联网下载、执行源代码、修改installed RECORD或产品payload。输出明确标记repository_supplement，原MIT元数据、数据独立LPPL声明/作者/旧头日期和原分发缺文事实保留；任何原文补充不将分发义务字段设为true。
+
+Q为根.local/release-venv/Scripts/python.exe（3.13.17）；IQ/IP为starlette-fix/.local/starlette-q-isolated与starlette-p-isolated中的Python3.13.17/3.12.7，实际pytest9.0.3/Starlette1.3.1，只读复用既有依赖，不安装/升级共享环境。设置PYTHONDONTWRITEBYTECODE=1，工作目录source-license-supplement，全部本地日志/XML保留artifacts/rel02b1。
+
+- IQ/IP -X utf8 -m pytest backend/tests/test_source_licenses.py backend/tests/test_source_sbom.py -q --basetemp=.local/supplement-q03或p03 --junitxml=artifacts/rel02b1/q03.xml或p03.xml：各退出0，72通过、无失败/错误/跳过；原57项保持，15项新增覆盖精确来源/独立范围和未闭合条件、九文件篡改/缺失、原文篡改/长度、PURL/数量/路径、来源缺失/采集中变化、其他版本不得兜底及CLI仍为2。加入独立数据作者声明后执行最终03轮，早先02轮同样72通过不是累计计数。
+- Q -m ruff check backend tools及Q tools/export_question_schema.py --check：均退出0。产品API/数据库/UI/运行依赖未改变，不重复完整本地业务/桌面/Office转换；独立PR当前head CI继续执行原完整回归和冻结检查。
+- IQ tools/source_licenses.py --package-config ../batch-three/apps/desktop/.dart_tool/package_config.json --output artifacts/rel02b1/real02：退出2，136精确源包、248原文引用/184唯一文本；所有副本逐引用核长度/SHA256，源码锁与#43相同。两份新增原文是固定MIT和LPPL1.3c；仅latex2mathml有两个保留issue：上游分发缺文、LPPL原Work和vendor修改条件待核。完整产品许可/全部归档来源/分发义务始终false。
+- real02/report.json SHA256 1ae042486dc0cb83303304ad9eda594022cf14780c1e48630d44e6cae5f29bea；collector SHA256 8890dd279ce5193f1d2167fcbccb95b361dfb845315677944f2969ae614455f8；provenance.json SHA256 2b9d2a05a7bdbe72bf9395f76793d4678b7bbbb39b0dd7f6da693a28db294b8e。精选摘要evidence/latex2mathml-license-summary.json为14a81b8b82ca0eb8e74ce25140988e0d5fa77f6dac075f6a5d337d8678e673d8，只含公开来源/hash/范围/缺证及计数，未含本机绝对目录或全部第三方安装内容。
+
+失败保留：q01首次--basetemp的.local父目录未建立，26通过/46个setup错误，退出1；没有产品断言失败，也未记通过。建立任务内父目录后用新q02/p02及最终03目录重跑，不删除第一次日志。real01为追加数据作者/旧日期元数据前的旧快照，同样退出2，保留但不混作最终real02。新增许可原文逐字节保留官方文件，MIT1071字节/hash4ac1e1da07f6b343d54191c5e1716840534e08591b3f9eaec90d6800cdc47543，LPPL19036字节/hashc1ae6e179a6d28bbd5c483fbacc744acc75e922d598281dc3390aab26126e163，没有重排版权或许可文本。
+
+父INT-03/#43已由root核最终c666db9的CI43365961531三组45步成功，有限组合DONE。兄弟REL-01b/#42、OFF-02e/#44及DL-02a/#45已分别核验当前head CI登记DONE；本切片只同步交付状态，不含这些兄弟工具/产品代码或站点契约。用户明确的B站/抖音/爱奇艺范围与B站先行继续；预览不是整个DL-02下载目标，格式交接与DL-03避免循环依赖。真实实现/后续组合继续独立PR。
+
+当前REL-02b1实现/相关自动化/文档完成，REVIEW，等待独立草稿PR/当前head CI；LPPL原Work/修改条件及实际payload许可仍在父REL-02b/REL-02，不能因取得两份文本销项。审查暂缓、人工取消、未合并或发行。PR最终head/运行和有限验收结果在PR描述维护，不为写入自身SHA循环制造提交。
+
+提交前逐文件Git空白检查首次在官方LPPL原文末尾空行报告退出3；该文件许可明确禁止修改许可文本，因此保留原19036字节及官方SHA256不变，不将这条原版格式诊断记为修复或普通空白通过。辅助核证改为对这一个逐字原件强制官方完整hash，其他8份变更继续原git diff --no-index --check；源码/测试/文档没有放宽。Q -X utf8 artifacts/goal-20261112/check_license_supplement.py聚合退出0：478文件/预期9变更/469原blob保持、84本地引用、46调度行唯一及旧报告完整前缀、两锁不变核对通过。

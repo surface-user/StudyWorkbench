@@ -1,0 +1,62 @@
+{
+  "scope": "REL-02b1 pinned license texts and nine-file source correspondence; not complete distribution obligations",
+  "selection_reason": "Public immutable provenance, license scopes, actual counts and raw report hash; local paths and raw texts remain in artifacts.",
+  "purl": "pkg:pypi/latex2mathml@3.81.1",
+  "report_sha256": "1ae042486dc0cb83303304ad9eda594022cf14780c1e48630d44e6cae5f29bea",
+  "collector_sha256": "8890dd279ce5193f1d2167fcbccb95b361dfb845315677944f2969ae614455f8",
+  "profile_sha256": "2b9d2a05a7bdbe72bf9395f76793d4678b7bbbb39b0dd7f6da693a28db294b8e",
+  "source_locks": {
+    "backend/requirements.lock.txt": "8823dec8bd36cedab44ad894dbb018d442590187b23d5af837c1dbb2f2cb2512",
+    "apps/desktop/pubspec.lock": "c1ab979d33d15197f1018cae7ec752cfb0244523e26f3ed2c73ee1f761be2ce5"
+  },
+  "upstream_commit": "fb724a91658cf41d2fad0192da0845b05446f208",
+  "archive_sha256": {
+    "wheel": "c337668441b71c819b6733905a8058ba9a9d767bae11a0c5fdacb3aff31361bd",
+    "sdist": "c95add0c0fcdecad2d70567e0643050d5ea1149fb2e98a5d5792fb1c8eea2ed5"
+  },
+  "packages": 136,
+  "file_references": 248,
+  "unique_texts": 184,
+  "supplemental_files": [
+    {
+      "source_path": "MIT.txt",
+      "sha256": "4ac1e1da07f6b343d54191c5e1716840534e08591b3f9eaec90d6800cdc47543",
+      "bytes": 1071,
+      "text_path": "texts/4ac1e1da07f6b343d54191c5e1716840534e08591b3f9eaec90d6800cdc47543",
+      "evidence_kind": "repository_supplement",
+      "license": "MIT",
+      "applies_to": "project code",
+      "source_url": "https://github.com/roniemartinez/latex2mathml/blob/fb724a91658cf41d2fad0192da0845b05446f208/LICENSE"
+    },
+    {
+      "source_path": "LPPL-1.3c.txt",
+      "sha256": "c1ae6e179a6d28bbd5c483fbacc744acc75e922d598281dc3390aab26126e163",
+      "bytes": 19036,
+      "text_path": "texts/c1ae6e179a6d28bbd5c483fbacc744acc75e922d598281dc3390aab26126e163",
+      "evidence_kind": "repository_supplement",
+      "license": "LPPL-1.3-or-later",
+      "applies_to": "latex2mathml/unimathsymbols.txt",
+      "source_url": "https://www.latex-project.org/lppl/lppl-1-3c.txt"
+    }
+  ],
+  "embedded_notices": {
+    "latex2mathml/unimathsymbols.txt": {
+      "copyright": "Copyright 2011 Günter Milde",
+      "declared_license": "LPPL-1.3-or-later",
+      "last_revised_in_header": "2011-11-08",
+      "source_url": "https://github.com/roniemartinez/latex2mathml/blob/fb724a91658cf41d2fad0192da0845b05446f208/latex2mathml/unimathsymbols.txt",
+      "notice_not_updated_for_vendor_changes": true
+    }
+  },
+  "issues": [
+    "upstream_archives_omit_project_license_text",
+    "lppl_original_work_and_vendor_change_conditions_unresolved"
+  ],
+  "product_licenses_complete": false,
+  "archive_provenance_verified": false,
+  "distribution_obligations_reviewed": false,
+  "python_target_tests": {
+    "3.13.17": 72,
+    "3.12.7": 72
+  }
+}
