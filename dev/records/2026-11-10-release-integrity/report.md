@@ -577,3 +577,36 @@ real04 origins.json SHA25626901b019cbe6356cf592ba58359fab78009bf28cb95bc17fbfc90
 Q -X utf8 artifacts/rel01d/check_changes.py退出0：六文件范围、其余453个base blob保持、459最终文件、72本地文档链接/34调度行唯一性、UTF-8/LF/逐文件git diff --no-index --check及原报告完整前缀通过，运行依赖锁不变。辅助发布/原始证据均留忽略artifacts，最终PR与CI在实际交付后补充。
 
 独立草稿[PR #50](https://github.com/surface-user/StudyWorkbench/pull/50)已建立，分支codex/frozen-python-origins基于#47最终d6bef38，首次实现提交8395bd21dc33621778f3ad76ea4e35d12d3b1c55/tree8d957b4037b02543ce5def850c2692d75262ed40。本文补交付链接形成后续文档提交；最终head/tree与该head CI结果登记在PR描述，避免为记录自身hash反复改head。当前任务仍REVIEW，未合并或发行。
+
+## 2026-11-14 REL-01e：固定bootloader及44 CRT实际本地来源
+
+主Agent已独立重核#50最终0e295a70e9b054238e25cdc33fbad79ea7c49a37/tree3abf2eebb0d195350debc9e61e3c3858ea562b4f的969实体、全部新增来源、58组件Schema/摘要及CI43575980520三组44步和957×2；REL-01d已有限接受DONE，旧head/报告不改。新frozen-native-origins由该精确459 blob建立，保留原失败及所有未知。本次7文件切片只增加离线来源证据工具/测试、既有依赖/打包指南、任务状态、原报告与精选摘要，不修改构建包、业务、运行锁或共用Python环境；完整REL-01/02/03仍未闭合。
+
+先读该副本AGENTS、requirements、architecture、question-content-spec、task、打包/依赖及dev/ADR0013/0014规范，再只读真实COLLECT/EXE toc、安装RECORD/metadata及原PE。COLLECT-00.toc为186734字节/969条，SHA25641939a00f9803dd7c966e5e8b82910c19579f15290dab86faf9baa41c5a9c64f。44未知CRT实际全指向本机CodexPrimaryRuntime下native/libheif/bin，各源文件与payload整字节相等；不是推测System32来源。路径、同一目录、PE版本或签名均不能证明官方档案、组件版本或许可/再分发资格，故身份/version/archive仍null，认证/许可/再分发false，不加为已认证CDX包，不删DLL或放宽门禁。
+
+主Agent已批准先交付固定wheel/部分PE及44本地字节链范围。官方[PyPI6.22.3 JSON](https://pypi.org/pypi/pyinstaller/6.22.3/json)指向win_amd64 wheel1454907字节、SHA256500bd58c7bf7e584a8435adccbd763a0b918d5c12b08d74ff50fd79b2915458b；本次完整下载核对一致，571 ZIP成员/3179370展开字节，未安装或执行。原run.exe311808字节、SHA256581ea23eb35cee8f9df8835c892e91416df95ca629b1a6050289aea19390e08d；与安装RECORD及wheel成员对应。两份RECORD分别保留（安装新增脚本，不等于wheel RECORD），METADATA与原wheel字节相同；winutils.py及building/api.py静态源也同时核两RECORD及原wheel，不执行其函数。同版本[时间戳源码](https://raw.githubusercontent.com/pyinstaller/pyinstaller/v6.22.3/PyInstaller/utils/win32/winutils.py)解释写COFF/DEBUG时间的行为，但静态源码不是此次执行证明。
+
+工具frozen_native_origins.py只解析有界COLLECT字面量，拒绝执行表达式、危险/重复路径、非绝对/上行源路径；全部目标集合须等于payload。CRT只能从caller明确来源根内按TOC实际路径读取普通文件。原wheel全hash/长度、所有ZIP名/预算、METADATA唯一规范名称/精确版本、RECORD原hash/长度及三个实际构建源逐项拒绝不符。PE仅静态读取AMD64/PE32+有界不重叠节和DEBUG表，执行节集合/入口/代码字节必须相同；逐节实际raw/virtual位置、长度、属性、hash和所有未证范围另存。
+
+真实PE的.text/.data/.pdata/.fptable/.reloc raw字节相等；.reloc virtual地址因新增.rsrc改变，两个位置均保留。目标.rdata只有DEBUG TimeDateStamp完整4字节域中3个实际字节差异：偏移0x44014/0x44015/0x44016，原cec4a56a（1789248718）→1a82f66a（1794540058），各值均等于对应COFF时间，其余DEBUG结构及.rdata字节完全相同。只有这样的精确域关系才记录rdata_equal_except_confirmed_debug_timestamps；任意额外.rdata变化/DEBUG不等COFF均不能获得该结论，不泛化忽略时间戳。头、新.rsrc、目标373248起的22195210字节overlay未认证，whole_bootloader/reproducible_build均false，不把节相等说成exe可重现构建。
+
+新增阶段先采集自己的证据，再在新python-origins目录完整调用#50来源链，最后核所有新增输入及payload/锁/coverage/源码Git声明/Python归档稳定，不读旧成功JSON代替本轮核验。失败不生成最终native-origins.json/CDX，局部前阶段输出存在不表示整体通过；前后hash不是原子快照。所有预算及CLI命令见打包指南；1失败、2有限来源完成，无完整发行通过0。CDX沿用已证58组件，仅给PyInstaller加真实wheel档hash/链接及字节相等节occurrences，44未知CRT和EXE/ZIP容器全部仍在原46未知实体集合。
+
+工作目录frozen-native-origins；IQ/IP仍为starlette-fix/.local/starlette-q-isolated（3.13.17）/starlette-p-isolated（3.12.7），pytest9.0.3；只读复用。Q为根.local/release-venv/Scripts/python.exe，仅Ruff/文档辅助，不安装升级。命令均设PYTHONDONTWRITEBYTECODE=1，原始日志/JUnit/探针/完整JSON留忽略artifacts/rel01e。
+
+- IQ/IP -X utf8 -m pytest backend/tests/test_frozen_native_origins.py backend/tests/test_frozen_python_origins.py backend/tests/test_frozen_python_members.py backend/tests/test_frozen_sbom.py backend/tests/test_source_sbom.py backend/tests/test_release_inventory.py -q --basetemp=artifacts/rel01e/tmp-q04或tmp-p04 --junitxml=artifacts/rel01e/q04.xml或p04.xml：Windows原生测试权限各退出0，最终259通过（新增42+既有217），38.49/40.25秒，无失败/跳过。覆盖不执行自编PE/源码/TOC表达式、代码或架构/重叠节拒绝、字段外.rdata差异保留、固定wheel/双RECORD/大小写身份/重复元数据/危险ZIP、预算、CRT越界/字节不符和各输入末尾变更拒绝、CLI只给有限成功2。
+- IQ -X utf8 artifacts/rel01e/run_real.py artifacts/rel01e/real02：由探针实际源路径显式传crt-source-root，参数为已核#40 payload/源码、#42 coverage/Git清单、固定NuGet及官方wheel，内部调用tools/frozen_native_origins.py。退出2，44本地CRT对应，58份新输入/46127553逻辑字节末尾复核；前阶段origins/CDX字节仍精确等于#50最终26901b01…/64c2a831…，未改原报告。独立逐项来源/官方Schema复核及最终PR/head CI另续登记后才交付。
+
+保留失败与修正：只读探针一处误用COFF __keys__的tuple布局，最初空字段差异列表不能当相等证明；改为明确字段后才采用COFF/DEBUG原值。开始两个rg路径误指根旧文件/错误release-tools相对目录，退出1，后续改按实际固定副本和已观察绝对归档定位。首轮Ruff报测试未用Path导入，删除该未用导入后再查；新40专项及双环境257项当时已过。real01保守拒绝实际METADATA Name小写pyinstaller，错误在实现按大小写比较；改用既有canonicalize_name且仍要求单Name/精确单Version，追加小写接受与重复Name拒绝后最终259×2通过，real01失败原日志保留，不放宽wheel/元数据/RECORD完整字节门禁。
+
+实现/相关自动化已完成，独立真实结果/Schema、文档与当前head CI完成前REL-01e继续IN_PROGRESS。开发审查按ADR0014暂缓，人工取消；不合并/发行/清理数据，不把该来源切片计成完整SBOM、许可、漏洞或签名完成。本机real02与测试结束后暂停新增重负载，配合另任务正式性能测量窗口，待其结束再跑独立hash/校验。
+
+性能窗口释放后，IQ -X utf8 artifacts/rel01e/verify_real.py退出0（verify-real01.log）：重核全部969 payload的实际hash、44 TOC源文件/每个条目索引/原探针完整对应、原wheel全部所选成员/两份RECORD/metadata及三个安装源、PE所有实际节位置/属性/hash、COFF/DEBUG原值/每个差异字节、未知集合与每个CDX改动。其余57组件完全等于#50，PyInstaller只加原wheel hash/链接和5处字节相等节occurrences；58组件通过已固定官方1.6 Schema及离线spdx/jsf引用，未联网补Schema。既有#50 origins/CDX仍为26901b01…/64c2a831…，不是只核数量。
+
+real02 native-origins.json SHA256 c2cb549ec09428498abe88d5f224ba895b43f2fde9d2aed1870d7372c204f4c5，native-origins.cdx.json SHA256 abd73ab5c74ac7221a33758c9b710bbabe021183824ebaef559ed6787958d86a，精选摘要frozen-native-origins-summary.json SHA256 0610605f666096c7915695e787a71ba25a48d8d732f262799672944f79b563ab；摘要仅留可共享pin/计数/精确节和DEBUG差异/限制/来源与报告hash，绝对本机源路径和原件留忽略artifacts。
+
+随后只补强1项测试，使用真实绝对Windows源路径明确命中TOC大小写重复拒绝分支；没有运行逻辑变化。IQ/IP -X utf8 -m pytest backend/tests/test_frozen_native_origins.py -q --basetemp=artifacts/rel01e/tmp-q05或tmp-p05 --junitxml=artifacts/rel01e/q05.xml或p05.xml各退出0，最终新43项通过，4.67/4.96秒，无失败/跳过；先前259×2是当时42+217，不冒称最终260全量本地一次跑。Q -m ruff check backend tools最终退出0（ruff-final3.log）；IQ tools/export_question_schema.py --check退出0，原协议无漂移。未改变业务或构建输入，不新增本地Windows构建/冻结运行；本head全量另由CI执行。
+
+本次实现/相关自动化/独立真实来源与Schema及文档已就绪，REL-01e转REVIEW；独立PR、本head CI和主Agent退出核验仍待完成。审查暂缓、人工取消，44 CRT官方来源/身份/许可、生成容器及其余产品SBOM仍未知，不发发行通过结论。
+
+文档初检check-changes01退出1：Windows默认write_text将精选摘要换行转成CRLF，违反Git/LF约束；先把初版完整留artifacts/rel01e/summary-first-crlf.json，再只规范摘要LF并固定辅助脚本newline，未改JSON语义/原报告或包。最终精选摘要hash以上述0610605f…为准，初版3b40380a…及失败日志保留。

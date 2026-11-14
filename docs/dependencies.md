@@ -27,9 +27,13 @@
 | SQLAlchemy 2.1.6 / Alembic 1.20.1 | [MIT](https://github.com/sqlalchemy/sqlalchemy/blob/main/LICENSE) / [MIT](https://github.com/sqlalchemy/alembic/blob/main/LICENSE) | Windows wheel 已安装；SQLite 迁移、重启作答持久化通过；SQLite backup/WAL迁移已有隔离回归，真实升级/干净机待验 |
 | SQLite | [public domain](https://sqlite.org/copyright.html) | Python 标准库自带，实际版本写测试报告；本地单机，不放网络共享盘，不允许多主写入 |
 | pytest 9.0.3 / Ruff / Flutter Test / integration_test | [pytest MIT](https://github.com/pytest-dev/pytest/blob/9.0.3/LICENSE) / MIT / Flutter BSD | 开发工具，不作为产品业务依赖；pytest固定修复CVE-2025-71176的最小版本，Windows独立环境与CI证据分别记录 |
-| PyInstaller 6.22.3 | [GPL及bootloader分发例外](https://pyinstaller.org/en/stable/license.html) | 已使用独立CPython冻结；安装/干净机/最终依赖义务仍待验 |
+| PyInstaller 6.22.3 | [同版本GPL及bootloader分发例外](https://pyinstaller.org/en/v6.22.3/license.html)；[官方PyPI元数据](https://pypi.org/pypi/pyinstaller/6.22.3/json) | 已使用独立CPython冻结；固定Windows x64 wheel及有限PE来源说明见下，安装/干净机/最终依赖义务仍待验 |
 
 玻璃库仅公开入口API、ref固定a0bc51acf22db1b867294f810157cfeba7e951fb，保留MIT通知，不改上游/缓存。Windows SDK原生Known Folder、OLE、Shell/Advapi32用于选择/拖放和默认目录，无新增第三方包。
+
+PyInstaller既有构建依赖的官方`pyinstaller-6.22.3-py3-none-win_amd64.whl`固定1454907字节、SHA256 500bd58c7bf7e584a8435adccbd763a0b918d5c12b08d74ff50fd79b2915458b，2026-09-12发布；本批已核官方PyPI元数据及实际完整下载。Windows支持与GPL-2.0-or-later/bootloader例外按同版本文档和归档内原文解读，不新增运行依赖或重新安装环境。来源工具另核wheel内METADATA/RECORD、实际安装RECORD及run.exe/两份构建源码；精确PE代码节/部分数据节相等，不表示整个生成exe原样或可重现构建，不把资源、时间戳或overlay差异抹掉。官方档hash不代替签名或整个发行许可审查。
+
+冻结后端COLLECT记录中的api-ms-win-*及ucrtbase.dll须按真实源路径逐文件核，不能默认来自System32。当前记录指向本机构建环境附带的第三方runtime目录时，只能保留caller本地字节链，component identity/version、官方档案、许可及再分发资格均未知；不得据同目录、PE版本资源或有效签名为其补造包身份或发行通过。详细边界见[来源工具](packaging-windows.md#固定bootloader与crt本地来源链)。
 
 Starlette官方wheel为73632字节，SHA256 c7372aae11c3c3f26a42df7bd626cec2f47d03483d261d369516a615a53714c6，包内BSD-3-Clause原文已保留；[同版本PyPI元数据](https://pypi.org/pypi/starlette/1.3.1/json)与实际下载字节核对。仅升级该传递依赖，FastAPI、AnyIO及httpx保持原锁；实际TestClient兼容现有httpx0.28.1但上游已给弃用提醒，不为消除警告新增httpx2。业务未使用StaticFiles、HTTPEndpoint或表单解析入口；未使用不等于全产品可达性已证实，已知公告、修复复扫与Host/path/Origin入口回归分别记录。
 
