@@ -937,3 +937,5 @@ IQ -X utf8 artifacts/off02j/verify_real.py退出0：完整19743实际文件集�
 IQ artifacts/off02j/select_evidence.py退出0，筛出[共享摘要](evidence/off02j-program-domain-summary.json)30296字节/SHA256 b5d419aee2c9da71c5d8e5d511a6d41a72d5f10f72c0f47cd1ebeb0a55b28175，只保留17源身份、31主文件角色/header/hash、其余25关键hash、有限图数量/29新增/18拒绝及227×2 JUnit身份。上游源码全文、完整图、原始日志/XML和失败样本留ignored artifacts，不复制组件或上游原文进Git。
 
 有限实现、相关自动化和文档完成转REVIEW，独立草稿PR/当前head CI及主Agent退出核验仍须完成；没有本地重复构建未变的产品/Flutter或运行Office/Java/Python辅助程序，CI另做完整产品构建与冻结回归。81未知仍严格阻断check_release，静态覆盖不证明辅助程序可从产品启动、Python子链/动态DLL或完整Office已闭合。完整SBOM/许可/漏洞/签名发行及剩余加载角色另继续；审查暂缓、人工取消、未合并/发行。
+
+IQ artifacts/off02j/check_docs.py退出0：6文件范围、494个未变base blob、旧报告完整前缀、UTF-8/LF/逐文件git diff --check、97本地引用和58唯一调度行通过。已创建并附加[独立草稿PR #65](https://github.com/surface-user/StudyWorkbench/pull/65)，基于#60，分支codex/office-program-launchers，首实现提交c2ff67601abbe3f688cd9bbb9b585e3ea883ec20/tree e1551448e87f48e0c3f0de02a9134d6bdb1e8510。补入本交付链接后仍同一6文件；最终head/完整CI及有限核验结论在PR实时正文维护，不为写自身最终SHA循环改变head。未改#60、原组件或check_release，未合并/发行。
