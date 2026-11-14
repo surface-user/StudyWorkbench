@@ -45,6 +45,7 @@
 
 | 任务 | 原报告 | 同任务附属材料 |
 |---|---|---|
+| M3-03d 学习统计与分页规模回归 | [report](records/2026-11-14-learning-scale/report.md) | 自生成数据、预注册性能门槛、source/既有核源冻结包与分页/投影一致性 |
 | API-01a 兼容错误响应 | [report](records/2026-11-12-api-errors/report.md) | detail兼容、校验脱敏、服务端关联ID、桌面及冻结HTTP回归 |
 | M2-05 资料完整性与保存恢复点 | [report](records/2026-11-06-library-integrity/report.md) | 离线只读诊断、恢复点浏览及恢复故障回归，同任务持续记录 |
 | M0-02 / M1-04 发行文件完整性 | [report](records/2026-11-10-release-integrity/report.md) | staging完整文件集合/hash校验及构建前门禁，不等于完整发行验收 |
