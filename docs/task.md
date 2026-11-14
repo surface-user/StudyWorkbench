@@ -38,19 +38,19 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | OFF-02e 受控Office配置来源 | DONE | 主Agent核44×2及override拒绝1×2、源码/新冻结各3页和8次真实子进程argv/env摘要，[草稿PR #44](https://github.com/surface-user/StudyWorkbench/pull/44)最终f473abc的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43367142676)三组44步成功。该功能已纳本组合，OFF-02剩余加载域继续，不新增扫描支持或豁免TWAIN |
 | OFF-02f 固定JRE DLL加载域 | DONE | 主Agent核[PR #48](https://github.com/surface-user/StudyWorkbench/pull/48)最终c1877b7的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43570645325)成功、115×2专项及89原件；86 DLL根/新增78覆盖/剩145，本批纳其原代码，不替代完整OFF-02 |
 | OFF-02g 固定Python启动器模板来源与角色 | DONE | 主Agent核[PR #51](https://github.com/surface-user/StudyWorkbench/pull/51)最终6f38309的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43576310542)三组45步成功及1011×2/专项142×2；667文件/14模板/2producer来源相符，仍unclassified且145未知。本批纳证据工具，不作运行域豁免 |
-| OFF-02h 固定JRE启动器保守域 | REVIEW | 双Python各123专项通过；固定19743组件全hash、13 EXE/86 DLL及99 Java根相符，Office域及两域/CRT目录保持原样，仅新增12辅助EXE覆盖、145→133未知；缺Java私有CRT拒绝。独立草稿PR及当前head CI待核，完整Office/发行仍未闭合 |
+| OFF-02h 固定JRE启动器保守域 | DONE | 主Agent核[PR #55](https://github.com/surface-user/StudyWorkbench/pull/55)最终6d1078f的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43583174480)成功，双1188/Flutter203/44模块新冻结及既定链通过；相关123×2、19743原件及99 Java根/仅12 EXE新增覆盖已核，133未知仍阻断发行，有限DONE不代表实际调用/全Office通过 |
 | REL-03b pytest漏洞修复 | DONE | 主Agent已核独立环境/原失败复验、SBOM及OSV旧新版本对照；[草稿PR #35](https://github.com/surface-user/StudyWorkbench/pull/35)最终a73bedd的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43092294564)三组通过，本组合锁为9.0.3 |
 | REL-03c Starlette漏洞修复 | DONE | 主Agent核双Python各828及77子测试、89专项/23兼容组合与实际冻结/135包查询；[草稿PR #40](https://github.com/surface-user/StudyWorkbench/pull/40)最终b48b711的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43359261755)三组44步成功，本组合已纳1.3.1；原发现/在线覆盖未知保留 |
 | INT-02 第二批组合回归 | DONE | 主Agent核[草稿PR #37](https://github.com/surface-user/StudyWorkbench/pull/37)最终54d26ec及[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43093356970)第二次三组44步通过；原上传失败保留，本地882及77子测试/Flutter200，见[批次报告](../dev/records/2026-11-12-parallel-batch/report.md) |
 | INT-03 第三批组合回归 | DONE | 主Agent已核[草稿PR #43](https://github.com/surface-user/StudyWorkbench/pull/43)最终c666db9的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43365961531)三组45步成功、双Python各971及全部冻结链；本地971及77子测试/Flutter203，见[批次报告](../dev/records/2026-11-12-parallel-batch/report.md)。当前有限组合开发交付完成，正式发行父项保留 |
 | INT-04 第四批组合回归 | DONE | 主Agent核[PR #49](https://github.com/surface-user/StudyWorkbench/pull/49)最终68eaabd的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43574318173)三组46步全部成功，含源码/冻结公网续传重定向；本地1063及77子测试/Flutter203、新冻结44模块及Office链通过。原报告保留全部边界，完整发行父项继续 |
 | INT-05 第五批来源与加载域组合 | DONE | 主Agent核[PR #53](https://github.com/surface-user/StudyWorkbench/pull/53)最终b09da16的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43580584516)成功：双后端完整1180×2、Flutter203、44模块新冻结及既定链通过；46步45成功、原分支限定公网探针1跳过且不补记公网通过。497文件/真实来源与145未知有限验收，见[批次报告](../dev/records/2026-11-12-parallel-batch/report.md) |
-| M3-03d 学习记录规模回归 | IN_PROGRESS | 基于#49预先声明合成规模、页一致性、全事件投影、延迟/内存阈值，再做源码/冻结受控回归；不触碰个人库，不等于百万记录或学习效果证明 |
+| M3-03d 学习记录规模回归 | REVIEW | [PR #56](https://github.com/surface-user/StudyWorkbench/pull/56)已交付源码/既有#49冻结两端1k/10k/100k六档自动化，修正测试TEMP后均通过，保留旧stub/权限/溢写失败；当前head CI/主Agent核证待完成，独立工具未纳本候选 |
 | REL-01a 源码锁文件标准SBOM | DONE | 主Agent已核双Python专项各35、136源码包/8个SDK未知、官方Schema；[草稿PR #25](https://github.com/surface-user/StudyWorkbench/pull/25)最终1b52eb3的[CI #141](https://github.com/surface-user/StudyWorkbench/actions/runs/43060243273)成功；仅源码范围，父REL-01仍未完成 |
 | REL-01b 冻结后端SBOM | DONE | 主Agent核969实体hash/15metadata/2721PYZ与140×2专项，[草稿PR #42](https://github.com/surface-user/StudyWorkbench/pull/42)最终fb5b7a2的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43366003202)三组44步成功。工具已纳本组合；剩余2678模块/103PYD/非PE数据归属等由REL-01c映射，不据物理覆盖宣称完整身份 |
 | REL-01c 冻结Python本地来源映射 | DONE | 主Agent核[PR #47](https://github.com/surface-user/StudyWorkbench/pull/47)最终d6bef38的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43570337629)成功、918×2/专项38×2；55包2358模块861实体，本批纳工具，与REL-01d共同追溯，不等于官方归档认证 |
 | REL-01d 固定CPython及项目来源映射 | DONE | 主Agent核[PR #50](https://github.com/surface-user/StudyWorkbench/pull/50)最终0e295a7的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43575980520)三组44步成功、957×2及最终专项39×2；新增311 PYZ/154 ZIP代码/62实体/11启动代码来源与独立探针相符，58组件Schema通过；44 CRT/外层bootloader等仍未闭合，本批纳工具 |
-| REL-01e 原生CRT与bootloader来源 | IN_PROGRESS | 基于#50查实际COLLECT/RECORD及固定原件对应；保留44 CRT/生成外层PE的未确认，不以System32签名或相似版本替代来源 |
+| REL-01e 原生CRT与bootloader来源 | DONE | 主Agent核[PR #54](https://github.com/surface-user/StudyWorkbench/pull/54)最终24405f0的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43581479380)三组44步成功/双1000及43模块旧冻结；只读重核969实体/44本地CRT/5节与精确DEBUG差异/58组件Schema。工具未纳本候选，官方CRT/完整PE认证仍未知 |
 | REL-01 完整源码与发行包SBOM | IN_PROGRESS | 先交付01a；最终覆盖仍依赖OFF-02及所有实际组件/安装器payload，不能据源锁文件或环境包表销项 |
 | REL-02 | BLOCKED | 完整发行传递许可依赖REL-01实际组件清单；源锁与固定Office/Java就绪，已有范围可单独先核，整体不记完成 |
 | REL-02a 锁定源码许可证据映射 | DONE | 主Agent核双Python各57、136包/246原文引用/182文本及缺文退出2；[草稿PR #41](https://github.com/surface-user/StudyWorkbench/pull/41)最终218cfc2的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43359882156)三组44步通过，工具已纳本组合。归档/内嵌声明/最终义务仍未闭合，不是完整REL-02通过 |
@@ -67,7 +67,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | DL-01b 公网Range与重定向 | DONE | 主Agent已核[草稿PR #38](https://github.com/surface-user/StudyWorkbench/pull/38)最终842b19d的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43362970857)三组46步成功及原始摘要；真实源码206与冻结恢复结果通过，旧DNS/MIME/探针失败保留。诊断工具已纳本组合，产品下载代码未变 |
 | DL-02 | IN_PROGRESS | 用户已选B站、抖音、爱奇艺，B站先行；#45共同设计已交付，DL-02b有限元数据/质量预览先实施，真实传输与DL-03格式交接后续继续，不以预览代替整个下载目标 |
 | DL-02a 站点提取共同设计 | DONE | 主Agent核[草稿PR #45](https://github.com/surface-user/StudyWorkbench/pull/45)最终517bcd4的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43367244690)三组成功及4文档/82引用/6锚点；规划契约已纳本组合，三站真实提取与组件采用仍未完成 |
-| DL-02b1 B站受控格式预览 | IN_PROGRESS | 独立bili-preview-current基于#46，固定WBI元数据主路径/进程预算/API/UI实施中，实际授权样本及源码/冻结/当前head CI另核；尚未纳本组合，不代替候选确认下载、分轨或三站完整目标 |
+| DL-02b1 B站受控格式预览 | BLOCKED | [PR #52](https://github.com/surface-user/StudyWorkbench/pull/52) v2/b293449的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43581781896)源码与冻结均公开page/HTTP412，前两次失败保留；离线通过不代替公网正向，尚未纳本候选，三站与真实下载继续 |
 | DL-03 | BLOCKED | 依赖明确的格式/轨道交接及FFmpeg实际二进制/许可选择，不要求整个DL-02完成，避免与DASH/HLS支持循环等待 |
 | LW-04a | DONE | 主Agent已核58×2专项、Flutter19/全量200及失败保留；[草稿PR #29](https://github.com/surface-user/StudyWorkbench/pull/29)最终9027508的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43066543568)成功；有界TXT全文/原文行回跳已纳本轮候选 |
 | LW-07a | DONE | 主Agent已核双Python专项各11、Flutter专项6/全量196及静态检查；[草稿PR #27](https://github.com/surface-user/StudyWorkbench/pull/27)最终6af0360的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43060817695)成功；50条历史分页/刷新/迟到响应开发交付完成，审查暂缓，见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md) |
@@ -75,9 +75,14 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | API-01 | DONE | 主Agent按原退出条件核API-01a兼容结构/脱敏/关联ID及调用方与冻结实证；[草稿PR #34](https://github.com/surface-user/StudyWorkbench/pull/34)最终8b29a27的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43091834219)三组45步通过，API-01/a有限开发交付完成，已纳本组合；历史Office偶发失败保留 |
 | M2-05i | READY | 05g/h巡检及完整备份已实现；先设计身份/来源/附件关系与显式确认，不自动恢复或删除 |
 | M2-05j | BLOCKED | 依赖05i的关系设计；容量报告已实现，实际清理另需具体授权 |
-| M3-03a、M3-03b、M3-03c、M3-03d | READY | 题目协议/事件投影/历史分页已存在；分别先定富内容、知识关系、复习评价、规模阈值再实施验证 |
+| M3-03a、M3-03b、M3-03c | READY | 富内容、知识关系、复习评价分别先明确契约；M3-03d已单列REVIEW，不把规模回归当作算法效果通过 |
 | WEB-01、MED-01 | READY | 既有隔离WebView/媒体服务可用于自动化矩阵；模拟/HTTP不冒充实际解码或硬件证据 |
-| R6-01 | READY | 现有授权/学习接口可复用；限定资料/位置/用途/期限、撤销重验与无模型回归 |
+| R6-01 | IN_PROGRESS | 现有临时grant和普通资料接口可复用；先由R6-01a落实明确资料/笔记/书签、位置/用途/版本/预算与撤销边界，再分API/UI实施；不接模型/凭据或扩大旧analyze_attempts授权 |
+| R6-01a 通用资料受控读取契约 | REVIEW | 已完成read_resources独立用途、resource_node/legacy_note/learning_mark封闭选择、权威/版本/位置、默认元数据/正文另选、共享预算/撤销及无模型负例设计；仍未实现API，见[报告](../dev/records/2026-11-14-resource-read/report.md)，文档/独立PR/head CI待核 |
+| R6-01b 封闭授权与文本读取API | BLOCKED | 依赖R6-01a设计交付；复用授权服务/普通提供器，严格用途隔离及版本/预算，不新增授权持久表或模型，原grant兼容 |
+| R6-01c 资料范围确认与撤销UI | BLOCKED | 依赖b明确接口；普通UI逐项/版本/正文确认，保留草稿、撤销/到期与迟到响应，不向外站WebView提供桥或令牌 |
+| R6-01d 无模型组合回归 | BLOCKED | 依赖b/c；源码/冻结、旧grant/候选采用、空间与源变更/重启/全库不恢复grant分别自动化，不接模型，不以设计替代功能完成 |
+| R6-01e 其他格式正文提供器 | BLOCKED | 依赖a及相应格式精确提取/引用契约；PDF/Office等先设计源/派生hash/位置与预算，首批元数据支持不替代该项，OCR/网页/转写及模型继续另排 |
 | R6-02 | BLOCKED | 待用户明确模型提供方/远端范围/候选场景，并依赖R6-01；继续无模型/无凭据 |
 | REV-01 | BLOCKED | 依ADR0014等待本批已确定开发/自动化切片完成后集中审查；本轮REVIEW只指主Agent核验交付证据，不冒充独立代码审查 |
 | M0-08及统一导入历史自动化 | READY | 可继续只读/隔离启动恢复和原生COM回归；原失败/个人库保持，不恢复人工门禁 |
@@ -165,7 +170,7 @@ LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人�
 | M3-03d / 规模回归 | 较大规模学习记录、事件/关系读取和投影性能；依赖已确定的数据范围 | 待设计、未实施；先定可重复生成样本、数据量/机器环境、延迟/内存阈值与分页一致性，再给基线/回归结果和限制；不拿现有分页用例代替规模证据，不读取个人库 |
 | WEB-01 / PLAN-04网页 | WebView安全/生命周期可自动化矩阵；依赖当前隔离WebView实现 | 待细化、未实施；覆盖导航/重定向/子资源、DNS重绑定时序、弹窗/权限/下载、profile与释放/异常退出；保留业务令牌/文件桥隔离。实际窗口/登录/验证码/DRM/硬件项继续暂停或待范围确认，不以模拟或HTTP测试补记通过 |
 | MED-01 / PLAN-04媒体 | 媒体容器/音轨/编码/字幕及状态恢复可自动化矩阵；依赖当前播放器与受控媒体服务 | 待细化、未实施；列明样本来源、实际编码/解码环境与是否真实解码，覆盖时长/续播/倍速/字幕/重启/失败降级及capability；仅导入或后缀正确不证明可播放，真实硬件/休眠人工项继续暂停 |
-| R6-01 / LW-08受控读取 | 通用资料/笔记/标记受控读取的授权设计；依赖现有授权/学习接口和对应格式提取能力 | 待设计、未实施；先按资料/位置/用途/期限明确grant和正文/附件预算、撤销重验、引用/来源与无模型回归；沿笔记关系/内部链接不扩大授权，当前grant不提前增加范围，不接模型/凭据 |
+| R6-01 / LW-08受控读取 | 通用资料/笔记/标记受控读取；依赖明确的格式提供器 | 进行中；R6-01a规划契约已形成，API/UI及无模型组合回归分别b/c/d，其他格式正文e。当前API仍仅作答授权；链接/关系不扩权、默认元数据/正文另选、版本/预算/撤销及引用条件见[Agent设计](agent-design.md#通用资料受控读取契约规划中r6-01)，不接模型/凭据 |
 | R6-02 / LW-08后排设计 | 模型/安全凭据及其他候选场景分别评估；依赖用户明确选定提供方/场景和R6-01范围 | 待范围确认、未实施；先形成指定资料、远端授权/出境范围、Windows凭据保护、无配置/断网降级和来源验证设计；识题/知识关联/计划/分析/变式分别确认与拆PR，不把候选方向全部当实施授权，不下载或接入模型 |
 | REV-01 / 本批集中收尾 | 全部本批已确定开发/自动化切片完成后集中代码审查；当前依ADR0014暂缓 | 待触发、未执行；汇总实际交付head/依赖、审查发现、修复PR和对应head CI后给出结论，自审/独立审查/批准分开。REL-05可先完成候选组装自动检查，正式发行准备再依赖本项，避免把正式发布或本项自身设成前置循环；人工测试不自动恢复 |
 
