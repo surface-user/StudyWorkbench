@@ -90,3 +90,5 @@ Q/P分别执行`-X utf8 -m pytest -q --basetemp=.local/full-q01`或`full-p01`，
 R6-01e保持IN_PROGRESS，e1设计完成后REVIEW待独立PR/本head CI及主Agent有限核验；父#63也须当前CI成功后方可根验收。e2/e3和其余格式正文未实现，不把e1设计当e或整个R6完成。代码审查按用户要求暂缓、人工取消不补记通过；不合并或发行。
 
 在resource-read-pdf-plan执行工具Python `-X utf8 artifacts/r601e1/check_changes.py`退出0：仅三文档/498原blob保持/501最终文件，90本地引用及全部被引用标题锚点、64唯一调度行、Git diff --no-index --check、UTF-8/LF、两锁及原b报告完整前缀保持均通过。IQ `-X utf8 tools/export_question_schema.py --check`退出0：Question schemas are current。没有本地产品/模型/窗口测试结论；因产品/测试/协议文件均未变，本地不重复其测试或构建，当前head完整CI另核，不能用设计检查冒充提供器实现验证。
+
+独立草稿[PR #64](https://github.com/surface-user/StudyWorkbench/pull/64)已建立并附当前任务，分支codex/resource-pdf-read-plan依赖#63的codex/resource-read-api精确ca61a8d，首次设计提交06f06d1623030a327e80f1d87fe4d6b2a7fe95af/tree4aafe2d2559346208f24809068b632ce7753c8d7。后续文档提交只补实际PR链接；最终head/tree与该head CI记录PR正文，避免记录自身hash反复改头。e1保持REVIEW，父#63及本项当前CI/主Agent有限核验未取得前不登记DONE；e整体及e2/e3仍未完成。
