@@ -211,3 +211,33 @@ bb402e5的Python3.12完整CI为740通过，357.82秒；3.13完整pytest/R1–R5�
 WPT同域302实际到达目标video/mp4，但该响应没有Content-Length，生产下载器合法报告`total=None`；开发观察器把未知总长度误判为固定样本变长，抛出`Public fixture size changed`，公网步骤退出1。不是产品下载失败的修复，不据已通过源码Range把未到达的跨域/冻结步骤记为通过。完整日志ci-43360984198-desktop.log保留。
 
 只将开发观察器的总长条件改为None或固定长度，逐块实际字节仍不得超过固定3503/554058，落盘最终长度/Git对象/SHA256检查保持。增加未知Content-Length的真实transfer自编容器成功与多1字节拒绝/保留文件两例；未改生产或降低已有断言。Q专项target05退出0：78通过/37.57秒；P target31203退出0：78通过/41.70秒，XML/log保留；两轮并发运行，Ruff全量退出0。新head继续完整CI与真实公网验证，整体保持IN_PROGRESS。
+
+## 2026-11-14：DL-03a格式/轨道与持久队列交接设计
+
+主Agent批准在B站真实预览局部受阻后先推进独立设计，不等待整个DL-02或三站完成。基线为已由主Agent接受的[PR#53](https://github.com/surface-user/StudyWorkbench/pull/53)最终b09da16b9ea23f4fcb81eb016f9602d84afa451c/tree c2747215a6ae9187b28706234b70662190f54252。独立media-track-contracts副本逐497个Git blob按SHA1(blob长度+原字节)核对后复制，与根旧checkout、#52和其他任务隔离；原报告全文作前缀保留。
+
+完整阅读本基线AGENTS、requirements、architecture、question-content-spec、task；补读现行学习/站点/备份契约、API/模型下载部分及db.MediaDownloadJob、media_downloads/worker、backup_store、backup_archive、recovery_storage和dev证据规则。代码当前仍只有单文件下载，source_url/progress/result等原字段无逻辑来源快照；backup_store.check_references对ready下载用progress的partial_sha256/received校验单文件并核节点关系。不能把拟议字段写成已有API/表，或据表自动枚举称分轨恢复已覆盖。
+
+### #52局部阻塞与保留证据
+
+独立[PR#52](https://github.com/surface-user/StudyWorkbench/pull/52)未纳本设计源码。d17cd3e的[CI43576361155](https://github.com/surface-user/StudyWorkbench/actions/runs/43576361155)记录源码/冻结generic HTTP非200，未取具体阶段，原ZIP795字节/SHA256 19638cd3f662e4116dcba964a8f5d611f2bd952e8f349df6d8cc7d82f06616be保留；be31699的[CI43578909355](https://github.com/surface-user/StudyWorkbench/actions/runs/43578909355)取得源码/冻结view HTTP412，875字节ZIP/SHA256 d83b3e8bdeeefcfe8e42719daa3e225eb33a0c0b02dcffa827881e1a2d4a25eb保留；固定源对照后改成v2正常公开页面起点，b293449f137284d5b01823c3a704ffff6d2dfc37的[CI43581781896](https://github.com/surface-user/StudyWorkbench/actions/runs/43581781896)源码/冻结首个page请求仍HTTP412、result=null，未取得HTML或请求nav/playurl。
+
+v2两后端各1098、Flutter211、Windows/COM/47模块冻结及既有离线回归成功，不能抵销公网步骤失败。v2 [artifact14109580343](https://github.com/surface-user/StudyWorkbench/actions/runs/43581781896/artifacts/14109580343)实际下载/解包核两份JSON均bilibili-preview-v2/page412，877字节ZIP SHA256 520fcfb4ce30b638f937c9677dc267b183a7e35264f8cd5171d2a0286aefa26b；三份原ZIP分别在bili-preview-current忽略的artifacts/dl02b/ci-public.zip、ci-http-diagnostic.zip、ci-v2-page.zip。主Agent已要求DL-02b1局部BLOCKED，不重复公开请求/换UA、cookies、入口或降门槛，不推断登录或具体权限原因。本次4文档设计CI即使通过，也不是#52公网或三站功能通过。
+
+### 采纳范围与拆分
+
+仅修改四个文档：学习契约新增规划交接、dependencies明确实际二进制门槛、task新增DL-03a/b/c及局部阻塞、本原报告记过程。没有新增API/表/Alembic迁移/原生程序/测试或锁文件，也没有下载FFmpeg、采纳系统PATH程序或模型/凭据。候选确认下载与元数据预览明确分离；DURL单文件、最多2轨音视频DASH、多段/HLS规划边界分开，声明容器/codec不当作实际探测。
+
+source_snapshot明确严格版本/站点联合、字段白名单、16KiB及B站专有aid/bvid/cid，不透传任意JSON或硬塞其他站点；它与原确认一起不可变，不藏progress。每attempt/显式运行的解析记录只持久安全逻辑身份、URL指纹/validators及必要hash，最多2轨/每条8KiB；临时签名URL和认证信息仅worker内存，不入库/备份/日志。质量/逻辑身份改变要新预览确认/新Job；仅临时URL轮换可显式restart新attempt，首批不承诺跨URL透明续传，即使ETag相同也不冒充同一资源。
+
+共用同Job每次显式运行的10次实际请求/3跳、总15分钟和512MiB网络响应体/轨道合计预算；元数据2MiB/8MiB子限额及原DNS/TLS保持，输出另512MiB，统一预留输入+输出+16MiB，不能逐轨重置。固定公共header配方按用途/目标重验，不接任意字典/cookies。原生探测/合流只本地固定路径/协议/demux/参数，实际build须无网络协议、Job/EOF/取消全树，先锁二进制才启用。
+
+最终输出校验/去重及发布复用原MediaEntry/节点/Job，须补文件与SQL非跨介质原子的收据/崩溃/幂等对账。新版备份须用最终输出凭据而非把输入进度假装输出大小，包含来源/运行记录、全部attempt轨道、完整性与容量语义；旧库、旧直链收据、原件和失败字节保留，恢复不恢复临时URL/候选/授权。DL-03b实际组件选择和DL-03c本地探测/合流分开，不依赖完整站点提取；HLS/多段/转码及真实端到端继续，不据设计登记实现。
+
+只读查阅FFmpeg官方[许可](https://ffmpeg.org/legal.html)、[下载](https://ffmpeg.org/download.html)、[协议](https://ffmpeg.org/ffmpeg-protocols.html)和[ffprobe](https://ffmpeg.org/ffprobe.html)文档，未选版本/供应方或下载二进制。记录其仅供源码/第三方Windows构建的区别和协议默认/裁剪事实，作为后续实际build flags及完整传递许可要求的来源，不冒充具体产品构建已核验。未放宽既有来源/许可/漏洞/签名门槛。
+
+### 本轮文档验证与退出
+
+基线复制由Node原生fs读写与crypto.createHash('sha1')逐497文件验证，成功；未调用根git checkout/add/reset，也未修改根旧checkout。首次插入补丁因精确锚点少“集合”二字匹配失败、未部分应用；核实际行后重试成功，不涉及业务测试失败或断言变化。专项文档范围/空白/本地引用/锚点/原报告前缀/旧任务与两锁保持检查、Question Schema漂移及独立PR/current-head CI另记。业务代码完全不变，不为文档切片重复本机构建或业务测试；CI仍执行基线完整自动化。审查按用户要求暂缓，人工取消，未合并或发行；DL-03a在当前head CI与主Agent核验前不记DONE。
+
+最终文档检查在独立media-track-contracts目录运行 `../starlette-fix/.local/starlette-q-isolated/Scripts/python.exe .local/validate_docs.py` 退出0：497基线blob重新匹配、仅指定4文档变化/493不变，逐4文件 `git -c core.autocrlf=false diff --no-index --check` 无诊断（有差异退出1但无空白错误，聚合0），96本地Markdown目标/10锚点全部存在，65种旧任务ID/原报告完整字节前缀及两锁保持。Python3.13.17同一独立IQ环境、PYTHONPATH=backend、PYTHONDONTWRITEBYTECODE=1运行 `-X utf8 tools/export_question_schema.py --check` 退出0，Question schemas are current。检查脚本、摘要与日志仅放.local/artifacts，未把测试profile或原件入Git；此次没有新增可执行功能，未另造镜像实现的测试。DL-03a本地设计/文档自动化完成，调度REVIEW；当前head CI继续全量后端/桌面/新冻结，未执行或跳过的公网项不记通过，#52三次失败继续局部BLOCKED。

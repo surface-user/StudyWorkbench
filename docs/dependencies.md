@@ -104,6 +104,16 @@ webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-d
 
 建议在所选站点可完全受控的前提下评估固定源码适配；现有`YoutubeDL`的[request director](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/yt_dlp/YoutubeDL.py#L4343)提供请求处理入口，但这只是候选接入点，不证明每个提取器都不绕过它。`skip_download`/JSON输出、关闭配置/插件等CLI选项不能证明内部请求执行本项目DNS固定/TLS/预算；无法覆盖全部网络路径的stock CLI禁止作为可用产品方案。先按[规划契约](learning-workbench-contracts.md#站点提取与质量选择规划中未接入产品)验证有限站点，再决定是否采用及具体分发方式。来源证据和限制续记[下载报告](../dev/records/2026-11-05-lw07-downloads/report.md)。
 
+### FFmpeg本地轨道处理候选（未采用）
+
+格式/轨道与队列交接见[规划契约](learning-workbench-contracts.md#格式轨道与队列交接规划中)。本切片不选择或下载产品二进制，不因开发机有FFmpeg或一次自编样本成功就登记已支持合流/HLS。实际ffmpeg/ffprobe须同一固定发行/构建，记录版本、源码commit/对应源码、Windows x64架构、每文件SHA256、构建配方和维护/安全证据。
+
+官方[下载页](https://ffmpeg.org/download.html)提供源码并链接第三方Windows构建，不把第三方exe称为官方二进制；实际供应来源另核。官方[许可说明](https://ffmpeg.org/legal.html)区分LGPL主体与可选GPL部分，主体标签不能代表所选构建及外部库；逐实际配置核GPL/nonfree选项、链接方式、全部内嵌/外部原文、NOTICE、对应源码和再分发义务，纳入REL-01/02/03及签名后payload，不据单一许可证名宣布可发行。
+
+本项目要求原生工具只处理已下载本地文件，不自行联网。[协议文档](https://ffmpeg.org/ffmpeg-protocols.html#Protocol-Options)说明默认可用协议及运行白名单，[构建协议说明](https://ffmpeg.org/ffmpeg-protocols.html#Protocols)列出裁剪/枚举方式；候选须以实际build配置和-protocols结果证明无网络协议，仅保留验证过的本地输入/输出配方，禁远端清单/外部引用。不能仅传一个运行参数就跳过实际构建核验。[ffprobe说明](https://ffmpeg.org/ffprobe.html#Description)也会打开输入URL，因此探测与合流执行同样的固定路径/参数、输出预算、Job/取消门禁。
+
+二进制采用另交付版本/hash/实际协议、demux/codec能力、无外部引用/网络负例、源/冻结执行、许可/漏洞/完整性和供源证据。仅本地固定remux配方先行，转码/额外编码器、HLS/分段和硬件解码分别设计；不暗用系统PATH上的程序或自动更新/下载组件。
+
 ## 待验证与升级门禁
 
 源码依赖漏洞查询使用项目内tools/source_vulnerabilities.py 1.0及[OSV v1官方API](https://google.github.io/osv.dev/api/)，复用既有锁文件解析，仅发送公开PyPI/pub.dev包名、生态和精确版本，后续只取返回公告ID。网络使用Python标准库，没有新运行依赖、第三方扫描器安装或源码上传；查询器及解析器文件SHA256、Python版本随报告固定。OSV当前维护[数据来源](https://google.github.io/osv.dev/data/)包括GitHub/PyPI公告，PyPI与Pub为其支持的生态；公告数据来源许可与应用依赖许可是不同事项，原始返回保留在忽略的artifacts，不随产品分发。
