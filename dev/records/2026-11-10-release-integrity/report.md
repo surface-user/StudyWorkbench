@@ -889,3 +889,27 @@ Q/P各运行python -m pytest backend/tests/test_native_dependencies.py backend/t
 父#53当前head CI43580584516已三组完成成功：双后端各1180、Flutter203、44模块新冻结及既定资源/巡检/API34/生命周期/workers成功；46步45成功，原分支限定公网探针1跳过，保留原报告边界，不据此补记本head公网实测。该有限组合已由主Agent接受DONE，本项不改其head。
 
 OFF-02h实现及相关自动化完成转REVIEW，等待本项独立草稿PR/当前head CI；未在本地重跑未改变的Flutter/产品转换，当前head CI仍会构建/验证。所有新增Java入口只是保守静态候选，未执行辅助程序、不提供产品启动入口；动态路径/实际调用/SxS/API-set及系统来源仍未知，133未分类保持发行阻断，完整SBOM/传递许可/漏洞/签名继续。审查暂缓、人工取消、未合并或发行。
+
+## 2026-11-14：OFF-02i 固定Office Python扩展保守域
+
+主Agent已接受OFF-02h/#55，当前基线6d1078f8eca2923bb0d77a76136f0b8f5e921738/tree49028e80314a23c9b7fc3ecfcfc4ca6084636691及CI43583174480成功（双Python各1188；45成功步、分支限定公网探针1跳过）。新独立office-python-domain副本498文件逐Git blob核对；不改#55、根旧checkout、Office/Java原组件或学习数据。本切片不包含Python独立EXE、导出转发、启动器模板、托管或x86/TWAIN的运行域分类，133未知是实施前基线。
+
+实施前只读试探限定19个lib直属AMD64/PE32+ PYD根及其4份附属库libcrypto-3.dll/libssl-3.dll/libffi-8.dll/sqlite3.dll，program/python313.dll已在原Office静态图，CRT只来自program/vcruntime140.dll。proposed closure仅[program/python-core-3.13.15/lib, program]搜索、CRT仅program，19根/25节点/183普通与延迟边；预计仅新增23覆盖、剩110未知。没有把Java目录、System64、Python bin或所有同架构文件拼成搜索目录；原Office/Java完整域每字段必须保持。probe01退出1因反例预期错误文本写成normal、实际kind为import，拒绝本身正确；仅修预期文字后probe02退出0及5反例，失败原日志保留。
+
+来源先固定CPython 3.13.15官方tar.xz SHA256 1e66a7945a48390ee4c2a4268a0e4185884059a13c4aab6d148aa208deea4a76、LibreOffice bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1及组合清单SHA256 156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9。只读有界tar成员、Git blob及全部13份补丁目标，未执行、安装或应用源码。CPython Python/dynload_win.c SHA256 07fb2be58f0489c138dfcb1ccfeb5d4a5b96a38c34d81735dd0e80c4c370b7fb的扩展入口使用LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR；PC/dl_nt.c保存Python DLL句柄。固定LO外部包规则把19 PYD/4 DLL复制到lib、Python313放program，全部补丁均未修改该Windows loader或初始化/path源文件。C源码与打包关联并非可重现编译证明。
+
+固定pyuno_loader.cxx Git blob56a7206d345667ca33cd9696730c259796ed0398先检测Py_IsInitialized，未初始化分支向PyConfig.home赋值并准备Python环境，但后续调用Py_Initialize，并未将config传入Py_InitializeFromConfig；相关header/module读取未发现宏重映射。INI提供的home/path不能据此声称已生效，既有初始化上下文亦未证明受控。#44清理进程环境和配置来源不证明Python已加载状态、USER_DIRS、SxS/系统来源或任意动态执行全隔离；本项不修改产品或上游，也不声称pyuno实际导入这些扩展。Python3稳定ABI代理虽零普通导入仍有导出转发边界，继续未知。Microsoft的DEFAULT_DIRS包含应用目录、System32和USER_DIRS；本图只声明已证的固定包内候选和原系统叶，不认证Windows动态安全隔离或最低系统兼容。
+
+六文件最小实现：native_dependencies共享helper/对应测试、packaging/task、本报告和一份精选JSON。helper先核精确组合清单hash，再核完整lib子树PE身份/集合（包括14模板但不作根）、19 PYD/4 DLL的精确直属路径/hash/AMD64/PE32+、program Python313/CRT及loader INI固定字节。仅新增office_python域，不改原Office/Java域、check_release或产品。任何额外/变化PE、INI或关键运行库均拒绝；私有CRT不能借Java、本地lib或System32填补。原未知仍由check_release严格阻断；实际运行与发行完整性另继续。
+
+### OFF-02i 实际自动化与原件核证
+
+工作目录office-python-domain，IQ/IP只读复用starlette-fix/.local/starlette-{q,p}-isolated/Scripts/python.exe（3.13.17/3.12.7，pytest9.0.3）。各执行python -X utf8 -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py backend/tests/test_office_java_bundle.py backend/tests/test_java_runtime_preparation.py -q --basetemp=.local/off02i-{q,p}02 --junitxml=artifacts/off02i/{q,p}02.xml，均退出0、199通过/0失败错误跳过；原重复ZIP负例的预期警告各1保留。新增22项核锁/集合/移位/hash/架构/头/INI预算、嵌套模板只认证不作根、两种导入的Java/扩展本地/系统CRT拒绝；177旧边界保留。首轮q01只运行原生90项通过，补模板身份用例后最终上述199×2。链接测试使用本任务新隔离目录与已授权本机权限，不修改共享环境。Q -m ruff check backend tools及Q tools/export_question_schema.py --check各退出0。
+
+IQ -X utf8 artifacts/off02i/verify_real.py退出0：先复用component_payload完整校验19743实际文件集合及每个原清单hash，再解析351 PE。新增office_python 19根/25节点/183边，与实施前只读probe相同，新增覆盖精确等于19 PYD及4附属DLL；原Office与Java域每字段、pinned_java_libraries、目录与CRT规则均完全相等，133→110未知且pe_coverage保持partial。14嵌套模板仍列未知，program/python3.dll、program/python.exe、Python bin启动器、TWAIN等也仍未知；不以0普通导入忽略导出转发。9项实际PE内存元数据反例全部拒绝：缺失/变字节/x86/新增PYD、附属库移入Java、模板变字节、缺program CRT但Java仍在、本地lib CRT替代及Python313移入Java。并非OS实际加载试验，没有改写或执行原件；42份选中PE/INI/模板/锁/Java CRT末尾hash与前值一致，原组件路径集合不变。原图721225字节/SHA256 c4361a444c2723e084603ff13de8323772fc8d0bb25d23e3c69285c4206b0c61。
+
+读取固定LO外部Python、OpenSSL、libffi打包规则，分别核19 PYD/Python313/sqlite3、libcrypto/libssl及libffi的实际固定目标；13份补丁及unpack recipe逐Git blob复核。IQ artifacts/off02i/select_evidence.py退出0，只晋升[共享摘要](evidence/off02i-python-domain-summary.json)32427字节/SHA256 4bd4d7d1aa9ed93d5f6a61929481fd9808ac390cd956dec5a139213f15a44e13；包含24项必要固定源身份/补丁目标、23新增范围/14未知模板身份、42关键hash、9反例及199×2 JUnit身份/命令。上游原文/完整tar、源wheel、351 PE全图及所有原始日志只留ignored artifacts，不复制到Git。试探时两次猜测不存在的上游构建文件返回404、一次错误路径读取及一次rg路径表达式失败均保留；未据其作来源结论。文档检查首轮拒绝新摘要的Windows CRLF，精选输出显式LF后通过；只调整新输出格式，不改原始报告/JUnit或门槛，失败记录保留。
+
+本项实现/相关自动化/文档完成转REVIEW，等待独立草稿PR、当前head CI及主Agent退出核验。未改check_release、产品/依赖/组件或重新执行未变的产品转换；当前head CI另执行完整构建/冻结检查。110未知仍阻断Office整包发行，Python动态执行/隔离、模板运行分类、托管/x86和完整SBOM/许可/漏洞/签名后续单列。审查暂缓、人工取消、未合并或发行。
+
+IQ artifacts/off02i/check_docs.py退出0：6文件范围、493个未变base blob、旧报告完整前缀、UTF-8/LF/逐文件git diff --check、96本地引用及57唯一调度行通过。已创建并附加[独立草稿PR #60](https://github.com/surface-user/StudyWorkbench/pull/60)，基于#55，分支codex/office-python-domain，首实现提交a5e692ef27776315f16861325e294a7a2770abbf/tree78474b2e633c54fc335ee4ff5f55ec974745ffb9。补入本交付链接后仍为同一6文件；最终head/完整CI及有限核验结论维护于PR实时正文，不为追加自身最终SHA反复改变head。未改#55/原组件或check_release，未合并/发行。
