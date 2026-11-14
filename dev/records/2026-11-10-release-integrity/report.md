@@ -869,3 +869,23 @@ jre_dll_scope_probe.py按原两个域各追加固定86DLL，退出0：Java87根/
 有限实现/自动化/文档完成，OFF-02g保持REVIEW，待独立草稿PR/当前head CI及主Agent核验。原145未知继续阻断check_release；模板仍unclassified，runtime_exclusion_verified/product_release_ready均false。后续在包含#44+#48共同head再研究受控实际入口，Python/managed/x86各自独立切片，完整Office/SBOM/许可/漏洞/签名发行继续；审查暂缓、人工取消、未合并/发布。
 
 IQ artifacts/off02g/check_docs.py退出0：6文件范围、472个未变base blob、旧报告完整前缀、UTF-8/LF/逐文件git diff --check、85本地引用及46唯一调度行均通过。实际创建并附加[独立草稿PR #51](https://github.com/surface-user/StudyWorkbench/pull/51)，分支codex/office-template-evidence，首实现提交6a95b146701f13d1cb7e322b056abddd68d8d572/treefe3e19292117d33ba797887896f725b45de31e87。补入本交付链接后保持6文件，最终head/完整CI及有限核验结论在PR实时描述维护，不为记录自身最终SHA反复改变head；未改#48、原组件或门禁，未合并/发行。
+
+
+## 2026-11-14：OFF-02h 固定JRE启动器保守加载域
+
+依赖OFF-02f/#48已有限验收；工作副本以整合候选#53 b09da16b9ea23f4fcb81eb016f9602d84afa451c/tree c2747215a6ae9187b28706234b70662190f54252的497 blob逐项复制，#53自身CI仍待核，父产品/配置v4无改动。本项只是同一固定JRE剩余12个辅助EXE静态域缺口，不以其他来源未知或模板证据代替全部Office完成。
+
+实现前确定范围：现有office_java_libraries共享校验同时核原清单全部DLL/EXE集合、路径/hash和AMD64/PE32+，EXE只允许Java bin；原主要java.exe仍必需。Java域将13个固定启动器及86 DLL作保守入口，Office域仍只有原UNO/桥接及86 DLL，不把EXE混成Office可加载库。沿用原两域搜索目录与私有CRT归属；缺失/新增/移位/变更/错误架构一律拒绝。该集合是潜在执行范围，不意味着产品曾启动辅助工具或允许用户从产品启动它们。参照Microsoft公开DLL搜索顺序与#48已固定的JRE loader来源边界，不宣称实际动态路径隔离或源码可重现构建。
+
+调用方先查tools/check_native_dependencies.py、check_release.py及所有office_java_libraries/pinned_java_libraries测试，均复用共享工具；无产品API/Flutter/依赖/组件修改。六文件预期：共享工具/专项测试、打包指南/task、本原报告及一份只保留必要结论/hash的精选摘要。将重新核实际原清单/99个Java PE及静态全报告，与#48/#53的未知集合比较，预计只新增覆盖12个Java EXE；任何其他集合差异须解释或失败，TWAIN/x86/托管/模板等仍保留。专项覆盖原115边界及8个新增反例，真实组件前后稳定、各Java/Office CRT解析隔离仍验证。代码/旧失败保留，自动化未采集前不写通过；独立PR与当前head CI另核，审查暂缓、人工取消，不合并/发行。
+
+
+### OFF-02h 实际自动化与原件核证
+
+Q/P各运行python -m pytest backend/tests/test_native_dependencies.py backend/tests/test_office_java_bundle.py backend/tests/test_java_runtime_preparation.py -q --basetemp=.local/{q,p}01 --junitxml=artifacts/off02h/{q,p}01.xml，均退出0、123通过（原115+新增8），Q7.53s/P8.05s。重复ZIP成员反例的预期UserWarning保留，各1条；Ruff与Schema漂移检查退出0。旧反例仅按新增功能更新预期：锁内合法辅助EXE现作为潜在Java根，同时新增缺失/额外/移位/变字节/架构/头和任意新目录/主启动器缺失拒绝，不降低原DLL、私有CRT或TWAIN等断言。
+
+在不与学习性能计时重叠的窗口运行IQ artifacts/off02h/verify_real.py，退出0：19743实际组件文件集合及完整原清单hash全核；351 PE中原145未知精确只减少12个固定Java辅助EXE，剩133。Java13 EXE+86 DLL共99根/99节点，新增边只来自12个辅助EXE；Office域每字段等于#53，Java原节点/边均保留，两域搜索和私有CRT目录完全相等。仅Java bin允许EXE，不加入Office DLL根。将Java私有vcruntime140.dll从内存图移除后原closure严格拒绝，不借Office/system CRT；102关键原件末尾再次hash稳定，组件路径集与原清单不变。原始报告artifacts/off02h/real01.json SHA256 d9b5f52e9dd3453c8b28d83cf0c10807e782b6e5136e4892a52f6cbff1322306；共享摘要只保存公共路径、数量/原报告和工具hash、边界，从实际summary原字节筛选复制，完整图/原件/测试库留忽略目录。
+
+父#53当前head CI43580584516已三组完成成功：双后端各1180、Flutter203、44模块新冻结及既定资源/巡检/API34/生命周期/workers成功；46步45成功，原分支限定公网探针1跳过，保留原报告边界，不据此补记本head公网实测。该有限组合已由主Agent接受DONE，本项不改其head。
+
+OFF-02h实现及相关自动化完成转REVIEW，等待本项独立草稿PR/当前head CI；未在本地重跑未改变的Flutter/产品转换，当前head CI仍会构建/验证。所有新增Java入口只是保守静态候选，未执行辅助程序、不提供产品启动入口；动态路径/实际调用/SxS/API-set及系统来源仍未知，133未分类保持发行阻断，完整SBOM/传递许可/漏洞/签名继续。审查暂缓、人工取消、未合并或发行。

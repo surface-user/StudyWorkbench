@@ -54,6 +54,8 @@ Office子进程才接收包内JAVA_HOME、UNO_JAVA_JFW_JREHOME文件URI和headle
 
 组合目录可交给原build-release.ps1的-OfficeRuntime入口，默认主包行为保持。实际加载、转换及限制见[发行任务报告](../dev/records/2026-11-10-release-integrity/report.md)。完整PE进程加载域/延迟导入门禁、发行SBOM、传递许可/源码义务、漏洞和签名仍须分别完成；本步骤不等于Office整包可发行或干净机验证。
 
+固定JRE原清单同时约束DLL与EXE的完整集合、路径、hash及AMD64/PE32+。诊断将所有固定bin启动器作为潜在入口，保守纳入Java静态域，不表示产品实际执行它们；仍仅bin/bin-server搜索及bin私有CRT，不使用外来PATH或Office私有CRT。EXE不加入Office进程DLL根。Windows加载器的[应用目录与系统搜索规则](https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order)提供静态导入检查边界，动态加载、SxS、API-set/系统来源与其余组件仍须单列，任何未知继续阻断发行。
+
 ## Office Python模板来源证据
 
 使用已有构建Python环境离线运行；输入必须是固定Office-Java组合及已下载的[CPython 3.13.15官方源码归档](https://www.python.org/ftp/python/3.13.15/Python-3.13.15.tar.xz)，命令不会下载、安装或执行归档内容：

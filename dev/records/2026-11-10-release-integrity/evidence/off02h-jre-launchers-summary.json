@@ -1,0 +1,42 @@
+{
+  "scope": "fixed JRE executable conservative static roots",
+  "source_base_pr": 53,
+  "source_base_commit": "b09da16b9ea23f4fcb81eb016f9602d84afa451c",
+  "collector_sha256": "1f405c974855593541aff19e3d26086290d122319827a87e14d2694957e72480",
+  "component_inventory_sha256": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+  "component_files_verified": 19743,
+  "pe_images": 351,
+  "jre_executables": 13,
+  "jre_dlls": 86,
+  "java_roots": 99,
+  "java_nodes": 99,
+  "newly_covered_executables": [
+    "converters/libreoffice/java/bin/jabswitch.exe",
+    "converters/libreoffice/java/bin/jaccessinspector.exe",
+    "converters/libreoffice/java/bin/jaccesswalker.exe",
+    "converters/libreoffice/java/bin/javaw.exe",
+    "converters/libreoffice/java/bin/jfr.exe",
+    "converters/libreoffice/java/bin/jrunscript.exe",
+    "converters/libreoffice/java/bin/jwebserver.exe",
+    "converters/libreoffice/java/bin/keytool.exe",
+    "converters/libreoffice/java/bin/kinit.exe",
+    "converters/libreoffice/java/bin/klist.exe",
+    "converters/libreoffice/java/bin/ktab.exe",
+    "converters/libreoffice/java/bin/rmiregistry.exe"
+  ],
+  "unknown_before": 145,
+  "unknown_after": 133,
+  "office_domain_byte_semantics_unchanged": true,
+  "search_and_private_crt_directories_unchanged": true,
+  "private_java_crt_missing_rejected": true,
+  "selected_inputs_rechecked": 102,
+  "real_report_sha256": "d9b5f52e9dd3453c8b28d83cf0c10807e782b6e5136e4892a52f6cbff1322306",
+  "product_invocation_proven": false,
+  "dynamic_loading_complete": false,
+  "product_release_ready": false,
+  "limitations": [
+    "Potential fixed executable entries are statically checked; this does not show product invocation.",
+    "133 images remain unclassified and continue to block release.",
+    "Dynamic loading, SxS, API-set/system compatibility and component licenses remain separate."
+  ]
+}

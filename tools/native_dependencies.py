@@ -40,18 +40,25 @@ def office_java_libraries(payload, nodes, office):
     if len(raw) > 1024 * 1024 or hashlib.sha256(raw).hexdigest() != OFFICE_JAVA_LOCK_SHA256:
         raise ValueError('Java component inventory changed; renew loading evidence')
     manifest = json.loads(raw)
-    expected = {office + 'java/' + name.casefold(): digest for name, digest in manifest['files'].items()
-                if name.casefold().endswith('.dll')}
-    actual = {name for name in nodes if name.startswith(office + 'java/') and name.endswith('.dll')}
-    if actual != expected.keys():
-        raise ValueError('Java DLL set changed; renew loading evidence')
     directories = {office + 'java/bin', office + 'java/bin/server'}
-    for name, digest in expected.items():
-        node = nodes[name]
-        if str(PurePosixPath(name).parent) not in directories or node['sha256'] != digest:
-            raise ValueError('Java DLL path or bytes changed: ' + node['path'])
-        if node['machine'] != 0x8664 or node['magic'] != 0x20B:
-            raise ValueError('Expected x64 PE32+ Java DLL: ' + node['path'])
+    images = {}
+    for suffix in ('.dll', '.exe'):
+        expected = {office + 'java/' + name.casefold(): digest for name, digest in manifest['files'].items()
+                    if name.casefold().endswith(suffix)}
+        actual = {name for name in nodes if name.startswith(office + 'java/') and name.endswith(suffix)}
+        label = suffix[1:].upper()
+        if actual != expected.keys():
+            raise ValueError(f'Java {label} set changed; renew loading evidence')
+        allowed = directories if suffix == '.dll' else {office + 'java/bin'}
+        for name, digest in expected.items():
+            node = nodes[name]
+            if str(PurePosixPath(name).parent) not in allowed or node['sha256'] != digest:
+                raise ValueError(f'Java {label} path or bytes changed: ' + node['path'])
+            if node['machine'] != 0x8664 or node['magic'] != 0x20B:
+                raise ValueError(f'Expected x64 PE32+ Java {label}: ' + node['path'])
+        images[suffix] = dict(sorted(expected.items()))
+    if office + 'java/bin/java.exe' not in images['.exe']:
+        raise ValueError('Missing fixed primary Java launcher')
     release = payload.get(office + 'java/release')
     if release is None:
         raise ValueError('Missing fixed Java release identity')
@@ -60,7 +67,7 @@ def office_java_libraries(payload, nodes, office):
     if len(data) > 65536 or hashlib.sha256(data).hexdigest() != manifest['files']['release']:
         raise ValueError('Java release identity changed')
     return dict(component_inventory_sha256=OFFICE_JAVA_LOCK_SHA256,
-                release_sha256=manifest['files']['release'], dlls=dict(sorted(expected.items())))
+                release_sha256=manifest['files']['release'], dlls=images['.dll'], executables=images['.exe'])
 
 
 def office_uno_entries(payload, office):
@@ -255,7 +262,8 @@ def inspect_dependencies(payload, system):
         if any(name.startswith(java + '/') for name in nodes):
             java_libraries = office_java_libraries(payload, nodes, office)
             roots.extend(java_libraries['dlls'])
-            domains['java'] = closure(nodes, [java + '/java.exe', *java_libraries['dlls']],
+            # Conservatively include every fixed launcher; this does not assert the product executes it.
+            domains['java'] = closure(nodes, sorted(java_libraries['executables']) + list(java_libraries['dlls']),
                                       [java, server], [java], system)
         uno_entries = office_uno_entries(payload, office)
         domains['office'] = closure(nodes, sorted(set(roots) | uno_entries.keys()),
