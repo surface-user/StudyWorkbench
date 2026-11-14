@@ -97,6 +97,20 @@ python tools/source_licenses.py --package-config apps/desktop/.dart_tool/package
 
 退出0仅表示选定本地证据无已发现缺口，退出2表示报告已生成但有缺文/版本/RECORD缺证，退出1表示输入/完整性错误。report始终明确`product_licenses_complete=false`、`archive_provenance_verified=false`、`distribution_obligations_reviewed=false`；8类SDK锁占位另列未知。命名发现可能漏掉源文件内嵌或其他名称的通知，缺证不得以元数据标签代替原文。最终产品成员、完整官方来源、组合许可/源码提供义务、NOTICE及Office/Java/native/安装器仍由REL-01/02后续核验。
 
+## Office Python模板来源证据
+
+使用已有构建Python环境离线运行；输入必须是固定Office-Java组合及已下载的[CPython 3.13.15官方源码归档](https://www.python.org/ftp/python/3.13.15/Python-3.13.15.tar.xz)，命令不会下载、安装或执行归档内容：
+
+```powershell
+python tools/office_template_evidence.py --office .local/release-tools/libreoffice-java-26.8.1-21.0.13 --python-source .local/release-tools/cpython31315-source/Python-3.13.15.tar.xz --output artifacts/office-template-01
+```
+
+output须为全新目录且父目录已存在，不得位于组件内。固定归档大小/hash、组件原清单hash及完整实际文件集合/hash均须相符；拒绝链接/重解析路径、特殊归档成员、重复/越界/规范化文件名。tar限50000成员、单成员64MiB/总声明展开512MiB；每个wheel限8MiB、4000成员/总展开64MiB、实际单成员4MiB，完整读取内容校验声明长度及CRC；不提取到磁盘。只比较实际pip/setuptools包目录与精确源wheel，LO单补丁使用固定输入/输出hash，单改名使用固定路径及内容hash，不接受模糊补丁或推测安装版本。
+
+report.json保留每个实际成员和源wheel的hash/对应关系、源发行版本、PE架构/ZIP/overlay、producer身份，以及原模板缺少附加archive/shebang或同目录-script.py(w)的条件。launcher C源与上游资产的Git身份仅提供来源关联，不构成可重现编译证明；源发行版本不表示完整安装发行身份。末尾重核源归档、清单、路径集及选中文件稳定，失败保留现场且不生成成功report，不覆盖已有输出。
+
+退出0仅表示有限来源/结构证据采集完成；报告固定`runtime_classification=unclassified`、`runtime_exclusion_verified=false`、`product_release_ready=false`。不执行模板、producer或源码，不根据目录名、缺附加数据或未观察到加载推断实际产品不可达；不删除模板、不改变原生加载域或check_release。实际受控产品入口、Python/托管/x86域及系统来源仍须后续绑定核验，完整发行门禁保持。
+
 ## 规划中
 
 自动升级/完整回滚产品流程、下载/转码组件、正式签名发行按专项实施。FFmpeg须先锁定实际构建开关与LGPL/GPL/nonfree及来源义务；本地生成样本不等于可随产品分发。
