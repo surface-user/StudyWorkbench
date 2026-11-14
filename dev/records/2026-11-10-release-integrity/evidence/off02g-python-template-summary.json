@@ -1,0 +1,322 @@
+{
+  "scope": "fixed Office Python source and template-role evidence",
+  "selection_reason": "Fixed provenance, identities and necessary launch conditions; full 667-row map and upstream text remain ignored raw artifacts.",
+  "source_report_sha256": "b61561d36bac3bb09fbe668987ed1d80661e77b923bef4f9e0d88a6b59310870",
+  "source_report_bytes": 280945,
+  "collector_sha256": "801f2897e9443d2697ffae9ddd186115d2715a19a6d9a6bbc0dcfadc5b6af29f",
+  "component_inventory_sha256": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+  "component_files_verified": 19743,
+  "source_archive_url": "https://www.python.org/ftp/python/3.13.15/Python-3.13.15.tar.xz",
+  "source_archive_sha256": "1e66a7945a48390ee4c2a4268a0e4185884059a13c4aab6d148aa208deea4a76",
+  "source_archive_bytes": 23160540,
+  "packages": {
+    "pip": {
+      "source_distribution_version": "26.2.1",
+      "source_wheel": "Lib/ensurepip/_bundled/pip-26.2.1-py3-none-any.whl",
+      "source_wheel_sha256": "71138adf1f4ca900cdb7d289c21b7494329f2332b6d85f0e1c42108c0384ed3e",
+      "installed_content_scope": "matched LibreOffice package-directory subset; not full installed distribution",
+      "actual_files": 415,
+      "relations": {
+        "identical": 415
+      },
+      "changed_names": []
+    },
+    "setuptools": {
+      "source_distribution_version": "79.0.1",
+      "source_wheel": "Lib/test/wheeldata/setuptools-79.0.1-py3-none-any.whl",
+      "source_wheel_sha256": "e147c0549f27767ba362f9da434eab9c5dc0045d5304feb602a0af001089fc51",
+      "installed_content_scope": "matched LibreOffice package-directory subset; not full installed distribution",
+      "actual_files": 252,
+      "relations": {
+        "identical": 250,
+        "fixed-libreoffice-rename": 1,
+        "fixed-libreoffice-patch": 1
+      },
+      "changed_names": [
+        {
+          "path": "program/python-core-3.13.15/lib/setuptools/_vendor/jaraco/text/Lorem_ipsum.txt",
+          "source_wheel_path": "setuptools/_vendor/jaraco/text/Lorem ipsum.txt",
+          "source_sha256": "37fedcffbf73c4eb9f058f47677cb33203a436ff9390e4d38a8e01c9dad28e0b",
+          "installed_sha256": "37fedcffbf73c4eb9f058f47677cb33203a436ff9390e4d38a8e01c9dad28e0b",
+          "relation": "fixed-libreoffice-rename"
+        },
+        {
+          "path": "program/python-core-3.13.15/lib/setuptools/_vendor/jaraco/text/__init__.py",
+          "source_wheel_path": "setuptools/_vendor/jaraco/text/__init__.py",
+          "source_sha256": "636614a9747fa2b5280da6384a43d17ba65985be4750707f021f5108db15ca1a",
+          "installed_sha256": "c9e90f78f9ca8155e9fbc24fa46c33ffc0c50553f4f8a96f855233da5eba5991",
+          "relation": "fixed-libreoffice-patch"
+        }
+      ]
+    }
+  },
+  "templates": {
+    "program/python-core-3.13.15/lib/pip/_vendor/distlib/t32.exe": {
+      "sha256": "6b4195e640a85ac32eb6f9628822a622057df1e459df7c17a12f97aeabc9415b",
+      "git_blob": "52154f0be32cc2bdbf98af131d477900667d0abd",
+      "role": "producer-input-pe-template",
+      "machine": "0x14c",
+      "magic": "0x10b",
+      "subsystem": 3,
+      "overlay_offset": null,
+      "zip_archive": false,
+      "required_data": "appended-shebang-and-zip",
+      "archive_trailer_absent": true,
+      "upstream_asset_url": "https://github.com/pypa/distlib/blob/8183ea60e83bf021bf7d6903f4a6b3c8df0905a6/distlib/t32.exe"
+    },
+    "program/python-core-3.13.15/lib/pip/_vendor/distlib/t64-arm.exe": {
+      "sha256": "ebc4c06b7d95e74e315419ee7e88e1d0f71e9e9477538c00a93a9ff8c66a6cfc",
+      "git_blob": "e1ab8f8f589eadabaf3efa068dce3ff620a01898",
+      "role": "producer-input-pe-template",
+      "machine": "0xaa64",
+      "magic": "0x20b",
+      "subsystem": 3,
+      "overlay_offset": null,
+      "zip_archive": false,
+      "required_data": "appended-shebang-and-zip",
+      "archive_trailer_absent": true,
+      "upstream_asset_url": "https://github.com/pypa/distlib/blob/8183ea60e83bf021bf7d6903f4a6b3c8df0905a6/distlib/t64-arm.exe"
+    },
+    "program/python-core-3.13.15/lib/pip/_vendor/distlib/t64.exe": {
+      "sha256": "81a618f21cb87db9076134e70388b6e9cb7c2106739011b6a51772d22cae06b7",
+      "git_blob": "e8bebdba6d8f242244bf397ab067965d47c5093e",
+      "role": "producer-input-pe-template",
+      "machine": "0x8664",
+      "magic": "0x20b",
+      "subsystem": 3,
+      "overlay_offset": null,
+      "zip_archive": false,
+      "required_data": "appended-shebang-and-zip",
+      "archive_trailer_absent": true,
+      "upstream_asset_url": "https://github.com/pypa/distlib/blob/8183ea60e83bf021bf7d6903f4a6b3c8df0905a6/distlib/t64.exe"
+    },
+    "program/python-core-3.13.15/lib/pip/_vendor/distlib/w32.exe": {
+      "sha256": "47872cc77f8e18cf642f868f23340a468e537e64521d9a3a416c8b84384d064b",
+      "git_blob": "4ee2d3a31b59e8b50f433ecdf0be9e496e8cc3b8",
+      "role": "producer-input-pe-template",
+      "machine": "0x14c",
+      "magic": "0x10b",
+      "subsystem": 2,
+      "overlay_offset": null,
+      "zip_archive": false,
+      "required_data": "appended-shebang-and-zip",
+      "archive_trailer_absent": true,
+      "upstream_asset_url": "https://github.com/pypa/distlib/blob/8183ea60e83bf021bf7d6903f4a6b3c8df0905a6/distlib/w32.exe"
+    },
+    "program/python-core-3.13.15/lib/pip/_vendor/distlib/w64-arm.exe": {
+      "sha256": "c5dc9884a8f458371550e09bd396e5418bf375820a31b9899f6499bf391c7b2e",
+      "git_blob": "951d5817c9e6d81c94a173a0d9fead7f1f143331",
+      "role": "producer-input-pe-template",
+      "machine": "0xaa64",
+      "magic": "0x20b",
+      "subsystem": 2,
+      "overlay_offset": null,
+      "zip_archive": false,
+      "required_data": "appended-shebang-and-zip",
+      "archive_trailer_absent": true,
+      "upstream_asset_url": "https://github.com/pypa/distlib/blob/8183ea60e83bf021bf7d6903f4a6b3c8df0905a6/distlib/w64-arm.exe"
+    },
+    "program/python-core-3.13.15/lib/pip/_vendor/distlib/w64.exe": {
+      "sha256": "7a319ffaba23a017d7b1e18ba726ba6c54c53d6446db55f92af53c279894f8ad",
+      "git_blob": "5763076d2878093971a0ef9870e1cde7f556b18b",
+      "role": "producer-input-pe-template",
+      "machine": "0x8664",
+      "magic": "0x20b",
+      "subsystem": 2,
+      "overlay_offset": null,
+      "zip_archive": false,
+      "required_data": "appended-shebang-and-zip",
+      "archive_trailer_absent": true,
+      "upstream_asset_url": "https://github.com/pypa/distlib/blob/8183ea60e83bf021bf7d6903f4a6b3c8df0905a6/distlib/w64.exe"
+    },
+    "program/python-core-3.13.15/lib/setuptools/cli-32.exe": {
+      "sha256": "32acc1bc543116cbe2cff10cb867772df2f254ff2634c870aef0b46c4b696fdb",
+      "git_blob": "65c3cd99cc7433f271a5b9387abdd1ddb949d1a6",
+      "role": "producer-input-pe-template",
+      "machine": "0x14c",
+      "magic": "0x10b",
+      "subsystem": 3,
+      "overlay_offset": null,
+      "zip_archive": false,
+      "required_data": "same-directory-companion-script",
+      "companion_path": "program/python-core-3.13.15/lib/setuptools/cli-32-script.py",
+      "companion_absent": true,
+      "upstream_asset_url": "https://github.com/pypa/setuptools/blob/607f6be776db97d83c9cc54e0eaa578567dcc44c/setuptools/cli-32.exe"
+    },
+    "program/python-core-3.13.15/lib/setuptools/cli-64.exe": {
+      "sha256": "bbb3de5707629e6a60a0c238cd477b28f07f0066982fda953fa6fcec39073a4a",
+      "git_blob": "3ea50eebfe3f0113b231a318cc1ad6e238afd60d",
+      "role": "producer-input-pe-template",
+      "machine": "0x8664",
+      "magic": "0x20b",
+      "subsystem": 3,
+      "overlay_offset": null,
+      "zip_archive": false,
+      "required_data": "same-directory-companion-script",
+      "companion_path": "program/python-core-3.13.15/lib/setuptools/cli-64-script.py",
+      "companion_absent": true,
+      "upstream_asset_url": "https://github.com/pypa/setuptools/blob/607f6be776db97d83c9cc54e0eaa578567dcc44c/setuptools/cli-64.exe"
+    },
+    "program/python-core-3.13.15/lib/setuptools/cli-arm64.exe": {
+      "sha256": "b9a7d08da880dfac8bcf548eba4b06fb59b6f09b17d33148a0f6618328926c61",
+      "git_blob": "da96455a07a0bad4cde5dc5626544325f82c722b",
+      "role": "producer-input-pe-template",
+      "machine": "0xaa64",
+      "magic": "0x20b",
+      "subsystem": 3,
+      "overlay_offset": null,
+      "zip_archive": false,
+      "required_data": "same-directory-companion-script",
+      "companion_path": "program/python-core-3.13.15/lib/setuptools/cli-arm64-script.py",
+      "companion_absent": true,
+      "upstream_asset_url": "https://github.com/pypa/setuptools/blob/607f6be776db97d83c9cc54e0eaa578567dcc44c/setuptools/cli-arm64.exe"
+    },
+    "program/python-core-3.13.15/lib/setuptools/cli.exe": {
+      "sha256": "32acc1bc543116cbe2cff10cb867772df2f254ff2634c870aef0b46c4b696fdb",
+      "git_blob": "65c3cd99cc7433f271a5b9387abdd1ddb949d1a6",
+      "role": "producer-input-pe-template",
+      "machine": "0x14c",
+      "magic": "0x10b",
+      "subsystem": 3,
+      "overlay_offset": null,
+      "zip_archive": false,
+      "required_data": "same-directory-companion-script",
+      "companion_path": "program/python-core-3.13.15/lib/setuptools/cli-script.py",
+      "companion_absent": true,
+      "upstream_asset_url": "https://github.com/pypa/setuptools/blob/607f6be776db97d83c9cc54e0eaa578567dcc44c/setuptools/cli.exe"
+    },
+    "program/python-core-3.13.15/lib/setuptools/gui-32.exe": {
+      "sha256": "85dae1e95d77845f2cb59bcac3d4afe74bbe4c91a9bcc5bf4a71cd43104dbe7c",
+      "git_blob": "1eb430c6d614a5daea4139badc09c222a4b0e72a",
+      "role": "producer-input-pe-template",
+      "machine": "0x14c",
+      "magic": "0x10b",
+      "subsystem": 3,
+      "overlay_offset": null,
+      "zip_archive": false,
+      "required_data": "same-directory-companion-script",
+      "companion_path": "program/python-core-3.13.15/lib/setuptools/gui-32-script.pyw",
+      "companion_absent": true,
+      "upstream_asset_url": "https://github.com/pypa/setuptools/blob/607f6be776db97d83c9cc54e0eaa578567dcc44c/setuptools/gui-32.exe"
+    },
+    "program/python-core-3.13.15/lib/setuptools/gui-64.exe": {
+      "sha256": "3471b6140eadc6412277dbbefe3fef8c345a0f1a59776086b80a3618c3a83e3b",
+      "git_blob": "031cb77c17ba8d8a983448268851d612e05e80d1",
+      "role": "producer-input-pe-template",
+      "machine": "0x8664",
+      "magic": "0x20b",
+      "subsystem": 3,
+      "overlay_offset": null,
+      "zip_archive": false,
+      "required_data": "same-directory-companion-script",
+      "companion_path": "program/python-core-3.13.15/lib/setuptools/gui-64-script.pyw",
+      "companion_absent": true,
+      "upstream_asset_url": "https://github.com/pypa/setuptools/blob/607f6be776db97d83c9cc54e0eaa578567dcc44c/setuptools/gui-64.exe"
+    },
+    "program/python-core-3.13.15/lib/setuptools/gui-arm64.exe": {
+      "sha256": "e694f4743405c8b5926ff457db6fe7f1a12dec7c16a9c3864784d3f4e07ae097",
+      "git_blob": "1e00ffacb182c2af206e5dd9d9fbc41d236da0d1",
+      "role": "producer-input-pe-template",
+      "machine": "0xaa64",
+      "magic": "0x20b",
+      "subsystem": 3,
+      "overlay_offset": null,
+      "zip_archive": false,
+      "required_data": "same-directory-companion-script",
+      "companion_path": "program/python-core-3.13.15/lib/setuptools/gui-arm64-script.pyw",
+      "companion_absent": true,
+      "upstream_asset_url": "https://github.com/pypa/setuptools/blob/607f6be776db97d83c9cc54e0eaa578567dcc44c/setuptools/gui-arm64.exe"
+    },
+    "program/python-core-3.13.15/lib/setuptools/gui.exe": {
+      "sha256": "85dae1e95d77845f2cb59bcac3d4afe74bbe4c91a9bcc5bf4a71cd43104dbe7c",
+      "git_blob": "1eb430c6d614a5daea4139badc09c222a4b0e72a",
+      "role": "producer-input-pe-template",
+      "machine": "0x14c",
+      "magic": "0x10b",
+      "subsystem": 3,
+      "overlay_offset": null,
+      "zip_archive": false,
+      "required_data": "same-directory-companion-script",
+      "companion_path": "program/python-core-3.13.15/lib/setuptools/gui-script.pyw",
+      "companion_absent": true,
+      "upstream_asset_url": "https://github.com/pypa/setuptools/blob/607f6be776db97d83c9cc54e0eaa578567dcc44c/setuptools/gui.exe"
+    }
+  },
+  "producers": {
+    "program/python-core-3.13.15/lib/pip/_vendor/distlib/scripts.py": {
+      "sha256": "ad59b803e61f1900e9b0e4703b2ec0c1ea724536b2bb2eab73e32768230101c3",
+      "kind": "append-shebang-and-zip",
+      "source": "pypa/distlib",
+      "commit": "8183ea60e83bf021bf7d6903f4a6b3c8df0905a6",
+      "launcher": "PC/launcher.c",
+      "launcher_blob": "727f79165c8d328843598cace030e630045be066"
+    },
+    "program/python-core-3.13.15/lib/setuptools/command/easy_install.py": {
+      "sha256": "d19e2416513bf007b601f1d7613c591546b6b77aa536a5c2b50bb8275371f220",
+      "kind": "copy-exe-and-companion-script",
+      "source": "pypa/setuptools",
+      "commit": "607f6be776db97d83c9cc54e0eaa578567dcc44c",
+      "launcher": "launcher.c",
+      "launcher_blob": "b87cb32ad65b70ddf53c59317eed2433d9b3bd42"
+    }
+  },
+  "source_associations": [
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/download.lst",
+      "git_blob": "178961190db311e067faa611ae08ff0d91d73534",
+      "sha256": "2e0090f1bf175812f4ea420be0ac7990aec6fa996d254419c4bc3a6e6ba5651e"
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/UnpackedTarball_python3.mk",
+      "git_blob": "2d57c81c956f3ae058670c5a4855802e3ebc139f",
+      "sha256": "30e94107243dc063993b7dd51440f1c5055a5924e3ec83b69d568e80d3cf28ec"
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/setuptools.patch.1",
+      "git_blob": "dfbbfc8db7defae2da920beea67866bec50c1d47",
+      "sha256": "c6dbb22b72a4ffc30c507c37c0bcb581d028499c2940bbca60beca5f2feea854"
+    },
+    {
+      "url": "https://github.com/pypa/setuptools/blob/607f6be776db97d83c9cc54e0eaa578567dcc44c/launcher.c",
+      "git_blob": "b87cb32ad65b70ddf53c59317eed2433d9b3bd42",
+      "sha256": "7011ac2cdac2fc40544754b0481ef9c5ebe00fc0c2609a68442999a6f118b98e",
+      "selected_condition": "262-283: own filename becomes -script.py/pyw; missing companion fails before launch"
+    },
+    {
+      "url": "https://github.com/pypa/distlib/blob/8183ea60e83bf021bf7d6903f4a6b3c8df0905a6/PC/launcher.c",
+      "git_blob": "727f79165c8d328843598cace030e630045be066",
+      "sha256": "a0e60a3e9717a2e519120ae19d9c81564f934f38aa322062c26dc21e6c10c0fd",
+      "selected_condition": "38,212-298,972-1008: appended archive/shebang required before Python launch"
+    }
+  ],
+  "tests": [
+    {
+      "python": "3.13.17",
+      "tests": 142,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "6866ade874ab61fe27feb34a5d3d16c92550bbc3686529c3e29f052ee249dacf"
+    },
+    {
+      "python": "3.12.7",
+      "tests": 142,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "899e59c86babf28d0deba8cc13f86c1c04d1d1e3fc38347751a837ca6f49dcd4"
+    }
+  ],
+  "prior_native_unknown": 145,
+  "remaining_native_unknown": 145,
+  "runtime_classification": "unclassified",
+  "runtime_exclusion_verified": false,
+  "product_release_ready": false,
+  "limitations": [
+    "Source distribution versions do not imply complete installed distributions.",
+    "Launcher source links are curated publisher associations, not a reproducible compilation proof.",
+    "Producer resource use and missing launch data do not prove runtime unreachability.",
+    "No source, PE template or generated launcher was executed or installed; native release gates are unchanged.",
+    "Stable build inputs are required; this is not an atomic snapshot or an operating-system sandbox."
+  ]
+}

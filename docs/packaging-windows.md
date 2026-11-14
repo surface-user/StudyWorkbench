@@ -12,6 +12,8 @@ staging文件清单生成与校验共用枚举：只排除根build-inventory.jso
 
 Office域还读取固定组件自带的UNO注册入口：先核program/uno.ini、fundamental.ini和7份services注册文件的完整SHA256及注册目录文件集合，再仅解析这些已核字节；URE_INTERNAL_LIB_DIR与LO_LIB_DIR只映射到program，拒绝其他变量、绝对/嵌套/穿越路径和非DLL/PYD原生入口。注册的SharedLibrary及其传递依赖共用原Office搜索根/架构/CRT守卫，报告保留每个入口的注册来源与配置hash。Java/Python脚本注册不计为原生库，用户/扩展动态注册、CLR、其他辅助进程仍不由此证明；版本、启动配置或注册集合变化必须重新核证，不据文件恰在program就认可运行域。
 
+配套JRE的DLL另以固定java/java-runtime-lock.json原字节SHA256核验：要求实际DLL集合、各文件hash/AMD64/PE32+及release身份与原清单相等，只支持bin和bin/server。清单中86个DLL作为保守入口同时加入原Office与Java域；两域的搜索目录和各自program/bin私有CRT规则不变，不以另一域或System32填补缺失。报告单独保留固定Java锁、release和DLL hash映射。其他JRE EXE、托管程序集、安装模板与独立辅助进程仍须另有加载证据。保守静态覆盖不代表每个DLL实际执行，也不限制Java USER_PATHS、自定义JNI、SxS或任意动态加载；这些边界见[任务原报告](../dev/records/2026-11-10-release-integrity/report.md)。
+
 check_release遇到任一闭包外未分类PE即拒绝发行并输出partial及路径/架构，不提供绕过开关；必须后续建立可审计的运行域或非运行分类。只读tools/check_native_dependencies.py --office <组合组件目录>或--backend <冻结后端目录>可输出有限域图及未知范围，其中--office先核组件完整清单/hash，不调用OfficeRuntime。诊断退出0仅说明已声明域解析完成，pe_coverage=partial仍不满足发行门禁。API set另列Windows契约，本机System32仅为OS文件存在证据；最低Windows版本、已加载模块/SxS/动态加载/导出转发、干净机与完整Office加载范围仍需独立证据。
 
 许可复制的Python/Dart/native包目录名限定为普通ASCII包组件，候选许可路径必须相对并解析后保持在该包目录内；拒绝驱动器/根路径、冒号及Windows尾点/尾空格歧义。Python RECORD含..项仍按原规则跳过。复制前检查目标，错误使收集失败并保留已完成的合法副本，不回滚/删除stage；此前已有链接/重解析点检查继续执行。此边界面向稳定staging和本地构建输入，不构成恶意构建依赖沙箱、完整许可覆盖或SBOM/漏洞审计。
@@ -52,6 +54,20 @@ Office子进程才接收包内JAVA_HOME、UNO_JAVA_JFW_JREHOME文件URI和headle
 
 组合目录可交给原build-release.ps1的-OfficeRuntime入口，默认主包行为保持。实际加载、转换及限制见[发行任务报告](../dev/records/2026-11-10-release-integrity/report.md)。完整PE进程加载域/延迟导入门禁、发行SBOM、传递许可/源码义务、漏洞和签名仍须分别完成；本步骤不等于Office整包可发行或干净机验证。
 
+## Office Python模板来源证据
+
+使用已有构建Python环境离线运行；输入必须是固定Office-Java组合及已下载的[CPython 3.13.15官方源码归档](https://www.python.org/ftp/python/3.13.15/Python-3.13.15.tar.xz)，命令不会下载、安装或执行归档内容：
+
+```powershell
+python tools/office_template_evidence.py --office .local/release-tools/libreoffice-java-26.8.1-21.0.13 --python-source .local/release-tools/cpython31315-source/Python-3.13.15.tar.xz --output artifacts/office-template-01
+```
+
+output须为全新目录且父目录已存在，不得位于组件内。固定归档大小/hash、组件原清单hash及完整实际文件集合/hash均须相符；拒绝链接/重解析路径、特殊归档成员、重复/越界/规范化文件名。tar限50000成员、单成员64MiB/总声明展开512MiB；每个wheel限8MiB、4000成员/总展开64MiB、实际单成员4MiB，完整读取内容校验声明长度及CRC；不提取到磁盘。只比较实际pip/setuptools包目录与精确源wheel，LO单补丁使用固定输入/输出hash，单改名使用固定路径及内容hash，不接受模糊补丁或推测安装版本。
+
+report.json保留每个实际成员和源wheel的hash/对应关系、源发行版本、PE架构/ZIP/overlay、producer身份，以及原模板缺少附加archive/shebang或同目录-script.py(w)的条件。launcher C源与上游资产的Git身份仅提供来源关联，不构成可重现编译证明；源发行版本不表示完整安装发行身份。末尾重核源归档、清单、路径集及选中文件稳定，失败保留现场且不生成成功report，不覆盖已有输出。
+
+退出0仅表示有限来源/结构证据采集完成；报告固定`runtime_classification=unclassified`、`runtime_exclusion_verified=false`、`product_release_ready=false`。不执行模板、producer或源码，不根据目录名、缺附加数据或未观察到加载推断实际产品不可达；不删除模板、不改变原生加载域或check_release。实际受控产品入口、Python/托管/x86域及系统来源仍须后续绑定核验，完整发行门禁保持。
+
 ## 源码锁文件SBOM
 
 在仓库根使用已有构建Python环境运行：
@@ -84,6 +100,42 @@ $coverageExit = $LASTEXITCODE
 source head和预期exe hash是调用者声明，工具不认证远端Git或构建来源；实际交付仍须把记录的源码blob核对到指定head/tree及构建证据。METADATA只证明随包声明，不能代表全部冻结Python成员或官方归档认证；PE资源版本/PURL/CPE保留为未核候选，PYD、内嵌模块及源锁中未观察到METADATA的包分别列缺口，不能把“缺元数据”写成“未打包”。文件覆盖数量不是完整包身份覆盖。latex2mathml的项目MIT声明不能覆盖其上游内嵌数据的LPPL及修改来源待核事项；此工具不添加当前未用的HTML/MathML导出资源。
 
 退出1表示检查失败；退出2表示有限扫描/对照完成但完整产品SBOM仍不完整，固定product_sbom_complete=false，不返回发行通过码。CLI核对范围/身份，交付另用固定官方1.6 Schema验证实际输出。未知版本/来源/模块映射、完整依赖边、传递许可/漏洞/签名、前端/其他组件与安装器payload继续分别处理；不替代check_release，也不改变现有打包或产品流程。
+
+## 冻结Python成员与本地构建源对应
+
+使用与该冻结包一致的CPython补丁版本及实际锁定构建环境，以前一命令生成的coverage.json为输入；`$buildPython`须指向该环境，工具不会安装/升级依赖或执行候选包代码：
+
+```powershell
+& $buildPython tools/frozen_python_members.py --payload dist/study_backend --coverage artifacts/frozen-sbom-01/coverage.json --output artifacts/frozen-members-01
+$membersExit = $LASTEXITCODE
+```
+
+输入coverage最多16MiB，输出须在payload之外、目录不存在且父目录存在。重新核实体集合/hash、锁、随包METADATA、全部内嵌目录及业务源码；不能只凭一份旧报告或caller head认定输入。对源锁中精确名称/版本的唯一安装分发读取原始METADATA/RECORD，RECORD每份最多4MiB、总100000行，选中构建源最多20000文件/逻辑1GiB；编译源码每份最多8MiB，其他文件最多256MiB。越界/链接/重解析、重复或畸形RECORD、被选中文件hash/长度不符、预算越界均失败。合法控制台脚本的../路径只计为忽略，绝不沿其读取site-packages之外的文件；没有RECORD SHA256的候选列为未验证。
+
+仅为实际存在的PYZ模块或实体文件建立对应。先核本地源文件与RECORD SHA256/长度，再将源码静态编译，与冻结code object的嵌套代码/常量/异常表比较；分别记录等价的优化等级0/1/2，多个等级相等时不推断当时的真实选项。实体文件须路径对应且字节SHA256相等。一个成员若对应多个构建包，保留全部候选并标歧义，不任选归属；namespace无代码不据前缀分包。没有实际唯一对应的环境包不投影为发行成员，不能因某包被匹配就声称它的全部文件都随包。
+
+members.json保存逐实际位置、PURL、源文件/RECORD/METADATA hash、未映射与歧义；python-members.cdx.json为这些唯一对应成员的CycloneDX1.6子集，以occurrence关联实际模块/文件位置。元数据hash不放成整个包的archive hash。工具末尾复核payload/coverage/锁/业务源码和选中的构建证据未变，失败不生成成功报告。
+
+CLI退出1表示失败，退出2表示有限对应完成；product_sbom_complete、upstream_provenance_verified及source_head_authenticated保持false。本地安装文件与RECORD/冻结代码相等不等于官方wheel/源码归档认证、完整包所有权、运行时可达性或完整依赖关系。未映射stdlib、基础ZIP、CArchive脚本/bootloader、原生DLL及其他产品组件继续后续核对；本命令不修改原始scanner输出、打包内容或check_release，不代替许可/漏洞/签名检查。
+
+## 固定Python归档、项目资产与启动来源
+
+对前一节仍未知的内容，可使用固定CPython NuGet和声明的Git blob清单补充来源。source-tree为已另核远端提交/tree后保存的`commit`、`tree`及普通文件`entries`清单；工具不联网认证Git，不把caller字段当签名或远端证明。须使用实际锁定构建环境：
+
+```powershell
+& $buildPython tools/frozen_python_origins.py --payload dist/study_backend --coverage artifacts/frozen-sbom-01/coverage.json --python-package .local/release-tools/python.3.13.17.zip --source-tree artifacts/verified-source-tree.json --output artifacts/frozen-origins-01
+$originsExit = $LASTEXITCODE
+```
+
+只接受prepare-tools.ps1同一CPython3.13.17 NuGet全档SHA256及相同补丁版本解释器。压缩档限64MiB，NuGet最多20000条/声明及实际读取各256MiB、每成员16MiB、编译源码8MiB；拒绝危险原名、重复大小写、链接/特殊或加密成员、DTD/实体及重复/错误id/version。按Windows唯一大小写无关路径查找并记录实际成员名；只读有界字节、静态比较代码或完整文件hash，不落地解包。NuGet自身含其他原生库，匹配其分发字节不等于这些库的独立身份/许可证/签名都已验证。
+
+命令先在新输出的local-members内重新执行前节完整核验，再补CPython的PYZ/基础ZIP代码、二进制、项目迁移/HTML/入口源码、CArchive中的stdlib和PyInstaller初始化/runtime hooks。后者须与精确构建分发的METADATA/RECORD/hash和完整静态代码对应，不按模块前缀猜版本。项目源和payload分别核声明Git blob及代码或字节；Git清单上限16MiB/20000普通文件，source head/tree仍明确是未认证声明。旧阶段选中但未匹配的源输入也继续守原预算并在增强阶段末尾复核。
+
+RECORD自身按标准可有空的self hash；仅当该精确包的原METADATA/RECORD证明一致、self行hash/size均为空，且随包RECORD整字节等于构建原件时，另记`local_record_metadata_bytes`及`record_self_hash_declared=false`。不改第三方RECORD、不填造自证hash，也不将该例外推广到任意无hash源码。移位DLL按RECORD完整字节追溯原路径，多个分发提供相同字节时保留所有来源，不任选所有者。
+
+namespace条目仅记无代码类型、版本null及已验证子模块的构建分发关联；这不是namespace版本认证。origins.json保存所有新增对应和仍未知内容，python-origins.cdx.json增强既有已证子集并用occurrence关联实际位置。NuGet全档hash可作为其分发档hash，其他包的metadata hash不冒充归档。观察到payload/coverage/锁、源Git清单、NuGet、前阶段输出或任何选中构建/项目输入变化时不生成增强最终报告；前阶段局部产物存在不表示整体通过。
+
+退出1为失败、2为有限来源对应完成。product_sbom_complete、upstream_provenance_verified、source_tree_authenticated仍为false；外层PE bootloader、未闭合CRT/native、生成容器身份、完整依赖边、许可/漏洞/签名及其他产品组件仍待核。原scanner输出、旧报告及产品包保持，不据增强子集批准发行。
 
 ## 源码锁文件漏洞查询
 
