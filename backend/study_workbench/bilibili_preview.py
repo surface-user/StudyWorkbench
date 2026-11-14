@@ -18,11 +18,29 @@ NAV = 'https://api.bilibili.com/x/web-interface/nav'
 VIEW = 'https://api.bilibili.com/x/web-interface/wbi/view/detail'
 PLAY = 'https://api.bilibili.com/x/player/wbi/playurl'
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) StudyWorkbench/1.0'
+HTTP_STAGES = {'/x/web-interface/nav': 'nav', '/x/web-interface/wbi/view/detail': 'view',
+               '/x/player/wbi/playurl': 'playurl'}
 # yt-dlp f264a6cbd1f630894da0f368df00f8aae50140e0, extractor/bilibili.py:134-167.
 MIXIN = (46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35, 27, 43, 5, 49,
          33, 9, 42, 19, 29, 28, 14, 39, 12, 38, 41, 13, 37, 48, 7, 16, 24, 55, 40,
          61, 26, 17, 0, 1, 60, 51, 30, 4, 22, 25, 54, 21, 56, 59, 6, 63, 57, 62, 11,
          36, 20, 34, 44, 52)
+
+
+def safe_http_diagnostic(value):
+    if (not isinstance(value, dict) or set(value) != {'stage', 'http_status'}
+            or type(value['stage']) is not str or value['stage'] not in {'shortlink', 'nav', 'view', 'playurl'}
+            or type(value['http_status']) is not int or not 100 <= value['http_status'] <= 599):
+        return None
+    return dict(stage=value['stage'], http_status=value['http_status'])
+
+
+class PreviewHTTPError(DownloadError):
+    def __init__(self, stage, http_status):
+        self.diagnostic = safe_http_diagnostic({'stage': stage, 'http_status': http_status})
+        if self.diagnostic is None:
+            raise ValueError('Invalid fixed HTTP diagnostic')
+        super().__init__('该视频暂不可预览，可能需要权限或访问限制')
 
 
 def page_url(value, *, short=True):
@@ -82,7 +100,7 @@ class Client:
                     current = urljoin(current, values['location'])
                     continue
                 if response.status != 200:
-                    raise DownloadError('该视频暂不可预览，可能需要权限或访问限制')
+                    raise PreviewHTTPError('shortlink' if short else HTTP_STAGES[expected_path], response.status)
                 if short:
                     raise DownloadError('短链未返回受支持的普通视频重定向，未执行脚本')
                 if 'content-range' in values:

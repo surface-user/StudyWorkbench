@@ -3,7 +3,7 @@ import json
 import sys
 from threading import Event, Thread
 
-from .bilibili_preview import OUTPUT_LIMIT, DownloadError, extract
+from .bilibili_preview import OUTPUT_LIMIT, DownloadError, PreviewHTTPError, extract
 
 
 def worker():
@@ -30,6 +30,9 @@ def worker():
         sys.stdout.buffer.write(packet + b'\n')
         sys.stdout.buffer.flush()
     except DownloadError as error:
-        print(json.dumps({'error': str(error)}, ensure_ascii=False), flush=True)
+        packet = {'error': str(error)}
+        if isinstance(error, PreviewHTTPError):
+            packet['error_diagnostic'] = error.diagnostic
+        print(json.dumps(packet, ensure_ascii=False), flush=True)
     except Exception:
         print(json.dumps({'error': '预览未完成：输入、站点或工作进程异常'}, ensure_ascii=False), flush=True)

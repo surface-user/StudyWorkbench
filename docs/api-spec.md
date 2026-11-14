@@ -242,7 +242,7 @@ POST /{id}/pause保留字节、请求暂停；ready拒绝409。POST /{id}/retry�
 
 前缀W/media-site-previews，沿用Bearer/Host/Origin和活动空间校验。POST根路径仅接收url（≤8192字符）、16–100字符request_id及严格布尔rights_confirmed=true；额外字段拒绝。只接受HTTPS普通B站BV/av与b23.tv短链，普通链接规范为www.bilibili.com/video/ID并去除非用途query，多P拒绝。源是元数据读取，不接受自带headers、媒体目标或命令。
 
-POST返回{id,status,result,error,expires_in_seconds,extractor_version}；status为running/ready/failed/cancelled。相同空间/请求/规范化链接复用同条，参数变化409；同时2个进程/32条内存上限429。GET /{id}读取同结构；跨空间/不存在/10分钟已过期404。POST /{id}/cancel幂等取消并清空候选结果；关闭服务清空内存，重启ID失效，不自动联网。不是持久任务表或另一份下载队列。
+POST返回{id,status,result,error,error_diagnostic,expires_in_seconds,extractor_version}；status为running/ready/failed/cancelled。error_diagnostic为空或仅含固定stage（shortlink/nav/view/playurl）和严格整数http_status（100–599），仅记录HTTP非200失败的阶段/状态，不含URL/query/header/cookie/响应正文；普通UI继续显示error文本，不推测权限原因。相同空间/请求/规范化链接复用同条，参数变化409；同时2个进程/32条内存上限429。GET /{id}读取同结构；跨空间/不存在/10分钟已过期404。POST /{id}/cancel幂等取消并清空候选结果；关闭服务清空内存，重启ID失效，不自动联网。不是持久任务表或另一份下载队列。
 
 ready的result仅含title/video_id/source_host/extractor_version/duration_seconds/returned_formats_only与formats。每格式含format_id、delivery(dash_video/dash_audio/progressive/segments)、可空source_format_id/container/codecs/width/height/fps/size_bytes、requires_merge、download_supported和limitation。当前download_supported均false；format_id只在本次同空间候选有效，不是可提交任意媒体URL的授权。响应不携URL/query、fragments、headers、cookies、文件路径或会话令牌；原实际URL/普通视频cid只在服务器内存，等待未来确认下载契约接入，当前没有该确认接口。
 

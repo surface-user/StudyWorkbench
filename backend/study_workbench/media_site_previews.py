@@ -15,7 +15,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy.orm import Session
 
-from .bilibili_preview import OUTPUT_LIMIT, VERSION, page_url
+from .bilibili_preview import OUTPUT_LIMIT, VERSION, PreviewHTTPError, page_url, safe_http_diagnostic
 from .media_download_http import DownloadError
 from .office_runtime import WindowsProcessJob
 from .workspaces import require_workspace
@@ -88,6 +88,7 @@ class MediaSitePreviews:
         if public is not None:
             public['formats'] = [{key: item[key] for key in PUBLIC_FORMAT} for item in result['formats']]
         return dict(id=entry['id'], status=entry['status'], result=public, error=entry['error'],
+                    error_diagnostic=entry.get('error_diagnostic'),
                     expires_in_seconds=max(0, int(entry['expires'] - time.monotonic())), extractor_version=VERSION)
 
     def start(self, workspace, body):
@@ -130,7 +131,7 @@ class MediaSitePreviews:
             if entry is None or entry['workspace'] != workspace:
                 raise HTTPException(404, '预览已失效或不存在')
             entry['cancel'].set()
-            entry.update(status='cancelled', result=None, error=None)
+            entry.update(status='cancelled', result=None, error=None, error_diagnostic=None)
             return self.describe(entry)
 
     def child(self, entry):
@@ -185,6 +186,11 @@ class MediaSitePreviews:
                             raise DownloadError('预览工作进程提前结束')
                         continue
                     if not isinstance(message, dict) or 'result' not in message:
+                        if isinstance(message, dict) and 'error_diagnostic' in message:
+                            diagnostic = safe_http_diagnostic(message['error_diagnostic'])
+                            if diagnostic is None:
+                                raise DownloadError('预览工作进程诊断格式无效')
+                            raise PreviewHTTPError(**diagnostic)
                         raise DownloadError(str(message.get('error', '预览未完成'))[:300] if isinstance(message, dict) else '预览响应无效')
                     result = message['result']
                     if (not isinstance(result, dict) or result.get('extractor_version') != VERSION
@@ -229,6 +235,7 @@ class MediaSitePreviews:
             with self.lock:
                 if not entry['cancel'].is_set() and self.entries.get(entry['id']) is entry:
                     entry.update(status='failed', result=None,
+                                 error_diagnostic=error.diagnostic if isinstance(error, PreviewHTTPError) else None,
                                  error=str(error)[:300] if isinstance(error, DownloadError) else '预览未完成：站点或工作进程异常')
 
     def router(self):

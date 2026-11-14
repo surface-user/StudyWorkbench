@@ -1,0 +1,65 @@
+{
+  "scope": "Typed HTTP failure diagnostics only; no request policy changes",
+  "selection_reason": "Exact local diagnostic evidence; raw logs and all failed probes remain ignored.",
+  "prior_head": "d17cd3eeb116ec92e7fd5ca656d4775006c66e50",
+  "prior_ci": {
+    "id": 43576361155,
+    "conclusion": "failure",
+    "public_http_status_not_recorded": true
+  },
+  "http_stage_enum": [
+    "shortlink",
+    "nav",
+    "view",
+    "playurl"
+  ],
+  "http_status_strict_integer": [
+    100,
+    599
+  ],
+  "no_url_query_headers_cookies_response_body_in_diagnostic": true,
+  "local_python313": {
+    "passed": 135,
+    "exit": 0,
+    "junit_sha256": "a7a8c02deb8b4e1459321ec08bd4f47bc3f2f35c7995c1ab66328ecdd74b1d73"
+  },
+  "local_python312": {
+    "passed": 135,
+    "exit": 0,
+    "junit_sha256": "1542422b75adf2f2c80ba2fd62040f685234469ea4e3bffad093dd67c7d3d7a4",
+    "stronger_query_roundtrip_recheck": {
+      "passed": 1,
+      "exit": 0,
+      "junit_sha256": "ee3a52b11749026e95bb49f0a594625dd0dff0574617f9882362c15a325a5926"
+    }
+  },
+  "actual_http_client_capture": {
+    "domain_host": true,
+    "domain_tls_sni": true,
+    "tls_verification_enabled": true,
+    "fixed_ip_socket_target": true,
+    "encoded_query_roundtrip": true,
+    "exactly_six_fixed_headers": true,
+    "real_network_contacted": false
+  },
+  "frozen": {
+    "business_modules_matched": 47,
+    "exe_bytes": 22603563,
+    "exe_sha256": "74085005353f9087563adc5cd0e0b6088055c683180337104b4cdfd26562f78a",
+    "api_checks": 34,
+    "api_exit": 0
+  },
+  "local_source_and_frozen_public": {
+    "exit_each": 1,
+    "error_diagnostic": null,
+    "observed_failure": "Original public IPv4/DNS guard rejected resolution",
+    "real_http_status_observed": false,
+    "positive": false
+  },
+  "runtime_locks_unchanged": true,
+  "ui_source_unchanged": true,
+  "ua_endpoints_headers_request_count_guards_unchanged": true,
+  "task_status": "IN_PROGRESS",
+  "next": "Same PR exact new head CI source/frozen public stage/status evidence",
+  "merged_or_released": false
+}

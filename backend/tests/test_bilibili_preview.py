@@ -1,5 +1,8 @@
 """Self-authored page/API fixtures; these tests do not contact a video site."""
 import json
+from io import BytesIO
+from types import SimpleNamespace
+from urllib.parse import parse_qs, urlsplit
 
 import pytest
 from study_workbench import bilibili_preview as preview
@@ -90,6 +93,95 @@ def test_fixed_nav_view_and_signed_playinfo_only(monkeypatch, source):
     assert 'try_look' not in calls[2][2] and 'dm_img' not in calls[2][2]
 
 
+@pytest.mark.parametrize('stage,index', [('nav', 0), ('view', 1), ('playurl', 2), ('shortlink', 0)])
+def test_non200_keeps_exact_fixed_diagnostic_and_does_not_retry(monkeypatch, source, stage, index):
+    state, nav, _ = source
+    responses = [Response(encoded(nav)), Response(encoded({'code': 0, 'data': {'View': state['videoData']}}))][:index]
+    responses.append(Response(b'remote body https://private.invalid/?secret=fixture', status=412))
+    calls, _, pending = network(monkeypatch, source, responses=responses)
+    with pytest.raises(preview.PreviewHTTPError) as caught:
+        preview.extract('https://b23.tv/selfauthored' if stage == 'shortlink' else PAGE)
+    assert caught.value.diagnostic == {'stage': stage, 'http_status': 412}
+    assert str(caught.value) == '该视频暂不可预览，可能需要权限或访问限制'
+    assert 'remote' not in str(caught.value) and len(calls) == index + 1 and not pending
+
+
+@pytest.mark.parametrize('value', [None, [], {}, {'stage': 'nav'}, {'stage': [], 'http_status': 412},
+                                  {'stage': 'https://private.invalid/', 'http_status': 412},
+                                  {'stage': 'nav', 'http_status': True}, {'stage': 'nav', 'http_status': '412'},
+                                  {'stage': 'nav', 'http_status': 99}, {'stage': 'nav', 'http_status': 600},
+                                  {'stage': 'nav', 'http_status': 412, 'url': 'must-not-reflect'}])
+def test_http_diagnostic_accepts_only_two_typed_enumerated_fields(value):
+    assert preview.safe_http_diagnostic(value) is None
+
+
+@pytest.mark.parametrize('stage', ['shortlink', 'nav', 'view', 'playurl'])
+def test_http_diagnostic_copies_only_exact_safe_fields(stage):
+    for status in (100, 200, 412, 599):
+        value = {'stage': stage, 'http_status': status}
+        assert preview.safe_http_diagnostic(value) == value
+        assert preview.safe_http_diagnostic(value) is not value
+
+
+def test_actual_http_client_keeps_domain_host_sni_and_encoded_target(monkeypatch):
+    packets, connections, tls = [], [], []
+
+    class Socket:
+        def sendall(self, data):
+            packets.append(data)
+
+        def makefile(self, mode):
+            return BytesIO(b'HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{}')
+
+        def close(self):
+            pass
+
+    def connect(address, timeout):
+        connections.append((address, timeout))
+        return Socket()
+
+    def wrap(context, sock, *, server_hostname):
+        tls.append((server_hostname, context.check_hostname, context.verify_mode))
+        return sock
+
+    monkeypatch.setattr(transport.socket, 'create_connection', connect)
+    monkeypatch.setattr(transport.ssl.SSLContext, 'wrap_socket', wrap)
+    monkeypatch.setattr(preview, 'resolve', lambda host: '93.184.216.34')
+    target = preview.VIEW + '?' + preview.sign({'bvid': 'BV1234567890', 'test': 'a/b 中文 & + %'}, 'fixed-key')
+    canonical, _, path_query = transport.parse_url(target)
+    assert preview.Client(lambda: None).fetch(target) == (b'{}', canonical)
+    wire = b''.join(packets)
+    assert wire.split(b'\r\n')[0] == ('GET ' + path_query + ' HTTP/1.1').encode('ascii')
+    assert '%25' in path_query and '%2525' not in path_query and '%E4%B8%AD%E6%96%87' in path_query
+    assert parse_qs(urlsplit(canonical).query)['test'] == ['a/b 中文 & + %']
+    fields = wire.split(b'\r\n\r\n', 1)[0].split(b'\r\n')[1:]
+    assert len(fields) == 6
+    assert b'Host: api.bilibili.com' in fields
+    assert b'Accept-Encoding: identity' in fields
+    assert ('User-Agent: ' + preview.USER_AGENT).encode('ascii') in fields
+    assert b'Referer: https://www.bilibili.com/' in fields and b'Origin: https://www.bilibili.com' in fields
+    assert b'Connection: close' in fields
+    assert b'93.184.216.34' not in wire and b'Cookie:' not in wire and b'Authorization:' not in wire
+    assert connections == [(('93.184.216.34', 443), 10)]
+    assert tls == [('api.bilibili.com', True, transport.ssl.CERT_REQUIRED)]
+
+
+def test_worker_preserves_only_safe_http_diagnostic(monkeypatch, capsys):
+    from study_workbench import media_site_preview_worker as worker
+
+    monkeypatch.setattr(worker.sys, 'stdin', SimpleNamespace(buffer=BytesIO(encoded({'url': PAGE}) + b'\n'), read=lambda: ''))
+
+    def extract(*_a, **_k):
+        raise preview.PreviewHTTPError('view', 412)
+
+    monkeypatch.setattr(worker, 'extract', extract)
+    worker.worker()
+    packet = json.loads(capsys.readouterr().out)
+    assert set(packet) == {'error', 'error_diagnostic'}
+    assert packet['error_diagnostic'] == {'stage': 'view', 'http_status': 412}
+    assert packet['error'] == '该视频暂不可预览，可能需要权限或访问限制'
+
+
 @pytest.mark.parametrize('url', ['https://evil.example.org/video/BV1234567890',
                                   'http://www.bilibili.com/video/BV1234567890',
                                   PAGE + '?p=2', PAGE + '?p=1&p=2',
@@ -152,8 +244,11 @@ def test_valid_short_redirect_keeps_fixed_headers_and_connection_policy(monkeypa
                  Response(encoded(nav)), Response(encoded({'code': 0, 'data': {'View': state['videoData']}})),
                  Response(encoded(play))]
     calls, closed, pending = network(monkeypatch, source, responses=responses)
+    resolved = []
+    monkeypatch.setattr(preview, 'resolve', lambda host: resolved.append(host) or '93.184.216.34')
     result = preview.extract('https://b23.tv/selfauthored')
     assert result['video_id'] == 'BV1234567890' and len(calls) == len(closed) == 4 and not pending
+    assert resolved == ['b23.tv', 'api.bilibili.com', 'api.bilibili.com', 'api.bilibili.com']
 
 
 @pytest.mark.parametrize('kind', ['compressed', 'duplicate_length', 'too_big', 'formats', 'title'])

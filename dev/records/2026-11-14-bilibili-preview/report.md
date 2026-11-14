@@ -1,6 +1,6 @@
 # DL-02b1：B站受控格式预览
 
-当前交付基线是#46的8bebad8896da83db4ac45ea6f7f4aa41142901cd，最终实现仅走nav→WBI view/detail→playurl。下列原#45及HTML轮记录保留失败沿革，不代表当前实现。实现和本地自动化完成；公网正向失败、独立草稿PR当前head CI待核，任务保持REVIEW，完整DL-02仍未完成。代码审查按用户要求暂缓，人工测试已取消，未合并、未发行。
+当前交付基线是#46的8bebad8896da83db4ac45ea6f7f4aa41142901cd，实现仅走nav→WBI view/detail→playurl。下列原#45及HTML轮记录保留失败沿革，不代表当前实现。草稿PR#52的d17cd3e当前CI43576361155公网步骤失败，任务退回IN_PROGRESS，补精确阶段/HTTP状态诊断及真实请求回归；不能仅凭generic非200推断外部权限或用户环境。完整DL-02仍未完成。代码审查按用户要求暂缓，人工测试已取消，未合并、未发行。
 
 ## 问题、基线与完整目标
 
@@ -48,7 +48,7 @@ Flutter：当前完整211项退出0，1分41秒；新界面8专项（含100/200/
 
 原冻结01的真实HTTP探针已到新增worker并由原DNS守卫明确拒绝，失败JSON只含公开状态/固定错误，不含URL/query。没有放宽网络或把失败算正向。新的check_bilibili_previews固定CC候选、显式--allow-public-fixture、只请求元数据、复核同空间幂等/跨空间拒绝/取消/重启失效及无下载/媒体记录；普通CI离线测试与codex/bilibili-preview分支的源码/冻结公网步骤分开。原作者许可/镜像摘要的来源关系仍记录，media_byte_correspondence_verified=false，不做媒体请求、发布或许可认证。
 
-## 最终本地交付证据
+## d17cd3e候选的本地交付证据
 
 以下命令均在bili-preview-current独立副本执行，PYTHONPATH=backend、PYTHONDONTWRITEBYTECODE=1；IQ为Python3.13.17的starlette-q-isolated，IP为Python3.12.7的starlette-p-isolated，锁内Starlette1.3.1/pytest9.0.3，未修改共用环境和两份锁。原始stdout/JUnit保存在忽略的artifacts/dl02b，筛选摘要见[evidence/local-summary.json](evidence/local-summary.json)。Windows链接测试及固定Flutter SDK缓存访问使用原生权限，没有修改系统Developer Mode。
 
@@ -66,3 +66,21 @@ Flutter：当前完整211项退出0，1分41秒；新界面8专项（含100/200/
 最终exe为22602465字节，SHA256 `65d63cf5c8cddc4549c217ca105abaca3c67421be37a525915dd128d2849f518`；没有提交二进制/profile/影片/原始日志。冻结之后业务Python未改。Flutter最终analyze第一次因新控件两处缺少if大括号退出1，补齐后final02通过，原失败保留；未降低断言。早期冻结build01/02及full-q01/02均只作沿革，不替代上表最终证据。
 
 当前状态REVIEW：已实现受控普通B站格式预览、取消及短期候选；未实现确认下载、轨道合流、多P/互动/付费内容、抖音/爱奇艺。后续DL-02b候选确认需复用持久队列/来源身份/固定headers逐跳守卫，DL-03仅依赖格式交接与二进制方案，不循环依赖完整DL-02。网站字段变化会受控失败，固定源版本只保证可追溯，不承诺永久适配。PR/current-head CI和固定CC样本的真实源码/冻结公网结果待核，不标DONE。源码/冻结公网诊断在同一CI步骤各自执行并合并退出码，源码失败也不掩盖冻结结果。
+
+## d17cd3e真实CI失败与精确诊断补丁
+
+[PR#52](https://github.com/surface-user/StudyWorkbench/pull/52)初候选head d17cd3eeb116ec92e7fd5ca656d4775006c66e50/tree a77e2b9b701342192e0b7d435296d33603751622、[CI43576361155](https://github.com/surface-user/StudyWorkbench/actions/runs/43576361155)已逐head核对，completed/failure。两后端job成功，各1049项/3警告，Ruff与R1–R5通过；desktop的211组件、格式/分析、Windows Release、COM、新冻结47模块及全部既有冻结回归成功。47步中44success、1failure、2skipped：新增公网步骤失败，依赖失败跳过发行输入上传和setup-python post，诊断上传成功。不是完整CI通过。
+
+源码与冻结在同一受控主路径各自产生失败JSON，均error“该视频暂不可预览，可能需要权限或访问限制”、result=null；此固定文本仅在HTTP非200返回，但旧版没有阶段/具体状态，不能据此断言412、登录授权、外部权限或用户网络环境。原d17代码、报告、本机DNS失败和远端HTTP非200是不同证据，全部保留。artifact [14107451115](https://github.com/surface-user/StudyWorkbench/actions/runs/43576361155/artifacts/14107451115)已取回，ZIP795字节SHA256 `19638cd3f662e4116dcba964a8f5d611f2bd952e8f349df6d8cc7d82f06616be`；仅两份脱敏failed-preview.json，原zip及CI筛选摘要保存在忽略的artifacts/dl02b，未把全文日志/profile入Git。远端491个blob、26变更、两锁和原许可文本均核对；169本地Markdown引用无缺失。
+
+主Agent依调度规则退回IN_PROGRESS并要求先定位普通实现细节。已核实际PinnedHTTPS.__init__保留域名给HTTPConnection，connect只将固定IP传给socket.create_connection，TLS仍用self.host的SNI/证书校验。CPython putrequest默认Host由self.host生成，尚不能仅凭读代码代替线缆证明；新增真实http.client请求的捕获socket回归明确核Host为api.bilibili.com、socket目标为批准IP:443、TLS server_hostname为域名且CERT_REQUIRED/check_hostname开启，六个固定公开头无Cookie/Authorization。WBI urlencode后的path/query原样进入请求，百分号不重复编码，中文/斜杠/空格/加号/百分号查询值可还原。短链每实际跳仍重走DNS和固定连接，API重定向只同域同原path，普通BV/av不请求HTML。
+
+最小诊断方案经主Agent明确批准：仅原非200分支抛PreviewHTTPError，附固定stage四枚举shortlink/nav/view/playurl与严格整数http_status100–599；worker IPC父进程只接收这两个键，布尔/字符串状态、越界、未知stage、附加字段均拒绝，不反射远端文本。鉴权API可选error_diagnostic只携此二字段；普通UI仍显示原error文本。开发探针在失败前复核无私有字段，只打印此诊断并保存原脱敏JSON。不新增请求或回退、不改UA/公开头/入口/TLS/DNS/请求预算，不跳过公网步骤。JSON业务code、DNS/格式错误不伪造HTTP状态。
+
+首轮专项：IQ `-X utf8 -m pytest -q backend/tests/test_bilibili_preview.py backend/tests/test_media_site_previews.py backend/tests/test_bilibili_probe.py backend/tests/test_media_download_http.py --basetemp=.local/bili-diagnostic-q01 --junitxml=artifacts/dl02b/diagnostic-q01.xml`，退出0、135项；IP相同四文件、独立p01 basetemp/JUnit，退出0、135项。Ruff check backend tools退出0。真实固定worker的原取消/隔离测试、真实IPC可选诊断的父进程白名单/固定普通错误/取消清空，以及所有旧非200断言保持。后续仅收紧查询值还原断言，最终核验及新冻结/CI另记，不拿旧exe替代新代码。
+
+最终IQ同四文件专项（q02独立basetemp/JUnit）退出0、135项；IP对新增查询值还原断言的 `backend/tests/test_bilibili_preview.py::test_actual_http_client_keeps_domain_host_sni_and_encoded_target`（wire-p02独立basetemp/JUnit）复验退出0、1项，配合其135项完整专项。最终Ruff check backend tools退出0；没有Dart/UI源变化，普通错误文本由API专项明确断言，Flutter全量另随新head CI执行。
+
+`./packaging/windows/build-backend.ps1 -Python .venv/Scripts/python.exe` 再次退出0，新47业务模块内嵌code/constants与当前源码一致；新exe22603563字节，SHA256 `74085005353f9087563adc5cd0e0b6088055c683180337104b4cdfd26562f78a`，覆盖的旧exe身份/失败证据仍由原摘要与日志保留。IQ `tools/check_api_errors.py --exe dist/study_backend/study_backend.exe --test-root .local/bili-frozen-api-diagnostic01` 退出0，34检查/18错误ID；冻结和源码分别运行 `tools/check_bilibili_previews.py --allow-public-fixture`，使用各自source/frozen-diagnostic01新test-root，均退出1且仍为本机原DNS公网守卫拒绝，error_diagnostic=null，未取得HTTP响应，不伪造阶段/状态。原始记录为artifacts/dl02b/{diagnostic-q02,diagnostic-p01,wire-p02,ruff-diagnostic02,frozen-build-diagnostic01,frozen-api-diagnostic01,public-source-diagnostic01,public-frozen-diagnostic01}对应txt/xml；精选[http-diagnostic-summary.json](evidence/http-diagnostic-summary.json)保存最终JUnit/模块/exe的hash及边界，SHA256 `4c1132e79273279b9f0ae251555775019cb536410dd95f024465743f11de56d9`。
+
+当前IN_PROGRESS：同PR推送新的受限诊断补丁后，核新head CI的真实源码/冻结阶段和状态，再根据事实定位普通请求兼容问题；尚不宣称外部权限阻塞，也不改入口、UA、网络门禁或公网退出条件。审查暂缓、人工取消、未合并或发行。
