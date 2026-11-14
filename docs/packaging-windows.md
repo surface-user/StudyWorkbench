@@ -82,6 +82,25 @@ members.json保存逐实际位置、PURL、源文件/RECORD/METADATA hash、未�
 
 CLI退出1表示失败，退出2表示有限对应完成；product_sbom_complete、upstream_provenance_verified及source_head_authenticated保持false。本地安装文件与RECORD/冻结代码相等不等于官方wheel/源码归档认证、完整包所有权、运行时可达性或完整依赖关系。未映射stdlib、基础ZIP、CArchive脚本/bootloader、原生DLL及其他产品组件继续后续核对；本命令不修改原始scanner输出、打包内容或check_release，不代替许可/漏洞/签名检查。
 
+## 固定Python归档、项目资产与启动来源
+
+对前一节仍未知的内容，可使用固定CPython NuGet和声明的Git blob清单补充来源。source-tree为已另核远端提交/tree后保存的`commit`、`tree`及普通文件`entries`清单；工具不联网认证Git，不把caller字段当签名或远端证明。须使用实际锁定构建环境：
+
+```powershell
+& $buildPython tools/frozen_python_origins.py --payload dist/study_backend --coverage artifacts/frozen-sbom-01/coverage.json --python-package .local/release-tools/python.3.13.17.zip --source-tree artifacts/verified-source-tree.json --output artifacts/frozen-origins-01
+$originsExit = $LASTEXITCODE
+```
+
+只接受prepare-tools.ps1同一CPython3.13.17 NuGet全档SHA256及相同补丁版本解释器。压缩档限64MiB，NuGet最多20000条/声明及实际读取各256MiB、每成员16MiB、编译源码8MiB；拒绝危险原名、重复大小写、链接/特殊或加密成员、DTD/实体及重复/错误id/version。按Windows唯一大小写无关路径查找并记录实际成员名；只读有界字节、静态比较代码或完整文件hash，不落地解包。NuGet自身含其他原生库，匹配其分发字节不等于这些库的独立身份/许可证/签名都已验证。
+
+命令先在新输出的local-members内重新执行前节完整核验，再补CPython的PYZ/基础ZIP代码、二进制、项目迁移/HTML/入口源码、CArchive中的stdlib和PyInstaller初始化/runtime hooks。后者须与精确构建分发的METADATA/RECORD/hash和完整静态代码对应，不按模块前缀猜版本。项目源和payload分别核声明Git blob及代码或字节；Git清单上限16MiB/20000普通文件，source head/tree仍明确是未认证声明。旧阶段选中但未匹配的源输入也继续守原预算并在增强阶段末尾复核。
+
+RECORD自身按标准可有空的self hash；仅当该精确包的原METADATA/RECORD证明一致、self行hash/size均为空，且随包RECORD整字节等于构建原件时，另记`local_record_metadata_bytes`及`record_self_hash_declared=false`。不改第三方RECORD、不填造自证hash，也不将该例外推广到任意无hash源码。移位DLL按RECORD完整字节追溯原路径，多个分发提供相同字节时保留所有来源，不任选所有者。
+
+namespace条目仅记无代码类型、版本null及已验证子模块的构建分发关联；这不是namespace版本认证。origins.json保存所有新增对应和仍未知内容，python-origins.cdx.json增强既有已证子集并用occurrence关联实际位置。NuGet全档hash可作为其分发档hash，其他包的metadata hash不冒充归档。观察到payload/coverage/锁、源Git清单、NuGet、前阶段输出或任何选中构建/项目输入变化时不生成增强最终报告；前阶段局部产物存在不表示整体通过。
+
+退出1为失败、2为有限来源对应完成。product_sbom_complete、upstream_provenance_verified、source_tree_authenticated仍为false；外层PE bootloader、未闭合CRT/native、生成容器身份、完整依赖边、许可/漏洞/签名及其他产品组件仍待核。原scanner输出、旧报告及产品包保持，不据增强子集批准发行。
+
 ## 源码锁文件漏洞查询
 
 在确认两份锁文件仅包含可公开查询的依赖名后，以既有构建Python执行：
