@@ -638,3 +638,30 @@ jre_dll_scope_probe.py按原两个域各追加固定86DLL，退出0：Java87根/
 提交前IQ artifacts/off02f/check_docs.py退出0：精确6文件范围、其余469个base blob不变、原报告完整前缀、UTF-8/LF/逐文件git diff --check、84本地引用与45调度行唯一性通过；两份依赖锁、产品Office源码和check_release/check_native_dependencies调用方字节与#43相同。即将创建独立草稿PR，最终head/CI及主Agent验收在PR实时说明维护，不为写自身最终SHA反复提交。
 
 实际创建[独立草稿PR #48](https://github.com/surface-user/StudyWorkbench/pull/48)，分支codex/office-jre-dll-domains，base为#43精确c666db9，首实现提交51471f79c275a1ad7e0d560c600ccf995e69d05f/tree589d16089258adea9abd7c48af8b70888b05d271。补本交付链接后核最终head CI，结果在PR实时说明维护，不再为写自身最终SHA改变head；当前REVIEW不因草稿PR存在而销项。六文件范围保持，未提交原始artifacts/组件或改变原产品，未合并/发行。
+
+
+## 2026-11-14：OFF-02g Office Python模板来源与角色证据
+
+主Agent已核OFF-02f/#48最终c1877b719889c28fc96e0504be5bc05ed7a2ffb8、CI43570645325三组45步/984×2、115×2及实际86DLL/78覆盖/145未知与原CRT规则，登记有限任务DONE。本任务从该精确tree094e7fd045526bb6b797e95fdc12e20e95136bab逐475 Git blob复制到独立office-template-evidence；原分支/组件不变。现行规范和工具/调用方已读取，先登记IN_PROGRESS，有限设计由主Agent确认后实施。
+
+本项只新增离线来源/角色证据工具与测试，配套打包指南/task/本报告/精选摘要共6文件；native_dependencies与check_release、产品代码/依赖/打包不改。输入为固定Office-Java组件、固定23,160,540字节的官方CPython3.13.15源码及新输出目录。复用普通文件/重解析拒绝、固定hash及组件清单检查：完整核组件原清单/实际集合和文件hash，再逐两wheel对实际pip415/setuptools252成员验证。原source archive先后hash相等，selected wheel≤8MiB/4000成员、单成员≤4MiB、selected≤1500、manifest≤4MiB/组件≤20000文件、报告≤2MiB，不提取或执行源码。
+
+实施前只读补证在根artifacts/goal-20261114。固定LO source bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1的download.lst/UnpackedTarball_python3.mk指定Python-3.13.15.tar.xz SHA1e66a7945a48390ee4c2a4268a0e4185884059a13c4aab6d148aa208deea4a76及setuptools79.0.1/pip26.2.1两个源wheel；只下载原包并核hash，内存读取wheel，未安装/执行。实际pip415全等同；setuptools252中250全同、jaraco/text/__init__.py精确等于LO单补丁效果、Lorem文本精确为单改名；无未解释实际文件。此为所选包目录的source-distribution对应，不能把其缺metadata猜成完整安装发行身份，其他分发内容与全部Python组件仍非本范围。
+
+14个PE模板还与固定上游Git资产逐blob相同：setuptools v79.0.1→607f6be776db97d83c9cc54e0eaa578567dcc44c，launcher.c blob b87cb32ad65b70ddf53c59317eed2433d9b3bd42；distlib0.4.2→8183ea60e83bf021bf7d6903f4a6b3c8df0905a6，PC/launcher.c blob727f79165c8d328843598cace030e630045be066。对应C源用于解释成品启动器必要条件（distlib的附加archive/shebang，setuptools的同目录-script.py/pyw），不是可重现编译证明。producer从资源读bytes，生成另外命名exe/ZIP或配套脚本；原模板无ZIP/overlay，伴随脚本须另核。
+
+不得据目录名、原样本未运行、源码关联或缺附加数据直接豁免runtime。当前#48产品仍v3，#44受控配置只在独立分支；本工具固定runtime_classification=unclassified、runtime_exclusion_verified=false、product_release_ready=false，145未知保留。后续须在含#44+#48的共同已验head另绑定实际产品入口和运行时分类。无新增模型/依赖/命令执行，审查暂缓、人工取消、未合并或发行。
+
+### OFF-02g 实际验证与交付准备
+
+工作目录office-template-evidence；IQ/IP仍只读复用starlette-fix/.local/starlette-{q,p}-isolated/Scripts/python.exe（3.13.17/3.12.7，pytest9.0.3）。新增27项自写惰性样本，不含可运行启动器或个人原件；producer/package fixture若被执行立即抛错。普通/延迟导入及发行清单115项旧检查全部保留。
+
+- IQ/IP -X utf8 -m pytest backend/tests/test_office_template_evidence.py backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py -q --basetemp=.local/off02g-q06或p06 --junitxml=artifacts/off02g/q06.xml或p06.xml：各退出0，142通过，失败/错误/跳过均0。覆盖固定输入/hash、源metadata、缺producer/模板、精确patch/rename、合法空包文件、重复/规范化NUL/越界/链接ZIP、tar链接/重复/越界/展开预算、已有/组件内输出保护、源/选中成员/伴随脚本在采集时变化，以及生成成品ZIP/trailer/脚本不得混为原模板。重复ZIP的预期构造警告保留。链接边界在本任务全新临时目录按既有本机测试权限核验，不触碰原组件或共享环境。
+- 首轮q01为25通过/1失败：ZipInfo构造器先移除NUL，未生成预期畸形输入；改成在本地/中心文件名原字节注入NUL，拒绝断言不变。q04为141通过/1失败：Python3.13的tar写入器不再接受非零size但无fileobj，Python3.12当时通过；改为只写超预算原header，不分配声称的65MiB内容，两个版本均核由采集器先拒绝。其余中间q02/q03/p03/p04/q05/p05均保留，最终q06/p06为本轮证据。不删除或把旧失败改为成功。
+- IQ -X utf8 tools/office_template_evidence.py --office <根.local/release-tools/libreoffice-java-26.8.1-21.0.13> --python-source <根.local/release-tools/cpython31315-source/Python-3.13.15.tar.xz> --output artifacts/off02g/real02：退出0。固定23,160,540字节源码SHA256 1e66a7945a48390ee4c2a4268a0e4185884059a13c4aab6d148aa208deea4a76、组合清单SHA256 156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9及19743实际文件核验通过；只读tar≤50000成员/单64MiB/总声明展开512MiB、wheel≤8MiB/4000成员/总64MiB/实际单4MiB，重核CRC/实际长度和所有路径。原输出real01退出1，因14个合法空__init__.py被read_file误拒；仅为与固定源和组件hash相符的成员允许空字节，锁/归档仍拒空，并补fixture回归，原失败目录/log保留。
+- real02逐实际pip415文件全等；setuptools252中250全等，唯一patch精确输入636614a9747fa2b5280da6384a43d17ba65985be4750707f021f5108db15ca1a→输出c9e90f78f9ca8155e9fbc24fa46c33ffc0c50553f4f8a96f855233da5eba5991；唯一Lorem改名内容SHA256 37fedcffbf73c4eb9f058f47677cb33203a436ff9390e4d38a8e01c9dad28e0b。没有模糊patch或未解释的实际成员，source distribution版本来自精确源wheel METADATA，未声称完整安装分发。14PE均无ZIP/overlay，6个distlib原模板缺archive trailer，8个setuptools原模板缺同名-script.py(w)；两个producer源码身份均与源wheel相同。
+- distlib C源的APPENDED_ARCHIVE分支先从自身查archive/shebang，再走Python启动；setuptools C源先按自身路径派生-script.py(w)，缺脚本在调用Python前失败。14模板同时逐Git blob核固定上游资产相同，相关C源、LO download/unpack/patch的原bytes也逐Git blob核对。但该关联不构成从C重编译PE的证明，必要成品数据缺失也不构成产品运行时不可达证明；没有执行源码、PE模板、生成启动器、pip安装或Office。
+- Q（根.local/release-venv/Scripts/python.exe）-m ruff check backend tools与Q tools/export_question_schema.py --check均退出0。首次Q路径少算一级目录而命令未启动、一次rg范围倒置而搜索报错，修正路径/表达式后通过，未改环境/断言。产品、依赖、native_dependencies/check_release/check_native_dependencies与#48全部逐blob保持；不重复构建未变业务，本PR当前head仍须执行完整CI。
+- IQ artifacts/off02g/select_evidence.py退出0，筛出[共享摘要](evidence/off02g-python-template-summary.json)，15,623字节/SHA256 243e04df4ae1671f2c570470a8b1562b486fa8fba8e6367e786189c045fb1d69。原完整report 280,945字节/SHA256 b61561d36bac3bb09fbe668987ed1d80661e77b923bef4f9e0d88a6b59310870及667行映射、源C全文、tar/wheel试探和全日志只留忽略的artifacts；精选仅保留支持来源/结构结论的版本/hash/条件、14资产、2producer、JUnit和限制，未提交源码归档或组件。
+
+有限实现/自动化/文档完成，OFF-02g保持REVIEW，待独立草稿PR/当前head CI及主Agent核验。原145未知继续阻断check_release；模板仍unclassified，runtime_exclusion_verified/product_release_ready均false。后续在包含#44+#48共同head再研究受控实际入口，Python/managed/x86各自独立切片，完整Office/SBOM/许可/漏洞/签名发行继续；审查暂缓、人工取消、未合并/发布。
