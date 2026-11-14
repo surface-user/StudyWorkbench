@@ -952,3 +952,7 @@ Q为既有release-venv Python；IQ/IP为starlette-fix/.local/starlette-q-isolate
 79输入/212473260逻辑字节、ZIP读出及Pub实际展开68582154字节；替换本地ICU输入为完整host原档，预算未放宽。最终desktop.json SHA256 a2d3a92da99a0da700a32048468a4b6fb9fbae263e8253503d7b0ea3d7d348e6；CDX 81b340db3240d5e36339284a3672359640d1db29a5a0c16c9fe20c9fdefc00cb；新精选摘要188fc39e73b07cca88dcf952748b4a3500c7a6f77da026b096865220531c4c4c。helper --read-only可核当前原件/摘要且零写入；原#59精选SHA256 243b3401fabbe05099d8040ac2cf8e80ab10f493d44656f2fd059b2e6125ea81及旧输出保持。
 
 有限实现及相关自动化/原件核证就绪，独立PR/当前head CI和主Agent退出核验仍待交付。审查暂缓、人工取消不记通过；不合并或发行。后续按剩余真实缺口继续，不能把归档来源闭合扩写成独立ICU版本/许可、SDK或整个SBOM完成。
+
+Q -X utf8 artifacts/rel01g/check_changes.py退出0：7文件、494未变base blob/501最终文件、105本地引用/57唯一调度行、UTF-8/LF/git diff --no-index --check、旧报告完整前缀及两锁保持通过。IQ verify_real.py --read-only再退出0，全部原件/48官方Schema及精选字节一致且零写入。
+
+独立草稿[PR #62](https://github.com/surface-user/StudyWorkbench/pull/62)已建立，codex/desktop-icu-origin基于#59最终727b038，首次实现158e9e73f0fea4074d9ae4af08033cc447958ddc/tree bf0eb395cc4f01d01b1dcedab59841abdb7ff035。本次文档提交补实际交付链接；最终head/tree和其CI在PR正文登记，避免记录自身hash反复改头。REL-01g保持REVIEW待当前CI及主Agent退出核验，不改旧#59头、不合并或发行。
