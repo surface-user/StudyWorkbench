@@ -906,3 +906,7 @@ real01 desktop.json SHA256 aa9eb107846077ef914eaba26995dba2c0cee085d9d5f7f8696bf
 保留失败：首次新目录下载因缺artifacts父目录退出1，未读写原包，补建本任务父目录后以xb成功下载；只读索引最初把Pub资源都按根路径查找，遇实际lib/assets路径退出1，按真实pubspec/档案成员核两个有依据候选，不模糊扫描任意相同文件；第二探针误要求Loader只能有一个来源，官方档实际两条x64同字节，改为保留两条后matches-probe03退出0。官方Flutter完整SDK release列表URL通过浏览及直接请求均不可取，直接请求404，未据本地SDK填造完整官方SDK认证；只采用已实际取得固定engine档及官方tag revision的有限证据。首轮Ruff报一处测试未使用变量，去掉后全量通过；43项首轮/修正后均通过。宽泛输入清单文本打印曾被工具截断，未将截断文本当读全，必读task分段完整重读；原输出/失败保留。
 
 有限实现、相关自动化、独立真实/Schema与文档就绪，REL-01f保持REVIEW；独立PR/本head CI及主Agent核验后才可登记DONE。后续--analyze-size须独立新编译才能产生新AOT包trace，不套给本次app.so；完整Dart/native源码等价、SDK/内嵌库/许可/签名及最终发行仍待其各自切片，审查暂缓、人工取消，未合并或发行。
+
+Q -X utf8 artifacts/rel01f/check_changes.py退出0：7文件范围、493个未变base blob、500最终文件、104本地文档引用、56唯一调度行、UTF-8/LF/逐文件git diff --no-index --check、旧报告完整前缀及两份锁保持均通过。完整原始输入和辅助发布文件留忽略artifacts。
+
+独立草稿[PR #59](https://github.com/surface-user/StudyWorkbench/pull/59)已建立，codex/desktop-artifact-sbom基于#53最终b09da16，首次实现提交db00f1ee7dd6035001b9cdb49ca19a6c862821d8/treedce369d725b084b9c49a0c0772cd492442e0559c。补入实际交付链接形成后续文档提交；最终head/tree及该head CI登记在PR描述，避免为记录自身hash反复改head。REL-01f仍REVIEW，不合并或发行。
