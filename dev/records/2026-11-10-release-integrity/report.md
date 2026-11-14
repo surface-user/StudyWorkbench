@@ -665,3 +665,5 @@ jre_dll_scope_probe.py按原两个域各追加固定86DLL，退出0：Java87根/
 - IQ artifacts/off02g/select_evidence.py退出0，筛出[共享摘要](evidence/off02g-python-template-summary.json)，15,623字节/SHA256 243e04df4ae1671f2c570470a8b1562b486fa8fba8e6367e786189c045fb1d69。原完整report 280,945字节/SHA256 b61561d36bac3bb09fbe668987ed1d80661e77b923bef4f9e0d88a6b59310870及667行映射、源C全文、tar/wheel试探和全日志只留忽略的artifacts；精选仅保留支持来源/结构结论的版本/hash/条件、14资产、2producer、JUnit和限制，未提交源码归档或组件。
 
 有限实现/自动化/文档完成，OFF-02g保持REVIEW，待独立草稿PR/当前head CI及主Agent核验。原145未知继续阻断check_release；模板仍unclassified，runtime_exclusion_verified/product_release_ready均false。后续在包含#44+#48共同head再研究受控实际入口，Python/managed/x86各自独立切片，完整Office/SBOM/许可/漏洞/签名发行继续；审查暂缓、人工取消、未合并/发布。
+
+IQ artifacts/off02g/check_docs.py退出0：6文件范围、472个未变base blob、旧报告完整前缀、UTF-8/LF/逐文件git diff --check、85本地引用及46唯一调度行均通过。实际创建并附加[独立草稿PR #51](https://github.com/surface-user/StudyWorkbench/pull/51)，分支codex/office-template-evidence，首实现提交6a95b146701f13d1cb7e322b056abddd68d8d572/treefe3e19292117d33ba797887896f725b45de31e87。补入本交付链接后保持6文件，最终head/完整CI及有限核验结论在PR实时描述维护，不为记录自身最终SHA反复改变head；未改#48、原组件或门禁，未合并/发行。
