@@ -636,3 +636,5 @@ jre_dll_scope_probe.py按原两个域各追加固定86DLL，退出0：Java87根/
 实现/相关自动化/文档完成，OFF-02f保持REVIEW；独立草稿PR/当前head CI和主Agent核验后才登记DONE。完整Office剩145候选、未知动态加载/系统叶子及完整SBOM/许可/漏洞/签名发行继续，审查暂缓、人工取消、未合并或发行。
 
 提交前IQ artifacts/off02f/check_docs.py退出0：精确6文件范围、其余469个base blob不变、原报告完整前缀、UTF-8/LF/逐文件git diff --check、84本地引用与45调度行唯一性通过；两份依赖锁、产品Office源码和check_release/check_native_dependencies调用方字节与#43相同。即将创建独立草稿PR，最终head/CI及主Agent验收在PR实时说明维护，不为写自身最终SHA反复提交。
+
+实际创建[独立草稿PR #48](https://github.com/surface-user/StudyWorkbench/pull/48)，分支codex/office-jre-dll-domains，base为#43精确c666db9，首实现提交51471f79c275a1ad7e0d560c600ccf995e69d05f/tree589d16089258adea9abd7c48af8b70888b05d271。补本交付链接后核最终head CI，结果在PR实时说明维护，不再为写自身最终SHA改变head；当前REVIEW不因草稿PR存在而销项。六文件范围保持，未提交原始artifacts/组件或改变原产品，未合并/发行。
