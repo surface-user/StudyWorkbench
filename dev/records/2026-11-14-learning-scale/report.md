@@ -63,3 +63,5 @@ IQ/IP分别为../starlette-fix/.local/starlette-{q,p}-isolated/Scripts/python.ex
 IQ artifacts/m303d/select_evidence.py退出0，[精选摘要](evidence/summary.json)27,389字节/SHA256 ac5a71c2689220bb3d088da8c1f1a8ef000cbbb26af4e67dd4283fe2228a8d48。只筛身份、机器/窗口、每档统计/完整性、p95/内存、JUnit/hash及旧失败说明；完整原始样本、页延迟、服务PID链、stderr、诊断堆栈和自生成库留忽略的artifacts/.local，不提交测试库或整目录原始日志。既有失败数据保持；通过夹具暂存供本轮主Agent核验，之后按dev现行留存规则回收本任务自生成目录，不清理他人或个人数据。
 
 有限实现/相关自动化/文档已完成，M3-03d保持REVIEW等待独立草稿PR/当前head CI及主Agent核验。新CI只验证小型正确性及原Windows/冻结链，其新exe未在本次旧#49性能数字中冒充受测包。M3-03c算法校准、百万规模/冷缓存/并发/学习效果与完整发行继续单列；审查暂缓、人工取消，未合并或发布。
+
+IQ artifacts/m303d/check_docs.py退出0：6文件、485未变base blob、491总文件、UTF-8/LF/逐文件git diff --check及102本地引用通过；全部产品/迁移/依赖锁与#49字节相同。实际创建并附加[独立草稿PR #56](https://github.com/surface-user/StudyWorkbench/pull/56)，分支codex/learning-scale，base为#49精确68eaabd，首提交db16395f6f7fba5661d1ada85cd4e2c0fac30b1c/treea806c0c2c3d4100f5fa4c893b56afd7a78b1910a。补入本交付链接后保持6文件；最终head/当前CI与主Agent核验结论在PR实时描述维护，不为记自身最终SHA反复改head。未改原根/其他分支/既有exe，未合并或发行。
