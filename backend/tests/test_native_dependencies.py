@@ -14,7 +14,8 @@ def native(monkeypatch):
 
 
 def node(path, imports=(), *, machine=0x8664, digest='same'):
-    return dict(path=path, machine=machine, magic=0x20B, sha256=digest, edges=list(imports))
+    return dict(path=path, machine=machine, magic=0x20B, sha256=digest, edges=list(imports),
+                characteristics=0x0002, clr_rva=0)
 
 
 @pytest.mark.parametrize('kind', ['import', 'delay'])
@@ -108,7 +109,9 @@ def test_com_bin_and_delay_scanning_closes_handles_and_preserves_non_pe_data(nat
         payload[name] = path
     def pe(path, fast_load):
         assert fast_load
-        return SimpleNamespace(FILE_HEADER=SimpleNamespace(Machine=0x8664), OPTIONAL_HEADER=SimpleNamespace(Magic=0x20b),
+        return SimpleNamespace(FILE_HEADER=SimpleNamespace(Machine=0x8664, Characteristics=0x0002),
+                               OPTIONAL_HEADER=SimpleNamespace(Magic=0x20b, DATA_DIRECTORY=[
+                                   SimpleNamespace(VirtualAddress=1234 if index == 14 else 0) for index in range(16)]),
                                parse_data_directories=lambda directories: parsed.append((Path(path).name, directories)),
                                DIRECTORY_ENTRY_IMPORT=[SimpleNamespace(dll=b'pyuno.pyd')],
                                DIRECTORY_ENTRY_DELAY_IMPORT=[SimpleNamespace(dll=b'ole32.dll')],
@@ -119,6 +122,7 @@ def test_com_bin_and_delay_scanning_closes_handles_and_preserves_non_pe_data(nat
     assert all(directories == [1, 13] for _, directories in parsed)
     assert closed == [name for name, _ in parsed]
     assert all(n['edges'] == [('pyuno.pyd', 'import'), ('ole32.dll', 'delay')] for n in nodes.values())
+    assert all(n['characteristics'] == 0x0002 and n['clr_rva'] == 1234 for n in nodes.values())
     assert payload['data.bin'].read_bytes() == b'plain data'
 
 
@@ -277,6 +281,7 @@ def test_registered_office_entries_share_the_existing_loading_domain_and_unknown
         native, uno_registry, tmp_path, monkeypatch, damage):
     # This earlier fixture exercises UNO only; the complete fixed Python policy has its own fixture below.
     monkeypatch.setattr(native, 'office_python_libraries', lambda *_: dict(extensions={}))
+    monkeypatch.setattr(native, 'office_program_entries', lambda *_: dict(roots={}))
     office, payload, policy = uno_registry
     program = office + 'program/'
     roots = ['soffice.com', 'soffice.bin', 'officebean.dll', 'javavmlo.dll', 'jvmfwklo.dll',
@@ -346,6 +351,7 @@ def java_registry(native, uno_registry, tmp_path, monkeypatch):
 def test_fixed_java_images_keep_launchers_out_of_the_office_dll_domain(
         native, java_registry, tmp_path, monkeypatch):
     monkeypatch.setattr(native, 'office_python_libraries', lambda *_: dict(extensions={}))
+    monkeypatch.setattr(native, 'office_program_entries', lambda *_: dict(roots={}))
     office, payload, nodes, _, _ = java_registry
     program = office + 'program/'
     for name in ['soffice.com', 'soffice.bin', 'officebean.dll', 'javavmlo.dll', 'jvmfwklo.dll',
@@ -547,6 +553,7 @@ def test_fixed_python_policy_rejects_unproven_inputs(native, python_registry, da
 
 
 def test_python_domain_preserves_other_domains_and_unknown_images(native, python_registry, tmp_path, monkeypatch):
+    monkeypatch.setattr(native, 'office_program_entries', lambda *_: dict(roots={}))
     office, payload, nodes, _ = python_registry
     program = office + 'program/'
     for name in ['soffice.com', 'soffice.bin', 'officebean.dll', 'javavmlo.dll', 'jvmfwklo.dll',
@@ -601,3 +608,108 @@ def test_python_domain_never_borrows_foreign_crt(native, python_registry, tmp_pa
     (tmp_path / 'vcruntime140.dll').write_bytes(b'host CRT cannot rescue Python')
     with pytest.raises(ValueError, match=f'Unresolved {kind}.*system CRT'):
         native.closure(nodes, [library + '/_ssl.pyd'], [library, program], [program], tmp_path)
+
+
+@pytest.fixture
+def program_registry(native, python_registry, tmp_path, monkeypatch):
+    office, payload, nodes, lock = python_registry
+    manifest = json.loads(lock.read_bytes())
+    for name in [*native.OFFICE_PROGRAM_ENTRIES, 'twain32shim.exe']:
+        relative = 'program/' + name
+        data = ('self-authored inactive program main-image fixture: ' + relative).encode()
+        path = tmp_path / relative
+        path.write_bytes(data)
+        payload[office + relative] = path
+        manifest['files'][relative] = hashlib.sha256(data).hexdigest()
+        nodes[office + relative] = node(office + relative, digest=manifest['files'][relative])
+    nodes[office + 'program/twain32shim.exe'].update(machine=0x14c, magic=0x10B)
+    for name in ['officebean.dll', 'javavmlo.dll', 'jvmfwklo.dll', 'jvmaccesslo.dll', 'javaloaderlo.dll',
+                 'juh.dll', 'juhx.dll', 'java_uno.dll', 'plugin.dll', 'unopkgapp.dll']:
+        nodes[office + 'program/' + name] = node(office + 'program/' + name)
+    nodes[office + 'program/unopkg.bin']['edges'] = [('unopkgapp.dll', 'import'), ('vcruntime140.dll', 'delay')]
+    raw = json.dumps(manifest).encode()
+    lock.write_bytes(raw)
+    for constant in ('OFFICE_PYTHON_LOCK_SHA256', 'OFFICE_PROGRAM_LOCK_SHA256'):
+        monkeypatch.setattr(native, constant, hashlib.sha256(raw).hexdigest())
+    return office, payload, nodes, lock
+
+
+@pytest.mark.parametrize('damage', ['missing-lock', 'changed-lock', 'big-lock', 'missing-exe', 'missing-com',
+    'missing-bin', 'extra-exe', 'moved-exe', 'changed-exe', 'architecture', 'header', 'dll-flag',
+    'not-executable', 'managed-clr', 'unknown-flags', 'unknown-clr', 'missing-excluded',
+    'changed-excluded', 'excluded-architecture'])
+def test_program_policy_rejects_unproven_main_images(native, program_registry, damage):
+    office, payload, nodes, lock = program_registry
+    program = office + 'program/'
+    if damage == 'missing-lock':
+        del payload[office + 'runtime-lock.json']
+    elif damage in {'changed-lock', 'big-lock'}:
+        lock.write_bytes(b'changed' if damage == 'changed-lock' else b'x' * (4 * 1024 * 1024 + 1))
+    elif damage.startswith('missing-'):
+        suffix = {'missing-exe': 'soffice.exe', 'missing-com': 'unopkg.com', 'missing-bin': 'unopkg.bin',
+                  'missing-excluded': 'twain32shim.exe'}[damage]
+        del nodes[program + suffix]
+    elif damage == 'extra-exe':
+        nodes[program + 'unproven.exe'] = node(program + 'unproven.exe')
+    elif damage == 'moved-exe':
+        nodes[office + 'java/bin/soffice.exe'] = nodes.pop(program + 'soffice.exe')
+    else:
+        image = nodes[program + ('twain32shim.exe' if 'excluded' in damage else 'soffice.exe')]
+        field, value = {'changed-exe': ('sha256', 'changed'), 'architecture': ('machine', 0x14c),
+            'header': ('magic', 0x10B), 'dll-flag': ('characteristics', 0x2002),
+            'not-executable': ('characteristics', 0), 'managed-clr': ('clr_rva', 4096),
+            'unknown-flags': ('characteristics', None), 'unknown-clr': ('clr_rva', None),
+            'changed-excluded': ('sha256', 'changed'), 'excluded-architecture': ('machine', 0x8664)}[damage]
+        image[field] = value
+    before = {name: path.read_bytes() for name, path in payload.items()}
+    with pytest.raises(ValueError, match='Office program'):
+        native.office_program_entries(payload, nodes, office)
+    assert {name: path.read_bytes() for name, path in payload.items()} == before
+
+
+def test_program_domain_retains_child_template_managed_and_x86_unknowns(native, program_registry, tmp_path, monkeypatch):
+    office, payload, nodes, _ = program_registry
+    program = office + 'program/'
+    unknown = ['python-core-3.13.15/bin/python.exe', 'templates/raw.exe', 'managed.dll']
+    for name in unknown:
+        nodes[program + name] = node(program + name)
+    nodes[program + 'managed.dll']['clr_rva'] = 4096
+    monkeypatch.setattr(native, 'pe_nodes', lambda _: nodes)
+    before = {name: path.read_bytes() for name, path in payload.items()}
+    report = native.inspect_dependencies(payload, tmp_path)
+    domain = report['domains']['office_program']
+    assert len(domain['roots']) == 30 and program + 'unopkgapp.dll' in domain['nodes']
+    assert domain['directories'] == domain['crt_directories'] == [program.rstrip('/')]
+    assert program + 'python.exe' in domain['roots']
+    assert program + 'soffice.com' in domain['roots'] and program + 'unopkg.bin' in domain['roots']
+    assert domain['pinned_inputs']['excluded_images'].keys() == {program + 'twain32shim.exe'}
+    assert {row['path'] for row in report['unproven_runtime_candidates']} == {
+        program + name for name in [*unknown, 'twain32shim.exe']}
+    assert report['pe_coverage'] == 'partial'
+    assert {name: path.read_bytes() for name, path in payload.items()} == before
+
+
+@pytest.mark.parametrize('kind', ['import', 'delay'])
+@pytest.mark.parametrize('foreign', ['java/bin', 'program/python-core-3.13.15/lib'])
+def test_program_domain_cannot_borrow_foreign_dependency(native, program_registry, tmp_path, monkeypatch, kind, foreign):
+    office, payload, nodes, _ = program_registry
+    program = office + 'program/'
+    monkeypatch.setattr(native, 'pe_nodes', lambda _: nodes)
+    domain = native.inspect_dependencies(payload, tmp_path)['domains']['office_program']
+    nodes[program + 'unopkg.bin']['edges'] = [('unopkgapp.dll', kind)]
+    nodes[office + foreign + '/unopkgapp.dll'] = nodes.pop(program + 'unopkgapp.dll')
+    with pytest.raises(ValueError, match=f'Unresolved {kind}.*unopkgapp.dll'):
+        native.closure(nodes, domain['roots'], domain['directories'], domain['crt_directories'], tmp_path)
+
+
+@pytest.mark.parametrize('kind', ['import', 'delay'])
+@pytest.mark.parametrize('foreign', ['java/bin', 'program/python-core-3.13.15/lib'])
+def test_program_private_crt_stays_in_program(native, program_registry, tmp_path, kind, foreign):
+    office, payload, nodes, _ = program_registry
+    policy = native.office_program_entries(payload, nodes, office)
+    program = office + 'program'
+    nodes[program + '/unopkg.bin']['edges'] = [('vcruntime140.dll', kind)]
+    nodes[office + foreign + '/vcruntime140.dll'] = nodes.pop(program + '/vcruntime140.dll')
+    (tmp_path / 'vcruntime140.dll').write_bytes(b'host CRT cannot rescue an Office launcher')
+    with pytest.raises(ValueError, match=f'Unresolved {kind}.*system CRT'):
+        native.closure(nodes, list(policy['roots']), [program], [program], tmp_path)

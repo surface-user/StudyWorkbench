@@ -913,3 +913,27 @@ IQ -X utf8 artifacts/off02i/verify_real.py退出0：先复用component_payload�
 本项实现/相关自动化/文档完成转REVIEW，等待独立草稿PR、当前head CI及主Agent退出核验。未改check_release、产品/依赖/组件或重新执行未变的产品转换；当前head CI另执行完整构建/冻结检查。110未知仍阻断Office整包发行，Python动态执行/隔离、模板运行分类、托管/x86和完整SBOM/许可/漏洞/签名后续单列。审查暂缓、人工取消、未合并或发行。
 
 IQ artifacts/off02i/check_docs.py退出0：6文件范围、493个未变base blob、旧报告完整前缀、UTF-8/LF/逐文件git diff --check、96本地引用及57唯一调度行通过。已创建并附加[独立草稿PR #60](https://github.com/surface-user/StudyWorkbench/pull/60)，基于#55，分支codex/office-python-domain，首实现提交a5e692ef27776315f16861325e294a7a2770abbf/tree78474b2e633c54fc335ee4ff5f55ec974745ffb9。补入本交付链接后仍为同一6文件；最终head/完整CI及有限核验结论维护于PR实时正文，不为追加自身最终SHA反复改变head。未改#55/原组件或check_release，未合并/发行。
+
+## 2026-11-14：OFF-02j 固定program原生启动文件静态域
+
+主Agent已接受OFF-02i/#60最终0fcea29292fbd8791c27795ecfd39b423ef21ecd/tree d0195889110130023ef5bd14580ebb1d21d0ceb1：当前CI43588497819三组成功（1210×2、Flutter203、新冻结44模块/既定链；45步成功，原分支限定公网探针1跳过）。新office-program-launchers副本499文件逐Git blob等于该基线，必读AGENTS/四基础文档与此前已读版本逐blob保持。根旧checkout、#60和原Office/Java组件均不改；只读初查通过后主Agent批准本有限六文件范围，先声明设计和可证范围再采集正式结果。
+
+只读初查核固定组合清单SHA256 156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9、19743实际路径及351个PE前后hash；此阶段未重核其余非PE，正式实物须另完整逐文件。program直属31个PE启动文件中30个AMD64/PE32+、EXECUTABLE_IMAGE且非DLL/无CLR，唯一twain32shim.exe为x86/PE32并保留未知。逐根普通及延迟闭包全部成功；新独立office_program仅[program]搜索、CRT仅[program]，不增加PATH、Java、Python/lib、System64或同包其他目录。30根/88节点/1081边，预计仅新增28个主程序（原soffice.com/bin已覆盖）及unopkgapp.dll，共29，110→81未知；其余旧三域每字段必须保持。probe01退出1为大小写规范化后的PE节点被原路径索引，改为casefold映射后probe02退出0；原失败日志保留，不改共享门禁或原组件。
+
+来源限定LibreOffice bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1共17份launcher/loader/构建源并逐Git blob复核。通用应用launcher.cxx取自身路径拼同目录soffice.exe；soffice/unopkg com/exe经winloader将自身扩展改为.bin，再用CreateProcessW显式文件路径及同目录工作目录启动；unopkg.bin的构建及实际PE普通导入都关联unopkgapp.dll。Windows标准DLL搜索中的应用目录是当前主程序所在目录，故这里只纳program的包内静态候选与原系统叶；父SetDllDirectory、CWD/PATH、SxS/已加载模块/KnownDLL和动态搜索仍未知，不冒充无继承或沙箱。源关联不构成可重现编译证明，其他辅助主程序只是固定PE身份下保守潜在入口，不声称产品实际调用GUI/更新服务/上传工具，不增加业务启动授权。
+
+program/python.exe的固定来源pyuno/Executable_python.mk指向pyuno/zipcore/python.cxx（Git blob a65067bf3509695cec661a932682bf84d1bca34c）。该代理拼python-core-3.13.15/bin/python.exe并配置PATH/PYTHONPATH/PYTHONHOME后CreateProcessW；本项只纳代理本身的原生静态导入，不将该子执行边视为DLL边或用父program域替其闭合。三个Python bin主程序仍未知；14模板、托管/x86/TWAIN及动态模块继续未知。OFF-02i的PyConfig.home未应用疑点和原边界保留，不与此代理的环境设置混为一谈。
+
+六文件实现限共享native_dependencies/原专项、packaging/task、本原报告及新精选JSON。pe_nodes仅补Characteristics与CLR RVA两个内部标量，调用方仅inspect_dependencies和原专项夹具；缺字段用None保留未知，不猜为原生。固定helper验证精确组合锁、全部31启动文件路径/hash，30原生根及单一x86排除项的架构/头和native主程序标记，任何新增、变字节、移动、错架构、DLL/CLR/缺可执行标记或缺元数据都拒绝。独立域沿用已有closure，不改变原Office/Java/Python域字段、私有CRT规则或check_release。正式核完整19743文件、静态图差异、关键文件末hash及元数据反事实；不会执行/安装任何辅助PE或修改原件。
+
+### OFF-02j 实际自动化与原件核证
+
+IQ/IP只读复用starlette-fix/.local/starlette-{q,p}-isolated/Scripts/python.exe（3.13.17/3.12.7、pytest9.0.3）。各执行python -X utf8 -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py backend/tests/test_office_java_bundle.py backend/tests/test_java_runtime_preparation.py -q --basetemp=.local/off02j-{q,p}02 --junitxml=artifacts/off02j/{q,p}02.xml，均退出0、227通过/0失败错误跳过，重复ZIP负例的原UserWarning各1保留；原199项及新增28项。新边界覆盖精确锁预算/31集合与exe/com/bin缺失/移位/hash、架构/PE头/本机主程序标记/CLR及元数据缺失、x86排除项、子bin/模板/托管未知、普通及延迟导入不得借Java/Python运行库或DLL。Q -m ruff check backend tools和Q tools/export_question_schema.py --check均退出0。链接回归只使用任务新隔离目录和已授权本机权限，原共享环境不改。
+
+首轮q01/p01各退出1、223过4败：外域unopkgapp反例在Java固定清单缺失或Python PE全集不符处先被拒绝，尚未到断言期望的program闭包阶段；属于测量阶段不符，非共享查询/加载器故障。修成先用合法夹具经inspect认证并取得真实office_program目录，再在内存图移动依赖，用该域原目录/CRT/根调用closure；原Unresolved import/delay拒绝断言保持，未让外域字节进入固定清单或放宽搜索。首轮失败日志/XML/临时样本及probe01大小写失败全部保留，最终q02/p02为交付证据。
+
+IQ -X utf8 artifacts/off02j/verify_real.py退出0：完整19743实际文件集合和每个锁定hash先核，再解析351 PE；原Office、Java、office_python域逐字段及pinned_java_libraries均等于#60原图。office_program 30根/88节点/1081边，只用program目录和program的5份实际私有CRT；仅新增28主文件及unopkgapp.dll，共29，110→81未知且pe_coverage仍partial。31主文件实际header核native/executable/非DLL/CLR0，x86 TWAIN单列排除；14模板、3个Python bin、python3转发器/托管/x86等仍未知。18项实际PE内存元数据/图反事实全部拒绝，分别注明固定政策或基线认证后图阶段；包含exe/com/bin及排除项缺失、hash/架构/PE头/CLR/DLL标记/缺元数据、额外/移位、两种外域CRT/DLL替代，目录未放宽。56份关键主文件/依赖/CRT/锁/子bin/模板末hash与初值一致，完整路径集及组合锁未变；不是OS实际加载/辅助工具执行实验，未写原件。完整原图998312字节/SHA256 e14dfa5bc7aaa5a2b702697daabd98e803fb09586cb063befc23094529f91530。
+
+IQ artifacts/off02j/select_evidence.py退出0，筛出[共享摘要](evidence/off02j-program-domain-summary.json)30296字节/SHA256 b5d419aee2c9da71c5d8e5d511a6d41a72d5f10f72c0f47cd1ebeb0a55b28175，只保留17源身份、31主文件角色/header/hash、其余25关键hash、有限图数量/29新增/18拒绝及227×2 JUnit身份。上游源码全文、完整图、原始日志/XML和失败样本留ignored artifacts，不复制组件或上游原文进Git。
+
+有限实现、相关自动化和文档完成转REVIEW，独立草稿PR/当前head CI及主Agent退出核验仍须完成；没有本地重复构建未变的产品/Flutter或运行Office/Java/Python辅助程序，CI另做完整产品构建与冻结回归。81未知仍严格阻断check_release，静态覆盖不证明辅助程序可从产品启动、Python子链/动态DLL或完整Office已闭合。完整SBOM/许可/漏洞/签名发行及剩余加载角色另继续；审查暂缓、人工取消、未合并/发行。

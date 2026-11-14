@@ -33,6 +33,44 @@ OFFICE_PYTHON_LOCK_SHA256 = '156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de8
 OFFICE_PYTHON_PYDS = ('_asyncio _bz2 _ctypes _decimal _elementtree _hashlib _lzma _multiprocessing '
                       '_overlapped _queue _socket _sqlite3 _ssl _uuid _zoneinfo pyexpat select unicodedata winsound').split()
 OFFICE_PYTHON_DLLS = ['libcrypto-3.dll', 'libssl-3.dll', 'libffi-8.dll', 'sqlite3.dll']
+OFFICE_PROGRAM_LOCK_SHA256 = '156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9'
+OFFICE_PROGRAM_ENTRIES = ('gengal.exe gpgme-w32spawn.exe mar.exe minidump_upload.exe odbcconfig.exe '
+    'opencltest.exe python.exe quickstart.exe regview.exe sbase.exe scalc.exe sdraw.exe senddoc.exe '
+    'simpress.exe smath.exe soffice.bin soffice.com soffice.exe soffice_safe.exe spsupp_helper.exe '
+    'sweb.exe swriter.exe uno.exe unoinfo.exe unopkg.bin unopkg.com unopkg.exe update_service.exe '
+    'updater.exe xpdfimport.exe').split()
+
+
+def office_program_entries(payload, nodes, office):
+    """Authenticate fixed native main images, including the excluded x86 shim; no launch permission."""
+    lock = payload.get(office + 'runtime-lock.json')
+    if lock is None:
+        raise ValueError('Missing fixed Office program component inventory')
+    with lock.open('rb') as stream:
+        raw = stream.read(4 * 1024 * 1024 + 1)
+    if len(raw) > 4 * 1024 * 1024 or hashlib.sha256(raw).hexdigest() != OFFICE_PROGRAM_LOCK_SHA256:
+        raise ValueError('Office program component inventory changed; renew loading evidence')
+    files = json.loads(raw)['files']
+    roots = {office + 'program/' + name for name in OFFICE_PROGRAM_ENTRIES}
+    excluded = office + 'program/twain32shim.exe'
+    expected = roots | {excluded}
+    actual = {name for name in nodes if str(PurePosixPath(name).parent) == office + 'program'
+              and PurePosixPath(name).suffix in {'.exe', '.com', '.bin'}}
+    if actual != expected:
+        raise ValueError('Office program main-image set changed; renew loading evidence')
+    for name in sorted(expected):
+        image = nodes[name]
+        if image['sha256'] != files.get(name.removeprefix(office)):
+            raise ValueError('Office program image path or bytes changed: ' + image['path'])
+        machine, magic = (0x14c, 0x10B) if name == excluded else (0x8664, 0x20B)
+        if image['machine'] != machine or image['magic'] != magic:
+            raise ValueError('Office program image architecture changed: ' + image['path'])
+        flags = image.get('characteristics')
+        if flags is None or not flags & 0x0002 or flags & 0x2000 or image.get('clr_rva') != 0:
+            raise ValueError('Office program requires fixed native executable headers: ' + image['path'])
+    return dict(component_inventory_sha256=OFFICE_PROGRAM_LOCK_SHA256,
+                roots={name: files[name.removeprefix(office)] for name in sorted(roots)},
+                excluded_images={excluded: files[excluded.removeprefix(office)]})
 
 
 def office_python_libraries(payload, nodes, office):
@@ -207,7 +245,10 @@ def pe_nodes(payload):
                     edges.append((name, kind))
             with path.open('rb') as stream:
                 checksum = hashlib.file_digest(stream, 'sha256').hexdigest()
+            directories = getattr(pe.OPTIONAL_HEADER, 'DATA_DIRECTORY', [])
             nodes[key] = dict(path=relative, machine=pe.FILE_HEADER.Machine, magic=pe.OPTIONAL_HEADER.Magic,
+                              characteristics=getattr(pe.FILE_HEADER, 'Characteristics', None),
+                              clr_rva=directories[14].VirtualAddress if len(directories) > 14 else None,
                               edges=edges, sha256=checksum)
         finally:
             pe.close()
@@ -328,6 +369,9 @@ def inspect_dependencies(payload, system):
         domains['office_python'] = closure(nodes, list(python_libraries['extensions']),
                                            [program + '/python-core-3.13.15/lib', program], [program], system)
         domains['office_python']['pinned_inputs'] = python_libraries
+        program_entries = office_program_entries(payload, nodes, office)
+        domains['office_program'] = closure(nodes, list(program_entries['roots']), [program], [program], system)
+        domains['office_program']['pinned_inputs'] = program_entries
     covered = {name for domain in domains.values() for name in domain['nodes']}
     return dict(scope='documented-entry-and-plugin-domains-v1', pe_images=len(nodes),
                 pe_coverage='partial' if len(covered) < len(nodes) else 'all-images-in-declared-static-domains',

@@ -60,6 +60,10 @@ Office子进程才接收包内JAVA_HOME、UNO_JAVA_JFW_JREHOME文件URI和headle
 
 来源为固定CPython源码归档的Python/dynload_win.c、固定LibreOffice提交的pyuno loader/打包规则及全部13份补丁目标复核；Windows扩展使用[LoadLibraryExW](https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibraryexw)的DEFAULT_DIRS与DLL_LOAD_DIR标志。USER_DIRS、已加载模块、SxS、系统来源和转发仍未知，静态图不认证动态隔离或实际执行。固定pyuno源码给PyConfig.home赋值后调用Py_Initialize，并未将该config传给Py_InitializeFromConfig；保留此来源疑点，不据INI或清理环境宣称Python home已应用，不在本任务修改上游或产品。精确来源/hash及边界见发行任务原报告。
 
+program直属的固定30个AMD64原生EXE/COM/BIN另作office_program保守静态入口。精确组合锁/31个启动文件全集与hash、架构/PE头、EXECUTABLE_IMAGE/非DLL及无CLR描述符均校验；唯一x86 TWAIN同时认证身份但仍排除/未知。该域只搜索program，私有CRT也只在program，不借Java或Python目录；原Office、Java、Python域保持。Windows的应用目录规则及固定LO launcher/loader源将这些文件视为潜在独立主程序，绝不表示产品执行过GUI、更新服务、上传或其他辅助工具，也不新增用户可启动能力。
+
+固定LO通用launcher显式启动同目录soffice.exe，soffice/unopkg包装器选择同目录.bin；program/python.exe则显式启动python-core/bin/python.exe并设置其环境。这里只核各主文件的普通/延迟原生导入，Python代理的三个bin子程序仍未知，不将CreateProcess边当DLL依赖或借父域自动闭合。父进程SetDllDirectory、环境/CWD、SxS、已加载模块、KnownDLL、动态模块及系统来源继续保留边界；模板/托管/x86/子执行链未知仍阻断check_release，未证明完整Office运行时闭合。
+
 ## Office Python模板来源证据
 
 使用已有构建Python环境离线运行；输入必须是固定Office-Java组合及已下载的[CPython 3.13.15官方源码归档](https://www.python.org/ftp/python/3.13.15/Python-3.13.15.tar.xz)，命令不会下载、安装或执行归档内容：

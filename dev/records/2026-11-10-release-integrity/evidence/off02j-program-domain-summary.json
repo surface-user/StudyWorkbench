@@ -1,0 +1,654 @@
+{
+  "scope": "Fixed program native potential main-image static closure; no component execution or launch authorization",
+  "base_head": "0fcea29292fbd8791c27795ecfd39b423ef21ecd",
+  "base_tree": "d0195889110130023ef5bd14580ebb1d21d0ceb1",
+  "tool_sha256": {
+    "tools/native_dependencies.py": "7f5fd7ecdc6df62621057f3d982523ff9a1ea9c9f139560253f7f5e059c49c4c",
+    "tools/check_native_dependencies.py": "e24288dc94c77d067f3405ab81fde53f88725ee5b6bbfadbb2c26e85e0650fa7",
+    "tools/check_release.py": "db8b13d72cd6b78a41476f922b0c7c048c4811836131a72a8b731ef20d759a84"
+  },
+  "component_version": "26.8.1",
+  "component_inventory_sha256": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+  "input_files": 19743,
+  "pe_images": 351,
+  "previous_unknown": 110,
+  "added": [
+    "converters/libreoffice/program/gengal.exe",
+    "converters/libreoffice/program/gpgme-w32spawn.exe",
+    "converters/libreoffice/program/mar.exe",
+    "converters/libreoffice/program/minidump_upload.exe",
+    "converters/libreoffice/program/odbcconfig.exe",
+    "converters/libreoffice/program/opencltest.exe",
+    "converters/libreoffice/program/python.exe",
+    "converters/libreoffice/program/quickstart.exe",
+    "converters/libreoffice/program/regview.exe",
+    "converters/libreoffice/program/sbase.exe",
+    "converters/libreoffice/program/scalc.exe",
+    "converters/libreoffice/program/sdraw.exe",
+    "converters/libreoffice/program/senddoc.exe",
+    "converters/libreoffice/program/simpress.exe",
+    "converters/libreoffice/program/smath.exe",
+    "converters/libreoffice/program/soffice.exe",
+    "converters/libreoffice/program/soffice_safe.exe",
+    "converters/libreoffice/program/spsupp_helper.exe",
+    "converters/libreoffice/program/sweb.exe",
+    "converters/libreoffice/program/swriter.exe",
+    "converters/libreoffice/program/uno.exe",
+    "converters/libreoffice/program/unoinfo.exe",
+    "converters/libreoffice/program/unopkg.bin",
+    "converters/libreoffice/program/unopkg.com",
+    "converters/libreoffice/program/unopkg.exe",
+    "converters/libreoffice/program/unopkgapp.dll",
+    "converters/libreoffice/program/update_service.exe",
+    "converters/libreoffice/program/updater.exe",
+    "converters/libreoffice/program/xpdfimport.exe"
+  ],
+  "remaining_unknown": 81,
+  "raw_report": {
+    "path": "artifacts/off02j/real01.json",
+    "bytes": 998312,
+    "sha256": "e14dfa5bc7aaa5a2b702697daabd98e803fb09586cb063befc23094529f91530"
+  },
+  "verification_sha256": "886a0fb19a05e29ec1d0dc9f944d88bbd347e5467c6610879ab4b7c327200252",
+  "old_report_sha256": "c4361a444c2723e084603ff13de8323772fc8d0bb25d23e3c69285c4206b0c61",
+  "libreoffice_commit": "bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1",
+  "sources": [
+    {
+      "path": "desktop/win32/source/loader.cxx",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/desktop/win32/source/loader.cxx",
+      "git_blob": "4246f3f7b7c21b7870f44b3a5b522411240ddc9d",
+      "bytes": 15594,
+      "sha256": "fc594ca303f10f50f384ac3b5038aead5078e4950f862e8a52a5dcca4314a10a"
+    },
+    {
+      "path": "desktop/Executable_soffice_com.mk",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/desktop/Executable_soffice_com.mk",
+      "git_blob": "bc14606344214674402760a807927f592ff11b1a",
+      "bytes": 922,
+      "sha256": "5bffae698d74553c91755a37bc6a8485e069bd374ea2eef3a821366453657b03"
+    },
+    {
+      "path": "desktop/win32/source/officeloader/unopkg_com.cxx",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/desktop/win32/source/officeloader/unopkg_com.cxx",
+      "git_blob": "a93ac60365e65755d6ce9345718a2dbe4f249873",
+      "bytes": 566,
+      "sha256": "786013fea22c7b1061793962f906d16786060a876cdb792dd331635e07886c5b"
+    },
+    {
+      "path": "desktop/win32/source/officeloader/unopkg_exe.cxx",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/desktop/win32/source/officeloader/unopkg_exe.cxx",
+      "git_blob": "40b1afa09280ab672c17ea54996336ee94f729e8",
+      "bytes": 595,
+      "sha256": "927417bbaf101eb17ea691435c035ebf0297f54dd0ad5d43f5d0c537e44edc1e"
+    },
+    {
+      "path": "desktop/win32/source/applauncher/launcher.cxx",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/desktop/win32/source/applauncher/launcher.cxx",
+      "git_blob": "ab5725214ef5966acecd2a7d5374d88c5c2a1498",
+      "bytes": 3028,
+      "sha256": "baececba8d1475d404974a26f34a291e7f0ff3a50fc2f3970dbd37ea592bbd96"
+    },
+    {
+      "path": "desktop/win32/source/applauncher/swriter.cxx",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/desktop/win32/source/applauncher/swriter.cxx",
+      "git_blob": "fc470d3ac102a1175a35b96c3582a88237e2df10",
+      "bytes": 1018,
+      "sha256": "04714a5dfc8a4a8f28f508be98b865fc08e38f78547f8112533a17cf7178904f"
+    },
+    {
+      "path": "desktop/Executable_unopkg.mk",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/desktop/Executable_unopkg.mk",
+      "git_blob": "28a753a570f5594f4c15e6be1e15b45540b88ff5",
+      "bytes": 803,
+      "sha256": "35860398858396c93e01c90df2e5ef3dbda6cdaef33217909bf68dfb825c1a6d"
+    },
+    {
+      "path": "pyuno/Executable_python.mk",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/pyuno/Executable_python.mk",
+      "git_blob": "192d54cf9ea84d5bceb192c64228afe2e6092f17",
+      "bytes": 626,
+      "sha256": "77ae745048a1767da1ab343c2525645b286981a3e41cc0322cc22e01e4d8a628"
+    },
+    {
+      "path": "pyuno/zipcore/python.cxx",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/pyuno/zipcore/python.cxx",
+      "git_blob": "a65067bf3509695cec661a932682bf84d1bca34c",
+      "bytes": 6792,
+      "sha256": "94277db75a1af510e0b501f582154aeb90a281c360bd9c37ecc90b5ec50e5df4"
+    },
+    {
+      "path": "desktop/Executable_soffice_exe.mk",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/desktop/Executable_soffice_exe.mk",
+      "git_blob": "2803627bcb5f5840077e9e715bed362a9cd3df5d",
+      "bytes": 923,
+      "sha256": "f91fc20e993e2fa7c9375379dd4a14583ee0befc11880480331d22dd49576f94"
+    },
+    {
+      "path": "desktop/Executable_soffice_bin.mk",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/desktop/Executable_soffice_bin.mk",
+      "git_blob": "5987a9a4d456a7a8a25d5b5de7f954032138e2a7",
+      "bytes": 3659,
+      "sha256": "39338791b4682995662aae61c37e7d4d55f9c2fc7c590556f2a5f9701fc9d0fc"
+    },
+    {
+      "path": "desktop/Executable_unopkg_com.mk",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/desktop/Executable_unopkg_com.mk",
+      "git_blob": "022479f05bbc8315deeb0719b58b08c8eeeba761",
+      "bytes": 826,
+      "sha256": "efade874a8ed9432af75f56d445556b21c77b7a4bde11a4736e33a1adc134a11"
+    },
+    {
+      "path": "desktop/Executable_unopkg_bin.mk",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/desktop/Executable_unopkg_bin.mk",
+      "git_blob": "f66d5ec25e0f0c8680c03de6e59a1535480e7d8f",
+      "bytes": 854,
+      "sha256": "919e287ce4cd7b3de3dca76b409364b7a4c7d222d5b0a8707944ddaf3b38c99d"
+    },
+    {
+      "path": "desktop/Executable_swriter.mk",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/desktop/Executable_swriter.mk",
+      "git_blob": "5ced1b911e0706a175d1f52ab2739bca79170b2a",
+      "bytes": 888,
+      "sha256": "6a1f91eadf92e165db96529c29fb66a8203cdfe3bcbfca888c6d7a808e7f0182"
+    },
+    {
+      "path": "desktop/StaticLibrary_winloader.mk",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/desktop/StaticLibrary_winloader.mk",
+      "git_blob": "abee2aa3eef9db995949b3b84ecd018651a301da",
+      "bytes": 590,
+      "sha256": "19eb097404346d313048ea301f82e5f9aed949167595e13de787d9733fe2b250"
+    },
+    {
+      "path": "desktop/win32/source/officeloader/soffice_com.cxx",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/desktop/win32/source/officeloader/soffice_com.cxx",
+      "git_blob": "5c6974e66a15ca4f9159ae10653967644d5795b8",
+      "bytes": 568,
+      "sha256": "3fdd3ed6e810b22081d6ebbf57ff37675d59b44df846ead3a5f837a16b62ce6d"
+    },
+    {
+      "path": "desktop/win32/source/officeloader/soffice_exe.cxx",
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/desktop/win32/source/officeloader/soffice_exe.cxx",
+      "git_blob": "03ff0a546b87ad8b79c92f6d828db30a8c60cbd8",
+      "bytes": 597,
+      "sha256": "33cd7c06628feddc3df00f3a626267be702a854612653999a68aa14cd47d3f22"
+    }
+  ],
+  "windows_sources": [
+    "https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order",
+    "https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw"
+  ],
+  "program_images": [
+    {
+      "path": "converters/libreoffice/program/gengal.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "1856737bd347e56ffd2f4e0b76c19db412432e45af82d1f935dde5354423f71c",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/gpgme-w32spawn.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "cdacdc6bc4a3b6d7d883ed906404261c64874c8a24da968831fb1de047f124f4",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/mar.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "43071f9d832a6194418c08481b574dc8e94ee77e51117d60587158be48729a41",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/minidump_upload.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "16c8ad8ac2a2ee91348aae3cb148fcd3f7bc3e6966f0d0572fa1badac7c33010",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/odbcconfig.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "b05f6482e89f4e7d7678d3ede7fce616b2eb2d79be2dfa51734d712ee6588e63",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/opencltest.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "e278350101ece900bc79d66fe78546e0400b52aa16a12796e19860a2d166c795",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/python.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "b5689b53440c1c3c491a3d967a3a1f70b3694dcdf3623b5d0fb30e728dc35932",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/quickstart.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "b1750fa60430787dc05a0884e885697627164fc19e6620144dba2598ce798812",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/regview.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "8484463821a678e26739ad0355b9c20bcea49755fbc54751a8eef7e8f38ae12e",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/sbase.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "af6026c8279e46ea364d5c2756937840ce56865d88ee478560a5235b978e228c",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/scalc.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "634fafb88e6c1034f1d07c261a58b32ee9581364375ebbfaa7ee3eceaa3e3570",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/sdraw.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "2cd9e321762bc60bc5e674f3cd7639477b1ba2c5a5e7cd1015eaf27b1e659003",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/senddoc.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "ef989e076d23401744d1642a81726bb0e7ad0ac904a48cf66c4770421b045635",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/simpress.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "2e4c107bc8b9efc1cb4f88129c2c9f9c21a848379fa029e6698dd7d54416471c",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/smath.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "c10a69e929e4abcf4c125a4f342c1709be42919ba29488cb5e88e937c0159fd3",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/soffice.bin",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "cb08cffda137256a95e3802c13476dd96f0f6310cb6f3e186621d8f73d7c2fa1",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/soffice.com",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "df5ddd2d93b29160e2ef6eee089d996db4312541d835f9b1a85d022855fb166c",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/soffice.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "3aeb1080d40bc82596f36ea4dd75019ab6aadad676e73d348c355396a464537a",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/soffice_safe.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "0df77a2113b48f8aafc26dba8f8757f3276df6bc3375d565617e455d2ff28fc4",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/spsupp_helper.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "c7eed9dcffbbe9e86c1350588c8ee9ba4df93250b78d1eacf98b111a988db585",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/sweb.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "e95035e813a230eae80f86f7eb690bd10b05ff8cc81012bd470cd8b19fc6be15",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/swriter.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "58394591ced4967f68685c2aebbafe3c67f3acd06f42ad2ed81bbee3ec166cba",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/twain32shim.exe",
+      "machine": 332,
+      "magic": 267,
+      "characteristics": 258,
+      "clr_rva": 0,
+      "sha256": "e8c0e07120c789b8c59e6723a9b11d638982805549d46247566847dd7b51a06e",
+      "role": "excluded-unclassified-x86"
+    },
+    {
+      "path": "converters/libreoffice/program/uno.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "761affc7bcef83e2f7788ffd01620da43f00f5d61221132aaa5578de8aed3994",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/unoinfo.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "3558df7b628b3b57c84f1a206f9a4db1a43bb5a60e23c01dbd8186dd26a2c5b2",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/unopkg.bin",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "63eb99f0572ddf0c60c653ee6548578dd6255ee53e9a5ed580b7b576e1b61709",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/unopkg.com",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "15b8c7470b032ad7f6b089d48b611a5695016363d86d7bee33f47fb156c6a3ce",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/unopkg.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "813f4f12a1621b8652c3e41a6543bb57583ffe1c27086a10f53f42c33f955ff9",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/update_service.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "9c16a3bba4e0fc1aea991efce8ddfe8684a3d39e87edb82f5df0eecc7d4f809d",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/updater.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "cf516c833b29c83422f2bf2a40abcacd61ad53e40844cfa2ff48f2f42766be9f",
+      "role": "potential-native-main-static-root"
+    },
+    {
+      "path": "converters/libreoffice/program/xpdfimport.exe",
+      "machine": 34404,
+      "magic": 523,
+      "characteristics": 34,
+      "clr_rva": 0,
+      "sha256": "054d3443a3f23c39deeb7a698f01debba0896127a719a56835326dc65fbdff48",
+      "role": "potential-native-main-static-root"
+    }
+  ],
+  "root_count": 30,
+  "domain_node_count": 88,
+  "domain_edge_count": 1081,
+  "directories": [
+    "converters/libreoffice/program"
+  ],
+  "crt_directories": [
+    "converters/libreoffice/program"
+  ],
+  "original_office_java_python_domains_equal": true,
+  "selected_input_count": 56,
+  "other_selected_sha256": {
+    "converters/libreoffice/program/python-core-3.13.15/bin/python.exe": "c8443dd73561ef6c6badee158c5b3725d99c8680e966c486dce75c2cef7287f5",
+    "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/gui-32.exe": "85dae1e95d77845f2cb59bcac3d4afe74bbe4c91a9bcc5bf4a71cd43104dbe7c",
+    "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/cli-arm64.exe": "b9a7d08da880dfac8bcf548eba4b06fb59b6f09b17d33148a0f6618328926c61",
+    "converters/libreoffice/program/msvcp140.dll": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9",
+    "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/t64.exe": "81a618f21cb87db9076134e70388b6e9cb7c2106739011b6a51772d22cae06b7",
+    "converters/libreoffice/program/vcruntime140_1.dll": "1f2d41c4aa5db0bc33ebf7b66d72943a817d7ce6cbe880502a9403823633093f",
+    "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/w32.exe": "47872cc77f8e18cf642f868f23340a468e537e64521d9a3a416c8b84384d064b",
+    "converters/libreoffice/java/bin/vcruntime140.dll": "02c6aa0e6e624411a9f19b0360a7865ab15908e26024510e5c38a9c08362c35a",
+    "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/cli.exe": "32acc1bc543116cbe2cff10cb867772df2f254ff2634c870aef0b46c4b696fdb",
+    "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/gui.exe": "85dae1e95d77845f2cb59bcac3d4afe74bbe4c91a9bcc5bf4a71cd43104dbe7c",
+    "converters/libreoffice/program/python-core-3.13.15/bin/pythonw.exe": "5e4fc492b974eeb9364cbb05d1528beb6f0a228de0f8e4a1bddc1f632d3c77ad",
+    "converters/libreoffice/runtime-lock.json": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+    "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/gui-arm64.exe": "e694f4743405c8b5926ff457db6fe7f1a12dec7c16a9c3864784d3f4e07ae097",
+    "converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe": "d74e6696ab20f2934a02017e8571891c5a5234daaa9f846f41101d7dfda331e3",
+    "converters/libreoffice/program/unopkgapp.dll": "1af0be9c3356fd17b8de93d793750cc7189f7d1bf4c723f10ba2a2110803f265",
+    "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/w64.exe": "7a319ffaba23a017d7b1e18ba726ba6c54c53d6446db55f92af53c279894f8ad",
+    "converters/libreoffice/program/vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+    "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/w64-arm.exe": "c5dc9884a8f458371550e09bd396e5418bf375820a31b9899f6499bf391c7b2e",
+    "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/gui-64.exe": "3471b6140eadc6412277dbbefe3fef8c345a0f1a59776086b80a3618c3a83e3b",
+    "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/t64-arm.exe": "ebc4c06b7d95e74e315419ee7e88e1d0f71e9e9477538c00a93a9ff8c66a6cfc",
+    "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/cli-32.exe": "32acc1bc543116cbe2cff10cb867772df2f254ff2634c870aef0b46c4b696fdb",
+    "converters/libreoffice/program/msvcp140_1.dll": "bfad5aef4c63a669e3c140655cdfdf395b6c979b400a447bd5dcb65ed8826c3d",
+    "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/t32.exe": "6b4195e640a85ac32eb6f9628822a622057df1e459df7c17a12f97aeabc9415b",
+    "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/cli-64.exe": "bbb3de5707629e6a60a0c238cd477b28f07f0066982fda953fa6fcec39073a4a",
+    "converters/libreoffice/program/msvcp140_2.dll": "3ea06f0ee098b4823cb79599df3780e7f23cce52c19aac31d2a0d47efe33a5e9"
+  },
+  "negative_counterfactuals": [
+    {
+      "case": "missing-exe",
+      "rejected": true,
+      "reason": "Office program main-image set changed; renew loading evidence",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "missing-com",
+      "rejected": true,
+      "reason": "Office program main-image set changed; renew loading evidence",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "missing-bin",
+      "rejected": true,
+      "reason": "Office program main-image set changed; renew loading evidence",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "missing-excluded-x86",
+      "rejected": true,
+      "reason": "Office program main-image set changed; renew loading evidence",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "changed-exe",
+      "rejected": true,
+      "reason": "Office program image path or bytes changed: converters/libreoffice/program/soffice.exe",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "x86-root",
+      "rejected": true,
+      "reason": "Office program image architecture changed: converters/libreoffice/program/soffice.exe",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "PE32-root",
+      "rejected": true,
+      "reason": "Office program image architecture changed: converters/libreoffice/program/soffice.exe",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "managed-CLR-root",
+      "rejected": true,
+      "reason": "Office program requires fixed native executable headers: converters/libreoffice/program/soffice.exe",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "DLL-flag-root",
+      "rejected": true,
+      "reason": "Office program requires fixed native executable headers: converters/libreoffice/program/soffice.exe",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "not-executable-root",
+      "rejected": true,
+      "reason": "Office program requires fixed native executable headers: converters/libreoffice/program/soffice.exe",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "unknown-headers-root",
+      "rejected": true,
+      "reason": "Office program requires fixed native executable headers: converters/libreoffice/program/soffice.exe",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "extra-program-main-image",
+      "rejected": true,
+      "reason": "Office program main-image set changed; renew loading evidence",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "program-root-moved-to-java",
+      "rejected": true,
+      "reason": "Office program main-image set changed; renew loading evidence",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "excluded-shim-architecture-changed",
+      "rejected": true,
+      "reason": "Office program image architecture changed: converters/libreoffice/program/twain32shim.exe",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "private-crt-missing-java-still-present",
+      "rejected": true,
+      "reason": "Unresolved import: converters/libreoffice/program/xpdfimport.exe -> vcruntime140.dll; loading directories=['converters/libreoffice/program']; elsewhere=['converters/libreoffice/System/vcruntime140.dll', 'converters/libreoffice/System64/vcruntime140.dll', 'converters/libreoffice/java/bin/vcruntime140.dll']; system CRT cannot satisfy private dependencies",
+      "phase": "graph after baseline authentication"
+    },
+    {
+      "case": "python-extension-local-crt-cannot-substitute",
+      "rejected": true,
+      "reason": "Unresolved import: converters/libreoffice/program/xpdfimport.exe -> vcruntime140.dll; loading directories=['converters/libreoffice/program']; elsewhere=['converters/libreoffice/System/vcruntime140.dll', 'converters/libreoffice/System64/vcruntime140.dll', 'converters/libreoffice/java/bin/vcruntime140.dll', 'converters/libreoffice/program/vcruntime140.dll']; system CRT cannot satisfy private dependencies",
+      "phase": "graph after baseline authentication"
+    },
+    {
+      "case": "unopkgapp-outside-program-java-bin",
+      "rejected": true,
+      "reason": "Unresolved import: converters/libreoffice/program/unopkg.bin -> unopkgapp.dll; loading directories=['converters/libreoffice/program']; elsewhere=['converters/libreoffice/program/unopkgapp.dll']; system CRT cannot satisfy private dependencies",
+      "phase": "graph after baseline authentication"
+    },
+    {
+      "case": "unopkgapp-outside-program-program-python-core-3.13.15-lib",
+      "rejected": true,
+      "reason": "Unresolved import: converters/libreoffice/program/unopkg.bin -> unopkgapp.dll; loading directories=['converters/libreoffice/program']; elsewhere=['converters/libreoffice/program/unopkgapp.dll']; system CRT cannot satisfy private dependencies",
+      "phase": "graph after baseline authentication"
+    }
+  ],
+  "tests": [
+    {
+      "run": "q02",
+      "python": "3.13.17",
+      "exit_code": 0,
+      "tests": 227,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "sha256": "6aed0e264c39e7a43b8413707a2c6ac6ce57a486ceb41461889e093470dc9c44",
+      "command": "python -X utf8 -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py backend/tests/test_office_java_bundle.py backend/tests/test_java_runtime_preparation.py -q --basetemp=.local/off02j-q02 --junitxml=artifacts/off02j/q02.xml"
+    },
+    {
+      "run": "p02",
+      "python": "3.12.7",
+      "exit_code": 0,
+      "tests": 227,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "sha256": "1966b7f9399a0a68b89ea12da10e0e79baace5cca887d3430026b7787a61b6df",
+      "command": "python -X utf8 -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py backend/tests/test_office_java_bundle.py backend/tests/test_java_runtime_preparation.py -q --basetemp=.local/off02j-p02 --junitxml=artifacts/off02j/p02.xml"
+    }
+  ],
+  "preservation": [
+    "probe01 exit1: case-sensitive lookup into casefolded PE map; probe02 corrects diagnostic index only and exits0.",
+    "q01/p01 each 223 passed/4 failed: malformed foreign-domain fixture rejected at earlier Java/Python policy, not expected closure phase.",
+    "q02/p02 first authenticate valid inspect output, then test graph counterfactual with its actual program directories; original unresolved assertions retained."
+  ],
+  "boundaries": [
+    "Fixed 30 native roots are potential main images, not product execution evidence or permission to start auxiliary/update/upload/GUI tools.",
+    "Application and private CRT directories only program; no Java/Python/System64/CWD/PATH directory expansion.",
+    "LO launcher explicitly targets same-directory soffice.exe; loader replaces own exe/com suffix with bin and uses explicit CreateProcessW target.",
+    "program/python.exe explicitly starts core/bin/python.exe and prepares environment; proxy static imports do not close its child process chain.",
+    "Three Python bin images, 14 templates, managed/x86/TWAIN, remaining DLLs and Python3 export forwarder stay unclassified.",
+    "Parent SetDllDirectory, loaded modules/KnownDLL, SxS, dynamic loading, environment and system source/minimum Windows remain unproven.",
+    "Fixed source association is not reproducible binary compilation.",
+    "check_release unchanged; 81 unknown images continue to block release.",
+    "No original component/source executed, installed, deleted or modified; no product/dependency/UI changes, manual/CUA, merge or release."
+  ],
+  "source_component_executed": false,
+  "launch_authorization_added": false,
+  "runtime_isolation_verified": false,
+  "product_release_ready": false,
+  "selection_reason": "Only fixed source identities, 31 authenticated image roles/headers, remaining selected hashes, finite result/rejections and JUnit; upstream text/full graphs/component/source archive and raw failed runs stay ignored artifacts"
+}
