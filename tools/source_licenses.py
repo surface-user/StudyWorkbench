@@ -17,9 +17,9 @@ from source_sbom import LOCKS, UniqueLoader, lock_inventory, no_links, read_lock
 
 PREFIXES = ('license', 'licence', 'copying', 'notice', 'copyright', 'authors')
 LIMITATIONS = [
-    'Local installed metadata/cache evidence only; package archives and Git contents are not authenticated.',
+    'Local installed/cache evidence plus pinned supplements; this command does not authenticate archives or Git.',
     'Declared licenses and source URLs are not reviewed distribution obligations or legal conclusions.',
-    'License discovery uses named files/directories; unrecognized notices and embedded source headers may be absent.',
+    'Named-file discovery and pinned embedded scopes can still omit other source notices or headers.',
     'SDK, frozen/native/Office/Java/installer payload and runtime membership are not covered.',
 ]
 
@@ -63,7 +63,40 @@ def keep_text(output, name, data):
             'bytes': len(data), 'text_path': 'texts/' + digest}
 
 
-def python_evidence(identity, output):
+def latex2mathml_supplement(source, package_root, output):
+    folder = source / 'packaging/licenses/latex2mathml-3.81.1'
+    raw = read_file(folder / 'provenance.json')
+    profile = json.loads(raw)
+    if profile['purl'] != 'pkg:pypi/latex2mathml@3.81.1' or len(profile['package_files']) != 9:
+        raise ValueError('Unexpected supplemental package identity')
+    for name, expected in profile['package_files'].items():
+        if not name.startswith('latex2mathml/'):
+            raise ValueError('Supplement references another package')
+        if sha256(read_file(relative_file(package_root, name))) != expected:
+            raise ValueError('Installed package differs from pinned supplemental source')
+    texts = []
+    for item in profile['license_texts']:
+        data = read_file(relative_file(folder, item['path']))
+        if sha256(data) != item['sha256'] or len(data) != item['bytes']:
+            raise ValueError('Supplemental license text changed')
+        texts.append({**keep_text(output, item['path'], data),
+                      'evidence_kind': 'repository_supplement',
+                      'license': item['license'], 'applies_to': item['applies_to'],
+                      'source_url': item['source_url']})
+    if raw != read_file(folder / 'provenance.json') or any(
+            sha256(read_file(relative_file(package_root, name))) != expected
+            for name, expected in profile['package_files'].items()):
+        raise ValueError('Supplemental inputs changed during collection')
+    return {'profile_sha256': sha256(raw), 'upstream_commit': profile['upstream_commit'],
+            'upstream_tag': profile['upstream_tag'], 'upstream_tag_object': profile['upstream_tag_object'],
+            'upstream_license_blob': profile['upstream_license_blob'],
+            'archive_sha256': profile['archive_sha256'], 'package_files': profile['package_files'],
+            'embedded_notices': profile['embedded_notices'],
+            'pinned_package_files_matched': 9, 'files': texts, 'issues': profile['issues'],
+            'distribution_obligations_reviewed': False, 'notes': profile['notes']}
+
+
+def python_evidence(identity, output, source=None):
     matches = [d for d in importlib.metadata.distributions()
                if canonicalize_name(d.metadata.get('Name', '')) == identity['name']
                and d.version == identity['version']]
@@ -104,11 +137,17 @@ def python_evidence(identity, output):
         if not verified:
             issues.append('license_record_hash_unverified:' + str(file))
         found.append({**keep_text(output, file, data), 'installed_record_sha256_matches': verified})
-    return {'metadata_sha256': sha256(meta_data), 'record_sha256': sha256(record),
+    result = {'metadata_sha256': sha256(meta_data), 'record_sha256': sha256(record),
             'declared_license': dist.metadata.get('License-Expression') or dist.metadata.get('License'),
             'declared_license_files': declared,
             'package_source': f"https://pypi.org/project/{identity['name']}/{identity['version']}/",
             'files': found, 'issues': issues or ([] if found else ['license_text_missing'])}
+    if source is not None and (identity['name'], identity['version']) == ('latex2mathml', '3.81.1'):
+        supplement = latex2mathml_supplement(source, root, output)
+        result['files'].extend(supplement.pop('files'))
+        result['issues'] = [x for x in result['issues'] if x != 'license_text_missing'] + supplement['issues']
+        result['supplement'] = supplement
+    return result
 
 
 def dart_evidence(identity, entry, package, config, output):
@@ -163,7 +202,7 @@ def collect(source, config, output):
     (output / 'texts').mkdir()
     result = {}
     for purl, identity in expected.items():
-        evidence = (python_evidence(identity, output) if purl.startswith('pkg:pypi/') else
+        evidence = (python_evidence(identity, output, source) if purl.startswith('pkg:pypi/') else
                     dart_evidence(identity, pub[identity['name']], by_name.get(identity['name']), config, output))
         result[purl] = {**identity, **evidence}
     if raw != {name: read_lock(source / name) for name in LOCKS} or read_file(config) != config_raw:

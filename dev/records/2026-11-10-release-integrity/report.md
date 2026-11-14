@@ -606,3 +606,127 @@ REL-03b已由主Agent核验#35最终head CI三组成功，登记DONE。REL-03c�
 最终源码（含报告schema_version/采集器hash字段）再次运行同57项，Q/P的licenses-{q,p}-final及q-final/p-final日志均退出0；Q -m ruff check backend tools退出0。六文件范围、原报告前缀、未改依赖锁、UTF-8/LF/尾空白及Markdown相对链接检查通过。首次检查驱动把git diff --no-index --check的有差异退出1误作失败（stdout/stderr均空）；按该命令差异语义接受0/1且必须无诊断，未更改源码或忽略空白报错，保留首次驱动失败。
 
 实际交付[独立草稿PR #41](https://github.com/surface-user/StudyWorkbench/pull/41)，分支codex/source-license-evidence基于#35最终a73bedd，实现提交0506a79e4a11370a0afed8c5a05cda173bb263e7。首次共享摘要采用Windows默认CRLF，被提交检查拒绝；仅将新摘要规范化为LF后，六文件/69链接检查退出0。原始采集report及hash未改。最终head CI和有限交付结论在PR描述持续更新，不记完整许可义务已完成。
+
+## 2026-11-13：REL-01b 冻结后端SBOM与覆盖对照
+
+### 基线、设计与有限范围
+
+主Agent已核#40最终b48b711d0ee1bdc5e2aa507e1e08852be73829ae及CI43359261755三组44步成功，接受REL-03c有限开发交付DONE。此任务基于该head/tree de75bcd2a5e6782400ef1964cacf5570a7e7970a，新建.local/goal-20261112/frozen-sbom副本，逐Git blob复制450个受跟踪文件；不改变旧根、starlette-fix、其他任务或共享环境。相关现行规范、release_inventory/check_frozen_sources/source_sbom与打包规则已读取；任务先登记IN_PROGRESS，实扫后设计获主Agent确认再实施。
+
+输入仅#40本机新冻结后端dist/study_backend，exe22568458字节/SHA256 3fba079e510e4550d086b7786973f937fa3c2a92e28efcd0e112d6bec82d50a2。复用官方固定Syft1.57.1/现有PyInstaller静态格式能力和锁/文件hash函数，不新增扫描器、不上传源码、不执行包内代码、不落地提取、不重新打包或补当前未用的HTML/MathML功能。原始扫描、输出及失败在本任务artifacts/rel01b；只提交[精选摘要](evidence/frozen-backend-sbom-summary.json)，选择理由/来源/hash/未知均在摘要，目录与输出路径不含本机个人路径。
+
+首次Syft真实默认目录实扫在关闭更新/enrich/远端许可、全部文件摘要配置下退出0：969实体文件/145089570字节，扫描前后完全相同。73候选为15实际dist-info声明与58 PE资源候选；CDX另含969 file组件。原始Syft JSON的1106个filesystem条目还包括137目录，不能把目录计作额外文件或包。Syft没有恢复2721个PYZ模块或154个base_library.zip成员的完整包身份；103个PYD也没有scanner包候选。原始探针保留，不凭Scanner支持生态文档推定覆盖。
+
+### 实现与来源界限
+
+tools/frozen_sbom.py输出原始CycloneDX1.6及syft-json，并单独生成coverage.json。固定三种Python installed/PE/binary cataloger、exe SHA256、配置hash、源锁hash、完整实体输入指纹；逐项校对文件集合/hash、实际METADATA名称/版本/唯一性/源锁，以及两份扫描输出中的候选和位置。源锁中的70个PyPI包不直接投影成发行成员；55个没有随包METADATA的锁项只是“未观测元数据”，不是“没有打包”。完整product_sbom_complete恒false，CLI退出1为失败、2为有限对照成功而完整产品仍不完整，不返回发行通过码。
+
+CArchive/PYZ目录检查cookie/TOC/成员范围、预算、重叠/重复、名称和当前解释器字节码；合法runtime option只作为字面元数据保留。每个内嵌条目可追溯到容器/偏移/长度。PYZ的hash明确仅针对压缩字节；9个namespace条目无内容，允许其offset保留写入位置。只对全部43个业务模块解压并静态比较嵌套代码/常量/异常表，不执行code object。ZIP检查原始名称，防止Python将反斜线或NUL静默规范化后隐藏异常；只读取有界成员并核实际解压字节，无提取目标。source head及预期exe hash在工具中明确为调用者声明，source_head_authenticated=false，不把字符串或hash当来源认证。
+
+本次真实来源另由GitHub git/commits接口核b48b711→de75bcd2，并对旧构建源码450个blob及当前43份业务源码逐项核远端tree；43份源码又与实际exe的PYZ代码相等。精选摘要保存这些源码blob/hash及提交/tree证据，未推定一般工具能认证任意远端构建。使用既有CArchiveReader独立对照12项CArchive/2721项PYZ目录的名称、类型、偏移/长度，均相同；所有969实体文件仍等于首次探针前清单。
+
+15个随包metadata仅证明包内声明；58 PE候选的名称、版本、PURL/CPE均保持未认证，不自动推导官方来源或漏洞匹配。4个版本UNKNOWN为libffi-8、两份OpenBLAS DLL及主exe，完整候选位置在coverage.json及精选摘要中保留。2721个PYZ中43个业务模块已与源码比较，2678个其余模块身份仍未映射；154个基础ZIP成员同样不凭文件名补造CPython分发身份。58个DLL/EXE候选加103个PYD后缀文件不是完整原生传递依赖关系或所有内嵌库清单。
+
+latex2mathml3.81.1的既有只读跟进继续保存在starlette-fix/artifacts/rel02-followup：官方wheel/sdist均缺项目LICENSE，固定tag的MIT原文已核；上游unimathsymbols.txt有独立LPPL1.3-or-later声明，原Work固定来源及vendor修改义务未闭合。当前同一冻结exe包含7个模块但不含该数据，既有三个DOCX调用链/冻结文档探针未复现当前已支持流程失败，不能据此声称永久不可达或将项目归为单一MIT。本切片仅列缺口，不向产品补资源或关闭REL-02。
+
+### 实际验证与失败保留
+
+工作目录为上述frozen-sbom。Q为根.local/release-venv/Scripts/python.exe（3.13.17）；IQ/IP只读复用starlette-fix任务内starlette-q-isolated（3.13.17）/starlette-p-isolated（3.12.7），pytest9.0.3。均设置PYTHONDONTWRITEBYTECODE=1，不升级共享依赖。命令与原始JUnit/log在artifacts/rel01b。
+
+- IQ/IP `-X utf8 -m pytest backend/tests/test_frozen_sbom.py backend/tests/test_source_sbom.py backend/tests/test_release_inventory.py -q --basetemp=artifacts/rel01b/tmp-iq05或tmp-ip05 --junitxml=artifacts/rel01b/combined-iq05.xml或combined-ip05.xml`：各退出0、140项通过，无失败/跳过；其中52项新测试、原35项source SBOM与53项inventory保持。覆盖不执行夹具代码、压缩/ZIP预算、namespace、危险原名/重叠/重复/越界、错误解释器、源代码漂移、metadata重复/错版本、缺失/额外/篡改扫描结果、错工具hash、输出嵌套/已有输出、扫描中源与payload变化及超时。全产品业务全量不在本次本地重复，独立PR当前CI继续执行全量。
+- Q `tools/frozen_sbom.py --payload <#40原冻结目录> --source-head b48b711d0ee1bdc5e2aa507e1e08852be73829ae --exe-sha256 3fba079e510e4550d086b7786973f937fa3c2a92e28efcd0e112d6bec82d50a2 --syft <根.local/release-tools/syft-1.57.1/syft.exe> --output artifacts/rel01b/real05`：退出2（预期有限成功），969实体/15 metadata/58 PE候选及全部内嵌条目对照通过；扫描前后原包、锁和源码均不变。
+- Q `-X utf8 artifacts/rel01b/verify_real.py`：退出0；实际1042个CDX组件通过官方1.6 Schema及本地引用校验，三份Schema来自CycloneDX/specification固定1.6 tag，其SHA256与REL-01a已记录原文一致；同时核上述Git来源、现有reader目录一致及第一次探针至最终文件清单相同。无Schema网络解析回退。
+- Q `-m ruff check backend tools`及`tools/export_question_schema.py --check`：均退出0。此工具不改产品调用方/数据库/打包参数，既有冻结包只读复用；不额外构建产品或声称新的运行时功能通过。
+
+real05 coverage.json SHA256 59ee081298406076d537aeac7dfd0b6fe72a6f79218b12a44116cf8cdad32956；backend.cdx.json SHA256 3404363c91bb6f298d9a72211f5e186f683b36986d949b4a4a1181c9ac2147c2；backend.syft.json SHA256 44078d9c154bb87b73b7a45b03ae2b90bf3c7fcf344ba3f5755caa3617d83406。精选摘要SHA256 45a4d09fdab080528bffa0f3711109a05e903fdccb6d09d9aab793411d717e63，包含输出、配置、工具、源码和扫描输入的关联；只保留未知候选的名称/版本/位置，全部推断CPE仍在原始输出，不复制为已核身份。
+
+原失败保留：最初误读不存在的spec路径退出1，随后核实际build-backend.ps1；real01先拒绝合法PyInstaller runtime option、real02拒绝Rich动态模块连字符、real04误要求namespace零offset，均退出1，按实际固定格式补齐支持后real05通过，不跳过目录/版本/字节码保护。初轮双Python新测试各43通过/1失败：Windows ZipFile在创建夹具时规范化反斜线；改为保留实际原名的夹具，并让解析同时核orig_filename/filename，旧日志保留。初轮合跑双Python各130通过/2失败均为旧mklink /J夹具在受限进程中访问被拒，未删改旧断言；改用任务内全新临时目录和已授权本机测试权限后各132、139及最终140通过。早期ruff仅导入排序失败，修正后全量静态检查通过。原始失败不进入成功计数。
+
+实现、相关自动化及文档完成，REL-01b保持REVIEW；独立草稿PR/当前head CI与主Agent核验后才DONE。审查按用户要求暂缓、人工测试取消，未合并或发行。源码锁切片/此目录文件覆盖不关闭REL-01：剩余Python/native身份与来源、完整组件关系、前端/SDK/NuGet/CRT/WebView2/Office/Java/安装器payload仍需后续逐项核验，许可/漏洞/签名父任务保留。
+
+实际创建[独立草稿PR #42](https://github.com/surface-user/StudyWorkbench/pull/42)，分支codex/frozen-backend-sbom，base为#40最终b48b711，实现提交064a033444b7187967564ce330b5951c6391441d。精确六文件范围/其余447个base blob不变、原报告完整前缀、UTF-8/LF/尾空白与本地文档链接检查退出0；源码与候选均未改写。最终head/对应CI结果在PR实时说明维护，不为记录自身SHA反复提交；当前CI未知不能记通过。
+
+## 2026-11-13：OFF-02e 受控Office配置来源（设计，尚未实施）
+
+本切片在新的.local/goal-20261112/office-config目录，以#33最终e0a3fcf66f18752df4c67b19151b21ef94f2f0f4/tree a5d7d8253f71a28fc5cdb38bacb2ef8dfdd437f4的452份文件逐blob核对创建，未改根checkout、其他独立副本或原Office/Java组件。主Agent已接受OFF-02b有限组合交付（上述#33的CI 43072881498三组44步成功）；另接受#36最终fbbc847的OFF-02c及#39最终2da4306的OFF-02d有限门禁交付，后两者是独立分支，本副本没有合入其实现。#39当前head CI 43359332568三组44步成功，102×2专项、53个UNO注册入口及新增54项覆盖成立，但223项未知及TWAIN实际x86/CRT缺口继续保留，完整Office/发行未完成。
+
+### 问题与固定版本依据
+
+本产品只提供有界、无宏/外部关系的DOCX/PPTX headless转PDF，不承诺扫描器、GUI或任意UNO调用。固定LibreOffice源构建bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1的desktop/source/app/appinit.cxx:105-115先从org.openoffice.Setup/Office/ooSetupConnectionURL建立acceptor，再处理命令行--accept；app.cxx:1658-1661投递EnableAcceptors。因此命令中没有--accept不证明配置途径无法启用监听。原fundamental.ini的CONFIGURATION_LAYERS包含HKLM/HKCU winreg及bundled/shared/user扩展层；configmgr/source/winreg.cxx把策略Final=1转为oor:finalized，临时profile仅设宏安全标志不能覆盖已finalized的值。本轮没有读取或改变宿主注册表，不能声称本机已存在该策略/实际监听。
+
+已通过GitHub读取同一固定构建源：sal/rtl/bootstrap.cxx（blob 7073ba6aa1e8a2f6fb01a079afbeaf9eec79a12c）:154-196解析-env:键=值；:476-575、:602-620的普通查找优先级为fundamental.override.ini、进程内rtl_bootstrap_set、命令行、环境，再普通ini/fundamental。固定组件内没有fundamental.override.ini，原逐文件集合/hash核验会拒绝额外文件；不能把命令行优先级概括为无条件最高。configmgr/source/components.cxx（85e66a1f27f6b1e5713134090ce1f0f860130a42）:499-635只按显式CONFIGURATION_LAYERS逐层解析，winreg仅在对应token存在时读取；用户可写层必须最后。cppuhelper/source/defaultbootstrap.cxx（e66052af42db7a13f9a58ea76df1044e4727609b）:48-59从bootstrap取得UNO_SERVICES/UNO_TYPES并初始化注册表；pyuno_module.cxx（b1eb13ec659cd1f79963d5ca16115d733c6d8db8）:232-273可在独立进程创建本地UNO上下文，无需网络listener。
+
+### 最小设计与受影响调用方
+
+拟在现有OfficeRuntime.command统一构造固定bootstrap参数：CONFIGURATION_LAYERS只含包内share/registry的xcsxcu与res层，以及本任务profile/user/registrymodifications.xcu可写层，完全不枚举winreg或扩展配置层。路径用本地绝对file URI编码，避免中文/空格被配置层分隔符解释。UNO_SERVICES/UNO_TYPES明确限于包内现有注册文件（7份services、3份types），Java类型classpath限于现有libreoffice.jar/ScriptFramework.jar，不读取user/shared/bundled扩展unorc；保留官方文件/SBOM/许可清单，不删服务注册或组件。profile另显式写空ooSetupConnectionURL，作为受控层内的声明，不以它单独抵消强制策略。
+
+源转换和冻结launch_office均已调用同一command，沿用原输入复验、profile字节复验、清洁子进程环境和Job预算；不用新框架、不加依赖、不改全局环境或注册表。OPTIONS需升级以使旧配置产生的预览缓存不冒充新策略转换：office_previews.OPTIONS_HASH已用于ready缓存匹配，原件/旧派生保留。受影响自动化为test_office_launcher/test_office_previews/test_office_java_bundle、现有check_office_previews与冻结构建；文档仅更新实际Office配置边界、task及本报告。
+
+### 验证计划及限制
+
+先验证固定包Python/UNO本地上下文探针可读取引擎最终配置，利用本项目临时自编XCU模拟含oor:finalized=true的外来层：对照证明不受控层会覆盖/冻结宏或连接值，再证明固定配置层忽略该文件；不创建acceptor、不操作宿主策略。探针需记录使用的实际DLL/源版本、bootstrap值及最终配置值；如仅能借环境传参而不能直接覆盖实际soffice命令行，则明确将其作为同引擎配置解析证据，与真实源码/冻结转换及实际子进程环境/命令行探针分开，不冒称完整实际进程证明。扩展unorc注入/未知注册来源需有实际拒绝或忽略反例，不能只做字符串断言。
+
+相关双Python自动化覆盖固定层/URI编码、外来环境清除、源与冻结helper同参数、配置篡改先拒绝、旧缓存不复用；随后用既有自编DOCX/PPTX执行源码与新冻结真实转换，继续检查各3页、公式/图表、取消重试、缓存重启、原件hash及XML预算拒绝，保留旧失败。完整冻结构建核模块，Ruff和文档检查、独立草稿PR及当前head CI均必须实际完成。设计仍待主Agent确认，尚未实施代码或宣称验证成功。
+
+此切片不新增扫描支持、不运行TWAIN、不据配置限制自动豁免其依赖，不改变check_release。它不等于Windows文件/网络沙箱、任意恶意文档安全、完整扩展/动态调用不可达证明、完整SBOM/许可/漏洞/签名或干净机发行结论；尚未证实的路径继续未知。人工/Computer Use取消、审查暂缓，未合并或发行。
+
+### OFF-02e 实施与中间自动化记录
+
+主Agent确认上述有限方案后，office_runtime.py的command增加固定CONFIGURATION_LAYERS、UNO_SERVICES、UNO_TYPES、URE_MORE_JAVA_TYPES四项，与原UserInstallation共五项；7/3/2个注册/类型/jar路径来自原固定包，旧无Java组件含相同Office文件，未改其支持范围。profile写空连接，OPTIONS升v4。environment原本就只取SystemRoot/WINDIR再显式填充任务/Java环境，本轮无须再造清洁环境框架；新增回归覆盖URE_BOOTSTRAP/INIFILENAME/UNO_*等不继承，原进程变量保持。源码和冻结helper仍复用同一command；缓存测试保留旧PDF与ready记录、禁止旧选项复用/分页，重新生成另建任务。
+
+以下工作目录为office-config副本，Q/P/C/F含义沿OFF-02b；Q实际3.13.17、P实际3.12.7（本机Anaconda旧开发环境，不作为发行Python），未升级共享环境。
+
+- Q -m pytest -q backend/tests/test_office_java_bundle.py backend/tests/test_office_launcher.py backend/tests/test_office_previews.py --basetemp=.local/off02e-target02 --junitxml=artifacts/off02e/target02.xml：退出0，44通过，74.85秒。P同组、basetemp=.local/off02e-py312-02、XML py312-02.xml：退出0，44通过，89.81秒。后续新增原运行时清单用例中fundamental.override.ini额外文件拒绝断言，Q/P分别以-k runtime_inventory、basetemp=.local/off02e-override313/312、XML override313/312.xml补跑：各退出0、1通过。没有增加依赖或减少原断言；Starlette弃用警告保留。
+- Q -m ruff check backend tools：退出0。Q artifacts/off02e/validate_docs.py：退出0；452个基线blob中仅预期7个既有文件变化，其他blob保持、UTF-8/LF/空白/文档链接、原报告前缀与其他任务行保持；最终精选证据加入后还需复核。
+- ./packaging/windows/build-backend.ps1 -Python Q：退出0，277.98秒完成构建，43个冻结业务模块（含嵌套常量/异常表）匹配本次源码；exe SHA256 2f4c9a30c092ee7f049530090b8ed599717acc0c0b8a1e251db0694492941ee8。只更新测试/报告不影响该源码证明；冻结实际转换仍需单独成功。
+- Q artifacts/off02e/configuration_probe.py：退出0。固定包program/python.exe加载本地UNO配置上下文，只实例化ConfigurationProvider；bootstrap参数来自本次command并以该诊断进程环境传递。自编只读foreign-finalized.xcu能使有效MacroSecurityLevel=0、DisableMacrosExecution=false、ooSetupConnectionURL=固定未使用pipe字符串；受控层返回3/true/空，其他脚本/OLE/Python/链接配置值也读取核对。自编user unorc注册的虚构服务在默认注册来源可枚举，在固定服务来源不能枚举；没有实例化虚构DLL、Desktop、acceptor或扫描器。日志/JSON为config-engine01，不能将此环境传参探针充当真实soffice CLI观察。
+- Q artifacts/off02e/reject_changed_profile.py：诊断退出0，实际新冻结--launch-office退出1且明确“转换配置已变化”；输出目录空、原自编DOCX SHA256保持69169843ffc5c1335bf08cbb58523b9f272b74006f3f2839f30a91f9610b8f1b。只修改本探针临时profile，不改原Office/Java。
+- Q artifacts/off02e/observe_conversion.py --mode source --test-root .local/off02e-source02：内层既有check_office_previews退出0，源码DOCX/PPTX各3页、PDF108085/77986字节，公式/图表、取消重试、缓存/重启、XML预算拒绝、原件hash及数据库检查通过。外层进程观察器退出1，因假设Office命令最后一项为源文件而全部1293次拒绝；不得把内层转换通过当作实际命令/环境采样通过。正在单独核真实argv后修正诊断比较规则，产品五项参数及90秒引擎限制未改。
+
+保留早期失败：新增回归先红5项/原环境隔离1项通过；首次44项中43通过，新增缓存用例用最小伪DOCX调用正文接口导致KeyError，改用已有真实自编original-study.docx并增加HTTP200断言后44×2通过。误标target312b的一次命令实际仍使用Q（44通过），不拿该记录代替P，P证据以py312-02为准。桥接Python原生argv计数为0，直接传-env没有覆盖环境，已据实保留；尝试手工初始化native argv先因DLL定位失败，随后子进程返回3221226356，停止该私有初始化路线，不把它作为产品结论。辅助PowerShell替换脚本引号错误没有改目标，改用明确补丁后继续。首次source01观察器逐UTF-16字符读取变化中的环境时ValueError，终止测试驱动；该任务在数据库保留interrupted，不能据此判断产品转换成败。第二版改为受限单次内存快照/指针复核并重采样；观察器总等待改为1800以容纳既有两份文件各600秒等待，产品90秒与原工具600秒均未上调。只读CIM查询被环境拒绝，未申请系统变更，继续用本探针拥有的后代进程读取。
+
+### OFF-02e 实际进程复验与交付准备
+
+Q artifacts/off02e/inspect_office_arguments.py：退出0，仍调用OfficeRuntime.convert完整核验后实际转换自编DOCX。确认soffice.com为soffice.bin追加转义后的-env:OOO_CWD=2<本任务cwd>，并增加ATTACHED_PARENT_PROCESSID环境项；固定构建[desktop/win32/source/loader.cxx](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/desktop/win32/source/loader.cxx#L86)（blob 4246f3f7b7c21b7870f44b3a5b522411240ddc9d）86–125、303–327行解释这两项。观察器据实改为精确验证这两个派生值及所有原参数，不使用任意尾参数豁免。
+
+- Q artifacts/off02e/observe_conversion.py --mode source --test-root .local/off02e-source03：内层实际转换与外层观察均退出0。源码DOCX/PPTX各3页，PDF108085/77986字节；公式/图表、取消重试、缓存/重启、XML预算拒绝、原件hash及数据库完整性通过。只采样本诊断后代的实际soffice.bin，核对目标exe身份、每项产品参数、官方内部cwd/父PID及全部环境集合/值；采得4个实际进程，覆盖两种格式，采样错误0。
+- 同一命令--mode frozen --test-root .local/off02e-frozen01：内层调用现有check_office_previews.py并传入本次dist/study_backend/study_backend.exe，内外均退出0。DOCX/PPTX仍各3页、108085/77986字节及同组业务断言通过；另外4个实际soffice.bin参数/环境核验通过，采样错误0。原工具将后端PATH限System32且清除PYTHONPATH/PYTHONHOME；观察驱动故意向后端继承12个外来bootstrap sentinel，实际Office中均未出现。没有在产品代码植入观察或探针入口。
+- 冻结exe为22566741字节，SHA256保持2f4c9a30c092ee7f049530090b8ed599717acc0c0b8a1e251db0694492941ee8，43模块源码匹配。固定7份services/3份types/2份jar在原Office清单、组合清单及实际组合文件的hash一致，组合19742个payload文件仍由每次真实转换前完整核验；本次另精选4份启动INI、12个注册/类型/jar、TWAIN及3份清单的实际hash，没有改原组件。
+- Q artifacts/off02e/select_evidence.py：退出0，生成[精选摘要](evidence/off02e-configuration-summary.json)，17699字节，SHA256 e49c79e01c02cca10c07e30088a0cadff6179fa524cd9b34e192bda486c1c051。仅选择支持本切片的实际配置值/反例、JUnit摘要与hash、源码/冻结转换结果、进程参数/环境hash、组件hash及限制；原始100KB采样失败、全日志、临时profile/PDF/样本/exe仍在忽略的artifacts/.local/dist。三个独立诊断源逐字筛入[配置引擎探针](evidence/off02e-configuration-probe.py)、[进程观察器](evidence/off02e-process-probe.py)、[冻结配置拒绝探针](evidence/off02e-profile-rejection-probe.py)，重现须按摘要executed_path放回artifacts/off02e并使用本节固定组件；没有把整目录或个人资料提交。
+
+进程诊断只读本次后代，不读/写其他进程或宿主策略。其NtQueryInformationProcess/PEB命令布局依据[微软接口](https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess)和[参数结构](https://learn.microsoft.com/en-us/windows/win32/api/winternl/ns-winternl-rtl_user_process_parameters)；environment偏移是本机x64有界校验的诊断ABI，微软明确内部结构可变，不能当跨Windows版本的产品接口或完整执行轨迹。成功采样与同引擎配置解析是互补证据，未在真实soffice内部读取最终配置对象，也未做宿主策略注入/监听测试，不扩大为完整OS隔离或任意第三方文件安全结论。
+
+实现及上述本地自动化已完成，task进入REVIEW；独立草稿PR/最终head CI与主Agent有限验收仍待完成。完整Office的未知原生组件/TWAIN真实依赖缺口保持，配置限制不自动给任何文件豁免；完整SBOM/许可/漏洞/签名、集中审查、正式发布仍分别未完成。人工/Computer Use取消，未合并或发行。
+
+OFF-02e已创建[独立草稿PR #44](https://github.com/surface-user/StudyWorkbench/pull/44)，分支codex/office-config-sources依赖#33精确e0a3fcf；首实现提交fe3b233c0d26e0bb2c65f48e3d4c279f58d26632/tree 6f7f749abb4e776753a33f97f2d4b75e734beda6，仅11份范围文件（7份既有源码/测试/文档、4份逐项精选证据）。随后仅补本交付链接；最终head/CI与主Agent有限验收以PR描述/实时检查为准，未核实前保持REVIEW，不把待核CI写成通过。未提交artifacts整目录、样本/PDF/个人库或二进制，不合并/发行。
+
+
+## 2026-11-13：REL-02b1 固定上游许可原文及内嵌声明
+
+从INT-03/#43精确c666db99e54b5cd62d9f194a4357c9eea9051da9/tree590513029371e666192c4e52f4c67890923731af复制474个已核Git blob到独立source-license-supplement，保留原分支/根文件与历史失败。该组合本地回归通过、其当前head CI仍跟进；本切片依赖已交付#41许可采集能力，不将父CI未知当成功。读取现行任务、规范及工具/调用方后，先登记IN_PROGRESS。
+
+范围限定已有source_licenses开发采集器、其专项测试、三份固定许可来源资料、打包指南/task和本报告。不改产品下载/解析/运行依赖、打包payload或原第三方文件。复用现有文件边界、内容hash及证据复制，只针对精确latex2mathml3.81.1九个已核package文件追加仓库来源的许可原文；元数据的原MIT声明保留，同时独立记录unimathsymbols数据的LPPL-1.3-or-later及未闭合义务。原发行归档缺文事实不清除，不把补充原文伪装为installed RECORD中的文件；全产品许可/归档来源/分发义务仍false，LPPL原Work来源及vendor修改条件保留在父REL-02b。
+
+来源沿用并独立重核#40只读调查的官方wheel/sdist哈希、固定tag九文件Git blob及MIT原文；两归档均缺LICENSE。MIT原文来自固定fb724a91658cf41d2fad0192da0845b05446f208/LICENSE，LPPL1.3c原文来自latex-project.org固定版本URL，逐原字节复制，不重新排版许可文本。LPPL许可明确允许原样复制许可文本；这不等于其数据分发条件已满足。根辅助prepare_license_supplement.py逐九文件核wheel/sdist/tag一致，退出0，不解包到共享环境或修改产品。
+
+本轮再次读取官方LPPL原文和原作者LUCR入口；后者仍跳到个人主页，不把HTML或第三方镜像自动当原Work。需要保留原作取得方式、修改通知等未闭合事项，不能仅补MIT就关闭完整REL-02。
+
+
+### 2026-11-14：REL-02b1 实际核验与交付
+
+调用方只在collect→python_evidence中增加精确latex2mathml3.81.1补充，其余版本/包保留原缺文行为。采集器只读本仓库来源配置/原许可和本地package九文件；核PURL、九文件hash、文本hash/长度与路径边界，采集中再次核来源配置和package不变。不存在通用main许可证兜底、联网下载、执行源代码、修改installed RECORD或产品payload。输出明确标记repository_supplement，原MIT元数据、数据独立LPPL声明/作者/旧头日期和原分发缺文事实保留；任何原文补充不将分发义务字段设为true。
+
+Q为根.local/release-venv/Scripts/python.exe（3.13.17）；IQ/IP为starlette-fix/.local/starlette-q-isolated与starlette-p-isolated中的Python3.13.17/3.12.7，实际pytest9.0.3/Starlette1.3.1，只读复用既有依赖，不安装/升级共享环境。设置PYTHONDONTWRITEBYTECODE=1，工作目录source-license-supplement，全部本地日志/XML保留artifacts/rel02b1。
+
+- IQ/IP -X utf8 -m pytest backend/tests/test_source_licenses.py backend/tests/test_source_sbom.py -q --basetemp=.local/supplement-q03或p03 --junitxml=artifacts/rel02b1/q03.xml或p03.xml：各退出0，72通过、无失败/错误/跳过；原57项保持，15项新增覆盖精确来源/独立范围和未闭合条件、九文件篡改/缺失、原文篡改/长度、PURL/数量/路径、来源缺失/采集中变化、其他版本不得兜底及CLI仍为2。加入独立数据作者声明后执行最终03轮，早先02轮同样72通过不是累计计数。
+- Q -m ruff check backend tools及Q tools/export_question_schema.py --check：均退出0。产品API/数据库/UI/运行依赖未改变，不重复完整本地业务/桌面/Office转换；独立PR当前head CI继续执行原完整回归和冻结检查。
+- IQ tools/source_licenses.py --package-config ../batch-three/apps/desktop/.dart_tool/package_config.json --output artifacts/rel02b1/real02：退出2，136精确源包、248原文引用/184唯一文本；所有副本逐引用核长度/SHA256，源码锁与#43相同。两份新增原文是固定MIT和LPPL1.3c；仅latex2mathml有两个保留issue：上游分发缺文、LPPL原Work和vendor修改条件待核。完整产品许可/全部归档来源/分发义务始终false。
+- real02/report.json SHA256 1ae042486dc0cb83303304ad9eda594022cf14780c1e48630d44e6cae5f29bea；collector SHA256 8890dd279ce5193f1d2167fcbccb95b361dfb845315677944f2969ae614455f8；provenance.json SHA256 2b9d2a05a7bdbe72bf9395f76793d4678b7bbbb39b0dd7f6da693a28db294b8e。精选摘要evidence/latex2mathml-license-summary.json为14a81b8b82ca0eb8e74ce25140988e0d5fa77f6dac075f6a5d337d8678e673d8，只含公开来源/hash/范围/缺证及计数，未含本机绝对目录或全部第三方安装内容。
+
+失败保留：q01首次--basetemp的.local父目录未建立，26通过/46个setup错误，退出1；没有产品断言失败，也未记通过。建立任务内父目录后用新q02/p02及最终03目录重跑，不删除第一次日志。real01为追加数据作者/旧日期元数据前的旧快照，同样退出2，保留但不混作最终real02。新增许可原文逐字节保留官方文件，MIT1071字节/hash4ac1e1da07f6b343d54191c5e1716840534e08591b3f9eaec90d6800cdc47543，LPPL19036字节/hashc1ae6e179a6d28bbd5c483fbacc744acc75e922d598281dc3390aab26126e163，没有重排版权或许可文本。
+
+父INT-03/#43已由root核最终c666db9的CI43365961531三组45步成功，有限组合DONE。兄弟REL-01b/#42、OFF-02e/#44及DL-02a/#45已分别核验当前head CI登记DONE；本切片只同步交付状态，不含这些兄弟工具/产品代码或站点契约。用户明确的B站/抖音/爱奇艺范围与B站先行继续；预览不是整个DL-02下载目标，格式交接与DL-03避免循环依赖。真实实现/后续组合继续独立PR。
+
+当前REL-02b1实现/相关自动化/文档完成，REVIEW，等待独立草稿PR/当前head CI；LPPL原Work/修改条件及实际payload许可仍在父REL-02b/REL-02，不能因取得两份文本销项。审查暂缓、人工取消、未合并或发行。PR最终head/运行和有限验收结果在PR描述维护，不为写入自身SHA循环制造提交。
+
+提交前逐文件Git空白检查首次在官方LPPL原文末尾空行报告退出3；该文件许可明确禁止修改许可文本，因此保留原19036字节及官方SHA256不变，不将这条原版格式诊断记为修复或普通空白通过。辅助核证改为对这一个逐字原件强制官方完整hash，其他8份变更继续原git diff --no-index --check；源码/测试/文档没有放宽。Q -X utf8 artifacts/goal-20261112/check_license_supplement.py聚合退出0：478文件/预期9变更/469原blob保持、84本地引用、46调度行唯一及旧报告完整前缀、两锁不变核对通过。

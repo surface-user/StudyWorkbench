@@ -1,6 +1,6 @@
 # 当前依赖与风险登记
 
-版本以apps/desktop/pubspec.lock、backend/requirements.lock.txt、打包脚本固定清单为准。下列维护/Windows证据按各条注明的来源与验证范围解读，不把历史稳定版描述当成今日最新版本；本批指定依赖的联网核对与升级记录见相应条目及任务报告。新增依赖必须记录版本、许可证、维护证据、Windows支持和未验证项。
+版本以apps/desktop/pubspec.lock、backend/requirements.lock.txt、打包脚本固定清单为准。下列维护/Windows证据按各条注明的来源与验证范围解读，不把历史稳定版描述当成今日最新版本；本批指定依赖的联网核对与升级记录见相应条目及任务报告。新增依赖必须记录版本、许可证、维护证据、Windows支持和未验证项。站点提取候选另在下节记录只读官方资料评估，不代表采用或完成审计。
 
 ## 已采用的运行与构建依赖
 
@@ -45,6 +45,8 @@ Starlette官方wheel为73632字节，SHA256 c7372aae11c3c3f26a42df7bd626cec2f47d
 
 执行采用每任务独立profile，宏/Windows OLE Automation/Python脚本关闭，Word加载链接设Never。输入层拒绝OLE对象、宏/外部关系/动态字段，嵌入图表XLSX仅支持无公式的静态值；无内部chart/OMML时同时禁用ActiveContent，有受限内部图表/公式时只启用其渲染。实测总禁用会让图表变占位且公式消失，已用真实页图/公式文字断言修复，并将选项升v3。配置依据为同版本官方[Common.xcs](https://raw.githubusercontent.com/LibreOffice/core/libreoffice-26.8.1.1/officecfg/registry/schema/org/openoffice/Office/Common.xcs)和[Writer.xcs](https://raw.githubusercontent.com/LibreOffice/core/libreoffice-26.8.1.1/officecfg/registry/schema/org/openoffice/Office/Writer.xcs)。这些控制和进程资源限制不等于完整OS文件/网络沙箱。
 
+后续v4将配置来源固定为随包registry和本次profile，排除宿主强制策略/扩展配置层；服务/类型注册及Java类型classpath限定原包文件，源与冻结转换共用固定参数，清洁子进程环境不继承外来bootstrap变量。依据同一固定构建的[bootstrap优先级](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/sal/rtl/bootstrap.cxx)和[配置层读取](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/configmgr/source/components.cxx)，临时profile不能独自覆盖finalized策略，故不能只设置空连接URL。原包完整清单/hash继续约束所有组件，未删除或免检扩展/扫描器文件；v3派生保留而不复用，具体边界见[打包配置说明](packaging-windows.md#office与java组合运行时)及发行原报告。
+
 实际离线清单19417文件/1577045386字节（约1.47GiB，不含MSI和清单）；MSI374870016字节。Windows独立进程、无开发PATH冻结、随包组件默认查找/缺组件、中文/OMML公式/表格/图表/多页、坏输入/取消/重试/缓存/源hash已取得专项证据。真实引擎短超时/取消及Job所属进程结束、Job所有者异常退出时结束子进程另有实证，不以模拟超时替代。新转换前完整读取清单校验会增加延迟，缓存命中无需重转。干净机、任意第三方文件保真、全传递许可/签名及安装升级卸载仍未验证；详见[Office历史实证](../dev/archive/reports/r3-office-validation-2026-10-26.md)。
 
 
@@ -79,7 +81,28 @@ pytest固定9.0.3；[官方2026-04-07发行说明](https://github.com/pytest-dev
 
 FMT-01的自编复杂样本工具固定[python-pptx 1.0.2](https://pypi.org/project/python-pptx/1.0.2/)（MIT，2024-08-07发布，Python≥3.8）和[XlsxWriter 3.2.5](https://pypi.org/project/xlsxwriter/3.2.5/)（BSD-2-Clause，2025-06-17发布，Python≥3.8）；固定官方wheel SHA256见[样本工具清单](../tools/sample-authoring-requirements.txt)。二者为独立可选开发工具，安装到本任务.local/authoring，借用已锁定python-docx/Pillow/lxml等环境生成本地自编样本，不进入后端依赖或冻结包。Windows x64/Python3.13生成成功不代表其他平台验证，也不是漏洞或传递许可证审查结论；不称固定版本为今日最新版。
 
-webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-dlp2026.10.21仅做过开发预备，下载队列未实现；FFmpeg未选定产品二进制/构建配置，不能只按主体许可证发行。Seal只参考交互，不复制GPLv3代码/资源。
+webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-dlp2026.10.21仅做过历史开发预备，未接入产品；当前直接HTTPS下载队列已用CPython标准库实现。FFmpeg未选定产品二进制/构建配置，不能只按主体许可证发行。Seal只参考交互，不复制GPLv3代码/资源。
+
+### 站点提取候选（未采用）
+
+2026-11-13只读核对官方[release 2026.10.26](https://github.com/yt-dlp/yt-dlp/releases/tag/2026.10.26)（2026-10-26发布）及[tag指向](https://api.github.com/repos/yt-dlp/yt-dlp/git/ref/tags/2026.10.26)：固定源码commit `f264a6cbd1f630894da0f368df00f8aae50140e0`。该日期/发布物是维护证据，不保证站点持续可用或没有漏洞。候选评估没有安装依赖、下载第三方可执行文件或修改产品锁文件。
+
+| 固定对象 | 官方许可/支持证据 | 采用前仍需完成 |
+|---|---|---|
+| Git源码commit及同版PyPI源码包/wheel候选 | 固定[LICENSE](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/LICENSE)为Unlicense；[README许可说明](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/README.md#licensing)区分这些对象与成品；[pyproject](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/pyproject.toml)声明Python≥3.11、基础dependencies为空，extras另列 | 未获取/校验PyPI包字节、未确定产品分发对象；实际所用传递包、许可证/来源原文、漏洞结果、Windows3.12/3.13与冻结行为须逐项验证，不能从基础依赖为空推断完整站点能力无依赖 |
+| 官方`yt-dlp.exe` 2026.10.26 | README声明Win10+ x64；上游明确PyInstaller成品为GPLv3+组合，附固定[THIRD_PARTY_LICENSES](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/THIRD_PARTY_LICENSES.txt) | release API声明23575744字节、SHA256 `f5389d3698ecde4ef06f4e6b1ce0294fe9ac1396228c8990b8d3416d6d177a7d`；仅元数据，未下载核hash/验签/执行，未审实际组件与对应源码义务，不作为产品可用方案 |
+| 官方`yt-dlp.tar.gz` 2026.10.26 | README说明release tarball额外含meriyah ISC与astring MIT代码，不能与Git/PyPI单一源码许可混同 | release API声明6019106字节、SHA256 `21f942d258d25cc4e60b4982a25c423460f0bebb835f38e6dfd1fcb140087f95`；同样未下载、验签或审内容 |
+| EJS/JS运行时与其他可选组件 | 固定README说明完整YouTube支持需要yt-dlp-ejs及JS引擎；pyproject的default extra固定yt-dlp-ejs 0.8.0，README列其Unlicense及所捆MIT/ISC组件；FFmpeg/ffprobe用于分轨合并/后处理 | EJS、Deno/Node/Bun/QuickJS、curl_cffi、FFmpeg等均未因此采用；每个实际所需对象另定版本/hash/Windows/许可/漏洞与受控执行，不能暗中下载或利用开发机已有程序 |
+
+用户指定B站、抖音、爱奇艺，B站先行。以下只读核对同一固定commit的上游提取器，未向三站发起媒体下载；第三方提取器源码不是网站官方接口或授权证明，测试URL也不自动获得使用/下载权。
+
+| 目标站点 | 固定源码观察及组件差异 | 本项目边界/待证据 |
+|---|---|---|
+| B站普通单视频，先行 | [BiliBiliIE](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/yt_dlp/extractor/bilibili.py#L723)读取页面/分页与播放API，包含WBI请求参数签名；结果带Referer，格式可为分轨DASH或单/多段durl，存在登录/会员/试看分支 | 固定公开Referer/Origin、WBI参数属于可设计的普通能力，不因现有下载器无headers字段永久阻断；服务端固定字段、精确目标域与每跳重验后接入，不能接任意用户headers。元数据/质量预览先行，分轨交接/合流由DL-03，真实下载须有权且无需登录样本；不启用会员/登录或把试看当完整资源 |
+| 抖音单视频 | [DouyinIE](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/yt_dlp/extractor/tiktok.py#L1495)请求web detail API；无详情时上游要求新cookies，未必是登录cookies，再交共享格式解析 | 临时匿名站点cookies不等同登录凭据，可另设计任务隔离/短生命周期/域范围；本切片未启用，不读浏览器cookies，不执行验证码或签名挑战。无cookie/匿名会话实际路径均未验证；不能以TikTok其他extractor或样本替代抖音证据 |
+| 爱奇艺国内站 | [IqiyiIE](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/yt_dlp/extractor/iqiyi.py#L104)使用HTTP接口与请求签名，返回m3u8；国际iq.com为另一[IqIE](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/yt_dlp/extractor/iqiyi.py#L389)，会调用PhantomJS执行签名代码 | 国内路径与HTTPS/单文件现界不符，禁止按原样接入或猜测换协议；需官方/标准授权访问路径及允许下载样本。国际站不自动算用户指定范围，PhantomJS未采用；不处理会员/付费/DRM绕过，也不把试听试看当完整资源 |
+
+建议在所选站点可完全受控的前提下评估固定源码适配；现有`YoutubeDL`的[request director](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/yt_dlp/YoutubeDL.py#L4343)提供请求处理入口，但这只是候选接入点，不证明每个提取器都不绕过它。`skip_download`/JSON输出、关闭配置/插件等CLI选项不能证明内部请求执行本项目DNS固定/TLS/预算；无法覆盖全部网络路径的stock CLI禁止作为可用产品方案。先按[规划契约](learning-workbench-contracts.md#站点提取与质量选择规划中未接入产品)验证有限站点，再决定是否采用及具体分发方式。来源证据和限制续记[下载报告](../dev/records/2026-11-05-lw07-downloads/report.md)。
 
 ## 待验证与升级门禁
 

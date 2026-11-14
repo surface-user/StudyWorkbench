@@ -97,3 +97,40 @@ extend_batch_three.py及extend_batch_three_license.py按各PR基线的精确blob
 当前INT-03实现与本地自动化完成，保持REVIEW等待独立草稿PR最终head CI；PR实时描述维护最终head/运行和验收结果，不为引用自己的最终SHA循环制造文档提交。审查暂缓、人工取消、未合并或发行；OFF-02配置继承及223未知、完整SBOM/许可/漏洞/签名与发行父项保留。
 
 提交前35文件聚合检查首次在已接受输入test_native_dependencies.py发现新增EOF空行，git diff --check退出3；仅在本组合删去末尾多余空行，AST与#39逐字解析结果一致，原输入分支不动。功能源码仍与各已核输入精确相同，不重复业务测试；根Q -X utf8 artifacts/goal-20261112/check_batch_three.py重跑退出0：474文件来源核对、35变更空白检查、159本地链接和44个调度行唯一性通过，原报告与历史失败完整保留。
+
+
+## 2026-11-14：INT-04 第四批组合
+
+主Agent已独立核#43最终c666db99e54b5cd62d9f194a4357c9eea9051da9及CI43365961531三组45步成功，INT-03 DONE。复制其精确474份Git blob到新batch-four，不复制旧测试库、缓存或产物；根用户未跟踪文件与全部既有PR保持。当前先组合已验收#42最终fb5b7a2、#44最终f473abc和#45最终517bcd4；为完整保留实际公网证据和探针，再纳已验收#38最终842b19d。每项均先按各自PR基线核精确变更blob，原独立任务/报告仍保留。#46许可补充本地已验证并独立PR，但当前CI未终态，不作DONE或纳本组合，待核后再加入。
+
+prepare_batch_four.py完成#42/#44后在#45 dependencies.md旧免责声明的上下文保守退出1；原因是本组合已有较新的OSV源范围查询/Starlette修复证据，而#45基线旧句称未查询，不能直接覆盖。resume_batch_four.py逐段核对后保留较新源查询说明，加入独立候选依赖说明/三站差异，退出0；未改任一功能实现。#38诊断差异及#45其余契约随后按精确来源合入，退出0。两份manifest记录每个输入base/head/文件sha，临时脚本和原始日志留根忽略artifacts。
+
+当前INT-04 IN_PROGRESS，尚未将独立PR绿灯代替组合测试。OFF-02e配置隔离、新冻结SBOM覆盖、站点设计和公网探针已具备共同源码，后续全量/真实新冻结Office及来源/许可对照、独立PR/当前head CI继续。完整组件身份、LPPL原Work/最终许可、漏洞、签名与发行未完成；审查暂缓、人工取消，未合并或发行。
+
+
+#46最终8bebad8896da83db4ac45ea6f7f4aa41142901cd的CI43569063314现已由root核三组45步成功：双Python各986及Windows/44模块冻结/API等通过，REL-02b1有限任务DONE，原LPPL义务仍未闭合。extend_batch_four_license.py按精确来源加入其九文件差异，退出0，无逻辑冲突。当前INT-04输入冻结为#38/#42/#44/#45/#46，不追逐尚未交付的下一Office/身份/站点功能。
+
+为核组合版本的源码/新冻结公网续传与重定向，仅将已有固定--allow-public-fixtures CI步骤的分支条件追加codex/parallel-batch-four；原codex/public-download-range保留，其余分支条件保持。不改探针预算/来源/hash/生产网络保护。该步骤仍限pull_request事件，超时5分钟，实际来源媒体不进Git或发行包。
+
+纳#46之前的专项：IQ40 -m pytest test_office_launcher.py test_office_previews.py test_native_dependencies.py test_frozen_sbom.py test_public_download_check.py -q --basetemp=.local/batch-q-target01 --junitxml=artifacts/batch04/target01.xml（均backend/tests/前缀），原生测试权限退出0，146通过/2弃用警告；当时全backend/tools Ruff退出0。下一完整回归使用已纳#46的最终源码，专项不是当前全量证明。
+
+
+### INT-04 最终本地核验
+
+本轮IQ40为starlette-fix/.local/starlette-q-isolated/Scripts/python.exe（3.13.17，pytest9.0.3/Starlette1.3.1），Q为根.local/release-venv/Scripts/python.exe用于已有静态/核证工具；D/F为固定Flutter3.47.1的Dart及flutter_tools.snapshot。任务内新.venv目录链接只读复用IQ40，先确认不存在后按已授权原生测试权限创建；共享环境未修改。pubspec.lock逐字等于#43，复用其同锁package_config/package_graph，不再重复旧缺图/缓存准备失败。
+
+- PYTHONPATH=backend; IQ40 -X utf8 -m pytest -q --basetemp=.local/batch-q-full01 --junitxml=artifacts/batch04/backend.xml：原生测试权限退出0，1063通过及77子测试通过，423.92秒；JUnit1140条无失败/错误/跳过。三条警告为httpx TestClient/anyio别名弃用及重复ZIP负例，均保留，不降断言。两版远端完整回归以本PR当前head CI为准。
+- D F --no-version-check test --no-pub --concurrency=1 --dart-define=STUDY_ROOT=<本组合> --dart-define=STUDY_DATA_DIR=<本组合>/.local/flutter-full01：原生权限退出0，203通过/1分41秒。D format --output=none --set-exit-if-changed lib test integration_test退出0，88文件无变化；D F --no-version-check analyze --no-pub原生权限退出0，无问题。Q -m ruff check backend tools最终退出0。
+- ./packaging/windows/build-backend.ps1 -Python <IQ40>：退出0，新构建44业务模块（含嵌套代码/常量）与本组合源码全部匹配。exe22578633字节，SHA256 68f0a3cb710bb7bafb273c14ccfe44cd7b27b097ee228b11201976be0fc299c3；本次包装进程退出码已从实际运行handle取回，不借旧日志推断。没有用原#43或#44 exe冒充新组合。
+- IQ40 tools/check_api_errors.py --exe dist/study_backend/study_backend.exe --test-root .local/api-frozen01：退出0，34检查/18独立错误ID、重启/幂等收据/媒体Range兼容通过。IQ40 tools/check_backend_lifecycle.py --exe同exe退出0，恶意Host/Origin、连接重置/EOF、重启/崩溃/两次迁移/原件和学习数据等完整链通过。
+- IQ40 tools/check_office_previews.py --exe同exe --test-root .local/office-frozen01 --runtime <根.local/release-tools/libreoffice-java-26.8.1-21.0.13> --docx <formats/.local/fmt-samples01/复杂分节.docx> --pptx <同目录/复杂图表.pptx> --complex-xlsx <同目录/复杂工作簿.xlsx>：退出0，DOCX/PPTX各3页、PDF108085/77988字节，逐页边界/非空/公式/图表、取消/重试/缓存/重启/原件hash及XML预算拒绝通过；XLSX2表15格、SQLite完整性通过。本次为配置隔离与API改动同一冻结程序的实际转换，不等于人工视觉/任意Office保真。
+- IQ40 tools/source_licenses.py --package-config apps/desktop/.dart_tool/package_config.json --output artifacts/batch04/source-licenses：退出2，136源包/248原文引用/184文本；逐引用hash/长度均核验，report.json SHA256 1ae042486dc0cb83303304ad9eda594022cf14780c1e48630d44e6cae5f29bea，与#46同锁/同采集器实采逐字一致。仍只有latex2mathml的上游缺文与LPPL义务待核issue，完整产品/全部归档来源/分发义务字段false。
+- IQ40 tools/source_sbom.py --syft <根.local/release-tools/syft-1.57.1/syft.exe> --output artifacts/batch04/source-sbom：退出0，136源包/8SDK未知，与#40/#43源锁及组件集合完全相同。comparison.json SHA256 59bbe72990e306b6be67a1f88a8ec1a83bed5c46d6abf0be1d61dadaf1c02c7d，BOM SHA256 bad8df9e3d8d37caf910e6dc9fd2929557ace3e411c1a1f53151d8d557d67913。未发生依赖变化，不重复在线漏洞查询或声称新数据库快照；保留原有限查询边界。
+
+根finalize_batch_four.py复用前批核证逻辑并按本批真实结果核1140条JUnit、原日志标志、34API/三页Office/许可副本/源BOM语义与exe字节，退出0，生成本地summary.json。所有原始日志/XML/页图/测试库/第三方许可副本留忽略artifacts或.local，Git只纳各任务原已筛证据与明确来源的许可文本。
+
+root另已验收#47/REL-01c与#48/OFF-02f的当前head CI和实际证据，有限DONE，但其新身份工具/额外JRE域代码不纳本冻结输入。本组合原静态门禁仍223未知；独立#48减少至145是后续待组合结果，不混作本候选结论。REL-01d、OFF-02g和B站预览继续独立实施，整体完整SBOM/传递许可/最终漏洞/签名发行未完成。
+
+当前INT-04实现与本地自动化完成，REVIEW，仍需本项独立草稿PR/当前head CI，以及本分支明确选择的固定公网源码/新冻结续传重定向闭环；最后以PR实时描述核定，不在报告中预写未知结果或为引用自身SHA循环提交。正式代码审查暂缓，人工/Computer Use取消，未合并或发行。
+
+提交前核证最初假设Office测试只增加assert消息，AST比较退出1；实际#34已接受的诊断还把相同wait结果绑定到first/finished变量。逐字核出#44原测试只应用#34这段原有诊断变换，断言谓词/执行次序未改，不修改目标测试或降低断言。check_batch_four.py改为强制该精确已发布变换，其余测试文件字节必须等于#44；聚合重跑退出0，487文件/28变更、其余原blob、115本地链接/52调度行唯一和全部输入新增报告行/旧前缀保留通过。原LPPL原文仍用官方完整hash核原字节，其他27变更保持普通Git空白检查；两锁不变，CI仅增加已声明的本分支固定公网探针条件。

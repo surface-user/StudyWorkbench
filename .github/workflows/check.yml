@@ -85,6 +85,18 @@ jobs:
         working-directory: .
       - run: .venv/Scripts/python.exe tools/check_document_workers.py --exe dist/study_backend/study_backend.exe
         working-directory: .
+      - name: Explicit public fixture Range and redirect evidence
+        if: github.event_name == 'pull_request' && (github.head_ref == 'codex/public-download-range' || github.head_ref == 'codex/parallel-batch-four')
+        timeout-minutes: 5
+        shell: pwsh
+        working-directory: .
+        run: |
+          .venv/Scripts/python.exe tools/check_public_downloads.py --allow-public-fixtures --test-root .local/ci-public-downloads --exe dist/study_backend/study_backend.exe
+          $probeExit = $LASTEXITCODE
+          foreach ($evidenceFile in @('.local/ci-public-downloads/network.jsonl', '.local/ci-public-downloads/summary.json')) {
+            if (Test-Path -LiteralPath $evidenceFile) { Get-Content -LiteralPath $evidenceFile }
+          }
+          exit $probeExit
       - name: Retain Windows Release inputs for local manual-test packaging
         uses: actions/upload-artifact@v4
         with:

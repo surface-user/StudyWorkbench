@@ -1,0 +1,516 @@
+{
+  "scope": "OFF-02e controlled configuration sources; not full Office closure or OS sandbox",
+  "base": "e0a3fcf66f18752df4c67b19151b21ef94f2f0f4",
+  "office_build": "bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1",
+  "tests": [
+    {
+      "file": "artifacts/off02e/target02.xml",
+      "sha256": "89948cb93b63f698b1ebe6f992b6b67ede4ec90351850b30c9f31fdfb0668a2a",
+      "python": "3.13.17",
+      "tests": 44,
+      "failures": 0,
+      "errors": 0,
+      "seconds": "74.836"
+    },
+    {
+      "file": "artifacts/off02e/py312-02.xml",
+      "sha256": "f76ae5808dc32f08064be5bdde5ac1359d04d8587d06ae51a40825cdf937d993",
+      "python": "3.12.7",
+      "tests": 44,
+      "failures": 0,
+      "errors": 0,
+      "seconds": "89.795"
+    },
+    {
+      "file": "artifacts/off02e/override313.xml",
+      "sha256": "62bc55cda8472fcd44ca453d7e6a24d59a52f805d96fd36a115186af6bbeec55",
+      "python": "3.13.17",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "seconds": "10.308"
+    },
+    {
+      "file": "artifacts/off02e/override312.xml",
+      "sha256": "144d433f9a618fd143b5d95209e85229005a55e4d2725ebeff53b42995fbf202",
+      "python": "3.12.7",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "seconds": "12.107"
+    }
+  ],
+  "frozen": {
+    "sha256": "2f4c9a30c092ee7f049530090b8ed599717acc0c0b8a1e251db0694492941ee8",
+    "modules_matched": 43
+  },
+  "fixed_registrations": {
+    "services": [
+      "program/services.rdb",
+      "program/services/postgresql-sdbc.rdb",
+      "program/services/pyuno.rdb",
+      "program/services/scriptproviderforbeanshell.rdb",
+      "program/services/scriptproviderforjavascript.rdb",
+      "program/services/scriptproviderforpython.rdb",
+      "program/services/services.rdb"
+    ],
+    "types": [
+      "program/types.rdb",
+      "program/types/offapi.rdb",
+      "program/types/oovbaapi.rdb"
+    ],
+    "jars": [
+      "program/classes/libreoffice.jar",
+      "program/classes/ScriptFramework.jar"
+    ],
+    "legacy_original_and_composite_match": true
+  },
+  "component_file_sha256": {
+    "program/uno.ini": "e4b23a72009455cef8b105312e6893a1523f1a00005de502f821317708f2b6d6",
+    "program/fundamental.ini": "b4d54f865c2ae335dad400114f4638051360e04491fae41359f62511eb8160c2",
+    "program/bootstrap.ini": "40a2a50d1ee5b23321bd26a6a2a912d82ee2e04eafc166d5e2aa615a4caa6db2",
+    "program/louno.ini": "01ac1668ad4d41fbce895de093b89d57f60c1a48fe2373c960eb13494a656a1c",
+    "program/services.rdb": "ea90dacd3cae92582dd02c03b93f73e3307d8017fa3403e38c6a07f6cc1522cb",
+    "program/services/postgresql-sdbc.rdb": "5e2fdbdfd2f01f37e23df3ddbfe8a082da75fb7b3579a5009d6d0d12a5813362",
+    "program/services/pyuno.rdb": "b4495431256f030c6e2da038d64f6ccaa09e60709ba7206ced73ebe17c869ff6",
+    "program/services/scriptproviderforbeanshell.rdb": "4b290aaf66192075ab16404ceadd28b3e38c1890fe53e17572da400af5dac3be",
+    "program/services/scriptproviderforjavascript.rdb": "fe5092c30ac96be4e45ca5df7b60ad0118273f26c07e9d7c1a78d177dc046e83",
+    "program/services/scriptproviderforpython.rdb": "ed096e982ec7996361fcd1159b270f8169aa9547a09463a6a006bff5057a3c2d",
+    "program/services/services.rdb": "bc996be9362ebf3a9c6be11d4c3c9fef26941182743c70d1649a6e5fe317f094",
+    "program/types.rdb": "47b7b694fc15db15ace27ae7a0ea01ac580b8da9faa75ab195f7983d7311c31c",
+    "program/types/offapi.rdb": "ba4fd019d8d8af5906c928480b20a5df5e4b63875de5b32ecc4a41deaf9e0be3",
+    "program/types/oovbaapi.rdb": "3c56527da1b441e91862d0635cb45182ec8a1a1fe67d2339c2e933a849995947",
+    "program/classes/libreoffice.jar": "abb1956fdfc79ddd001642951cf76c1b573d48eb4cf869c9e67dcd6b26fde1d0",
+    "program/classes/ScriptFramework.jar": "88b71d6db89fcff8dc2f0f70bb388de0b91d1fd67d102e932cd603a81f5328de",
+    "program/twain32shim.exe": "e8c0e07120c789b8c59e6723a9b11d638982805549d46247566847dd7b51a06e",
+    "runtime-lock.json": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+    "office-runtime-lock.json": "147d21f38890236a51ac3b079d4632690ce7ae12f1470d6896aaef3597a0f8ca",
+    "java/java-runtime-lock.json": "159433e3a2fc9f2a9c4f633a613d3db5aaca29d1b52caa64e3a63755ac8e1907"
+  },
+  "component_payload_count": 19742,
+  "configuration_engine": {
+    "scope": "local UNO context, bootstrap parameters supplied through environment; not soffice CLI",
+    "results": [
+      {
+        "case": "foreign-finalized",
+        "values": {
+          "/org.openoffice.Office.Common/Security/Scripting": {
+            "MacroSecurityLevel": 0,
+            "DisableMacrosExecution": false,
+            "DisableActiveContent": true,
+            "DisablePythonRuntime": true,
+            "DisableOLEAutomation": true,
+            "BlockUntrustedRefererLinks": true
+          },
+          "/org.openoffice.Setup/Office": {
+            "ooSetupConnectionURL": "pipe,name=off02e-unused;urp;"
+          },
+          "/org.openoffice.Office.Writer/Content/Update": {
+            "Link": 2,
+            "Field": false,
+            "Chart": false
+          },
+          "foreign_service_registered": false
+        }
+      },
+      {
+        "case": "controlled",
+        "values": {
+          "/org.openoffice.Office.Common/Security/Scripting": {
+            "MacroSecurityLevel": 3,
+            "DisableMacrosExecution": true,
+            "DisableActiveContent": true,
+            "DisablePythonRuntime": true,
+            "DisableOLEAutomation": true,
+            "BlockUntrustedRefererLinks": true
+          },
+          "/org.openoffice.Setup/Office": {
+            "ooSetupConnectionURL": ""
+          },
+          "/org.openoffice.Office.Writer/Content/Update": {
+            "Link": 2,
+            "Field": false,
+            "Chart": false
+          },
+          "foreign_service_registered": false
+        }
+      },
+      {
+        "case": "foreign-extension",
+        "values": {
+          "/org.openoffice.Office.Common/Security/Scripting": {
+            "MacroSecurityLevel": 3,
+            "DisableMacrosExecution": true,
+            "DisableActiveContent": true,
+            "DisablePythonRuntime": true,
+            "DisableOLEAutomation": true,
+            "BlockUntrustedRefererLinks": true
+          },
+          "/org.openoffice.Setup/Office": {
+            "ooSetupConnectionURL": ""
+          },
+          "/org.openoffice.Office.Writer/Content/Update": {
+            "Link": 2,
+            "Field": false,
+            "Chart": false
+          },
+          "foreign_service_registered": true
+        }
+      }
+    ],
+    "probe_sha256": "f2dd827d21e8fc340a4e032066e7987b5347d52f9dffc41dd00abde915b1eb3e",
+    "fixtures": {
+      "registrymodifications.xcu": "5de13d8855501c471c468ad602b75dc0802e1f4319db45001fb68bf12efab9ab",
+      "foreign-finalized.xcu": "0810bab4e5bc4d2e690d105bc019d0d3f48368442bfcb73850db7930a9eeff14",
+      "foreign-services.rdb": "fe6ab0dc55881c141031ed84bf94280768d92421c5057eda83ae35729e995cd1",
+      "unorc": "f9f071e53fbe37effebce40e873514d5630d860fbe38993b60765b68f7122cf5"
+    }
+  },
+  "frozen_negative": {
+    "returncode": 1,
+    "profile_change_rejected": true,
+    "output_empty": true,
+    "source_sha256": "69169843ffc5c1335bf08cbb58523b9f272b74006f3f2839f30a91f9610b8f1b"
+  },
+  "source": {
+    "probe_exit": 0,
+    "conversion": {
+      "frozen": false,
+      "results": [
+        {
+          "format": ".docx",
+          "pages": 3,
+          "pdf_bytes": 108085,
+          "source_preserved": true,
+          "cancelled_retry": true,
+          "cache_reused": true,
+          "math_or_chart_checked": true
+        },
+        {
+          "format": ".pptx",
+          "pages": 3,
+          "pdf_bytes": 77986,
+          "source_preserved": true,
+          "cancelled_retry": true,
+          "cache_reused": true,
+          "math_or_chart_checked": true
+        }
+      ],
+      "restart_cache": true,
+      "xml_budget_rejected": true
+    },
+    "raw_file": "artifacts/off02e/off02e-source03-processes.json",
+    "raw_sha256": "e5dca5a3a22b0d23a7d78ce050d0c581030d77326c2588e349c3b31f0516dbfa",
+    "log_sha256": "47a8539996797b2bbeb5831fd36f194d717cbd2021c94c572a292dfa8969b807",
+    "windows_version": [
+      10,
+      0,
+      26200
+    ],
+    "observations": [
+      {
+        "format": ".docx",
+        "arguments_sha256": "234f6ee4cc8151c81719512e995194416252718b7dd670714421c55f3411a0f2",
+        "environment_sha256": "6f9b6657be916445b5c5ab53c7f305cc40709fee2621bcdec507e3e8095609ea",
+        "bootstrap_keys": [
+          "CONFIGURATION_LAYERS",
+          "OOO_CWD",
+          "UNO_SERVICES",
+          "UNO_TYPES",
+          "URE_MORE_JAVA_TYPES",
+          "UserInstallation"
+        ],
+        "no_inherited_bootstrap": true,
+        "environment_keys": [
+          "APPDATA",
+          "JAVA_HOME",
+          "LOCALAPPDATA",
+          "PATH",
+          "SAL_DISABLESKIA",
+          "SAL_DISABLE_OPENCL",
+          "SystemRoot",
+          "TEMP",
+          "TMP",
+          "UNO_JAVA_JFW_JREHOME",
+          "UNO_JAVA_JFW_PARAMETER_1",
+          "USERPROFILE",
+          "WINDIR"
+        ],
+        "exact_command_environment_and_internal_cwd_parent_checked": true
+      },
+      {
+        "format": ".docx",
+        "arguments_sha256": "234f6ee4cc8151c81719512e995194416252718b7dd670714421c55f3411a0f2",
+        "environment_sha256": "6f9b6657be916445b5c5ab53c7f305cc40709fee2621bcdec507e3e8095609ea",
+        "bootstrap_keys": [
+          "CONFIGURATION_LAYERS",
+          "OOO_CWD",
+          "UNO_SERVICES",
+          "UNO_TYPES",
+          "URE_MORE_JAVA_TYPES",
+          "UserInstallation"
+        ],
+        "no_inherited_bootstrap": true,
+        "environment_keys": [
+          "APPDATA",
+          "JAVA_HOME",
+          "LOCALAPPDATA",
+          "PATH",
+          "SAL_DISABLESKIA",
+          "SAL_DISABLE_OPENCL",
+          "SystemRoot",
+          "TEMP",
+          "TMP",
+          "UNO_JAVA_JFW_JREHOME",
+          "UNO_JAVA_JFW_PARAMETER_1",
+          "USERPROFILE",
+          "WINDIR"
+        ],
+        "exact_command_environment_and_internal_cwd_parent_checked": true
+      },
+      {
+        "format": ".pptx",
+        "arguments_sha256": "50557359cd5980d765869a49cf8088a18ed2233b0c86e8374663a6245175a99b",
+        "environment_sha256": "58caa82a5573bc8a481a6c0a6df473f55800043dd8dd93665facd8cf026620b5",
+        "bootstrap_keys": [
+          "CONFIGURATION_LAYERS",
+          "OOO_CWD",
+          "UNO_SERVICES",
+          "UNO_TYPES",
+          "URE_MORE_JAVA_TYPES",
+          "UserInstallation"
+        ],
+        "no_inherited_bootstrap": true,
+        "environment_keys": [
+          "APPDATA",
+          "JAVA_HOME",
+          "LOCALAPPDATA",
+          "PATH",
+          "SAL_DISABLESKIA",
+          "SAL_DISABLE_OPENCL",
+          "SystemRoot",
+          "TEMP",
+          "TMP",
+          "UNO_JAVA_JFW_JREHOME",
+          "UNO_JAVA_JFW_PARAMETER_1",
+          "USERPROFILE",
+          "WINDIR"
+        ],
+        "exact_command_environment_and_internal_cwd_parent_checked": true
+      },
+      {
+        "format": ".pptx",
+        "arguments_sha256": "50557359cd5980d765869a49cf8088a18ed2233b0c86e8374663a6245175a99b",
+        "environment_sha256": "58caa82a5573bc8a481a6c0a6df473f55800043dd8dd93665facd8cf026620b5",
+        "bootstrap_keys": [
+          "CONFIGURATION_LAYERS",
+          "OOO_CWD",
+          "UNO_SERVICES",
+          "UNO_TYPES",
+          "URE_MORE_JAVA_TYPES",
+          "UserInstallation"
+        ],
+        "no_inherited_bootstrap": true,
+        "environment_keys": [
+          "APPDATA",
+          "JAVA_HOME",
+          "LOCALAPPDATA",
+          "PATH",
+          "SAL_DISABLESKIA",
+          "SAL_DISABLE_OPENCL",
+          "SystemRoot",
+          "TEMP",
+          "TMP",
+          "UNO_JAVA_JFW_JREHOME",
+          "UNO_JAVA_JFW_PARAMETER_1",
+          "USERPROFILE",
+          "WINDIR"
+        ],
+        "exact_command_environment_and_internal_cwd_parent_checked": true
+      }
+    ],
+    "sampling_errors": {}
+  },
+  "frozen_conversion": {
+    "probe_exit": 0,
+    "conversion": {
+      "frozen": true,
+      "results": [
+        {
+          "format": ".docx",
+          "pages": 3,
+          "pdf_bytes": 108085,
+          "source_preserved": true,
+          "cancelled_retry": true,
+          "cache_reused": true,
+          "math_or_chart_checked": true
+        },
+        {
+          "format": ".pptx",
+          "pages": 3,
+          "pdf_bytes": 77986,
+          "source_preserved": true,
+          "cancelled_retry": true,
+          "cache_reused": true,
+          "math_or_chart_checked": true
+        }
+      ],
+      "restart_cache": true,
+      "xml_budget_rejected": true
+    },
+    "raw_file": "artifacts/off02e/off02e-frozen01-processes.json",
+    "raw_sha256": "23d33c16b2508591df35a0ca3ea8fa9871b7fa9242f9b065aa644edbff5ddfbd",
+    "log_sha256": "074f3d6d3ffe4eb2ce0c16265bd47420340b624b4acd519b5bf326b4dc5bd8c2",
+    "windows_version": [
+      10,
+      0,
+      26200
+    ],
+    "observations": [
+      {
+        "format": ".docx",
+        "arguments_sha256": "fdd6d19254cea67b6543cbc28381ecdf7c321f11e273b73ef2917e7d7a43e48a",
+        "environment_sha256": "5f734a4fdd97e163549ce109377e1ef46f5d8a726e4700d01eaa55876b19502b",
+        "bootstrap_keys": [
+          "CONFIGURATION_LAYERS",
+          "OOO_CWD",
+          "UNO_SERVICES",
+          "UNO_TYPES",
+          "URE_MORE_JAVA_TYPES",
+          "UserInstallation"
+        ],
+        "no_inherited_bootstrap": true,
+        "environment_keys": [
+          "APPDATA",
+          "JAVA_HOME",
+          "LOCALAPPDATA",
+          "PATH",
+          "SAL_DISABLESKIA",
+          "SAL_DISABLE_OPENCL",
+          "SystemRoot",
+          "TEMP",
+          "TMP",
+          "UNO_JAVA_JFW_JREHOME",
+          "UNO_JAVA_JFW_PARAMETER_1",
+          "USERPROFILE",
+          "WINDIR"
+        ],
+        "exact_command_environment_and_internal_cwd_parent_checked": true
+      },
+      {
+        "format": ".docx",
+        "arguments_sha256": "fdd6d19254cea67b6543cbc28381ecdf7c321f11e273b73ef2917e7d7a43e48a",
+        "environment_sha256": "5f734a4fdd97e163549ce109377e1ef46f5d8a726e4700d01eaa55876b19502b",
+        "bootstrap_keys": [
+          "CONFIGURATION_LAYERS",
+          "OOO_CWD",
+          "UNO_SERVICES",
+          "UNO_TYPES",
+          "URE_MORE_JAVA_TYPES",
+          "UserInstallation"
+        ],
+        "no_inherited_bootstrap": true,
+        "environment_keys": [
+          "APPDATA",
+          "JAVA_HOME",
+          "LOCALAPPDATA",
+          "PATH",
+          "SAL_DISABLESKIA",
+          "SAL_DISABLE_OPENCL",
+          "SystemRoot",
+          "TEMP",
+          "TMP",
+          "UNO_JAVA_JFW_JREHOME",
+          "UNO_JAVA_JFW_PARAMETER_1",
+          "USERPROFILE",
+          "WINDIR"
+        ],
+        "exact_command_environment_and_internal_cwd_parent_checked": true
+      },
+      {
+        "format": ".pptx",
+        "arguments_sha256": "c67a2c4d9752a1d6de3e97e7bc097001a752c2a1b702b9278d5272bda425f1e0",
+        "environment_sha256": "b0ada6d44e2d7cb448e19a58ae3fc5ad1f77a7d1b46a3e73ba9c16eb9dbc0c78",
+        "bootstrap_keys": [
+          "CONFIGURATION_LAYERS",
+          "OOO_CWD",
+          "UNO_SERVICES",
+          "UNO_TYPES",
+          "URE_MORE_JAVA_TYPES",
+          "UserInstallation"
+        ],
+        "no_inherited_bootstrap": true,
+        "environment_keys": [
+          "APPDATA",
+          "JAVA_HOME",
+          "LOCALAPPDATA",
+          "PATH",
+          "SAL_DISABLESKIA",
+          "SAL_DISABLE_OPENCL",
+          "SystemRoot",
+          "TEMP",
+          "TMP",
+          "UNO_JAVA_JFW_JREHOME",
+          "UNO_JAVA_JFW_PARAMETER_1",
+          "USERPROFILE",
+          "WINDIR"
+        ],
+        "exact_command_environment_and_internal_cwd_parent_checked": true
+      },
+      {
+        "format": ".pptx",
+        "arguments_sha256": "c67a2c4d9752a1d6de3e97e7bc097001a752c2a1b702b9278d5272bda425f1e0",
+        "environment_sha256": "b0ada6d44e2d7cb448e19a58ae3fc5ad1f77a7d1b46a3e73ba9c16eb9dbc0c78",
+        "bootstrap_keys": [
+          "CONFIGURATION_LAYERS",
+          "OOO_CWD",
+          "UNO_SERVICES",
+          "UNO_TYPES",
+          "URE_MORE_JAVA_TYPES",
+          "UserInstallation"
+        ],
+        "no_inherited_bootstrap": true,
+        "environment_keys": [
+          "APPDATA",
+          "JAVA_HOME",
+          "LOCALAPPDATA",
+          "PATH",
+          "SAL_DISABLESKIA",
+          "SAL_DISABLE_OPENCL",
+          "SystemRoot",
+          "TEMP",
+          "TMP",
+          "UNO_JAVA_JFW_JREHOME",
+          "UNO_JAVA_JFW_PARAMETER_1",
+          "USERPROFILE",
+          "WINDIR"
+        ],
+        "exact_command_environment_and_internal_cwd_parent_checked": true
+      }
+    ],
+    "sampling_errors": {}
+  },
+  "limits": [
+    "Local UNO engine probe uses environment bootstrap, not the Office CLI.",
+    "Process inspection is a sampled, read-only Windows x64 diagnostic using private environment layout.",
+    "No host registry changes, acceptor creation, scanner invocation, manual UI, merge or release.",
+    "TWAIN and remaining native unknowns, complete SBOM/licenses/vulnerabilities/signing remain open."
+  ],
+  "diagnostic_sources": [
+    {
+      "executed_path": "artifacts/off02e/configuration_probe.py",
+      "selected_path": "off02e-configuration-probe.py",
+      "sha256": "f2dd827d21e8fc340a4e032066e7987b5347d52f9dffc41dd00abde915b1eb3e"
+    },
+    {
+      "executed_path": "artifacts/off02e/observe_conversion.py",
+      "selected_path": "off02e-process-probe.py",
+      "sha256": "062ca24d3da58fec02f3119c3196ad0393b975fe14c6358343b5e76c68b7036e"
+    },
+    {
+      "executed_path": "artifacts/off02e/reject_changed_profile.py",
+      "selected_path": "off02e-profile-rejection-probe.py",
+      "sha256": "d72674ccdb90e272b5e18ce6638e82ffc6094f2f10beb29da59dcdbd586445c1"
+    }
+  ]
+}

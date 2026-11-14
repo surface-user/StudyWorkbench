@@ -23,7 +23,7 @@ JAVA = {'version': '21.0.13+9', 'directory': 'java',
         'package_sha256': '2332c0b4cff6bed722da3567c91d5e47568bcba863fa4945d0a8d6fc76158628'}
 APP_LOCAL_CRT = ('msvcp140.dll', 'msvcp140_1.dll', 'msvcp140_2.dll', 'msvcp140_atomic_wait.dll',
                  'msvcp140_codecvt_ids.dll', 'vcruntime140.dll', 'vcruntime140_1.dll', 'vcruntime140_threads.dll')
-OPTIONS = 'pdf-static-v3-no-macros-no-external-links-internal-charts-math'
+OPTIONS = 'pdf-static-v4-fixed-config-no-macros-no-external-links-internal-charts-math'
 PROFILE = '''<?xml version="1.0" encoding="UTF-8"?>
 <oor:items xmlns:oor="http://openoffice.org/2001/registry">
 <item oor:path="/org.openoffice.Office.Common/Security/Scripting">
@@ -38,6 +38,9 @@ PROFILE = '''<?xml version="1.0" encoding="UTF-8"?>
 <prop oor:name="Link" oor:op="fuse"><value>2</value></prop>
 <prop oor:name="Field" oor:op="fuse"><value>false</value></prop>
 <prop oor:name="Chart" oor:op="fuse"><value>false</value></prop>
+</item>
+<item oor:path="/org.openoffice.Setup/Office">
+<prop oor:name="ooSetupConnectionURL" oor:op="fuse"><value></value></prop>
 </item>
 </oor:items>'''
 
@@ -273,7 +276,19 @@ class OfficeRuntime:
 
     def command(self, source, directory):
         filter_name = 'writer_pdf_Export' if source.suffix == '.docx' else 'impress_pdf_Export'
+        program, registry = self.root / 'program', (self.root / 'share/registry').as_uri()
+        configuration = (directory / 'profile/user/registrymodifications.xcu').as_uri()
+        # A fresh profile cannot override finalized host policies; omit their layers and extension registrations.
         return [str(self.executable), '-env:UserInstallation=' + (directory / 'profile').as_uri(),
+                f'-env:CONFIGURATION_LAYERS=xcsxcu:{registry} res:{registry} user:!{configuration}',
+                '-env:UNO_SERVICES=' + ' '.join((program / name).as_uri() for name in (
+                    'services.rdb', 'services/postgresql-sdbc.rdb', 'services/pyuno.rdb',
+                    'services/scriptproviderforbeanshell.rdb', 'services/scriptproviderforjavascript.rdb',
+                    'services/scriptproviderforpython.rdb', 'services/services.rdb')),
+                '-env:UNO_TYPES=' + ' '.join((program / name).as_uri() for name in (
+                    'types.rdb', 'types/offapi.rdb', 'types/oovbaapi.rdb')),
+                '-env:URE_MORE_JAVA_TYPES=' + ' '.join((program / 'classes' / name).as_uri() for name in (
+                    'libreoffice.jar', 'ScriptFramework.jar')),
                 '--headless', '--nologo', '--nodefault', '--norestore', '--quickstart=no',
                 '--convert-to', 'pdf:' + filter_name, '--outdir', str(directory / 'output'), str(source)]
 

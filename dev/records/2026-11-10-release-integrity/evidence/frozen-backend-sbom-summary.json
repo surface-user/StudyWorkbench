@@ -1,0 +1,461 @@
+{
+  "scope": "REL-01b one frozen backend coverage; not full product SBOM",
+  "selection_reason": "Compact identity, container, coverage and unknown counts; full raw logs and inventories remain in artifacts.",
+  "source_head": "b48b711d0ee1bdc5e2aa507e1e08852be73829ae",
+  "source_tree": "de75bcd2a5e6782400ef1964cacf5570a7e7970a",
+  "source_api": "https://api.github.com/repos/surface-user/StudyWorkbench/git/commits/b48b711d0ee1bdc5e2aa507e1e08852be73829ae",
+  "candidate_build_source_files_matched_to_remote_tree": 450,
+  "current_business_sources_matched_to_remote_tree_and_frozen_code": {
+    "backend/study_workbench/__init__.py": {
+      "sha256": "17760ecca60d84d97b62a99a0741f18e88d7d0b5941daddf9d50ecb7f0a8be40",
+      "git_blob_sha1": "d92b208ad0752845aad4b7718832ddbd894a6ba5"
+    },
+    "backend/study_workbench/__main__.py": {
+      "sha256": "273fd81e130856377bcea4f2bea4cd6add4ea837346a5afeb29b3ec5c74147ef",
+      "git_blob_sha1": "d5c21babb7ab12ab340b169b64b3b973f77bf8c7"
+    },
+    "backend/study_workbench/agent_access.py": {
+      "sha256": "1e5a3e78681da984e5c21053601543c10dbcd2989362e41a4ce71c155436ecc4",
+      "git_blob_sha1": "94e04161eac975193c41189e17f78d8ae5660baf"
+    },
+    "backend/study_workbench/analysis_review.py": {
+      "sha256": "13693a157f4696331f8db0194523800a68fbfc74623d1986284d102cf568c234",
+      "git_blob_sha1": "20cb45e2d2eae00097d5c90c81ed75ecbe4a8e66"
+    },
+    "backend/study_workbench/app.py": {
+      "sha256": "9691b96acfdd8ce02eb3c30f1b827b3dd0bbd1bbfeacccf110f6c69748db0412",
+      "git_blob_sha1": "3297f11b1e20bd3d75a74b5bf37f2629c4a03bda"
+    },
+    "backend/study_workbench/backup_archive.py": {
+      "sha256": "fbd8cb93ea01c2e1c0d6ced0229a89e3549f3cc42fdbbb36d436ff33178fcf69",
+      "git_blob_sha1": "efa5b19435d0230107200476d14de038a503b339"
+    },
+    "backend/study_workbench/backup_store.py": {
+      "sha256": "4a7828605866a43f2055457d873844d9e7c6358b6fa1f90ba9e1c70b5c2e5382",
+      "git_blob_sha1": "54a75abe894994854bba1ec3fa2506b05ef33b3c"
+    },
+    "backend/study_workbench/content.py": {
+      "sha256": "5ff8ae2e07b1d61dd6808664972131ffb438e206182115c68ddc9504fc15a81b",
+      "git_blob_sha1": "9964ced285bb726341fe1cf0b4bc97582a5f46f6"
+    },
+    "backend/study_workbench/data_root.py": {
+      "sha256": "7461edab1fec47b06443989f93796094516abf2b59acc188d3c1c797b1bbde4a",
+      "git_blob_sha1": "8de21a93b4fb3d7510634ba285b51825e045c4b4"
+    },
+    "backend/study_workbench/db.py": {
+      "sha256": "367c79a607fa23bb907125cf5445303a50620af6fb054c7a2c6feefd71055616",
+      "git_blob_sha1": "2e676cde9906a8e1c5b38ad63f334bcb82e9ba3b"
+    },
+    "backend/study_workbench/document_files.py": {
+      "sha256": "23a28408538038bab901ca11ae2b04aa37bb3b3bb4bd37ac2a30ba4d2bd01e84",
+      "git_blob_sha1": "3e90477f3d09bc6750ae1f9abdf03de69f3af29c"
+    },
+    "backend/study_workbench/document_view_worker.py": {
+      "sha256": "b98eed8b79236791f5901c0acf23a3f853cf5ec8e6833ee7c6cfea1cf99505b4",
+      "git_blob_sha1": "8ecb7eda4b17efe4872746a7236a04c2b099582c"
+    },
+    "backend/study_workbench/documents.py": {
+      "sha256": "4c0114e082247bd9e653800a05b5a4a7f0a5e03942a51bf10175e576cc885f98",
+      "git_blob_sha1": "d4d0a87662efe4bc2f53460dce423988603fbc6c"
+    },
+    "backend/study_workbench/draft_editing.py": {
+      "sha256": "70abd046e79464f00e0ca654383518f042b100b1265b8866b59b7954c45a1dea",
+      "git_blob_sha1": "22799d548dc49d07391f53766d51d5e959369312"
+    },
+    "backend/study_workbench/explorer.py": {
+      "sha256": "a787c2c0b1776b5214eca5556510252c76f619072df222e04e3acf14c939728f",
+      "git_blob_sha1": "357d38d0009a5c7561f4bce2cf9cc252f72b10d3"
+    },
+    "backend/study_workbench/imports.py": {
+      "sha256": "0233f7aee7c32f770634907ed3bbfc159709515385f5157c9705e90cc848ea87",
+      "git_blob_sha1": "d03dff77d83d149d3b06def198fb98c88d4ccd91"
+    },
+    "backend/study_workbench/internal_links.py": {
+      "sha256": "5550984dc5d5b9b6c80470ee66bd4ba02375ab0d03c7d0929a76883573924cbc",
+      "git_blob_sha1": "d85495efe2354d03aa43c8cc5901247e08789c57"
+    },
+    "backend/study_workbench/learning.py": {
+      "sha256": "e5dde94f010b10db6000082d8512f9b5117a8ff3265f6a8b71cccba4bdbc9a36",
+      "git_blob_sha1": "f9a5283db8088870578301cf903804800af643a9"
+    },
+    "backend/study_workbench/learning_marks.py": {
+      "sha256": "3f9eb7e203386e63ef9bda12ec1f842f4ec3ec1b806fb13880508a98c210d48c",
+      "git_blob_sha1": "8b74b4a9a0851b797a9b1277975cf06aee02f3dc"
+    },
+    "backend/study_workbench/learning_records.py": {
+      "sha256": "bd18c97f338dc3901df341f89c3252eeb4e075b132e367768dec8de0287a1bdc",
+      "git_blob_sha1": "e3f0f7d700ee89c8c5c8c7020e4d56d987fb4627"
+    },
+    "backend/study_workbench/learning_search.py": {
+      "sha256": "47df4c11428166484cf5f3dc5936b9517cb4bf4841afa3d88982aad773a0a874",
+      "git_blob_sha1": "801165fc399a34bc909b92a8115240dde4844b6a"
+    },
+    "backend/study_workbench/library.py": {
+      "sha256": "897ecc303b97aa7aa39666d726ef2a09f362409da396fc7cf60020675aadac7c",
+      "git_blob_sha1": "b2b171392de54ec3a767678bb6c51dfcee1458f9"
+    },
+    "backend/study_workbench/library_integrity.py": {
+      "sha256": "7f2e3622cf30e4a81b25427acdbfeced7300352b2e4595263b1647a442dcef18",
+      "git_blob_sha1": "21957fb8ed98d88a3774dcd0d4974b2c9571f2a1"
+    },
+    "backend/study_workbench/markdown_merge.py": {
+      "sha256": "7ff11e87bb7575099bb5b9421702e89322ca60cc948ed0afcb9306da07db1518",
+      "git_blob_sha1": "2c8dd6a544d66487f324434cfc29bddd4fde686c"
+    },
+    "backend/study_workbench/markdown_notes.py": {
+      "sha256": "5e0fbfe0f6da2121865a55c373513d1c9b92ba5a3d6348eb0bb58d0f9d952eb8",
+      "git_blob_sha1": "fecba471afe6143d8df9b01ee45dbc438def2203"
+    },
+    "backend/study_workbench/markdown_questions.py": {
+      "sha256": "1fccbbc2d54f21c0e5b22ef115e4cdd2d376a6c757d5fe792e7c07f8e7a0884a",
+      "git_blob_sha1": "6482cd59513f1ad37eb354f10dd3b7a0f0b588d5"
+    },
+    "backend/study_workbench/media_download_http.py": {
+      "sha256": "0e342df0832baa41be7ba4625b1166438c900c116e70c0b3b6ad9ebbe3edc9d0",
+      "git_blob_sha1": "fe3132df5b08157f0ead4cf8337ac27616cbb26f"
+    },
+    "backend/study_workbench/media_download_worker.py": {
+      "sha256": "96282d9a854bac38cb28cdf6c5fd74838108b2a0823eea9e0139c73779acf959",
+      "git_blob_sha1": "28882203113ff0e44c02decbc9f7dda9ce8ddeb5"
+    },
+    "backend/study_workbench/media_downloads.py": {
+      "sha256": "d68cba7d5003f327741f9c1ceb32b190dae8649309e2e9ea148c799aa142bdd6",
+      "git_blob_sha1": "3319ccffdcab54d0f84ef4d40d2e86a0c5240df0"
+    },
+    "backend/study_workbench/media_duration.py": {
+      "sha256": "1dc9aef3f44d94cddfe877e2804076b634807e646fa8d9383ec5632ac760d6e5",
+      "git_blob_sha1": "bcc7f0ea02f63c8e7799642051cdacc503d6b4f4"
+    },
+    "backend/study_workbench/media_library.py": {
+      "sha256": "5e70aada0b74b9629650926a84c0107b5c9bab7d67d00dd9c25eb3ce333393aa",
+      "git_blob_sha1": "81e5dec7aa642cd51559b15f070ec15020d4d41f"
+    },
+    "backend/study_workbench/migrate.py": {
+      "sha256": "3709599c9c45acc4d06144915ae477dfd95c03d454edaa66b8aae2c71240ce78",
+      "git_blob_sha1": "4a1011298d9daafb1eafe16e073e6b11438fc644"
+    },
+    "backend/study_workbench/office_inputs.py": {
+      "sha256": "2332363e11887153451f0781d6dd9b7fc4c491bb793ca8c889b89ac21d49ac3e",
+      "git_blob_sha1": "f2d3cf841b8d66235e2267d44e51741688fe2e78"
+    },
+    "backend/study_workbench/office_previews.py": {
+      "sha256": "baf80e60e78a0e421608df8e4cdc7a7a75611c968aae4e95998f812d486591cc",
+      "git_blob_sha1": "61d354530eb62abeb28e6fc46ace2e600432fd4f"
+    },
+    "backend/study_workbench/office_runtime.py": {
+      "sha256": "7ed1eddb5ceb096261eabdb8518b8740e97e9fd0954035b173a26df269947f3b",
+      "git_blob_sha1": "d5ee8bc9602862ff9dbcbe049697002f3c605320"
+    },
+    "backend/study_workbench/question_files.py": {
+      "sha256": "c808c4262ba2956b765841e2e56aaded6434fda932cdd39ed5d62dd81deb6c27",
+      "git_blob_sha1": "afd32c3ce94651c6c0e5fbf6d80fcc916c40b9ac"
+    },
+    "backend/study_workbench/question_files_format.py": {
+      "sha256": "7f2e1bfab989cfc1bd669ac10d933572db19ca7d9f56c3751c8795a6d201880a",
+      "git_blob_sha1": "eab35e798f5ee55fc62087e702e911d10c638d22"
+    },
+    "backend/study_workbench/question_protocol.py": {
+      "sha256": "6dccbc15b1ca8d16b861ddb70219b8b291591fa32af285845f8453e24996a0cc",
+      "git_blob_sha1": "4154eae4af508b82f7832becdf992f6be762efa2"
+    },
+    "backend/study_workbench/question_splitting.py": {
+      "sha256": "5d05eece0fd4ebacc46db0317605740f3ad96c21b91888edaed988c9d453e171",
+      "git_blob_sha1": "1b91b48f3deedcc7b25b19a2d120735365171819"
+    },
+    "backend/study_workbench/recovery_storage.py": {
+      "sha256": "6b333f9b3adbd0594b0a87182e0c16eacabdfbd6baeac3fcf234d48cfa443c38",
+      "git_blob_sha1": "ab5b9eb2de588c2ce1f492999bf6812b37690269"
+    },
+    "backend/study_workbench/request_limits.py": {
+      "sha256": "dd1d3751509ee497e7cd946f5e173f043aad4f0b603c2d9ea30e23a7d5a791e1",
+      "git_blob_sha1": "09c2577fe1272e2cd50287b73048436ef3fa6889"
+    },
+    "backend/study_workbench/spreadsheet_view.py": {
+      "sha256": "8626fd68398dba32f66c34eaa33b18e8e0a22bcbca7d6983b80bb09c29ea922f",
+      "git_blob_sha1": "9c9392da015bb252cd808b394d927a46e0108fe5"
+    },
+    "backend/study_workbench/workspaces.py": {
+      "sha256": "8da4e0bd7250bc450faceb0a01f27613476269a9b0e1c55b29231ce8fcc0a7af",
+      "git_blob_sha1": "0b7dc5b02902bbb1c45bb69e91d6c5ab581105f9"
+    }
+  },
+  "payload_exe_sha256": "3fba079e510e4550d086b7786973f937fa3c2a92e28efcd0e112d6bec82d50a2",
+  "payload_files": 969,
+  "payload_bytes": 145089570,
+  "payload_matches_before_first_probe": true,
+  "input_fingerprint": "8e1110cd7fee7d8ba29c6bb088dd4361c13ee8b844979d91b32ffb3c01482642",
+  "syft_version": "1.57.1",
+  "syft_executable_sha256": "42deb23bff7852997bf0316a540d3dcb364953273152749205e47881dd270c53",
+  "collector_sha256": "817f2a83145bdd9f3b8e72b6b2489e10fa1ea1ed2010926ea8b750cad0f6e4b2",
+  "scan_config_sha256": "d50bedbbec6737e0bb187e3ba49e1b6e4de56d499174663e6c9ae6ed16e8dc01",
+  "output_evidence": {
+    "coverage_sha256": "59ee081298406076d537aeac7dfd0b6fe72a6f79218b12a44116cf8cdad32956",
+    "cdx_sha256": "3404363c91bb6f298d9a72211f5e186f683b36986d949b4a4a1181c9ac2147c2",
+    "syft_json_sha256": "44078d9c154bb87b73b7a45b03ae2b90bf3c7fcf344ba3f5755caa3617d83406"
+  },
+  "schema_sources": {
+    "bom-1.6.schema.json": {
+      "url": "https://github.com/CycloneDX/specification/blob/1.6/schema/bom-1.6.schema.json",
+      "sha256": "3e92dddbc30cf7f6a02b80f0942b1a4cfd4fb1c26f1dfc4310afa9d613cafb93"
+    },
+    "spdx.schema.json": {
+      "url": "https://github.com/CycloneDX/specification/blob/1.6/schema/spdx.schema.json",
+      "sha256": "baa9d3bd1ed57b6751b0887edead6b5063ff53ff7429cf85d476c6c94af0166e"
+    },
+    "jsf-0.82.schema.json": {
+      "url": "https://github.com/CycloneDX/specification/blob/1.6/schema/jsf-0.82.schema.json",
+      "sha256": "8bae002c25e723db7ee1f26afde680ae1a2b1a8f6b4b4b0fd65dc3becb090aae"
+    }
+  },
+  "cyclonedx_1_6_schema_validated": true,
+  "cyclonedx_types": {
+    "application": 58,
+    "library": 15,
+    "file": 969
+  },
+  "shipped_python_metadata": {
+    "pkg:pypi/attrs@26.1.0": {
+      "name": "attrs",
+      "version": "26.1.0",
+      "path": "_internal/attrs-26.1.0.dist-info/METADATA",
+      "sha256": "4cd40e690f23bf37cbcad34efd6758e062df1df07c86833f7e3ce95bf1fa38cc",
+      "identity_evidence": "shipped_metadata_declaration",
+      "upstream_provenance_verified": false
+    },
+    "pkg:pypi/click@8.5.0": {
+      "name": "click",
+      "version": "8.5.0",
+      "path": "_internal/click-8.5.0.dist-info/METADATA",
+      "sha256": "e87bce0bd194de70dfb8e708e0a6b0483009f25611804eaf87bfeb63e6c20501",
+      "identity_evidence": "shipped_metadata_declaration",
+      "upstream_provenance_verified": false
+    },
+    "pkg:pypi/doclang@0.8.0": {
+      "name": "doclang",
+      "version": "0.8.0",
+      "path": "_internal/doclang-0.8.0.dist-info/METADATA",
+      "sha256": "5c97f84e41dd1c4e7d23cd7e1c189459fa9709c98b343ca7167529e0949d9b55",
+      "identity_evidence": "shipped_metadata_declaration",
+      "upstream_provenance_verified": false
+    },
+    "pkg:pypi/docling-core@2.104.0": {
+      "name": "docling-core",
+      "version": "2.104.0",
+      "path": "_internal/docling_core-2.104.0.dist-info/METADATA",
+      "sha256": "e81d8e8337d50217310b51d355428e8b80730e48092335266255b4feffd738ec",
+      "identity_evidence": "shipped_metadata_declaration",
+      "upstream_provenance_verified": false
+    },
+    "pkg:pypi/docling-slim@2.142.1": {
+      "name": "docling-slim",
+      "version": "2.142.1",
+      "path": "_internal/docling_slim-2.142.1.dist-info/METADATA",
+      "sha256": "675d614a20f4e8579c2e704b29b3412d938dedf6cc322e49de51b99a62660f7d",
+      "identity_evidence": "shipped_metadata_declaration",
+      "upstream_provenance_verified": false
+    },
+    "pkg:pypi/latex2mathml@3.81.1": {
+      "name": "latex2mathml",
+      "version": "3.81.1",
+      "path": "_internal/latex2mathml-3.81.1.dist-info/METADATA",
+      "sha256": "63e19d6656396f4a009c50bdedc161b500cf7da5b46f7d7a33d86c11b23a10ed",
+      "identity_evidence": "shipped_metadata_declaration",
+      "upstream_provenance_verified": false
+    },
+    "pkg:pypi/markupsafe@3.0.4": {
+      "name": "markupsafe",
+      "version": "3.0.4",
+      "path": "_internal/markupsafe-3.0.4.dist-info/METADATA",
+      "sha256": "08fa79954ab288d778b0fee4f0e6c7dbc869e545a415747d1324622465d3b08d",
+      "identity_evidence": "shipped_metadata_declaration",
+      "upstream_provenance_verified": false
+    },
+    "pkg:pypi/numpy@2.5.4": {
+      "name": "numpy",
+      "version": "2.5.4",
+      "path": "_internal/numpy-2.5.4.dist-info/METADATA",
+      "sha256": "e2b909d6a37d76c2bc130f528d7fed0c517322bce16dc7846b6a6df30e200403",
+      "identity_evidence": "shipped_metadata_declaration",
+      "upstream_provenance_verified": false
+    },
+    "pkg:pypi/opentelemetry-api@1.45.1": {
+      "name": "opentelemetry-api",
+      "version": "1.45.1",
+      "path": "_internal/opentelemetry_api-1.45.1.dist-info/METADATA",
+      "sha256": "5bc71e90cb421be92a43bf5ad5b0f25dccfa2a24ddceaa2877779879962a4c9e",
+      "identity_evidence": "shipped_metadata_declaration",
+      "upstream_provenance_verified": false
+    },
+    "pkg:pypi/pluggy@1.7.0": {
+      "name": "pluggy",
+      "version": "1.7.0",
+      "path": "_internal/pluggy-1.7.0.dist-info/METADATA",
+      "sha256": "20ac8237e37f1d6e7e75500cd663015177ba80c1a1a595ff6bae18a539ff8a2c",
+      "identity_evidence": "shipped_metadata_declaration",
+      "upstream_provenance_verified": false
+    },
+    "pkg:pypi/pydantic@2.14.1": {
+      "name": "pydantic",
+      "version": "2.14.1",
+      "path": "_internal/pydantic-2.14.1.dist-info/METADATA",
+      "sha256": "4d4c8e8d5e6a27d5208f0d7949f25628e6747133034969d4d1399b1ad5394036",
+      "identity_evidence": "shipped_metadata_declaration",
+      "upstream_provenance_verified": false
+    },
+    "pkg:pypi/pylatexenc@2.10": {
+      "name": "pylatexenc",
+      "version": "2.10",
+      "path": "_internal/pylatexenc-2.10.dist-info/METADATA",
+      "sha256": "f502ae67cf6149777c72fab4b19bb607133e56d01b1ec3cefec95de8153821ce",
+      "identity_evidence": "shipped_metadata_declaration",
+      "upstream_provenance_verified": false
+    },
+    "pkg:pypi/pypdfium2@5.14.0": {
+      "name": "pypdfium2",
+      "version": "5.14.0",
+      "path": "_internal/pypdfium2-5.14.0.dist-info/METADATA",
+      "sha256": "8733a714c056453b87b48c819495cc05f9038d38221b89505043d28c2501237e",
+      "identity_evidence": "shipped_metadata_declaration",
+      "upstream_provenance_verified": false
+    },
+    "pkg:pypi/python-docx@1.2.0": {
+      "name": "python-docx",
+      "version": "1.2.0",
+      "path": "_internal/python_docx-1.2.0.dist-info/METADATA",
+      "sha256": "4c4cc819ebe6de4aca44daccfd3f9173e6f46d9ed900ad1c388ff9efb7b6b1d7",
+      "identity_evidence": "shipped_metadata_declaration",
+      "upstream_provenance_verified": false
+    },
+    "pkg:pypi/tqdm@4.70.1": {
+      "name": "tqdm",
+      "version": "4.70.1",
+      "path": "_internal/tqdm-4.70.1.dist-info/METADATA",
+      "sha256": "a5da70b966afea3a759716041bad7187f2ece02c22348cf9e7c0a512bbf15f57",
+      "identity_evidence": "shipped_metadata_declaration",
+      "upstream_provenance_verified": false
+    }
+  },
+  "locked_python_without_shipped_metadata": [
+    "pkg:pypi/alembic@1.20.1",
+    "pkg:pypi/altgraph@0.17.5",
+    "pkg:pypi/annotated-doc@0.0.5",
+    "pkg:pypi/annotated-types@0.8.0",
+    "pkg:pypi/anyio@4.15.1",
+    "pkg:pypi/certifi@2026.10.19",
+    "pkg:pypi/charset-normalizer@3.5.2",
+    "pkg:pypi/colorama@0.4.6",
+    "pkg:pypi/defusedxml@0.7.1",
+    "pkg:pypi/fastapi@0.161.1",
+    "pkg:pypi/filetype@1.2.0",
+    "pkg:pypi/h11@0.16.0",
+    "pkg:pypi/httpcore@1.0.9",
+    "pkg:pypi/httpx@0.28.1",
+    "pkg:pypi/idna@3.20",
+    "pkg:pypi/iniconfig@2.3.1",
+    "pkg:pypi/jsonref@1.1.0",
+    "pkg:pypi/jsonschema-specifications@2025.9.1",
+    "pkg:pypi/jsonschema@4.26.0",
+    "pkg:pypi/langcodes@3.5.1",
+    "pkg:pypi/lxml@6.1.3",
+    "pkg:pypi/mako@1.4.3",
+    "pkg:pypi/markdown-it-py@4.2.0",
+    "pkg:pypi/mdurl@0.1.2",
+    "pkg:pypi/packaging@26.3",
+    "pkg:pypi/pandas@3.1.0",
+    "pkg:pypi/pefile@2024.8.26",
+    "pkg:pypi/pillow@13.0.0",
+    "pkg:pypi/pydantic-core@2.50.1",
+    "pkg:pypi/pydantic-settings@2.16.1",
+    "pkg:pypi/pygments@2.21.0",
+    "pkg:pypi/pyinstaller-hooks-contrib@2026.9",
+    "pkg:pypi/pyinstaller@6.22.3",
+    "pkg:pypi/pytest@9.0.3",
+    "pkg:pypi/python-dateutil@3.0.0",
+    "pkg:pypi/python-dotenv@1.2.4",
+    "pkg:pypi/pywin32-ctypes@0.2.3",
+    "pkg:pypi/pyyaml@6.0.3",
+    "pkg:pypi/referencing@0.37.0",
+    "pkg:pypi/requests@2.34.2",
+    "pkg:pypi/rich@15.0.0",
+    "pkg:pypi/rpds-py@2026.9.1",
+    "pkg:pypi/ruff@0.14.6",
+    "pkg:pypi/setuptools@84.2.1",
+    "pkg:pypi/shellingham@1.5.4",
+    "pkg:pypi/six@1.17.0",
+    "pkg:pypi/sqlalchemy@2.1.6",
+    "pkg:pypi/starlette@1.3.1",
+    "pkg:pypi/tabulate@0.10.0",
+    "pkg:pypi/typer@0.26.8",
+    "pkg:pypi/typing-extensions@4.16.0",
+    "pkg:pypi/typing-inspection@0.4.4",
+    "pkg:pypi/tzdata@2026.5",
+    "pkg:pypi/urllib3@2.8.0",
+    "pkg:pypi/uvicorn@0.54.0"
+  ],
+  "native_file_suffix_counts": {
+    ".pyd": 103,
+    ".dll": 57,
+    ".exe": 1
+  },
+  "native_files_without_scanner_package": 103,
+  "scanner_unknown_versions": [
+    {
+      "id": "4574037f2d274af5",
+      "name": "libffi-8",
+      "version": "UNKNOWN",
+      "type": "binary",
+      "locations": [
+        "_internal/libffi-8.dll"
+      ]
+    },
+    {
+      "id": "0721d4ed8dd1f513",
+      "name": "libscipy_openblas64_-ed4f167a5330424524f45258e7ca2c8d",
+      "version": "UNKNOWN",
+      "type": "binary",
+      "locations": [
+        "_internal/libscipy_openblas64_-ed4f167a5330424524f45258e7ca2c8d.dll"
+      ]
+    },
+    {
+      "id": "cbdf60165563a4d7",
+      "name": "libscipy_openblas64_-ed4f167a5330424524f45258e7ca2c8d",
+      "version": "UNKNOWN",
+      "type": "binary",
+      "locations": [
+        "_internal/numpy.libs/libscipy_openblas64_-ed4f167a5330424524f45258e7ca2c8d.dll"
+      ]
+    },
+    {
+      "id": "05ae77d7791b4602",
+      "name": "study_backend",
+      "version": "UNKNOWN",
+      "type": "binary",
+      "locations": [
+        "study_backend.exe"
+      ]
+    }
+  ],
+  "scanner_pe_candidates_are_unverified": true,
+  "carchive_entries": 12,
+  "runtime_options": [
+    "pyi-contents-directory _internal"
+  ],
+  "pyz_entries": 2721,
+  "pyz_business_source_compared": 43,
+  "pyz_unmapped": 2678,
+  "base_library_zip_entries_unmapped": 154,
+  "pyz_hash_semantics": "compressed bytes only, except business code separately compared; namespace entries have empty data",
+  "latex2mathml_gap": "Metadata says MIT; upstream package also embeds an LPPL-declared data file. Current frozen PYZ has seven modules but the data file is absent. No supported-path failure reproduced; original LPPL Work and modification obligations remain unverified.",
+  "product_sbom_complete": false,
+  "limitations": [
+    "Only this frozen backend directory is scanned; other final product and installer components are excluded.",
+    "Shipped Python METADATA declares identities; it neither authenticates upstream archives nor lists every frozen package.",
+    "PE resource versions, PURLs and CPEs are scanner candidates, not authenticated package or vulnerability identities.",
+    "PYZ and base_library.zip entries without a verified source comparison remain unmapped; file hashes are not package identities.",
+    "Source head and expected executable hash are caller assertions; remote commit/build provenance must be checked separately.",
+    "Dependency edges, embedded libraries, complete licenses, vulnerabilities and signatures are not verified.",
+    "latex2mathml project MIT metadata does not settle embedded unimathsymbols.txt LPPL provenance or distribution obligations.",
+    "Before/after hashes detect observed changes, but the scan is not an atomic filesystem snapshot."
+  ]
+}
