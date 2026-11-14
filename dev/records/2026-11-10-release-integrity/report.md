@@ -918,3 +918,41 @@ Q -X utf8 artifacts/rel01f/check_changes.py退出0：7文件范围、493个未�
 - IQ artifacts/rel01f/verify_real.py再次退出0（verify-real02.log），按最终real02完整逐项核证及官方Schema；最终精选摘要SHA256 243b3401fabbe05099d8040ac2cf8e80ab10f493d44656f2fd059b2e6125ea81。初版摘要a1f30eaa…另留artifacts/rel01f/summary-real01.json，原real01/日志及helper快照保留；当前helper的--read-only核最终real02和新摘要且零写入。
 
 task/指南同步最终262/44及预算边界，独立PR随后追加必要修正提交并核该head完整CI；最终状态仍REVIEW等主Agent退出核验。实际产物仍是已明确的#53 CI artifact，未改源包/缓存或把新计数当完整发行认证。
+
+## 2026-11-14 REL-01g：桌面ICU官方共享归档来源
+
+### 基线与有限设计
+
+主Agent已有限接受REL-01f/[PR #59](https://github.com/surface-user/StudyWorkbench/pull/59)最终727b03845e1efb8c83c13e48fc11c4ae77c6356a/tree beec48021554440351f4be22a32584ce08b35b21及[当前CI43586932756](https://github.com/surface-user/StudyWorkbench/actions/runs/43586932756)：双Python1224/desktop203/44新冻结模块核源，独立只读核41文件/26复制/15未知、66Git blob、47组件官方Schema和所有原件/精选字节。旧实现、原失败、原归档和精选摘要不改。本片从精确500 blob新建desktop-icu隔离副本；批准7文件为既有工具/专项、task/依赖/打包指南、原报告及新精选ICU摘要。没有新依赖、缓存/编译器/系统/业务、锁或构建流程变化，不新建通用框架、不执行外来内容、不合并或发行。
+
+固定Flutter3.47.1官方engine.version为5d531788691ec3404cac0cee66ead4007b177363。实际SDK engine.stamp与本地版本上下文相符，但不据此认证归档。原release ZIP不含ICU；核固定版本FlutterSdk.getBinaryDirs、EngineCachedArtifact.updateInner、Artifact.icuData解析、UnpackWindows与unpackDesktopArtifacts：共享host配方取windows-x64/artifacts.zip，Windows unpack取ICU不传mode，将其复制到ephemeral，项目既有CMake再安装到data/icudtl.dat。debug/profile/release的windows-x64-flutter.zip另外选择，不能凭profile/release目录猜该共享ICU源。
+
+六份固定官方HTTPS原始配方（engine.version、flutter_cache.dart、cache.dart、artifacts.dart、windows.dart、desktop.dart）各≤1MiB保存URL/长度/SHA256，见artifacts/rel01g/recipes、recipe-probe.json和[精选摘要](evidence/desktop-icu-summary.json)。实际SDK六份仅LF/CRLF转换后对应，原始hash不同，只作上下文关联。浏览工具对windows.dart返回cache miss，随后直接只读官方固定raw URL成功；未改缓存、不把转换当原byte认证或整个SDK认证。
+
+真实只读试探取得[官方共享归档](https://storage.googleapis.com/flutter_infra_release/flutter/5d531788691ec3404cac0cee66ead4007b177363/windows-x64/artifacts.zip)：30535798字节/SHA256 fd626db3afddcc37dcf052f1a26cc43834ac6dcc4c45d8e0a5c10e6a2272b3df，32成员/82279623声明展开字节，最大成员40429056字节。唯一icudtl.dat为864880字节/SHA256 325a86063d26334c2eabe1743cea073b612540fbf3d8fc2ef0b5708e3763a8c7，与#53实际CI归档内data/icudtl.dat逐字节相同；不由本地SDK相等推出此结论。HTTP长度/Last-Modified/ETag只是下载记录，未认证签名或可信构建证明。
+
+### 实现与剩余未知
+
+既有generate尾部新增兼容可选icu_archive/CLI --icu-archive。未提供时保持本地缓存比较/未知身份；提供时完整长度/SHA先核，复用危险名/重复/加密/特殊项、ZIP条数/声明/实际读取预算，唯一选中成员与实际ICU必须相等。配置错、路径缺失、成员缺失/目录、pin或实际字节不符都拒绝，不回退；有归档时不读取本地ICU缓存。原档按剩余总源输入预算有界读取并末尾重新hash，和所有旧输入/两锁共同保持稳定；全程内存读取，不落地解包或执行档内compiler。
+
+source_identity=flutter-host-artifacts@固定engine仅指提供该数据的归档。CDX provider的完整hash/URL/唯一occurrence及identity-scope明确其含义，不把档内其他31条工具/数据投影为产品成员；独立ICU version=null、independent_icu_identity_verified=false、license_obligations_verified=false、publisher_signature_verified=false。LICENSE.artifacts.md存在不等于ICU传递许可/再分发义务闭合；不是ICU上游源码或版本认证。全局产品/上游/AOT源码等价/签名/可重现仍false。
+
+结果41文件/27复制（原26+ICU）/7归档provider/48组件；14归属未知集合等于#59原15减去此ICU归档来源，其余40项proof完全保持。3项目JSON换行差异、AOT/runner/插件机器码、font/shader/manifest/NOTICES与独立ICU上游身份/许可分开保留，没有猜版本、UNLICENSED、白名单或删文件，父REL-01完整SBOM仍未完成。
+
+### 实际命令与证据
+
+Q为既有release-venv Python；IQ/IP为starlette-fix/.local/starlette-q-isolated及starlette-p-isolated/Scripts/python.exe，环境未改，PYTHONDONTWRITEBYTECODE=1。完整输入、输出、JUnit与辅助文件留忽略artifacts/rel01g；复用只读../desktop-origins/artifacts/rel01f的#53 artifact/provenance/source-tree及原engine/WebView2/Pub档，不复制/改写它们。
+
+- IQ -X utf8 -m pytest backend/tests/test_desktop_sbom.py -q --basetemp=artifacts/rel01g/tmp-q01 --junitxml=artifacts/rel01g/q01.xml：退出0，59通过/8.16秒。新增15验证不读缓存/不投影档内工具、provider与ICU版本许可边界、错pin/路径无回退、全档危险名/重复/链接/加密、缺失/目录成员、实际字节不符、声明/实际预算、末尾原档变化及可选CLI；44原专项未弱化。
+- IQ/IP -X utf8 -m pytest backend/tests/test_desktop_sbom.py backend/tests/test_frozen_python_origins.py backend/tests/test_frozen_python_members.py backend/tests/test_frozen_sbom.py backend/tests/test_source_sbom.py backend/tests/test_release_inventory.py -q --basetemp=artifacts/rel01g/tmp-q02或tmp-p02 --junitxml=artifacts/rel01g/q02.xml或p02.xml：Windows原生测试权限各退出0，277通过/38.44、38.08秒，无失败/跳过（新增15+原262）。
+- Q -m ruff check backend tools、IQ -X utf8 tools/export_question_schema.py --check：各退出0，All checks passed / Question schemas are current。产品/锁未改，不需新本地Windows构建，当前head CI另核。
+- IQ -X utf8 tools/desktop_sbom.py --artifact ../desktop-origins/artifacts/rel01f/windows-release-inputs-b09da16b.zip --provenance ../desktop-origins/artifacts/rel01f/provenance.json --source-tree ../desktop-origins/artifacts/rel01f/source-tree.json --engine-archive ../desktop-origins/artifacts/rel01f/sources/windows-x64-release-flutter.zip --webview-package ../desktop-origins/artifacts/rel01f/sources/microsoft.web.webview2.1.0.2792.45.nupkg --pub-archives ../desktop-origins/artifacts/rel01f/sources --sdk-root <既有固定Flutter根> --icu-archive artifacts/rel01g/windows-x64-artifacts.zip --output artifacts/rel01g/real02，末尾exit $LASTEXITCODE：退出2有限结果，41/27/14/48。首次real01未显式转交退出码，外层返回1且输出完整，保留该调用；规范转交的real02独立新目录明确2，未重写首次输出。
+- IQ artifacts/rel01g/verify_real.py：最终退出0，独立不用collector函数逐核41实体/全部复制源、精确ICU归档/成员、原件和66Git blob、14未知集合/其余40proof与#59一致、两插件producer、48组件官方CycloneDX1.6 Schema及原精选摘要字节。首次helper目录变量original被项目JSON原字节变量覆盖导致TypeError/退出1，只更名辅助变量后通过，collector/断言未改，保留verify-real01-failure.txt。
+
+79输入/212473260逻辑字节、ZIP读出及Pub实际展开68582154字节；替换本地ICU输入为完整host原档，预算未放宽。最终desktop.json SHA256 a2d3a92da99a0da700a32048468a4b6fb9fbae263e8253503d7b0ea3d7d348e6；CDX 81b340db3240d5e36339284a3672359640d1db29a5a0c16c9fe20c9fdefc00cb；新精选摘要188fc39e73b07cca88dcf952748b4a3500c7a6f77da026b096865220531c4c4c。helper --read-only可核当前原件/摘要且零写入；原#59精选SHA256 243b3401fabbe05099d8040ac2cf8e80ab10f493d44656f2fd059b2e6125ea81及旧输出保持。
+
+有限实现及相关自动化/原件核证就绪，独立PR/当前head CI和主Agent退出核验仍待交付。审查暂缓、人工取消不记通过；不合并或发行。后续按剩余真实缺口继续，不能把归档来源闭合扩写成独立ICU版本/许可、SDK或整个SBOM完成。
+
+Q -X utf8 artifacts/rel01g/check_changes.py退出0：7文件、494未变base blob/501最终文件、105本地引用/57唯一调度行、UTF-8/LF/git diff --no-index --check、旧报告完整前缀及两锁保持通过。IQ verify_real.py --read-only再退出0，全部原件/48官方Schema及精选字节一致且零写入。
+
+独立草稿[PR #62](https://github.com/surface-user/StudyWorkbench/pull/62)已建立，codex/desktop-icu-origin基于#59最终727b038，首次实现158e9e73f0fea4074d9ae4af08033cc447958ddc/tree bf0eb395cc4f01d01b1dcedab59841abdb7ff035。本次文档提交补实际交付链接；最终head/tree和其CI在PR正文登记，避免记录自身hash反复改头。REL-01g保持REVIEW待当前CI及主Agent退出核验，不改旧#59头、不合并或发行。
