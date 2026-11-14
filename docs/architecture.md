@@ -28,7 +28,7 @@
 | 题目文件 | 检查/旧内容显式转换/确认快照/资产完整性/按确认版作答 | question_files_format.py、question_files.py、app.py |
 | 学习与记录 | 判分、追加作答/评分、组卷、统计、事件、笔记关系和投影 | learning.py、learning_records.py、study_page.dart |
 | 标签和媒体 | EditorTabBar/PageHost稳定实例、关闭释放、独立WebView和播放器能力 | page_host.dart、web_page.dart、media_library.py |
-| 授权与人工候选审核 | 内存显式授权/有界作答与确认版读取；外部候选修订、拒绝和独立MD采用收据；无模型调用 | agent_access.py、analysis_review.py、analysis_review_dialog.dart |
+| 授权与人工候选审核 | 内存显式授权/有界作答与确认版读取、用途隔离的资料元数据及版本绑定文本读取；外部候选修订、拒绝和独立MD采用收据；无模型调用 | agent_access.py、resource_grants.py、analysis_review.py、analysis_review_dialog.dart |
 | 直接媒体下载 | 持久任务/单worker/独占attempt、固定下载子进程/暂停与显式恢复、受管原件入库/媒体身份复用；首批无站点解析/转码 | media_download_http.py、media_download_worker.py、media_downloads.py、media_download_dialog.dart |
 
 资源身份、原件blob、题目ID、确认版ID、tab_id分开，不能用标题/hash代替身份。资源树是受管逻辑目录，不是任意系统文件夹的原地工作区。
@@ -59,7 +59,7 @@ Office运行时可缺省；显式转换、独立profile和Windows Job、固定�
 
 普通学习流程采用[契约](learning-workbench-contracts.md)与[ADR0012](adr/0012-learning-notes-anchors-and-backup.md)，LW-01至05本地能力见上文，实际窗口/阶段状态查task。内部链接由受控业务解析；完整恢复采用离线整库包到新空目录，无HTTP任意路径恢复接口。格式/下载及R6剩余按[路线](learning-workbench-roadmap.md)推进，沿用受管资源、UI/后端分层和固定技术栈；任务进度仅查task。
 
-- R6：模型/凭据适配、通用资料读取及其他候选场景仍规划中；当前本地授权/分析上下文和人工候选审核已实现，详见agent-design.md。
+- R6：模型/凭据适配、通用资料确认UI、其他格式正文及其他候选场景仍规划中；当前本地授权/分析上下文和人工候选审核已实现，详见agent-design.md。
 - 单空间备份合并、站点提取/质量选择/转码、OCR及更广文档解析。
 - 外部目录原地工作区、监听等方向另行设计。
 - 不预建微服务、通用任务平台、插件框架或Agent专属题库。
