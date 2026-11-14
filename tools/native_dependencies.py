@@ -29,6 +29,57 @@ OFFICE_UNO_FILES = {
     'program/services/services.rdb': 'bc996be9362ebf3a9c6be11d4c3c9fef26941182743c70d1649a6e5fe317f094',
 }
 OFFICE_JAVA_LOCK_SHA256 = '159433e3a2fc9f2a9c4f633a613d3db5aaca29d1b52caa64e3a63755ac8e1907'
+OFFICE_PYTHON_LOCK_SHA256 = '156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9'
+OFFICE_PYTHON_PYDS = ('_asyncio _bz2 _ctypes _decimal _elementtree _hashlib _lzma _multiprocessing '
+                      '_overlapped _queue _socket _sqlite3 _ssl _uuid _zoneinfo pyexpat select unicodedata winsound').split()
+OFFICE_PYTHON_DLLS = ['libcrypto-3.dll', 'libssl-3.dll', 'libffi-8.dll', 'sqlite3.dll']
+
+
+def office_python_libraries(payload, nodes, office):
+    """Fixed potential extension roots, not evidence that pyuno initialized or imported them."""
+    lock = payload.get(office + 'runtime-lock.json')
+    if lock is None:
+        raise ValueError('Missing fixed Office Python component inventory')
+    with lock.open('rb') as stream:
+        raw = stream.read(4 * 1024 * 1024 + 1)
+    if len(raw) > 4 * 1024 * 1024 or hashlib.sha256(raw).hexdigest() != OFFICE_PYTHON_LOCK_SHA256:
+        raise ValueError('Office Python component inventory changed; renew loading evidence')
+    files = json.loads(raw)['files']
+    directory = 'program/python-core-3.13.15/lib/'
+    extensions = {directory + name + '.pyd' for name in OFFICE_PYTHON_PYDS}
+    libraries = {directory + name for name in OFFICE_PYTHON_DLLS}
+    expected = extensions | libraries
+    inventory_images = {name for name in files if name.startswith(directory)
+                        and PurePosixPath(name).suffix in PE_SUFFIXES}
+    actual = {name for name in nodes if name.startswith(office + directory)}
+    immediate = {name for name in inventory_images if str(PurePosixPath(name).parent) == directory.rstrip('/')}
+    if actual != {office + name for name in inventory_images} or immediate != expected:
+        raise ValueError('Office Python extension/library PE set changed; renew loading evidence')
+    # Nested pip/setuptools templates retain their authenticated identity and unclassified role.
+    for name in inventory_images - expected:
+        if nodes[office + name]['sha256'] != files[name]:
+            raise ValueError('Office Python nested PE bytes changed: ' + name)
+    required = expected | {'program/python313.dll', 'program/vcruntime140.dll'}
+    for name in sorted(required):
+        image = nodes.get(office + name)
+        if image is None or image['sha256'] != files.get(name):
+            raise ValueError('Office Python PE path or bytes changed: ' + name)
+        if image['machine'] != 0x8664 or image['magic'] != 0x20B:
+            raise ValueError('Expected x64 PE32+ Office Python image: ' + name)
+    configuration = 'program/pythonloader.uno.ini'
+    path = payload.get(office + configuration)
+    if path is None:
+        raise ValueError('Missing fixed Office Python loader configuration')
+    with path.open('rb') as stream:
+        data = stream.read(65536 + 1)
+    if len(data) > 65536 or hashlib.sha256(data).hexdigest() != files.get(configuration):
+        raise ValueError('Office Python loader configuration changed')
+    return dict(component_inventory_sha256=OFFICE_PYTHON_LOCK_SHA256,
+                extensions={office + name: files[name] for name in sorted(extensions)},
+                libraries={office + name: files[name] for name in sorted(libraries)},
+                unclassified_images={office + name: files[name] for name in sorted(inventory_images - expected)},
+                program_libraries={office + name: files[name] for name in sorted(required - expected)},
+                configuration_sha256={office + configuration: files[configuration]})
 
 
 def office_java_libraries(payload, nodes, office):
@@ -271,6 +322,12 @@ def inspect_dependencies(payload, system):
         domains['office']['uno_entries'] = uno_entries
         domains['office']['uno_configuration_sha256'] = {
             office + name: digest for name, digest in OFFICE_UNO_FILES.items()}
+        python_libraries = office_python_libraries(payload, nodes, office)
+        # CPython's DEFAULT_DIRS | DLL_LOAD_DIR: fixed extension parent plus application directory.
+        # USER_DIRS/loaded-module/SxS and export forwarding are not certified by this static graph.
+        domains['office_python'] = closure(nodes, list(python_libraries['extensions']),
+                                           [program + '/python-core-3.13.15/lib', program], [program], system)
+        domains['office_python']['pinned_inputs'] = python_libraries
     covered = {name for domain in domains.values() for name in domain['nodes']}
     return dict(scope='documented-entry-and-plugin-domains-v1', pe_images=len(nodes),
                 pe_coverage='partial' if len(covered) < len(nodes) else 'all-images-in-declared-static-domains',

@@ -275,6 +275,8 @@ def test_untrusted_xml_is_rejected_before_parsing(native, uno_registry, monkeypa
 @pytest.mark.parametrize('damage', ['none', 'missing-entry', 'missing-transitive', 'architecture'])
 def test_registered_office_entries_share_the_existing_loading_domain_and_unknown_gate(
         native, uno_registry, tmp_path, monkeypatch, damage):
+    # This earlier fixture exercises UNO only; the complete fixed Python policy has its own fixture below.
+    monkeypatch.setattr(native, 'office_python_libraries', lambda *_: dict(extensions={}))
     office, payload, policy = uno_registry
     program = office + 'program/'
     roots = ['soffice.com', 'soffice.bin', 'officebean.dll', 'javavmlo.dll', 'jvmfwklo.dll',
@@ -343,6 +345,7 @@ def java_registry(native, uno_registry, tmp_path, monkeypatch):
 
 def test_fixed_java_images_keep_launchers_out_of_the_office_dll_domain(
         native, java_registry, tmp_path, monkeypatch):
+    monkeypatch.setattr(native, 'office_python_libraries', lambda *_: dict(extensions={}))
     office, payload, nodes, _, _ = java_registry
     program = office + 'program/'
     for name in ['soffice.com', 'soffice.bin', 'officebean.dll', 'javavmlo.dll', 'jvmfwklo.dll',
@@ -469,3 +472,132 @@ def test_fixed_java_policy_requires_its_primary_launcher(native, java_registry, 
     monkeypatch.setattr(native, 'OFFICE_JAVA_LOCK_SHA256', hashlib.sha256(raw).hexdigest())
     with pytest.raises(ValueError, match='primary Java launcher'):
         native.office_java_libraries(payload, nodes, office)
+
+
+@pytest.fixture
+def python_registry(native, uno_registry, tmp_path, monkeypatch):
+    office, payload, _ = uno_registry
+    directory = 'program/python-core-3.13.15/lib/'
+    names = [directory + name + '.pyd' for name in native.OFFICE_PYTHON_PYDS]
+    names += [directory + name for name in native.OFFICE_PYTHON_DLLS]
+    names += ['program/python313.dll', 'program/vcruntime140.dll', 'program/pythonloader.uno.ini']
+    nodes, files = {}, {}
+    for name in names:
+        path = tmp_path / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        data = ('self-authored inactive Python fixture: ' + name).encode()
+        path.write_bytes(data)
+        payload[office + name] = path
+        files[name] = hashlib.sha256(data).hexdigest()
+        if not name.endswith('.ini'):
+            nodes[office + name] = node(office + name, digest=files[name])
+    for name in native.OFFICE_PYTHON_PYDS:
+        nodes[office + directory + name + '.pyd']['edges'] = [('python313.dll', 'import'),
+                                                            ('vcruntime140.dll', 'delay')]
+    for name, dependency in [('_ctypes', 'libffi-8.dll'), ('_hashlib', 'libcrypto-3.dll'),
+                             ('_ssl', 'libssl-3.dll'), ('_sqlite3', 'sqlite3.dll')]:
+        nodes[office + directory + name + '.pyd']['edges'].append((dependency, 'import'))
+    raw = json.dumps(dict(version='26.8.1', files=files,
+        package_sha256='c6298b10cfa1748bcbedad94c62ce771e240e5021bfd6d7a967cd571b04b5312',
+        java=dict(version='21.0.13+9', directory='java',
+                  package_sha256='2332c0b4cff6bed722da3567c91d5e47568bcba863fa4945d0a8d6fc76158628'))).encode()
+    lock = tmp_path / 'runtime-lock.json'
+    lock.write_bytes(raw)
+    payload[office + 'runtime-lock.json'] = lock
+    monkeypatch.setattr(native, 'OFFICE_PYTHON_LOCK_SHA256', hashlib.sha256(raw).hexdigest())
+    return office, payload, nodes, lock
+
+
+@pytest.mark.parametrize('damage', ['missing-lock', 'changed-lock', 'big-lock', 'missing-pyd', 'extra-pyd',
+                                   'extra-exe', 'nested-dll', 'moved-dll', 'changed-pyd', 'architecture',
+                                   'header', 'python313', 'crt', 'missing-ini', 'changed-ini', 'big-ini'])
+def test_fixed_python_policy_rejects_unproven_inputs(native, python_registry, damage):
+    office, payload, nodes, lock = python_registry
+    prefix = office + 'program/python-core-3.13.15/lib/'
+    if damage == 'missing-lock':
+        del payload[office + 'runtime-lock.json']
+    elif damage in {'changed-lock', 'big-lock'}:
+        lock.write_bytes(b'changed' if damage == 'changed-lock' else b'x' * (4 * 1024 * 1024 + 1))
+    elif damage == 'missing-pyd':
+        del nodes[prefix + '_ssl.pyd']
+    elif damage in {'extra-pyd', 'extra-exe', 'nested-dll'}:
+        name = prefix + {'extra-pyd': 'unproven.pyd', 'extra-exe': 'unproven.exe',
+                         'nested-dll': 'foreign/extra.dll'}[damage]
+        nodes[name] = node(name)
+    elif damage == 'moved-dll':
+        nodes[office + 'java/bin/libffi-8.dll'] = nodes.pop(prefix + 'libffi-8.dll')
+    elif damage == 'changed-pyd':
+        nodes[prefix + '_ssl.pyd']['sha256'] = 'changed'
+    elif damage == 'architecture':
+        nodes[prefix + '_ssl.pyd']['machine'] = 0x14c
+    elif damage == 'header':
+        nodes[prefix + '_ssl.pyd']['magic'] = 0x10B
+    elif damage in {'python313', 'crt'}:
+        name = office + 'program/' + ('python313.dll' if damage == 'python313' else 'vcruntime140.dll')
+        nodes[name]['sha256'] = 'changed'
+    elif damage == 'missing-ini':
+        del payload[office + 'program/pythonloader.uno.ini']
+    else:
+        payload[office + 'program/pythonloader.uno.ini'].write_bytes(
+            b'changed' if damage == 'changed-ini' else b'x' * 65537)
+    before = {name: path.read_bytes() for name, path in payload.items()}
+    with pytest.raises(ValueError, match='Office Python'):
+        native.office_python_libraries(payload, nodes, office)
+    assert {name: path.read_bytes() for name, path in payload.items()} == before
+
+
+def test_python_domain_preserves_other_domains_and_unknown_images(native, python_registry, tmp_path, monkeypatch):
+    office, payload, nodes, _ = python_registry
+    program = office + 'program/'
+    for name in ['soffice.com', 'soffice.bin', 'officebean.dll', 'javavmlo.dll', 'jvmfwklo.dll',
+                 'jvmaccesslo.dll', 'javaloaderlo.dll', 'juh.dll', 'juhx.dll', 'java_uno.dll', 'plugin.dll']:
+        nodes[program + name] = node(program + name)
+    unknown = ['python3.dll', 'python.exe', 'python-core-3.13.15/bin/python.exe',
+               'templates/template.exe', 'managed.dll', 'twain32shim.exe']
+    for name in unknown:
+        nodes[program + name] = node(program + name, machine=0x14c if name == 'twain32shim.exe' else 0x8664)
+    monkeypatch.setattr(native, 'pe_nodes', lambda _: nodes)
+    before = {name: path.read_bytes() for name, path in payload.items()}
+    report = native.inspect_dependencies(payload, tmp_path)
+    domain = report['domains']['office_python']
+    assert len(domain['roots']) == 19 and len(domain['nodes']) == 25
+    assert domain['directories'] == [program + 'python-core-3.13.15/lib', program.rstrip('/')]
+    assert domain['crt_directories'] == [program.rstrip('/')]
+    assert {row['path'] for row in report['unproven_runtime_candidates']} == {program + name for name in unknown}
+    assert report['pe_coverage'] == 'partial'
+    assert set(domain['pinned_inputs']['libraries']) == {
+        program + 'python-core-3.13.15/lib/' + name for name in native.OFFICE_PYTHON_DLLS}
+    assert {edge['target'] for edge in domain['edges'] if edge['name'] == 'vcruntime140.dll'} == {
+        program + 'vcruntime140.dll'}
+    assert {name: path.read_bytes() for name, path in payload.items()} == before
+
+
+def test_authenticated_nested_template_is_never_a_python_root(native, python_registry, monkeypatch):
+    office, payload, nodes, lock = python_registry
+    name = 'program/python-core-3.13.15/lib/site-packages/fixture/raw.exe'
+    manifest = json.loads(lock.read_bytes())
+    manifest['files'][name] = 'self-authored-template-identity'
+    nodes[office + name] = node(office + name, digest=manifest['files'][name], machine=0x14c)
+    raw = json.dumps(manifest).encode()
+    lock.write_bytes(raw)
+    monkeypatch.setattr(native, 'OFFICE_PYTHON_LOCK_SHA256', hashlib.sha256(raw).hexdigest())
+    policy = native.office_python_libraries(payload, nodes, office)
+    assert policy['unclassified_images'] == {office + name: 'self-authored-template-identity'}
+    assert office + name not in policy['extensions'] and office + name not in policy['libraries']
+    nodes[office + name]['sha256'] = 'tampered'
+    with pytest.raises(ValueError, match='nested PE bytes changed'):
+        native.office_python_libraries(payload, nodes, office)
+
+
+@pytest.mark.parametrize('kind', ['import', 'delay'])
+@pytest.mark.parametrize('foreign', ['java/bin', 'program/python-core-3.13.15/lib'])
+def test_python_domain_never_borrows_foreign_crt(native, python_registry, tmp_path, kind, foreign):
+    office, payload, nodes, _ = python_registry
+    native.office_python_libraries(payload, nodes, office)
+    program = office + 'program'
+    library = program + '/python-core-3.13.15/lib'
+    nodes[library + '/_ssl.pyd']['edges'] = [('vcruntime140.dll', kind)]
+    nodes[office + foreign + '/vcruntime140.dll'] = nodes.pop(program + '/vcruntime140.dll')
+    (tmp_path / 'vcruntime140.dll').write_bytes(b'host CRT cannot rescue Python')
+    with pytest.raises(ValueError, match=f'Unresolved {kind}.*system CRT'):
+        native.closure(nodes, [library + '/_ssl.pyd'], [library, program], [program], tmp_path)

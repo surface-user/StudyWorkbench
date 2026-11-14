@@ -1,0 +1,507 @@
+{
+  "scope": "Fixed Office CPython potential extension static domain; not runtime execution/isolation certification",
+  "base_head": "6d1078f8eca2923bb0d77a76136f0b8f5e921738",
+  "base_tree": "49028e80314a23c9b7fc3ecfcfc4ca6084636691",
+  "tool_sha256": {
+    "tools/native_dependencies.py": "da7b39e6e69a4b608683a27ae2a1131bcac39eb8a7c7cde353e66ecc1e43aeb0",
+    "tools/check_native_dependencies.py": "e24288dc94c77d067f3405ab81fde53f88725ee5b6bbfadbb2c26e85e0650fa7",
+    "tools/check_release.py": "db8b13d72cd6b78a41476f922b0c7c048c4811836131a72a8b731ef20d759a84"
+  },
+  "component_inventory_sha256": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+  "input_files": 19743,
+  "pe_images": 351,
+  "previous_unknown": 133,
+  "added": [
+    "converters/libreoffice/program/python-core-3.13.15/lib/_asyncio.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_bz2.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_ctypes.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_decimal.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_elementtree.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_hashlib.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_lzma.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_multiprocessing.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_overlapped.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_queue.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_socket.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_sqlite3.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_ssl.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_uuid.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_zoneinfo.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/libcrypto-3.dll",
+    "converters/libreoffice/program/python-core-3.13.15/lib/libffi-8.dll",
+    "converters/libreoffice/program/python-core-3.13.15/lib/libssl-3.dll",
+    "converters/libreoffice/program/python-core-3.13.15/lib/pyexpat.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/select.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/sqlite3.dll",
+    "converters/libreoffice/program/python-core-3.13.15/lib/unicodedata.pyd",
+    "converters/libreoffice/program/python-core-3.13.15/lib/winsound.pyd"
+  ],
+  "remaining_unknown": 110,
+  "raw_report": {
+    "path": "artifacts/off02i/real01.json",
+    "bytes": 721225,
+    "sha256": "c4361a444c2723e084603ff13de8323772fc8d0bb25d23e3c69285c4206b0c61"
+  },
+  "verification_sha256": "0be47f87bbbffb59ca95666ced857043b6f017fef524726f790dec180a251e97",
+  "source_archive": {
+    "url": "https://www.python.org/ftp/python/3.13.15/Python-3.13.15.tar.xz",
+    "version": "3.13.15",
+    "bytes": 23160540,
+    "archive_sha256": "1e66a7945a48390ee4c2a4268a0e4185884059a13c4aab6d148aa208deea4a76",
+    "members": [
+      {
+        "member": "Python-3.13.15/Python/dynload_win.c",
+        "bytes": 11687,
+        "sha256": "07fb2be58f0489c138dfcb1ccfeb5d4a5b96a38c34d81735dd0e80c4c370b7fb"
+      },
+      {
+        "member": "Python-3.13.15/PC/dl_nt.c",
+        "bytes": 808,
+        "sha256": "b1ed9dd7908bf1af3400014a22526dbd06004448926fb2f5fd02cd213d5c031a"
+      },
+      {
+        "member": "Python-3.13.15/Modules/getpath.py",
+        "bytes": 34768,
+        "sha256": "9678ec4e62d8895f96cef5501a951ff6ebf4f6044369bd684cf49f2e337c0130"
+      },
+      {
+        "member": "Python-3.13.15/Python/pylifecycle.c",
+        "bytes": 106372,
+        "sha256": "955914917a16872e423fff7410bb771d9a5df83a5631791474c4aa7b47c7d5ac"
+      },
+      {
+        "member": "Python-3.13.15/Python/pathconfig.c",
+        "bytes": 12620,
+        "sha256": "ddbc2e9662bc526a480d2f66e2df82f09e5aabf5b6c24f2e325c8839e2060ee6"
+      },
+      {
+        "member": "Python-3.13.15/PC/python3dll.c",
+        "bytes": 30185,
+        "sha256": "73614c8ef518ba5c13c2867caeb280e12834af64ee7965b3707dfea2d4de5fcf"
+      },
+      {
+        "member": "Python-3.13.15/PC/pyconfig.h.in",
+        "bytes": 22814,
+        "sha256": "bd6fbeaa71c5536e859f4c4232d9b968dbbbc3626cdb4197ce85f7639fee193f"
+      },
+      {
+        "member": "Python-3.13.15/Lib/ctypes/__init__.py",
+        "bytes": 19505,
+        "sha256": "18a6c7996af52602c86e45bc090589cc09fdaccd304ea9711dd6f7453a084a38"
+      }
+    ]
+  },
+  "libreoffice_commit": "bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1",
+  "sources": [
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/pyuno/inc/pyuno.hxx",
+      "git_blob": "0a3b2796a5770671ccd76a62401c622f18eb05e0",
+      "bytes": 9346,
+      "sha256": "f4cad30843ff5a1bb34c2faf365ffbc9183415ed929008b05817ce4a8c80f578"
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/pyuno/source/module/pyuno_runtime.cxx",
+      "git_blob": "ddad1ce7b4e9c889255e0098417bb5550e14db97",
+      "bytes": 31896,
+      "sha256": "ab77b6b1e74850e98f49961206efcb15e5d6f6261ce1b56ae7a4ebca9f54a272"
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/pyuno/source/module/pyuno_module.cxx",
+      "git_blob": "b1eb13ec659cd1f79963d5ca16115d733c6d8db8",
+      "bytes": 32442,
+      "sha256": "1e9ec4d8aae82ac3b695d3cdb97a5e1dd76f000cfc3f7c089865cc876b13d9f5"
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/ExternalPackage_python3.mk",
+      "git_blob": "3e0b8a02bc9fd6ed69490232b90a563077c7b6f3",
+      "bytes": 71038,
+      "sha256": "ab1072bb01c6ac0725a4657b3f7bdd725b22966fe925e1f9959b0a3f69bb8431"
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/pyuno/Module_pyuno.mk",
+      "git_blob": "f69e89fa791c74f784d57ab335af73bcd471b03c",
+      "bytes": 1548,
+      "sha256": "fa4fe9bd27a218b21d25ce4682b8beae7dcab1eb55144a0be0ceb6dc0ee50e49"
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/openssl/ExternalPackage_openssl.mk",
+      "git_blob": "7d02dfc6ed1cb43f5d22d61924649fc18518fe42",
+      "bytes": 853,
+      "sha256": "91a8c9e56d1b5593e1535569e80a3561233c9e96dab55fed58fa691f6086c8ac"
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/libffi/ExternalPackage_libffi.mk",
+      "git_blob": "c524ef90289fad822e5eef97edc4f565c085bed8",
+      "bytes": 660,
+      "sha256": "42ee2957db854138815b6c1181c7fd28d28fa414658f9ae3528a177bc59b72a8"
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/pyuno/source/loader/pyuno_loader.cxx",
+      "git_blob": "56a7206d345667ca33cd9696730c259796ed0398",
+      "bytes": 9575,
+      "sha256": "3a875c3662902821358b9fd837ee7809375c444b65ce448182c9825f3f3cbd80"
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/pyuno/Library_pythonloader.mk",
+      "git_blob": "bbfe5469da62cea0bf68af97e31bbe355f086a99",
+      "bytes": 1081,
+      "sha256": "c58a74bbd943e3140bc53fa54a79ddc742c5cbfd22e32eccc1dde959e56c7927"
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/pyuno/Library_pyuno.mk",
+      "git_blob": "4767632e62d129dd1825cca6a7714a4226dd4899",
+      "bytes": 1357,
+      "sha256": "8d12cf1d8d53602eae203c698b0f0bd4dec16c70bf90ba3ae9f0fe412358a7a0"
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/python-3.7.6-msvc-ssl.patch.1",
+      "git_blob": "e9fa8d2bb1285d8154b61aa954986639e78e6c50",
+      "bytes": 625,
+      "sha256": "9457ccc2b035d80ab8614bcab38715a5ebfe270d62208edfa21fe85e7aec3bb4",
+      "patch_targets": [
+        "python3/PCbuild/openssl.props"
+      ]
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/i100492-freebsd.patch.1",
+      "git_blob": "b2ca1ee7117f04008f70c8e8e087492d476c9050",
+      "bytes": 1027,
+      "sha256": "95a12902d89f4614c95cffaec94db98cba925f074c9adbed627e2b8532aa3e40",
+      "patch_targets": [
+        "Python-3.3.0/Python/thread_pthread.h"
+      ]
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/python-3.3.0-darwin.patch.1",
+      "git_blob": "5cc2671d6078f0153c02a999879f187d463ead0f",
+      "bytes": 1572,
+      "sha256": "6e135971af1c44db26540091fa93ba8d306f4649a8a644dd71106b241026d0d4",
+      "patch_targets": [
+        "python3/Mac/Makefile.in",
+        "python3/Mac/Resources/app/Info.plist.in",
+        "python3/Mac/Resources/framework/Info.plist.in"
+      ]
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/python-3.3.3-disable-obmalloc.patch.0",
+      "git_blob": "9549e52af3fbdaa191019ed00204d8a97d895f01",
+      "bytes": 541,
+      "sha256": "95d6f44f970d30c41860b5da4cd67d5c0befbbe568a34119e4880e1069c4156f",
+      "patch_targets": [
+        "Objects/obmalloc.c"
+      ]
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/internal-zlib.patch.0",
+      "git_blob": "ca59110a21907e7eaa38d715325b1d1c9aa6c2b1",
+      "bytes": 682,
+      "sha256": "7390f77486beb0eca5e55310590bd4aec5d362815891a195236590c855ef9316",
+      "patch_targets": [
+        "configure"
+      ]
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/python-3.5.4-msvc-disable.patch.1",
+      "git_blob": "7845dea6f8b81da69218ec6980a32ce87ee5f48a",
+      "bytes": 4042,
+      "sha256": "19a01c74d321ad0fe238d02f1b80d29b3072f718ff8df3f7aeabd93cfac4a27b",
+      "patch_targets": [
+        "python3/PCbuild/pcbuild.sln"
+      ]
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/ubsan.patch.0",
+      "git_blob": "0ae1e4abf28115f0e72f70ed09fa1cdc5177bec1",
+      "bytes": 2863,
+      "sha256": "82409633b7af85ec28f07d2a4d88dac230a9b0c6eae87e709490bab7ac7c89d1",
+      "patch_targets": [
+        "Modules/posixmodule.c",
+        "Objects/dictobject.c",
+        "Objects/listobject.c",
+        "Parser/lexer/buffer.c"
+      ]
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/setuptools.patch.1",
+      "git_blob": "dfbbfc8db7defae2da920beea67866bec50c1d47",
+      "bytes": 324,
+      "sha256": "c6dbb22b72a4ffc30c507c37c0bcb581d028499c2940bbca60beca5f2feea854",
+      "patch_targets": [
+        "b/Lib/setuptools/_vendor/jaraco/text/__init__.py"
+      ]
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/sqlite3.patch.1",
+      "git_blob": "22a987924efcab8b87a630f773b18dd12c601aa7",
+      "bytes": 802,
+      "sha256": "2b509bfad459619a8514df480e230faef6b20c2c40039a955040134bcde483ae",
+      "patch_targets": [
+        "python3/PCbuild/sqlite3.vcxproj"
+      ]
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/lzma.patch.1",
+      "git_blob": "87ab1d706855dd0265c82f10713b2282053e5f9c",
+      "bytes": 3010,
+      "sha256": "195f22935cf35cb8bd7ea3f86989b66c6f2207108a4868ec2ca1f8be9379c453",
+      "patch_targets": [
+        "python3/PCbuild/liblzma.vcxproj"
+      ]
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/decimal.patch.1",
+      "git_blob": "328eab2a73d246289771dc78393a1082d6d0a942",
+      "bytes": 2508,
+      "sha256": "785fb3d1ca6f8afe35459cb35fa008607b12d88a2d37f6cb953b5e9416b86095",
+      "patch_targets": [
+        "python3/PCbuild/_decimal.vcxproj",
+        "python3/PCbuild/_decimal.vcxproj.filters"
+      ]
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/destdir-darwin.patch.1",
+      "git_blob": "43301aba991c4425489758e54d4a595fa8a1c377",
+      "bytes": 571,
+      "sha256": "e3fa28db28ccc3aab525b615c08eedae1ed86940f2a54bdb669162fa27c2561b",
+      "patch_targets": [
+        "python3/Makefile.pre.in"
+      ]
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/python-3.3.3-elf-rpath.patch.1",
+      "git_blob": "83e0b7803115204bd86bd3607c9234e542417835",
+      "bytes": 1374,
+      "sha256": "08aed24056c036b5ed39fc79bc7451fe96d6aea67b4bd9d2410c3805cb7e58dd",
+      "patch_targets": [
+        "python3/Makefile.pre.in"
+      ]
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/UnpackedTarball_python3.mk",
+      "git_blob": "2d57c81c956f3ae058670c5a4855802e3ebc139f",
+      "bytes": 2534,
+      "sha256": "30e94107243dc063993b7dd51440f1c5055a5924e3ec83b69d568e80d3cf28ec"
+    }
+  ],
+  "office_python_domain": {
+    "roots": [
+      "converters/libreoffice/program/python-core-3.13.15/lib/_asyncio.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/_bz2.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/_ctypes.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/_decimal.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/_elementtree.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/_hashlib.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/_lzma.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/_multiprocessing.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/_overlapped.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/_queue.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/_socket.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/_sqlite3.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/_ssl.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/_uuid.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/_zoneinfo.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/pyexpat.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/select.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/unicodedata.pyd",
+      "converters/libreoffice/program/python-core-3.13.15/lib/winsound.pyd"
+    ],
+    "directories": [
+      "converters/libreoffice/program/python-core-3.13.15/lib",
+      "converters/libreoffice/program"
+    ],
+    "crt_directories": [
+      "converters/libreoffice/program"
+    ],
+    "pinned_inputs": {
+      "component_inventory_sha256": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+      "extensions": {
+        "converters/libreoffice/program/python-core-3.13.15/lib/_asyncio.pyd": "3a23edfc21d4cb93d90e6d5ee70c1ff5c0113b593a2d59dd3d0300ebf21c6000",
+        "converters/libreoffice/program/python-core-3.13.15/lib/_bz2.pyd": "b99424dfbf98e504b374c485f6cb677a523e1c5de7ab542269e8bb64b7f17e74",
+        "converters/libreoffice/program/python-core-3.13.15/lib/_ctypes.pyd": "db291fc0dc73f48d29fa587abbe195c354c0fbe91cf85784c9bdc97a0427d254",
+        "converters/libreoffice/program/python-core-3.13.15/lib/_decimal.pyd": "1695efaf85a9dd11c9c0acd650961c2138a290061f357ff145e4c7756c6ab4f9",
+        "converters/libreoffice/program/python-core-3.13.15/lib/_elementtree.pyd": "34284f30bdab155c5796cf53f355c30d314831b7ea210bef228d21c3cbff2e35",
+        "converters/libreoffice/program/python-core-3.13.15/lib/_hashlib.pyd": "fdcff4aa5334cde7114a13d3deb06f27affea0500b0033a7b43f7760307c8daa",
+        "converters/libreoffice/program/python-core-3.13.15/lib/_lzma.pyd": "562687cf0596d5a5fa028cdaec73228b90b0361c9fb14765a47b26dd6bc0d375",
+        "converters/libreoffice/program/python-core-3.13.15/lib/_multiprocessing.pyd": "beffd4aa88b2a58cb50e9872a66e8867c987573651cdf8d69c8c6766dedc49f8",
+        "converters/libreoffice/program/python-core-3.13.15/lib/_overlapped.pyd": "b1874d84f63d12a4bfdc3e251c1348b824f1acdfb084cb9b9e43fa878af2c64b",
+        "converters/libreoffice/program/python-core-3.13.15/lib/_queue.pyd": "9e38da29cec31b58f0dac0377d1a0ddd812591dfc2f3e6cc8484b8e58fe50600",
+        "converters/libreoffice/program/python-core-3.13.15/lib/_socket.pyd": "2c49fda811685918d00e572f6d220bcba568747247828d0b0da0cf931be9e726",
+        "converters/libreoffice/program/python-core-3.13.15/lib/_sqlite3.pyd": "3069862364c0a0c6a6bfe799a367e072ae22eca6dca048fe7c29a05f5e16075f",
+        "converters/libreoffice/program/python-core-3.13.15/lib/_ssl.pyd": "174a3db346fb045cf621c6e7bdd00a0c4ca4c4930f38791d870a21b66bef1223",
+        "converters/libreoffice/program/python-core-3.13.15/lib/_uuid.pyd": "42d93185aacc5c350c68f2adf9278b6d6e8cbcd75892cbaf7a989220e3f37b47",
+        "converters/libreoffice/program/python-core-3.13.15/lib/_zoneinfo.pyd": "c66bd9afc873a0d7e7d3a137afed64004d8e44f8f44d9b9ec3e6a90b89e6e3f7",
+        "converters/libreoffice/program/python-core-3.13.15/lib/pyexpat.pyd": "ed6521c31ea721ae49d871638f0d6f822d527240d0a7e3190ca5ce776a5e59f8",
+        "converters/libreoffice/program/python-core-3.13.15/lib/select.pyd": "e2a38cf5ee3ed73168c0f9315b62966bf5ea67e9daf2dc8d96aa3ab9fc3c2b5a",
+        "converters/libreoffice/program/python-core-3.13.15/lib/unicodedata.pyd": "5e2f7c10f3322479a50ae8d1ed985a10f88dbee77fee10b0c2962a858a5a2499",
+        "converters/libreoffice/program/python-core-3.13.15/lib/winsound.pyd": "a30bb3a4f57d781b49dd2a78522e12d14dd3991556b736d8ef9c15c5ebee2f7f"
+      },
+      "libraries": {
+        "converters/libreoffice/program/python-core-3.13.15/lib/libcrypto-3.dll": "e879af9940edd370c50c09f5ce1c78ee766c81ae3ae64f4cd3691af9ceee1f47",
+        "converters/libreoffice/program/python-core-3.13.15/lib/libffi-8.dll": "170f2d6e70fc23e141e457ecf7ac2c95fff9e0abbf97cbd3b154963ee1fc848c",
+        "converters/libreoffice/program/python-core-3.13.15/lib/libssl-3.dll": "5e4d03ce3adfd26133a81a365a24290b0f74d061037bd546198445b303979407",
+        "converters/libreoffice/program/python-core-3.13.15/lib/sqlite3.dll": "6e5abc758e3a1eedeeec02321edace14290a20af0cdb7a7bfa0e4c842acd0a57"
+      },
+      "unclassified_images": {
+        "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/t32.exe": "6b4195e640a85ac32eb6f9628822a622057df1e459df7c17a12f97aeabc9415b",
+        "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/t64-arm.exe": "ebc4c06b7d95e74e315419ee7e88e1d0f71e9e9477538c00a93a9ff8c66a6cfc",
+        "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/t64.exe": "81a618f21cb87db9076134e70388b6e9cb7c2106739011b6a51772d22cae06b7",
+        "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/w32.exe": "47872cc77f8e18cf642f868f23340a468e537e64521d9a3a416c8b84384d064b",
+        "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/w64-arm.exe": "c5dc9884a8f458371550e09bd396e5418bf375820a31b9899f6499bf391c7b2e",
+        "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/w64.exe": "7a319ffaba23a017d7b1e18ba726ba6c54c53d6446db55f92af53c279894f8ad",
+        "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/cli-32.exe": "32acc1bc543116cbe2cff10cb867772df2f254ff2634c870aef0b46c4b696fdb",
+        "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/cli-64.exe": "bbb3de5707629e6a60a0c238cd477b28f07f0066982fda953fa6fcec39073a4a",
+        "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/cli-arm64.exe": "b9a7d08da880dfac8bcf548eba4b06fb59b6f09b17d33148a0f6618328926c61",
+        "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/cli.exe": "32acc1bc543116cbe2cff10cb867772df2f254ff2634c870aef0b46c4b696fdb",
+        "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/gui-32.exe": "85dae1e95d77845f2cb59bcac3d4afe74bbe4c91a9bcc5bf4a71cd43104dbe7c",
+        "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/gui-64.exe": "3471b6140eadc6412277dbbefe3fef8c345a0f1a59776086b80a3618c3a83e3b",
+        "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/gui-arm64.exe": "e694f4743405c8b5926ff457db6fe7f1a12dec7c16a9c3864784d3f4e07ae097",
+        "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/gui.exe": "85dae1e95d77845f2cb59bcac3d4afe74bbe4c91a9bcc5bf4a71cd43104dbe7c"
+      },
+      "program_libraries": {
+        "converters/libreoffice/program/python313.dll": "3541781d0f86ad409c6ee43689e4fc9e77ade77e267f0fed2a40f6206c156d78",
+        "converters/libreoffice/program/vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066"
+      },
+      "configuration_sha256": {
+        "converters/libreoffice/program/pythonloader.uno.ini": "78b49d5b88a14c0ff7fbe491028ee0626abbef98d2eb303b16546e61d638909d"
+      }
+    }
+  },
+  "domain_node_count": 25,
+  "domain_edge_count": 183,
+  "original_office_java_domains_equal": true,
+  "selected_input_count": 42,
+  "selected_sha256": {
+    "converters/libreoffice/program/python-core-3.13.15/lib/_elementtree.pyd": "34284f30bdab155c5796cf53f355c30d314831b7ea210bef228d21c3cbff2e35",
+    "converters/libreoffice/program/python-core-3.13.15/lib/libssl-3.dll": "5e4d03ce3adfd26133a81a365a24290b0f74d061037bd546198445b303979407",
+    "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/gui-64.exe": "3471b6140eadc6412277dbbefe3fef8c345a0f1a59776086b80a3618c3a83e3b",
+    "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/w32.exe": "47872cc77f8e18cf642f868f23340a468e537e64521d9a3a416c8b84384d064b",
+    "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/w64.exe": "7a319ffaba23a017d7b1e18ba726ba6c54c53d6446db55f92af53c279894f8ad",
+    "converters/libreoffice/java/bin/vcruntime140.dll": "02c6aa0e6e624411a9f19b0360a7865ab15908e26024510e5c38a9c08362c35a",
+    "converters/libreoffice/program/python-core-3.13.15/lib/unicodedata.pyd": "5e2f7c10f3322479a50ae8d1ed985a10f88dbee77fee10b0c2962a858a5a2499",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_lzma.pyd": "562687cf0596d5a5fa028cdaec73228b90b0361c9fb14765a47b26dd6bc0d375",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_ssl.pyd": "174a3db346fb045cf621c6e7bdd00a0c4ca4c4930f38791d870a21b66bef1223",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_asyncio.pyd": "3a23edfc21d4cb93d90e6d5ee70c1ff5c0113b593a2d59dd3d0300ebf21c6000",
+    "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/t32.exe": "6b4195e640a85ac32eb6f9628822a622057df1e459df7c17a12f97aeabc9415b",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_queue.pyd": "9e38da29cec31b58f0dac0377d1a0ddd812591dfc2f3e6cc8484b8e58fe50600",
+    "converters/libreoffice/program/python-core-3.13.15/lib/libffi-8.dll": "170f2d6e70fc23e141e457ecf7ac2c95fff9e0abbf97cbd3b154963ee1fc848c",
+    "converters/libreoffice/program/python313.dll": "3541781d0f86ad409c6ee43689e4fc9e77ade77e267f0fed2a40f6206c156d78",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_bz2.pyd": "b99424dfbf98e504b374c485f6cb677a523e1c5de7ab542269e8bb64b7f17e74",
+    "converters/libreoffice/runtime-lock.json": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+    "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/gui.exe": "85dae1e95d77845f2cb59bcac3d4afe74bbe4c91a9bcc5bf4a71cd43104dbe7c",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_overlapped.pyd": "b1874d84f63d12a4bfdc3e251c1348b824f1acdfb084cb9b9e43fa878af2c64b",
+    "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/cli.exe": "32acc1bc543116cbe2cff10cb867772df2f254ff2634c870aef0b46c4b696fdb",
+    "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/w64-arm.exe": "c5dc9884a8f458371550e09bd396e5418bf375820a31b9899f6499bf391c7b2e",
+    "converters/libreoffice/program/python-core-3.13.15/lib/winsound.pyd": "a30bb3a4f57d781b49dd2a78522e12d14dd3991556b736d8ef9c15c5ebee2f7f",
+    "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/cli-64.exe": "bbb3de5707629e6a60a0c238cd477b28f07f0066982fda953fa6fcec39073a4a",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_zoneinfo.pyd": "c66bd9afc873a0d7e7d3a137afed64004d8e44f8f44d9b9ec3e6a90b89e6e3f7",
+    "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/cli-arm64.exe": "b9a7d08da880dfac8bcf548eba4b06fb59b6f09b17d33148a0f6618328926c61",
+    "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/gui-32.exe": "85dae1e95d77845f2cb59bcac3d4afe74bbe4c91a9bcc5bf4a71cd43104dbe7c",
+    "converters/libreoffice/program/python-core-3.13.15/lib/libcrypto-3.dll": "e879af9940edd370c50c09f5ce1c78ee766c81ae3ae64f4cd3691af9ceee1f47",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_multiprocessing.pyd": "beffd4aa88b2a58cb50e9872a66e8867c987573651cdf8d69c8c6766dedc49f8",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_sqlite3.pyd": "3069862364c0a0c6a6bfe799a367e072ae22eca6dca048fe7c29a05f5e16075f",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_decimal.pyd": "1695efaf85a9dd11c9c0acd650961c2138a290061f357ff145e4c7756c6ab4f9",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_socket.pyd": "2c49fda811685918d00e572f6d220bcba568747247828d0b0da0cf931be9e726",
+    "converters/libreoffice/program/vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_ctypes.pyd": "db291fc0dc73f48d29fa587abbe195c354c0fbe91cf85784c9bdc97a0427d254",
+    "converters/libreoffice/program/python-core-3.13.15/lib/pyexpat.pyd": "ed6521c31ea721ae49d871638f0d6f822d527240d0a7e3190ca5ce776a5e59f8",
+    "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/t64-arm.exe": "ebc4c06b7d95e74e315419ee7e88e1d0f71e9e9477538c00a93a9ff8c66a6cfc",
+    "converters/libreoffice/program/pythonloader.uno.ini": "78b49d5b88a14c0ff7fbe491028ee0626abbef98d2eb303b16546e61d638909d",
+    "converters/libreoffice/program/python-core-3.13.15/lib/select.pyd": "e2a38cf5ee3ed73168c0f9315b62966bf5ea67e9daf2dc8d96aa3ab9fc3c2b5a",
+    "converters/libreoffice/program/python-core-3.13.15/lib/pip/_vendor/distlib/t64.exe": "81a618f21cb87db9076134e70388b6e9cb7c2106739011b6a51772d22cae06b7",
+    "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/cli-32.exe": "32acc1bc543116cbe2cff10cb867772df2f254ff2634c870aef0b46c4b696fdb",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_hashlib.pyd": "fdcff4aa5334cde7114a13d3deb06f27affea0500b0033a7b43f7760307c8daa",
+    "converters/libreoffice/program/python-core-3.13.15/lib/setuptools/gui-arm64.exe": "e694f4743405c8b5926ff457db6fe7f1a12dec7c16a9c3864784d3f4e07ae097",
+    "converters/libreoffice/program/python-core-3.13.15/lib/sqlite3.dll": "6e5abc758e3a1eedeeec02321edace14290a20af0cdb7a7bfa0e4c842acd0a57",
+    "converters/libreoffice/program/python-core-3.13.15/lib/_uuid.pyd": "42d93185aacc5c350c68f2adf9278b6d6e8cbcd75892cbaf7a989220e3f37b47"
+  },
+  "negative_counterfactuals": [
+    {
+      "case": "missing-pyd",
+      "rejected": true,
+      "reason": "Office Python extension/library PE set changed; renew loading evidence"
+    },
+    {
+      "case": "changed-pyd",
+      "rejected": true,
+      "reason": "Office Python PE path or bytes changed: program/python-core-3.13.15/lib/_asyncio.pyd"
+    },
+    {
+      "case": "x86-pyd",
+      "rejected": true,
+      "reason": "Expected x64 PE32+ Office Python image: program/python-core-3.13.15/lib/_asyncio.pyd"
+    },
+    {
+      "case": "extra-pyd",
+      "rejected": true,
+      "reason": "Office Python extension/library PE set changed; renew loading evidence"
+    },
+    {
+      "case": "moved-library",
+      "rejected": true,
+      "reason": "Office Python extension/library PE set changed; renew loading evidence"
+    },
+    {
+      "case": "changed-template",
+      "rejected": true,
+      "reason": "Office Python nested PE bytes changed: program/python-core-3.13.15/lib/pip/_vendor/distlib/t32.exe"
+    },
+    {
+      "case": "missing-program-crt-java-still-present",
+      "rejected": true,
+      "reason": "Unresolved import: converters/libreoffice/program/python-core-3.13.15/lib/winsound.pyd -> vcruntime140.dll; loading directories=['converters/libreoffice/program']; elsewhere=['converters/libreoffice/java/bin/vcruntime140.dll']; system CRT cannot satisfy private dependencies"
+    },
+    {
+      "case": "extension-local-crt-cannot-substitute",
+      "rejected": true,
+      "reason": "Unresolved import: converters/libreoffice/program/python-core-3.13.15/lib/winsound.pyd -> vcruntime140.dll; loading directories=['converters/libreoffice/program']; elsewhere=['converters/libreoffice/java/bin/vcruntime140.dll', 'converters/libreoffice/program/vcruntime140.dll']; system CRT cannot satisfy private dependencies"
+    },
+    {
+      "case": "python313-in-java-bin-not-searched",
+      "rejected": true,
+      "reason": "Unresolved import: converters/libreoffice/program/python-core-3.13.15/lib/winsound.pyd -> python313.dll; loading directories=['converters/libreoffice/program/python-core-3.13.15/lib', 'converters/libreoffice/program']; elsewhere=['converters/libreoffice/program/python313.dll']; system CRT cannot satisfy private dependencies"
+    }
+  ],
+  "tests": [
+    {
+      "run": "q02",
+      "python": "3.13.17",
+      "exit_code": 0,
+      "tests": 199,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "sha256": "763b1aae49d00423cafbd23e60d4a53795181fbb233e33d15becb4eef96fb6de",
+      "command": "python -X utf8 -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py backend/tests/test_office_java_bundle.py backend/tests/test_java_runtime_preparation.py -q --basetemp=.local/off02i-q02 --junitxml=artifacts/off02i/q02.xml"
+    },
+    {
+      "run": "p02",
+      "python": "3.12.7",
+      "exit_code": 0,
+      "tests": 199,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "sha256": "97ec185278fe13544216ae37d5ca52a89e05ecdf5ff833efba93cca69aac99f6",
+      "command": "python -X utf8 -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py backend/tests/test_office_java_bundle.py backend/tests/test_java_runtime_preparation.py -q --basetemp=.local/off02i-p02 --junitxml=artifacts/off02i/p02.xml"
+    }
+  ],
+  "preservation": {
+    "probe01": "exit1: expected normal vs actual import rejection text; probe02 exit0; old raw retained",
+    "other_failures": "No failing product assertion removed; source lookup 404 and mistyped read paths retained"
+  },
+  "boundaries": [
+    "DEFAULT_DIRS | DLL_LOAD_DIR uses fixed extension parent/application directory; USER_DIRS/loaded modules/SxS remain unknown.",
+    "Private CRT only program; Java/bin and extension-local/system CRT cannot substitute.",
+    "pyuno source assigns PyConfig.home but calls Py_Initialize, not Py_InitializeFromConfig; applied home not proven.",
+    "14 fixed nested templates authenticated but unclassified; no template runtime exclusion.",
+    "Python3 export forwarder, program proxy, bin EXE, managed/x86/TWAIN remain unclassified.",
+    "Source association and patch-target audit do not establish reproducible compilation.",
+    "Static host system/API-set leaves do not certify source identity or minimum Windows support.",
+    "No component/source execution or install, product/dependency change, deletion, GUI/manual test, merge or release.",
+    "check_release unchanged: remaining unknown PE images still block release."
+  ],
+  "source_component_executed": false,
+  "dynamic_isolation_verified": false,
+  "product_release_ready": false,
+  "selection_reason": "Only fixed source identities, root/asset identities, finite domain/result counts and specific rejection evidence; full graphs/source text/archive and raw logs remain ignored artifacts"
+}

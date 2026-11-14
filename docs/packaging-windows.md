@@ -56,6 +56,10 @@ Office子进程才接收包内JAVA_HOME、UNO_JAVA_JFW_JREHOME文件URI和headle
 
 固定JRE原清单同时约束DLL与EXE的完整集合、路径、hash及AMD64/PE32+。诊断将所有固定bin启动器作为潜在入口，保守纳入Java静态域，不表示产品实际执行它们；仍仅bin/bin-server搜索及bin私有CRT，不使用外来PATH或Office私有CRT。EXE不加入Office进程DLL根。Windows加载器的[应用目录与系统搜索规则](https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order)提供静态导入检查边界，动态加载、SxS、API-set/系统来源与其余组件仍须单列，任何未知继续阻断发行。
 
+固定Office CPython 3.13.15另有保守扩展静态域：19个lib直属PYD为根，4个直属附属DLL沿普通/延迟导入可达。精确组合清单/hash同时约束lib子树全部PE、program/python313.dll、program/vcruntime140.dll及pythonloader.uno.ini；缺失、新增、改动、移位或错误架构拒绝。14个嵌套pip/setuptools模板只校验固定身份，仍为未知，不作入口或豁免。独立office_python域仅搜索program/python-core-3.13.15/lib及soffice.bin所在program，私有CRT仅program，原Office/Java域保持；Python bin启动器、program/python.exe、python3.dll导出转发器和托管/x86组件不加入。
+
+来源为固定CPython源码归档的Python/dynload_win.c、固定LibreOffice提交的pyuno loader/打包规则及全部13份补丁目标复核；Windows扩展使用[LoadLibraryExW](https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibraryexw)的DEFAULT_DIRS与DLL_LOAD_DIR标志。USER_DIRS、已加载模块、SxS、系统来源和转发仍未知，静态图不认证动态隔离或实际执行。固定pyuno源码给PyConfig.home赋值后调用Py_Initialize，并未将该config传给Py_InitializeFromConfig；保留此来源疑点，不据INI或清理环境宣称Python home已应用，不在本任务修改上游或产品。精确来源/hash及边界见发行任务原报告。
+
 ## Office Python模板来源证据
 
 使用已有构建Python环境离线运行；输入必须是固定Office-Java组合及已下载的[CPython 3.13.15官方源码归档](https://www.python.org/ftp/python/3.13.15/Python-3.13.15.tar.xz)，命令不会下载、安装或执行归档内容：
