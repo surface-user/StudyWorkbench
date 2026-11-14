@@ -310,3 +310,114 @@ def test_registered_office_entries_share_the_existing_loading_domain_and_unknown
     assert domain['directories'] == [office + 'program', office + 'java/bin', office + 'java/bin/server']
     assert report['unproven_runtime_candidates'] == [dict(path=unknown, machine='0x14c')]
     assert report['pe_coverage'] == 'partial'
+
+
+@pytest.fixture
+def java_registry(native, uno_registry, tmp_path, monkeypatch):
+    office, payload, _ = uno_registry
+    files = {'release': b'Self-authored Java release fixture\n',
+             'bin/java.dll': b'Self-authored Java core fixture',
+             'bin/optional.dll': b'Self-authored optional JNI fixture',
+             'bin/vcruntime140.dll': b'Self-authored Java CRT fixture',
+             'bin/server/jvm.dll': b'Self-authored VM fixture',
+             'bin/java.exe': b'Self-authored Java launcher fixture',
+             'bin/other.exe': b'Self-authored unsupported launcher fixture'}
+    nodes = {}
+    for name, data in files.items():
+        path = tmp_path / 'java' / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        payload[office + 'java/' + name] = path
+        if name != 'release':
+            nodes[office + 'java/' + name] = node(office + 'java/' + name, digest=hashlib.sha256(data).hexdigest())
+    nodes[office + 'java/bin/optional.dll']['edges'] = [('vcruntime140.dll', 'delay')]
+    inventory = dict(version='21.0.13+9', package_sha256='fixture',
+                     files={name: hashlib.sha256(data).hexdigest() for name, data in files.items()})
+    raw = json.dumps(inventory).encode()
+    lock = tmp_path / 'java/java-runtime-lock.json'
+    lock.write_bytes(raw)
+    payload[office + 'java/java-runtime-lock.json'] = lock
+    monkeypatch.setattr(native, 'OFFICE_JAVA_LOCK_SHA256', hashlib.sha256(raw).hexdigest())
+    return office, payload, nodes, lock, inventory
+
+
+def test_fixed_java_dll_roots_use_both_original_domains_without_claiming_extra_exes(
+        native, java_registry, tmp_path, monkeypatch):
+    office, payload, nodes, _, _ = java_registry
+    program = office + 'program/'
+    for name in ['soffice.com', 'soffice.bin', 'officebean.dll', 'javavmlo.dll', 'jvmfwklo.dll',
+                 'jvmaccesslo.dll', 'javaloaderlo.dll', 'juh.dll', 'juhx.dll', 'java_uno.dll',
+                 'plugin.dll', 'vcruntime140.dll']:
+        nodes[program + name] = node(program + name)
+    nodes[program + 'twain32shim.exe'] = node(program + 'twain32shim.exe', machine=0x14c)
+    lock = tmp_path / 'runtime-lock.json'
+    lock.write_text(json.dumps(dict(version='26.8.1',
+        package_sha256='c6298b10cfa1748bcbedad94c62ce771e240e5021bfd6d7a967cd571b04b5312',
+        java=dict(version='21.0.13+9', directory='java',
+                  package_sha256='2332c0b4cff6bed722da3567c91d5e47568bcba863fa4945d0a8d6fc76158628'))), encoding='utf-8')
+    payload[office + 'runtime-lock.json'] = lock
+    monkeypatch.setattr(native, 'pe_nodes', lambda _: nodes)
+    before = {name: path.read_bytes() for name, path in payload.items()}
+    report = native.inspect_dependencies(payload, tmp_path)
+    assert len(report['pinned_java_libraries']['dlls']) == 4
+    optional = office + 'java/bin/optional.dll'
+    for name, crt in [('java', office + 'java/bin'), ('office', office + 'program')]:
+        domain = report['domains'][name]
+        assert optional in domain['roots'] and domain['crt_directories'] == [crt]
+        edge = next(row for row in domain['edges'] if row['source'] == optional)
+        assert edge == dict(source=optional, name='vcruntime140.dll', kind='delay',
+                            resolution='private-crt', target=crt + '/vcruntime140.dll')
+    assert report['domains']['java']['directories'] == [office + 'java/bin', office + 'java/bin/server']
+    assert report['domains']['office']['directories'] == [office + 'program', office + 'java/bin', office + 'java/bin/server']
+    assert {row['path'] for row in report['unproven_runtime_candidates']} == {
+        office + 'java/bin/other.exe', program + 'twain32shim.exe'}
+    assert report['pe_coverage'] == 'partial'
+    assert {name: path.read_bytes() for name, path in payload.items()} == before
+    del nodes[program + 'vcruntime140.dll']
+    with pytest.raises(ValueError, match='Unresolved delay.*system CRT'):
+        native.inspect_dependencies(payload, tmp_path)
+
+
+@pytest.mark.parametrize('damage', ['missing-lock', 'changed-lock', 'big-lock', 'missing-dll', 'extra-dll',
+                                   'moved-dll', 'changed-dll', 'architecture', 'header', 'release', 'missing-release'])
+def test_fixed_java_library_policy_rejects_missing_changed_or_relocated_inputs(
+        native, java_registry, damage):
+    office, payload, nodes, lock, _ = java_registry
+    selected = office + 'java/bin/optional.dll'
+    if damage == 'missing-lock':
+        del payload[office + 'java/java-runtime-lock.json']
+    elif damage in {'changed-lock', 'big-lock'}:
+        lock.write_bytes(b'changed' if damage == 'changed-lock' else b'x' * (1024 * 1024 + 1))
+    elif damage == 'missing-dll':
+        del nodes[selected]
+    elif damage == 'extra-dll':
+        nodes[office + 'java/bin/unproven.dll'] = node(office + 'java/bin/unproven.dll')
+    elif damage == 'moved-dll':
+        nodes[office + 'program/optional.dll'] = nodes.pop(selected)
+    elif damage == 'changed-dll':
+        nodes[selected]['sha256'] = 'changed'
+    elif damage == 'architecture':
+        nodes[selected]['machine'] = 0x14c
+    elif damage == 'header':
+        nodes[selected]['magic'] = 0x10B
+    elif damage == 'release':
+        payload[office + 'java/release'].write_bytes(b'changed')
+    else:
+        del payload[office + 'java/release']
+    before = {name: path.read_bytes() for name, path in payload.items()}
+    with pytest.raises(ValueError, match='Java'):
+        native.office_java_libraries(payload, nodes, office)
+    assert {name: path.read_bytes() for name, path in payload.items()} == before
+
+
+def test_fixed_java_dll_roots_do_not_add_new_search_directories(native, java_registry, monkeypatch):
+    office, payload, nodes, lock, inventory = java_registry
+    original = 'bin/optional.dll'
+    moved = 'bin/foreign/optional.dll'
+    inventory['files'][moved] = inventory['files'].pop(original)
+    nodes[office + 'java/' + moved] = nodes.pop(office + 'java/' + original)
+    raw = json.dumps(inventory).encode()
+    lock.write_bytes(raw)
+    monkeypatch.setattr(native, 'OFFICE_JAVA_LOCK_SHA256', hashlib.sha256(raw).hexdigest())
+    with pytest.raises(ValueError, match='Java DLL path'):
+        native.office_java_libraries(payload, nodes, office)
