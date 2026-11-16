@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+from .agent_access import agent_access_router
 from .content import DEMO, SUBJECTIVE
 from .db import (
     Attempt,
@@ -104,6 +105,7 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
             raise HTTPException(401, "Unauthorized")
 
     auth = [Depends(authorize)]
+    app.include_router(agent_access_router(engine), dependencies=auth)
     app.include_router(workspace_router(engine), dependencies=auth)
     app.include_router(explorer.router(), dependencies=auth)
     app.include_router(documents.router(), dependencies=auth)

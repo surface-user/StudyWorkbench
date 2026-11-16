@@ -634,3 +634,16 @@ R4独立真实HTTP44次响应断言、Windows题目文件混合集成1项、既�
 计划：两处配置目录断言改为Path.samefile比较实际目录身份（要求目录存在，不能接受另一目录），其余来源保留/收据/哈希/作答/媒体/重启和退出断言不变；CI以显式目录别名运行生命周期回归，防止本机直路径掩盖。PR已有具体代码行P2评论，保持未解决直至复测/CI通过。
 
 路径别名原用例复测：相同TMP/TEMP/Junction设置与同一R5冻结后端，修复后完整check_backend_lifecycle.py退出0，全部原件/两次迁移/旧收据哈希/作答/媒体/重启/EOF保护断言通过；日志pr1-lifecycle-alias-after.log。Ruff和差异检查退出0。CI新增显式目录别名回归；待干净runner结果，任务仍in_progress。
+
+
+## R6本地授权读取增量（2026-11-03）
+
+当前已实现：学习页作答历史显式勾选1–100条记录、确认5分钟本地授权、另行读取摘要、撤销及撤销后关闭；失败保留以重试，过期404清除。API均继承既有Bearer/Host/Origin检查，每次校验空间及作答归属。
+
+接口：POST `/api/workspaces/{workspace_id}/agent-grants` 接收严格独立正整数attempt_ids、purpose=analyze_attempts、expires_in_seconds=1–900（默认300）、严格confirm=true，拒绝额外字段；返回id/范围/用途/期限和transport=local_only。DELETE `/{id}` 撤销；POST `/{id}/read-attempts` 仅返回id/question_id/question_version_id/status/score/created_at。未知/跨空间/过期授权404；活动授权全进程最多100份，超限429。授权仅内存，单调时钟过期、重启失效，不新增表/迁移；撤销与读取串行。原始分数不含后续人工修订，不能用于完整学情判断。
+
+规划中：模型/凭据、资源正文、单独远端授权、草稿外置审核和来源校验；本批不联网或修改学习记录。待验证：真实窗口结果及PR状态见[本任务报告](../dev/records/2026-11-03-r6-agent-access/report.md)，模型/完整R6和产品人工/阶段验收继续保留。上述当前实现取代本文件此前涉及R6全部未实施的描述；不改其他历史阶段结论。本PR以未合并PR #2分支为基线，代码/自动化/自审完成后仍需本切片computer-use验收才创建PR，不授权合并或发布。
+
+最终本切片状态：独立子代理computer-use实际窗口核心流程通过，前后2条作答只读逐值保持；完整5分钟过期/故障注入/100条/DPI/发行和产品阶段仍待验。旧工具阻塞与首次自动化失败保留。后端全量218、Flutter全量93、定向6、静态分析及Windows Release通过；只提交本切片，不夹带本地文档治理。PR/当前head CI见任务报告。
+
+本切片交付：[PR #3](https://github.com/surface-user/StudyWorkbench/pull/3)已创建，base为#2分支；首次head 2ce2985b105327daef93a0d825a4b57ec0dac4b5 CI排队中，当前结果以PR实时检查为准，保持待交付，未合并/发行。

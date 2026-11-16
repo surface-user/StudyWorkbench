@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import 'backend.dart';
+import 'agent_access_dialog.dart';
 import 'learning_record_dialog.dart';
 import 'page_activity.dart';
 import 'import_page.dart';
@@ -454,6 +455,20 @@ class _StudyPageState extends State<StudyPage> {
           controller: historyController,
           title: Text('作答历史与待批改（已加载 ${history.length} 条）'),
           children: [
+            TextButton(
+              onPressed: busy || history.isEmpty
+                  ? null
+                  : () => showDialog<void>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) => AgentAccessDialog(
+                        backend: widget.backend,
+                        scope: scope,
+                        attempts: List.of(history),
+                      ),
+                    ),
+              child: const Text('选择记录 / 本地授权'),
+            ),
             for (final a in history)
               ExpansionTile(
                 title: Text(
