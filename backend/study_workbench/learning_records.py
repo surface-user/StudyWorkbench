@@ -93,6 +93,7 @@ def records_router(engine):
             events = list(session.scalars(query.order_by(LearningEvent.id.desc()).limit(limit)))
             source = version.content['question']['source'].get('original_resource_id') if version else None
             sources = list(session.scalars(select(WorkspaceNode).where(
+                WorkspaceNode.removed_at.is_(None),
                 WorkspaceNode.workspace_id == workspace_id, WorkspaceNode.resource_id == source).limit(100))) if source else []
             # The projection must use the entire event stream, not just the visible page.
             correction = None
@@ -114,7 +115,7 @@ def records_router(engine):
                         effective_knowledge_points=correction if correction is not None else version.content['question']['knowledge_points'] if version else None,
                         knowledge_projection_algorithm='latest-explicit-annotation-v1',
                         related_notes=list(linked_notes.values()), reviewed_count=reviewed_count,
-                        resource_item_id=node.id if node and node.workspace_id == workspace_id else None,
+                        resource_item_id=node.id if node and node.workspace_id == workspace_id and node.removed_at is None else None,
                         source_resource_item_ids=[n.id for n in sources],
                         events=[event_view(e) for e in events],
                         next_before_id=events[-1].id if len(events) == limit else None,

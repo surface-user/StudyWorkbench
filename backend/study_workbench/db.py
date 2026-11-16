@@ -158,6 +158,7 @@ class WorkspaceNode(Base):
     resource_id: Mapped[str | None] = mapped_column(String, nullable=True)
     media_id: Mapped[str | None] = mapped_column(String, nullable=True)
     url: Mapped[str | None] = mapped_column(String, nullable=True)
+    removed_at: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
 class ResourceAddJob(Base):

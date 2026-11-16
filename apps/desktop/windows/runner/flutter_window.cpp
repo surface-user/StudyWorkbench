@@ -34,6 +34,27 @@ bool FlutterWindow::OnCreate() {
       flutter_controller_->engine()->messenger(), "study/desktop",
       &flutter::StandardMethodCodec::GetInstance());
   desktop_channel_->SetMethodCallHandler([this](const auto& call, auto result) {
+    if (call.method_name() == "setResourceDropBounds") {
+      if (FAILED(drop_registration_)) {
+        result->Error("drop", "无法启用Windows文件拖放，请使用添加文件按钮");
+        return;
+      }
+      resource_drop_->enabled = false;
+      if (const auto* values = std::get_if<flutter::EncodableList>(call.arguments())) {
+        if (values->size() == 4) {
+          LONG coordinates[4];
+          for (size_t i = 0; i < 4; ++i) {
+            const auto* coordinate = std::get_if<double>(&(*values)[i]);
+            if (!coordinate) { result->Error("drop", "Invalid drop bounds"); return; }
+            coordinates[i] = static_cast<LONG>(*coordinate);
+          }
+          resource_drop_->bounds = {coordinates[0], coordinates[1], coordinates[2], coordinates[3]};
+          resource_drop_->enabled = true;
+        }
+      }
+      result->Success();
+      return;
+    }
     if (call.method_name() == "storageRoot" || call.method_name() == "settingsRoot") {
       HANDLE token = nullptr;
       if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token)) {
@@ -67,7 +88,8 @@ bool FlutterWindow::OnCreate() {
       result->Success(flutter::EncodableValue(root));
       return;
     }
-    const bool choose_file = call.method_name() == "chooseImportFile";
+    const bool multiple = call.method_name() == "chooseResourceFiles";
+    const bool choose_file = call.method_name() == "chooseImportFile" || multiple;
     const bool save_file = call.method_name() == "chooseExportFile";
     const bool resource_folder = call.method_name() == "chooseResourceDirectory";
     if (call.method_name() != "chooseDirectory" && !resource_folder && !choose_file && !save_file) {
@@ -85,16 +107,48 @@ bool FlutterWindow::OnCreate() {
     DWORD options = 0;
     dialog->GetOptions(&options);
     dialog->SetOptions(options | FOS_FORCEFILESYSTEM |
+                       (multiple ? FOS_ALLOWMULTISELECT : 0) |
                        (save_file ? FOS_OVERWRITEPROMPT :
                         choose_file ? FOS_FILEMUSTEXIST : FOS_PICKFOLDERS));
     dialog->SetTitle(save_file ? L"导出当前工作空间资料" :
                      choose_file ? L"选择要导入的学习资料" :
                      resource_folder ? L"选择要复制导入的资源文件夹（原目录保留）" : L"选择 StudyWorkbench 数据文件夹");
+    if (multiple) {
+      const COMDLG_FILTERSPEC filters[] = {
+        {L"学习资料与媒体", L"*.pdf;*.docx;*.pptx;*.md;*.txt;*.html;*.htm;*.json;*.png;*.jpg;*.jpeg;*.mp4;*.webm;*.m4a"},
+        {L"所有文件（不支持预览的文件仍可保存）", L"*.*"}};
+      dialog->SetFileTypes(2, filters);
+    }
     if (save_file) {
       dialog->SetDefaultExtension(L"zip");
       dialog->SetFileName(L"StudyWorkbench资料.zip");
     }
     hr = dialog->Show(GetHandle());
+    if (multiple && SUCCEEDED(hr)) {
+      IFileOpenDialog* open = nullptr;
+      IShellItemArray* items = nullptr;
+      flutter::EncodableList paths;
+      hr = dialog->QueryInterface(IID_PPV_ARGS(&open));
+      if (SUCCEEDED(hr)) hr = open->GetResults(&items);
+      DWORD count = 0;
+      if (SUCCEEDED(hr)) hr = items->GetCount(&count);
+      if (SUCCEEDED(hr) && count > 1000) hr = E_INVALIDARG;
+      for (DWORD i = 0; SUCCEEDED(hr) && i < count; ++i) {
+        IShellItem* item = nullptr;
+        PWSTR path = nullptr;
+        hr = items->GetItemAt(i, &item);
+        if (SUCCEEDED(hr)) hr = item->GetDisplayName(SIGDN_FILESYSPATH, &path);
+        if (SUCCEEDED(hr)) paths.emplace_back(Utf8FromUtf16(path));
+        if (path) CoTaskMemFree(path);
+        if (item) item->Release();
+      }
+      if (items) items->Release();
+      if (open) open->Release();
+      dialog->Release();
+      if (FAILED(hr)) result->Error("files", "无法选择文件，一次最多1000项");
+      else result->Success(flutter::EncodableValue(paths));
+      return;
+    }
     std::string selected;
     if (SUCCEEDED(hr)) {
       IShellItem* item = nullptr;
@@ -116,6 +170,8 @@ bool FlutterWindow::OnCreate() {
     else result->Success(flutter::EncodableValue(selected));
   });
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
+  resource_drop_ = new ResourceDropTarget(flutter_controller_->view()->GetNativeWindow(), desktop_channel_.get());
+  drop_registration_ = RegisterDragDrop(flutter_controller_->view()->GetNativeWindow(), resource_drop_);
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
     this->Show();
@@ -130,6 +186,11 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
+  if (resource_drop_) {
+    if (SUCCEEDED(drop_registration_)) RevokeDragDrop(flutter_controller_->view()->GetNativeWindow());
+    resource_drop_->Release();
+    resource_drop_ = nullptr;
+  }
   desktop_channel_.reset();
   if (flutter_controller_) {
     flutter_controller_ = nullptr;

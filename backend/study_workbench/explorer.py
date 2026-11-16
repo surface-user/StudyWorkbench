@@ -1,4 +1,4 @@
-"""Managed resource identities and bounded, cancellable local copying; no parsing or deletion."""
+"""Managed resource identities, non-destructive tree removal and bounded local copying."""
 import hashlib
 import mimetypes
 import os
@@ -6,6 +6,7 @@ import re
 import stat
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Event
 from urllib.parse import unquote, urlsplit
@@ -57,6 +58,53 @@ class CopyRequest(BaseModel):
     source_path: str = Field(min_length=1, max_length=2048)
 
 
+class InspectRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    source_paths: list[str] = Field(min_length=1, max_length=1000)
+
+
+def inspect_source(value, root):
+    result = dict(source_path=value, name=Path(value).name[:200], size=None,
+                  kind='file', type='普通文件', warning=None, error=None)
+    try:
+        if len(value) > 2048:
+            raise HTTPException(422, '来源路径过长')
+        path = source_path(value, root)
+        normalized_name(path.name)
+        info = path.stat()
+        result['source_path'], result['name'] = str(path), path.name
+        if stat.S_ISDIR(info.st_mode):
+            result.update(kind='folder', type='文件夹', warning='递归复制：最多1000节点、32层、合计1GiB；不跟随符号链接或重解析点')
+            return result
+        if not stat.S_ISREG(info.st_mode):
+            raise HTTPException(422, '仅支持普通文件与文件夹')
+        extension = path.suffix.lower()
+        media = extension in {'.mp4', '.webm', '.m4a'}
+        result['size'] = info.st_size
+        if info.st_size > (512 * 1024 * 1024 if media else FILE_LIMIT):
+            raise HTTPException(413, '超过单文件限制：普通文件128MiB，MP4/WebM/M4A媒体512MiB')
+        with path.open('rb') as handle:
+            header = handle.read(32)
+        if media:
+            result.update(kind='media', type='音频' if extension == '.m4a' else '视频',
+                          mime=media_mime(extension, header, info.st_size),
+                          warning='容器已识别；编码是否可播放需打开后验证')
+        else:
+            labels = {'.pdf': 'PDF 文档', '.docx': 'Word 文档', '.pptx': 'PowerPoint 文档',
+                      '.md': 'Markdown 笔记', '.txt': '文本', '.html': 'HTML 文档', '.htm': 'HTML 文档',
+                      '.png': 'PNG 图片', '.jpg': 'JPEG 图片', '.jpeg': 'JPEG 图片', '.json': 'JSON 文件'}
+            result['type'] = labels.get(extension, '普通文件')
+            signatures = {'.pdf': b'%PDF-', '.docx': b'PK\x03\x04', '.pptx': b'PK\x03\x04',
+                          '.png': b'\x89PNG\r\n\x1a\n', '.jpg': b'\xff\xd8', '.jpeg': b'\xff\xd8'}
+            if extension in signatures and not header.startswith(signatures[extension]):
+                result['warning'] = '文件头与扩展名不符；可保存原件，预览可能失败'
+            elif extension not in {'.pdf', '.docx', '.pptx', '.md', '.png', '.jpg', '.jpeg'}:
+                result['warning'] = '可保存原件，当前不支持独立预览；内容处理需另行选择'
+    except (ValueError, OSError, HTTPException) as error:
+        result['error'] = str(error.detail) if isinstance(error, HTTPException) else '名称无效或文件不可读取（不存在或没有权限）'
+    return result
+
+
 def node_in(session, workspace, identifier):
     item = session.get(WorkspaceNode, identifier)
     if item is None or item.workspace_id != workspace:
@@ -66,8 +114,12 @@ def node_in(session, workspace, identifier):
 
 def parent_in(session, workspace, identifier):
     require_workspace(session, workspace)
-    if identifier is not None and node_in(session, workspace, identifier).kind != 'folder':
-        raise HTTPException(422, '目标必须为同空间的文件夹')
+    if identifier is not None:
+        parent = node_in(session, workspace, identifier)
+        if parent.removed_at is not None:
+            raise HTTPException(409, '目标文件夹已删除')
+        if parent.kind != 'folder':
+            raise HTTPException(422, '目标必须为同空间的文件夹')
 
 
 def relative_node(session, workspace, node, value):
@@ -90,6 +142,7 @@ def relative_node(session, workspace, node, value):
             continue
         target = session.scalar(select(WorkspaceNode).where(
             WorkspaceNode.workspace_id == workspace, WorkspaceNode.parent_id == parent,
+            WorkspaceNode.removed_at.is_(None),
             WorkspaceNode.name_key == unicodedata.normalize('NFC', part).casefold()))
         if target is None:
             raise HTTPException(404, '相对文件未在资源树中找到')
@@ -106,6 +159,7 @@ def insert_node(session, workspace, parent, name, kind, **payload):
     base, number = name, 2
     while session.scalar(select(WorkspaceNode.id).where(
             WorkspaceNode.workspace_id == workspace, WorkspaceNode.parent_id == parent,
+            WorkspaceNode.removed_at.is_(None),
             WorkspaceNode.name_key == name.casefold())):
         name = f'{base[:180]} ({number})'
         number += 1
@@ -130,7 +184,8 @@ def describe_node(session, root, item):
         except (OSError, HTTPException):
             status = 'conflict'
     return dict(resource_item_id=item.id, parent_id=item.parent_id, name=item.name, kind=item.kind,
-                resource_id=item.resource_id, media_id=item.media_id, url=item.url, status=status,
+                resource_id=item.resource_id, media_id=item.media_id, url=item.url,
+                status='removed' if item.removed_at is not None else status,
                 sha256=target.sha256 if target else None, size=target.size if target else None)
 
 
@@ -325,16 +380,27 @@ class Explorer:
     def router(self):
         router = APIRouter(prefix='/api/workspaces/{workspace_id}')
 
+        @router.post('/resource-inspections')
+        def inspect(workspace_id: str, body: InspectRequest):
+            with Session(self.engine) as session:
+                require_workspace(session, workspace_id)
+            return [inspect_source(value, self.root) for value in body.source_paths]
+
         @router.get('/nodes')
         def listing(workspace_id: str, parent_id: str | None = None,
-                    offset: int = Query(0, ge=0), limit: int = Query(100, ge=1, le=200)):
+                    offset: int = Query(0, ge=0), limit: int = Query(100, ge=1, le=200),
+                    search: str = Query('', max_length=200)):
             with write_transaction(self.engine) as session:
                 parent_in(session, workspace_id, parent_id)
                 if parent_id is None:
                     adapt_legacy(session, workspace_id)
-                return [describe_node(session, self.root, node) for node in session.scalars(select(WorkspaceNode).where(
-                    WorkspaceNode.workspace_id == workspace_id, WorkspaceNode.parent_id == parent_id
-                ).order_by(WorkspaceNode.kind, WorkspaceNode.name_key, WorkspaceNode.id).offset(offset).limit(limit))]
+                query = select(WorkspaceNode).where(WorkspaceNode.workspace_id == workspace_id,
+                                                     WorkspaceNode.removed_at.is_(None))
+                query = query.where(WorkspaceNode.kind != 'folder', WorkspaceNode.name_key.contains(
+                    unicodedata.normalize('NFC', search).casefold(), autoescape=True)) if search else query.where(
+                        WorkspaceNode.parent_id == parent_id)
+                return [describe_node(session, self.root, node) for node in session.scalars(query.order_by(
+                    WorkspaceNode.kind, WorkspaceNode.name_key, WorkspaceNode.id).offset(offset).limit(limit))]
 
         @router.post('/nodes')
         def create(workspace_id: str, body: NodeCreate):
@@ -370,6 +436,8 @@ class Explorer:
             with write_transaction(self.engine) as session:
                 parent_in(session, workspace_id, body.parent_id)
                 node = node_in(session, workspace_id, node_id)
+                if node.removed_at is not None:
+                    raise HTTPException(409, '资源已从工作区删除')
                 cursor, depth = body.parent_id, 0
                 while cursor is not None:
                     if cursor == node.id or depth > 1000:
@@ -378,10 +446,34 @@ class Explorer:
                     depth += 1
                 if session.scalar(select(WorkspaceNode.id).where(
                         WorkspaceNode.workspace_id == workspace_id, WorkspaceNode.parent_id == body.parent_id,
+                        WorkspaceNode.removed_at.is_(None),
                         WorkspaceNode.name_key == body.name.casefold(), WorkspaceNode.id != node.id)):
                     raise HTTPException(409, '目标文件夹已有同名资源，请改名')
                 node.parent_id, node.name, node.name_key = body.parent_id, body.name, body.name.casefold()
                 return describe_node(session, self.root, node)
+
+        @router.delete('/nodes/{node_id}')
+        def remove(workspace_id: str, node_id: str):
+            with write_transaction(self.engine) as session:
+                require_workspace(session, workspace_id)
+                node = node_in(session, workspace_id, node_id)
+                if node.removed_at is not None:
+                    return dict(removed_ids=[])
+                subtree = select(WorkspaceNode.id).where(WorkspaceNode.id == node.id).cte(recursive=True)
+                subtree = subtree.union_all(select(WorkspaceNode.id).join(
+                    subtree, WorkspaceNode.parent_id == subtree.c.id).where(
+                        WorkspaceNode.workspace_id == workspace_id))
+                items = list(session.scalars(select(WorkspaceNode).where(
+                    WorkspaceNode.id.in_(select(subtree.c.id)), WorkspaceNode.removed_at.is_(None))))
+                # A copy started at an ancestor can still be writing into this subtree.
+                if session.scalar(select(ResourceAddJob.id).where(
+                        ResourceAddJob.workspace_id == workspace_id,
+                        ResourceAddJob.status.in_(['queued', 'running'])).limit(1)):
+                    raise HTTPException(409, '此工作空间仍有添加任务，请等待完成或取消后再删除')
+                removed_at = datetime.now(timezone.utc).isoformat()
+                for item in items:
+                    item.removed_at = removed_at
+                return dict(removed_ids=[item.id for item in items])
 
         def job_in(session, workspace, identifier):
             require_workspace(session, workspace)

@@ -94,6 +94,10 @@ Markdown保存当前内容和相对稳定元数据；SQLite是目录/检索/已�
 
 learning_events(id、attempt_id FK、request_id、content JSON、created_at)，唯一(attempt_id,request_id)、(attempt_id,id)索引。事件继承所属attempt空间，受控接口检查归属；数据库触发器禁止更新/删除。只追加表，不改旧作答或确认版本。知识点历史读取作答绑定的QuestionVersion，旧空版本保持未知。笔记绑定、知识点修订与投影规则仍待R5接续，见[R5首批](r5-records-2026-10-29.md)。
 
+## 0012资源树删除（2026-10-30）
+
+`workspace_nodes.removed_at`为可空UTC时间字符串，旧行初始NULL。`ux_nodes_sibling_name`只约束removed_at为NULL的节点；原ID、父子/资源/工作副本/题目及学习记录外键保留。DELETE仅标记子树，不删除文件和业务行；旧资源适配仍识别移除节点，防止重新生成身份。详见[资料删除设计与验证](resource-removal-2026-10-30.md)。
+
 ## R5事件投影完成（2026-10-29）
 
 复用0011 learning_events.content保存可选note_id及knowledge_points，不另建重复关系表，不改旧事件/迁移。关联笔记按稳定ID读取当前内容，缺失关系保留；最后明确知识点修订投影为记录当前标签，当时快照值仍独立保留。reviewed_count按事件重算，掌握/到期由实际作答与人工评分重算，算法版本和界面语义分开。细则见[ADR0011](adr/0011-learning-record-projections.md)及[R5完成记录](r5-completion-2026-10-29.md)，完整学习数据库备份恢复仍非当前资源导出的能力。

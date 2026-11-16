@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +12,8 @@ import 'note_editor.dart';
 import 'question_page.dart';
 import 'question_split_dialog.dart';
 import 'question_file_panel.dart';
+import 'resource_picker.dart';
+import 'add_resources_dialog.dart';
 
 class ImportPage extends StatefulWidget {
   const ImportPage({
@@ -20,12 +21,14 @@ class ImportPage extends StatefulWidget {
     required this.workspaceId,
     this.onActivity,
     this.onOpenResource,
+    this.onResourcesChanged,
     super.key,
   });
   final Backend backend;
   final String workspaceId;
   final PageActivityChanged? onActivity;
   final ValueChanged<Map<String, dynamic>>? onOpenResource;
+  final VoidCallback? onResourcesChanged;
   @override
   State<ImportPage> createState() => _ImportPageState();
 }
@@ -109,39 +112,31 @@ class _ImportPageState extends State<ImportPage> {
     }
   }
 
-  Future<void> choose() => run(() async {
-    final path = await const MethodChannel('study/desktop')
-        .invokeMethod<String>('chooseImportFile');
-    if (path == null || !mounted) return;
-    // Only transport user-selected bytes; parsing and persistence belong to Python.
-    final file = File(path);
-    final size = await file.length();
-    if (size == 0 || size > 8 * 1024 * 1024) {
-      throw const FormatException('请选择非空且不超过 8 MiB 的文件');
-    }
-    final bytes = BytesBuilder(copy: false);
-    await for (final chunk in file.openRead()) {
-      bytes.add(chunk);
-      if (bytes.length > 8 * 1024 * 1024) {
-        throw const FormatException('文件超过 8 MiB');
-      }
-    }
-    final name = path.split(RegExp(r'[/\\]')).last;
-    final job = await widget.backend.uploadImport(
-      widget.workspaceId,
-      name,
-      bytes.takeBytes(),
-    ) as Map<String, dynamic>;
-    if (!mounted) return;
-    setState(() {
-      selected = job;
-      previewIndex = 0;
-      message = job['duplicate'] == true
-          ? '检测到相同原件，已打开已有导入记录'
-          : '原件已保存，请检查预览后确认';
+  Future<void> choose() async {
+    final resource = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (_) => ResourcePicker(
+        backend: widget.backend,
+        workspaceId: widget.workspaceId,
+        imagesOnly: false,
+        allowUpload: false,
+      ),
+    );
+    if (resource == null || !mounted) return;
+    await run(() async {
+      final job = await widget.backend.request(
+        'POST',
+        '$scope/resources/${resource['id']}/analyze',
+      ) as Map<String, dynamic>;
+      if (!mounted) return;
+      setState(() {
+        selected = job;
+        previewIndex = 0;
+        message = job['duplicate'] == true ? '已打开已有处理记录' : '请检查预览后确认；原件保留';
+      });
+      await refresh();
     });
-    await refresh();
-  });
+  }
 
   Future<void> confirm() async {
     if (busy) return;
@@ -494,17 +489,34 @@ class _ImportPageState extends State<ImportPage> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('导入与资料库', style: Theme.of(context).textTheme.headlineSmall),
-        const Text('选择资料 → 检查预览 → 确认入库。原件会保留，未经确认不写入题库或笔记。'),
+        Text('资料处理与导出', style: Theme.of(context).textTheme.headlineSmall),
+        const Text('先添加资源，再按需提取内容 → 检查预览 → 确认入库。未经确认不写入题库或笔记。'),
         const SizedBox(height: 12),
         Wrap(
           spacing: 12,
           runSpacing: 8,
           children: [
+            OutlinedButton.icon(
+              onPressed: busy
+                  ? null
+                  : () async {
+                      await showDialog<void>(
+                        context: context,
+                        builder: (_) => AddResourcesDialog(
+                          backend: widget.backend,
+                          workspaceId: widget.workspaceId,
+                          onImported: widget.onResourcesChanged,
+                        ),
+                      );
+                      await refresh();
+                    },
+              icon: const Icon(Icons.add),
+              label: const Text('添加资源'),
+            ),
             FilledButton.icon(
               onPressed: busy ? null : choose,
               icon: const Icon(Icons.upload_file),
-              label: const Text('选择文件并预览'),
+              label: const Text('选择已有资源并预览'),
             ),
             OutlinedButton(
               onPressed: busy ? null : author,

@@ -129,7 +129,7 @@ def test_m2_upgrade_keeps_notes_previews_and_old_attempts(tmp_path):
         attempt = c.get(f'{SCOPE}/attempts').json()[0]
         assert attempt['id'] == 7 and attempt['question_revision'] is None and attempt['reviews'] == []
         assert c.get(f'{SCOPE}/statistics').json()['attempts'] == 1
-    backups = list((tmp_path / 'backups').glob('study-before-0011-*.db'))
+    backups = list((tmp_path / 'backups').glob('study-before-0012-*.db'))
     assert len(backups) == 1
     with sqlite3.connect(backups[0]) as backup:
         assert backup.execute('SELECT version_num FROM alembic_version').fetchone() == ('0003',)

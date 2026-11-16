@@ -1,5 +1,7 @@
 # 系统架构：资源驱动的本地学习工作台
 
+2026-10-30统一添加：Windows原生多选/OLE拖放→同一Flutter待导入清单→受保护`resource-inspections`只读识别→显式确认→既有`resource-add-jobs`顺序后台复制。媒体视图复用该弹窗。资料处理通过`resources/{id}/analyze`读取并校验已有原件、复用ImportJob，不复制第二份；仍需预览和确认。导航移除辅助工具分组而保留旧utility/layout及页面生命周期；搜索在同空间未删除资源中分页。无新依赖/迁移，边界及证据见[本批记录](unified-resource-import-2026-10-30.md)。
+
 2026-10-26：用户授权从R1复核后按R1–R6顺序继续开发、自动测试与审查。人工及阶段验收待统一进行。下文2026-10-25“仅授权R1”为历史边界；R2增量设计见[r2-design.md](r2-design.md)，本轮实际状态见[续开发记录](resource-continuation-2026-10-26.md)。
 
 当前增量：R2资源身份/layout v2已实施；R3 PDF/图片阅读、Markdown工作副本及DOCX结构预览已接入，0008追加工作副本/保存收据；0009追加可选离线DOCX/PPTX分页任务与派生收据。固定LibreOffice独立profile/受限Job、静态内部图表/OMML与安全边界见[ADR0009](adr/0009-offline-office-previews.md)、[本批记录](r3-office-validation-2026-10-26.md)。首批工作文件设计见[r3-design.md](r3-design.md)、[ADR0008](adr/0008-resource-tabs-and-document-workfiles.md)。旧题目/作答权威链未切换，R4–R6尚未展开；不将本机冻结自动化当完整发行/阶段验收。
@@ -31,6 +33,8 @@ flowchart LR
 左侧树组织资源，中央按内容类型分派查看器。题库列表/计划/统计作为辅助视图，导入作为全局任务/对话流程；旧总览暂作兼容入口，不能继续决定新标签身份。
 
 ### 1. 资源目录与统一添加
+
+2026-10-30增量：0012追加`workspace_nodes.removed_at`及未删除节点的同层名称唯一索引；受控DELETE事务标记整棵子树，复制任务运行时拒绝操作。列表/相对查找过滤，旧资源适配保留墓碑避免重现；原件/工作文件/历史与layout不删除，已打开编辑器仍按ID访问保留文件。见[设计与证据](resource-removal-2026-10-30.md)。
 
 R1新增工作空间内的逻辑目录/资源身份层`workspace_nodes`。文件夹有稳定ID与父节点；当前资源节点定位现有Resource原件、MediaEntry或保存的网页链接，严格择一。工作文件分支留R3。先适配既有存储，不合并表或重排全部磁盘文件。
 

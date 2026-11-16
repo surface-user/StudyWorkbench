@@ -149,14 +149,14 @@ def main():
         assert next(row for row in history if row['id'] == saved['id'])['question_version_id'] == first['id']
         stop()
         with sqlite3.connect(root / 'data/study.db') as db:
-            assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0011',)
+            assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0012',)
             assert db.execute('PRAGMA integrity_check').fetchone() == ('ok',)
             assert db.execute('PRAGMA foreign_key_check').fetchall() == []
         print(json.dumps(dict(frozen=bool(args.exe), legacy_source_retained=True, immutable_versions=4,
             attempts=3, old_version_unknown=True, old_scores_retained=True, stale_refused=True,
             idempotent_retry_after_publish_restart=True, null_answer_pending=True,
             portable_export=True, snapshot_image=True, draft_restart=True, learning_events_restart=True,
-            linked_note=True, corrected_labels=True, revision='0011')))
+            linked_note=True, corrected_labels=True, revision='0012')))
     finally:
         if process and process.poll() is None:
             process.kill()

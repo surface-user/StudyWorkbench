@@ -1,9 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'backend.dart';
+import 'add_resources_dialog.dart';
+export 'add_resources_dialog.dart';
 
 class ResourceExplorer extends StatefulWidget {
   const ResourceExplorer({
@@ -12,12 +13,14 @@ class ResourceExplorer extends StatefulWidget {
     this.onOpen,
     this.onNodeChanged,
     this.refreshRevision = 0,
+    this.onUtility,
     super.key,
   });
   final Backend backend;
   final String workspaceId;
   final ValueChanged<Map<String, dynamic>>? onOpen, onNodeChanged;
   final int refreshRevision;
+  final ValueChanged<String>? onUtility;
   @override
   State<ResourceExplorer> createState() => _ResourceExplorerState();
 }
@@ -29,12 +32,20 @@ class _ResourceExplorerState extends State<ResourceExplorer> {
   final loading = <String?>{};
   int generation = 0;
   String? error;
+  String search = '';
+  Timer? searchTimer;
   String get prefix => '/api/workspaces/${widget.workspaceId}';
 
   @override
   void initState() {
     super.initState();
     load(null);
+  }
+
+  @override
+  void dispose() {
+    searchTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -58,7 +69,7 @@ class _ResourceExplorerState extends State<ResourceExplorer> {
       final offset = reset ? 0 : children[parent]?.length ?? 0;
       final rows = await widget.backend.request(
         'GET',
-        '$prefix/nodes?offset=$offset&limit=100${parent == null ? '' : '&parent_id=$parent'}',
+        '$prefix/nodes?offset=$offset&limit=100${parent == null ? '' : '&parent_id=$parent'}${search.isEmpty ? '' : '&search=${Uri.encodeQueryComponent(search)}'}',
       ) as List;
       if (!mounted || requestedGeneration != generation) return;
       setState(() {
@@ -94,6 +105,11 @@ class _ResourceExplorerState extends State<ResourceExplorer> {
         backend: widget.backend,
         workspaceId: widget.workspaceId,
         parentId: parent,
+        onImported: reload,
+        onOpen: widget.onOpen,
+        onProcess: widget.onUtility == null
+            ? null
+            : () => widget.onUtility!('import'),
       ),
     );
     if (mounted) {
@@ -221,6 +237,73 @@ class _ResourceExplorerState extends State<ResourceExplorer> {
     }
   }
 
+  Future<void> remove(Map<String, dynamic> node) async {
+    var saving = false;
+    String? failure;
+    final removed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, update) => PopScope(
+          canPop: !saving,
+          child: AlertDialog(
+            title: Text('删除“${node['name']}”？'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  node['kind'] == 'folder'
+                      ? '将从工作区资源树删除此文件夹及其中全部资料。'
+                      : '将从工作区资源树删除此资料。',
+                ),
+                const Text('原文件、编辑副本和学习记录保留；已打开的标签及草稿保留。此操作不释放磁盘空间。'),
+                if (failure != null) Text(failure!),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: saving
+                    ? null
+                    : () => Navigator.pop(dialogContext, false),
+                child: const Text('取消'),
+              ),
+              FilledButton(
+                onPressed: saving
+                    ? null
+                    : () async {
+                        update(() {
+                          saving = true;
+                          failure = null;
+                        });
+                        try {
+                          await widget.backend.request(
+                            'DELETE',
+                            '$prefix/nodes/${node['resource_item_id']}',
+                          );
+                          if (dialogContext.mounted) {
+                            Navigator.pop(dialogContext, true);
+                          }
+                        } catch (error) {
+                          if (dialogContext.mounted) {
+                            update(() => failure = '未删除：$error');
+                          }
+                        } finally {
+                          if (dialogContext.mounted) {
+                            update(() => saving = false);
+                          }
+                        }
+                      },
+                child: Text(saving ? '删除中…' : '确认删除'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (removed == true && mounted) await reload();
+  }
+
   List<Widget> rows(String? parent, int depth) => [
     for (final raw in children[parent] ?? []) ...[
       ListTile(
@@ -253,13 +336,16 @@ class _ResourceExplorerState extends State<ResourceExplorer> {
             : Text(resourceStatus(raw['status'])),
         trailing: PopupMenuButton<String>(
           tooltip: '资源操作',
-          onSelected: (action) => action == 'add'
-              ? add(raw['resource_item_id'] as String)
-              : details(Map<String, dynamic>.from(raw)),
+          onSelected: (action) => switch (action) {
+            'add' => add(raw['resource_item_id'] as String),
+            'delete' => remove(Map<String, dynamic>.from(raw)),
+            _ => details(Map<String, dynamic>.from(raw)),
+          },
           itemBuilder: (_) => [
             const PopupMenuItem(value: 'details', child: Text('详情 / 改名 / 移动')),
             if (raw['kind'] == 'folder')
               const PopupMenuItem(value: 'add', child: Text('添加到此文件夹')),
+            const PopupMenuItem(value: 'delete', child: Text('删除')),
           ],
         ),
         onTap: () {
@@ -296,7 +382,21 @@ class _ResourceExplorerState extends State<ResourceExplorer> {
     children: [
       Row(
         children: [
-          const Expanded(child: Text('资源管理器')),
+          const Expanded(
+            child: Text(
+              '资源管理器',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          if (widget.onUtility != null)
+            PopupMenuButton<String>(
+              tooltip: '资源视图与处理',
+              onSelected: widget.onUtility,
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 'import', child: Text('资料处理与导出')),
+                PopupMenuItem(value: 'player', child: Text('媒体视图')),
+              ],
+            ),
           IconButton(
             tooltip: '刷新资源树',
             onPressed: reload,
@@ -309,6 +409,28 @@ class _ResourceExplorerState extends State<ResourceExplorer> {
         icon: const Icon(Icons.add),
         label: const Text('添加资源'),
       ),
+      TextField(
+        key: const ValueKey('resource-search'),
+        decoration: const InputDecoration(
+          hintText: '搜索资源',
+          prefixIcon: Icon(Icons.search, size: 18),
+          isDense: true,
+        ),
+        maxLength: 200,
+        buildCounter: (
+          _, {
+          required currentLength,
+          required isFocused,
+          maxLength,
+        }) => null,
+        onChanged: (value) {
+          searchTimer?.cancel();
+          searchTimer = Timer(const Duration(milliseconds: 250), () {
+            search = value.trim();
+            reload();
+          });
+        },
+      ),
       if (children[null]?.isEmpty ?? false) const Text('添加文件、文件夹或链接。原目录保持不变。'),
       ...rows(null, 0),
       if (error != null) SelectableText(error!),
@@ -317,6 +439,7 @@ class _ResourceExplorerState extends State<ResourceExplorer> {
 }
 
 String resourceStatus(dynamic value) => switch (value) {
+  'removed' => '已从工作区删除，文件和记录保留',
   'ready' => '可用',
   'missing' => '文件缺失，关系已保留',
   'conflict' => '文件冲突或不可读取',
@@ -333,229 +456,6 @@ String resourceStatus(dynamic value) => switch (value) {
   'duplicate' => '相同原件，独立资源',
   _ => '$value',
 };
-
-class AddResourcesDialog extends StatefulWidget {
-  const AddResourcesDialog({
-    required this.backend,
-    required this.workspaceId,
-    this.parentId,
-    super.key,
-  });
-  final Backend backend;
-  final String workspaceId;
-  final String? parentId;
-  @override
-  State<AddResourcesDialog> createState() => _AddResourcesDialogState();
-}
-
-class _AddResourcesDialogState extends State<AddResourcesDialog> {
-  final name = TextEditingController(), url = TextEditingController();
-  List<dynamic> jobs = [];
-  String? error;
-  bool busy = false;
-  int jobOffset = 0;
-  Timer? timer;
-  String get prefix => '/api/workspaces/${widget.workspaceId}';
-  @override
-  void initState() {
-    super.initState();
-    refresh();
-  }
-
-  @override
-  void dispose() {
-    timer?.cancel();
-    name.dispose();
-    url.dispose();
-    super.dispose();
-  }
-
-  Future<void> refresh() async {
-    timer?.cancel();
-    try {
-      final rows = await widget.backend.request(
-        'GET',
-        '$prefix/resource-add-jobs${jobOffset == 0 ? '' : '?offset=$jobOffset'}',
-      ) as List;
-      if (!mounted) return;
-      setState(() => jobs = rows);
-      if (rows.any((j) => ['queued', 'running'].contains(j['status']))) {
-        timer = Timer(const Duration(milliseconds: 800), refresh);
-      }
-    } catch (failure) {
-      if (mounted) setState(() => error = '任务读取失败：$failure');
-    }
-  }
-
-  Future<void> run(Future<void> Function() operation) async {
-    if (busy) return;
-    setState(() {
-      busy = true;
-      error = null;
-    });
-    try {
-      await operation();
-      jobOffset = 0;
-      await refresh();
-    } catch (failure) {
-      if (mounted) setState(() => error = '添加未完成：$failure');
-    } finally {
-      if (mounted) setState(() => busy = false);
-    }
-  }
-
-  Future<void> copy(bool folder) => run(() async {
-    final path = await const MethodChannel('study/desktop')
-        .invokeMethod<String>(
-          folder ? 'chooseResourceDirectory' : 'chooseImportFile',
-        );
-    if (path == null) return;
-    await widget.backend.request('POST', '$prefix/resource-add-jobs', {
-      'source_path': path,
-      'parent_id': widget.parentId,
-    });
-  });
-
-  Future<void> create(String kind) => run(() async {
-    await widget.backend.request('POST', '$prefix/nodes', {
-      'parent_id': widget.parentId,
-      'name': name.text,
-      'kind': kind,
-      if (kind == 'link') 'url': url.text,
-    });
-    if (mounted) Navigator.pop(context);
-  });
-
-  @override
-  Widget build(BuildContext context) => PopScope(
-    canPop: !busy,
-    child: AlertDialog(
-      title: const Text('添加资源'),
-      content: SizedBox(
-        width: 620,
-        height: 500,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                '受管复制：保留原目录与层级，不自动提取题目。最多1000节点、32层、合计1GiB；普通文件128MiB，MP4/WebM/M4A媒体512MiB。',
-              ),
-              Wrap(
-                spacing: 8,
-                children: [
-                  OutlinedButton(
-                    onPressed: busy ? null : () => copy(false),
-                    child: const Text('添加文件 / 本地媒体'),
-                  ),
-                  OutlinedButton(
-                    onPressed: busy ? null : () => copy(true),
-                    child: const Text('复制导入文件夹'),
-                  ),
-                ],
-              ),
-              TextField(
-                controller: name,
-                decoration: const InputDecoration(labelText: '新文件夹 / 链接名称'),
-              ),
-              TextField(
-                controller: url,
-                decoration: const InputDecoration(labelText: '网页 HTTPS 地址'),
-              ),
-              Wrap(
-                spacing: 8,
-                children: [
-                  TextButton(
-                    onPressed: busy ? null : () => create('folder'),
-                    child: const Text('新建文件夹'),
-                  ),
-                  TextButton(
-                    onPressed: busy ? null : () => create('link'),
-                    child: const Text('保存网页链接'),
-                  ),
-                ],
-              ),
-              const Text(
-                '视频下载尚未实现；可添加已有本地媒体或保存网页链接。关闭此窗口后复制任务仍在后台运行；取消保留已完成部分。',
-              ),
-              if (error != null) SelectableText(error!),
-              if (busy) const LinearProgressIndicator(),
-              TextButton(
-                onPressed: busy
-                    ? null
-                    : () {
-                        jobOffset = 0;
-                        refresh();
-                      },
-                child: const Text('刷新添加任务'),
-              ),
-              for (final job in jobs)
-                ExpansionTile(
-                  key: ValueKey('add-job-${job['id']}'),
-                  title: Text(
-                    '${resourceStatus(job['status'])} · ${(job['results'] as List).length} 项',
-                  ),
-                  subtitle: job['error'] == null
-                      ? null
-                      : Text(job['error'] as String),
-                  children: [
-                    if (['queued', 'running'].contains(job['status']))
-                      TextButton(
-                        onPressed: busy
-                            ? null
-                            : () => run(() async {
-                                await widget.backend.request(
-                                  'POST',
-                                  '$prefix/resource-add-jobs/${job['id']}/cancel',
-                                );
-                              }),
-                        child: Text(
-                          job['cancel_requested'] == true ? '已请求取消' : '取消复制',
-                        ),
-                      ),
-                    for (final result in job['results'] as List)
-                      ListTile(
-                        dense: true,
-                        title: Text(result['name'] as String),
-                        subtitle: Text(
-                          '${resourceStatus(result['status'])}${result['error'] == null ? '' : '：${result['error']}'}',
-                        ),
-                      ),
-                  ],
-                ),
-              if (jobs.length == 20)
-                TextButton(
-                  onPressed: busy
-                      ? null
-                      : () {
-                          jobOffset += 20;
-                          refresh();
-                        },
-                  child: const Text('更早的添加任务'),
-                ),
-              if (jobOffset > 0)
-                TextButton(
-                  onPressed: busy
-                      ? null
-                      : () {
-                          jobOffset -= 20;
-                          refresh();
-                        },
-                  child: const Text('较新的添加任务'),
-                ),
-            ],
-          ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: busy ? null : () => Navigator.pop(context),
-          child: const Text('关闭'),
-        ),
-      ],
-    ),
-  );
-}
 
 class _FolderPicker extends StatefulWidget {
   const _FolderPicker({

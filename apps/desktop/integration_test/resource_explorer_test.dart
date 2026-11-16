@@ -90,6 +90,9 @@ void main() {
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('添加资源'));
       await tester.tap(find.text('添加资源'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('文件夹与网页链接'));
+      await tester.tap(find.text('文件夹与网页链接'));
       await until(() => find.text('保存网页链接').evaluate().isNotEmpty);
       await tester.enterText(
         find.widgetWithText(TextField, '新文件夹 / 链接名称'),
@@ -99,7 +102,10 @@ void main() {
         find.widgetWithText(TextField, '网页 HTTPS 地址'),
         'https://example.com/reading',
       );
+      await tester.ensureVisible(find.text('保存网页链接'));
       await tester.tap(find.text('保存网页链接'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('关闭添加资源'));
       await until(
         () =>
             find.byType(AlertDialog).evaluate().isEmpty &&
@@ -124,6 +130,36 @@ void main() {
         await File('${source.path}/阅读.md').readAsString(),
         '# 阅读资料\n保留原文，不要求标准答案。',
       );
+      await tester.tap(
+        find.descendant(
+          of: find.widgetWithText(ListTile, '示例资料'),
+          matching: find.byType(PopupMenuButton<String>),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('删除'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('其中全部资料'), findsOneWidget);
+      final confirmation = await boundary.toImage(pixelRatio: 1);
+      final confirmationBytes = await confirmation.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
+      await File('$evidence/resource-delete-confirmation.png')
+          .writeAsBytes(confirmationBytes!.buffer.asUint8List());
+      confirmation.dispose();
+      await tester.tap(find.text('确认删除'));
+      await until(
+        () =>
+            find.byType(AlertDialog).evaluate().isEmpty &&
+            find.text('示例资料').evaluate().isEmpty,
+      );
+      await tester.runAsync(() async {
+        final nodes = await backend.request('GET', '$prefix/nodes') as List;
+        expect(nodes.length, 1);
+        expect(nodes.single['name'], '参考网页');
+        expect(await backend.request('GET', '$prefix/layout'), before);
+        expect(await File('${source.path}/阅读.md').exists(), isTrue);
+      });
       await File('$evidence/native-results.json').writeAsString(
         jsonEncode({
           'copy_status': completed!['status'],
@@ -131,6 +167,7 @@ void main() {
           'source_retained': true,
           'layout_unchanged': true,
           'link_added_via_ui': true,
+          'folder_deleted_via_ui': true,
         }),
       );
       expect(tester.takeException(), isNull);

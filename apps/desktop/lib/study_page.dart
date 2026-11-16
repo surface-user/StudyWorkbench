@@ -16,9 +16,11 @@ class StudyPage extends StatefulWidget {
     required this.workspaceId,
     this.onActivity,
     this.onOpenResource,
+    this.historyRevision = 0,
     super.key,
   });
   final Backend backend;
+  final int historyRevision;
   final String workspaceId;
   final PageActivityChanged? onActivity;
   final ValueChanged<Map<String, dynamic>>? onOpenResource;
@@ -27,6 +29,31 @@ class StudyPage extends StatefulWidget {
 }
 
 class _StudyPageState extends State<StudyPage> {
+  final historyKey = GlobalKey();
+  final historyController = ExpansibleController();
+  @override
+  void dispose() {
+    historyController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant StudyPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.historyRevision != widget.historyRevision) revealHistory();
+  }
+
+  void revealHistory() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || historyKey.currentContext == null) return;
+      historyController.expand();
+      Scrollable.ensureVisible(
+        historyKey.currentContext!,
+        duration: const Duration(milliseconds: 200),
+      );
+    });
+  }
+
   String get scope => '/api/workspaces/${widget.workspaceId}';
   List<dynamic> rows = [], history = [], tasks = [];
   Map<String, dynamic>? stats, question, passage;
@@ -37,6 +64,7 @@ class _StudyPageState extends State<StudyPage> {
   void initState() {
     super.initState();
     refresh();
+    if (widget.historyRevision > 0) revealHistory();
   }
 
   Future<void> run(Future<void> Function() action) async {
@@ -223,7 +251,7 @@ class _StudyPageState extends State<StudyPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('题库与学习计划', style: Theme.of(context).textTheme.headlineSmall),
-        const Text('支持 408、数学一、英语一、政治等自建题库；先在导入资料中录入或确认题目。'),
+        const Text('支持 408、数学一、英语一、政治等自建题库；可从资源管理器的资料处理中录入或确认题目。'),
         if (stats != null)
           Text(
             '题目 ${stats!['questions']} · 作答 ${stats!['attempts']} · 到期 ${stats!['due']} · 错题 ${stats!['wrong']} · 掌握 ${stats!['mastered']} · 待批改 ${stats!['pending_review']}',
@@ -422,6 +450,8 @@ class _StudyPageState extends State<StudyPage> {
           ],
         ),
         ExpansionTile(
+          key: historyKey,
+          controller: historyController,
           title: Text('作答历史与待批改（已加载 ${history.length} 条）'),
           children: [
             for (final a in history)

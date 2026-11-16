@@ -15,6 +15,7 @@ class _Backend implements Backend {
     Map<String, dynamic>? body,
   ]) async {
     paths.add(path);
+    if (path.endsWith('/resource-add-jobs')) return [];
     return [
       {'id': 'test', 'title': '自编视频.mp4', 'size': 100, 'status': 'failed'},
     ];
@@ -141,9 +142,17 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('自编视频.mp4'), findsOneWidget);
       expect(find.textContaining('导入未完成'), findsOneWidget);
-      await tester.tap(find.text('导入本地媒体'));
+      await tester.tap(find.text('添加资源'));
       await tester.pumpAndSettle();
-      expect(backend.paths, ['/api/workspaces/math/media?limit=50']);
+      await tester.tap(find.text('添加文件'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('取消'));
+      await tester.pumpAndSettle();
+      expect(backend.paths, [
+        '/api/workspaces/math/media?limit=50',
+        '/api/workspaces/math/resource-add-jobs',
+        '/api/workspaces/math/media?limit=50',
+      ]);
     },
   );
 }

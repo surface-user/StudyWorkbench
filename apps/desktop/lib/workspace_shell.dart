@@ -42,6 +42,7 @@ class WorkspaceShellState extends State<WorkspaceShell> {
   final savedDrafts = <String, String>{};
   final resourceRevisions = <String, int>{};
   final closingTabs = <String>{};
+  int historyRevision = 0;
   Timer? saveTimer;
   Future<void> saveQueue = Future.value();
   bool loading = true;
@@ -479,99 +480,120 @@ class WorkspaceShellState extends State<WorkspaceShell> {
                 width: 244,
                 margin: const EdgeInsets.all(12),
                 padding: const EdgeInsets.all(14),
-                child: ListView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
-                      'StudyWorkbench',
-                      style: TextStyle(
-                        fontSize: 21,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Text('离线学习工作台'),
-                    const Divider(height: 28),
-                    FilledButton.tonalIcon(
-                      onPressed: busy || loading ? null : _create,
-                      icon: const Icon(Icons.add),
-                      label: const Text('新建工作空间'),
-                    ),
-                    const SizedBox(height: 12),
-                    Column(
-                      children: [
-                        for (final raw in spaces)
-                          Builder(
-                            builder: (context) {
-                              final space = raw as Map<String, dynamic>;
-                              return ListTile(
-                                key: ValueKey('workspace-${space['id']}'),
-                                selected: space['id'] == activeSpace,
-                                contentPadding: EdgeInsets.zero,
-                                minLeadingWidth: 24,
-                                horizontalTitleGap: 8,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                leading: const Icon(Icons.folder_outlined),
-                                title: Text(
-                                  space['name'] as String,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                onTap: busy
-                                    ? null
-                                    : () => _select(space['id'] as String),
-                                trailing: PopupMenuButton<String>(
-                                  tooltip: '工作空间操作',
-                                  enabled: !busy,
-                                  onSelected: (action) =>
-                                      _spaceAction(space, action),
-                                  itemBuilder: (_) => [
-                                    const PopupMenuItem(
-                                      value: 'rename',
-                                      child: Text('重命名'),
-                                    ),
-                                    PopupMenuItem(
-                                      value: 'remove',
-                                      enabled: spaces.length > 1,
-                                      child: const Text('移除并保留数据'),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
+                    Expanded(
+                      child: ListView(
+                        children: [
+                          const Text(
+                            'StudyWorkbench',
+                            style: TextStyle(
+                              fontSize: 21,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                      ],
+                          const Text('个人学习与资料工作台'),
+                          const Divider(height: 28),
+                          const Text('工作空间'),
+                          Column(
+                            children: [
+                              for (final raw in spaces)
+                                Builder(
+                                  builder: (context) {
+                                    final space = raw as Map<String, dynamic>;
+                                    return ListTile(
+                                      key: ValueKey('workspace-${space['id']}'),
+                                      selected: space['id'] == activeSpace,
+                                      contentPadding: EdgeInsets.zero,
+                                      minLeadingWidth: 24,
+                                      horizontalTitleGap: 8,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      leading: const Icon(
+                                        Icons.folder_outlined,
+                                      ),
+                                      title: Text(
+                                        space['name'] as String,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      onTap: busy
+                                          ? null
+                                          : () =>
+                                                _select(space['id'] as String),
+                                      trailing: PopupMenuButton<String>(
+                                        tooltip: '工作空间操作',
+                                        enabled: !busy,
+                                        onSelected: (action) =>
+                                            _spaceAction(space, action),
+                                        itemBuilder: (_) => [
+                                          const PopupMenuItem(
+                                            value: 'rename',
+                                            child: Text('重命名'),
+                                          ),
+                                          PopupMenuItem(
+                                            value: 'remove',
+                                            enabled: spaces.length > 1,
+                                            child: const Text('移除并保留数据'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                            ],
+                          ),
+                          FilledButton.tonalIcon(
+                            onPressed: busy || loading ? null : _create,
+                            icon: const Icon(Icons.add),
+                            label: const Text('新建工作空间'),
+                          ),
+                          const SizedBox(height: 12),
+                          if (activeSpace != null)
+                            ResourceExplorer(
+                              key: ValueKey('explorer-$activeSpace'),
+                              backend: widget.backend,
+                              workspaceId: activeSpace!,
+                              refreshRevision:
+                                  resourceRevisions[activeSpace] ?? 0,
+                              onOpen: openResource,
+                              onNodeChanged: _nodeChanged,
+                              onUtility: (kind) =>
+                                  _tabAction((l) => l.openSingleton(kind)),
+                            ),
+                          const Divider(),
+                          const Text('学习'),
+                          TextButton.icon(
+                            onPressed: busy || layout == null
+                                ? null
+                                : () => _tabAction(
+                                    (l) => l.openSingleton('study'),
+                                  ),
+                            icon: const Icon(Icons.school_outlined, size: 18),
+                            label: const Text('学习计划'),
+                          ),
+                          TextButton.icon(
+                            onPressed: busy || layout == null
+                                ? null
+                                : () {
+                                    _tabAction((l) => l.openSingleton('study'));
+                                    setState(() => historyRevision++);
+                                  },
+                            icon: const Icon(Icons.history, size: 18),
+                            label: const Text('学习记录与错题'),
+                          ),
+                          if (archived.isNotEmpty)
+                            TextButton.icon(
+                              onPressed: busy ? null : _restore,
+                              icon: const Icon(Icons.restore),
+                              label: const Text('已移除工作空间'),
+                            ),
+                        ],
+                      ),
                     ),
-                    if (activeSpace != null)
-                      ResourceExplorer(
-                        key: ValueKey('explorer-$activeSpace'),
-                        backend: widget.backend,
-                        workspaceId: activeSpace!,
-                        refreshRevision: resourceRevisions[activeSpace] ?? 0,
-                        onOpen: openResource,
-                        onNodeChanged: _nodeChanged,
-                      ),
                     const Divider(),
-                    const Text('辅助工具'),
-                    for (final entry in const [
-                      ('import', '导入资料'),
-                      ('study', '学习计划'),
-                      ('player', '媒体库'),
-                    ])
-                      TextButton.icon(
-                        onPressed: busy || layout == null
-                            ? null
-                            : () =>
-                                  _tabAction((l) => l.openSingleton(entry.$1)),
-                        icon: Icon(tabIcon(entry.$1), size: 18),
-                        label: Text(entry.$2),
-                      ),
-                    if (archived.isNotEmpty)
-                      TextButton.icon(
-                        onPressed: busy ? null : _restore,
-                        icon: const Icon(Icons.restore),
-                        label: const Text('已移除工作空间'),
-                      ),
                     TextButton.icon(
                       onPressed: busy ? null : widget.onSettings,
                       icon: const Icon(Icons.settings_outlined),
@@ -653,6 +675,13 @@ class WorkspaceShellState extends State<WorkspaceShell> {
                                       workspaceId: entry.key,
                                       layout: entry.value,
                                       backend: widget.backend,
+                                      historyRevision: historyRevision,
+                                      onResourcesChanged: () => setState(
+                                        () => resourceRevisions[entry.key] =
+                                            (resourceRevisions[entry.key] ??
+                                                0) +
+                                            1,
+                                      ),
                                       playerHtml: widget.playerHtml,
                                       onChanged: () => _changed(entry.key),
                                       onOpenResource: (node) =>
@@ -695,9 +724,13 @@ class _WorkspacePages extends StatefulWidget {
     required this.onChanged,
     required this.onOpenResource,
     required this.onActivity,
+    required this.historyRevision,
+    required this.onResourcesChanged,
     super.key,
   });
   final String workspaceId;
+  final int historyRevision;
+  final VoidCallback onResourcesChanged;
   final WorkspaceLayout layout;
   final Backend backend;
   final String playerHtml;
@@ -753,6 +786,12 @@ class _WorkspacePagesState extends State<_WorkspacePages> {
                             builder: (_) => AddResourcesDialog(
                               backend: widget.backend,
                               workspaceId: widget.workspaceId,
+                              onImported: widget.onResourcesChanged,
+                              onOpen: _openResource,
+                              onProcess: () {
+                                widget.layout.openSingleton('import');
+                                widget.onChanged();
+                              },
                             ),
                           ),
                           child: const Text('添加资源'),
@@ -774,6 +813,7 @@ class _WorkspacePagesState extends State<_WorkspacePages> {
                         ),
                   ),
                   'study' => StudyPage(
+                    historyRevision: widget.historyRevision,
                     backend: widget.backend,
                     workspaceId: widget.workspaceId,
                     onOpenResource: _openResource,
@@ -786,6 +826,7 @@ class _WorkspacePagesState extends State<_WorkspacePages> {
                         ),
                   ),
                   'import' => ImportPage(
+                    onResourcesChanged: widget.onResourcesChanged,
                     backend: widget.backend,
                     workspaceId: widget.workspaceId,
                     onOpenResource: _openResource,
@@ -832,6 +873,7 @@ class _WorkspacePagesState extends State<_WorkspacePages> {
                     },
                   ),
                   'player' => MediaPage(
+                    onResourcesChanged: widget.onResourcesChanged,
                     backend: widget.backend,
                     workspaceId: widget.workspaceId,
                     onActivity: ({required loading, error, title}) =>

@@ -137,7 +137,7 @@ def main():
             assert request(endpoint + '/previews', body)['id'] == identifier
         stop()
         with sqlite3.connect(root / 'data/study.db') as db:
-            assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0011',)
+            assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0012',)
             assert db.execute('PRAGMA integrity_check').fetchone() == ('ok',)
             assert db.execute('PRAGMA foreign_key_check').fetchall() == []
         print(json.dumps(dict(frozen=bool(args.exe), results=results, restart_cache=True,

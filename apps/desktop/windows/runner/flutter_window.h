@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "win32_window.h"
+#include "resource_drop_target.h"
 
 // A window that does nothing but host a Flutter view.
 class FlutterWindow : public Win32Window {
@@ -31,6 +32,8 @@ class FlutterWindow : public Win32Window {
   // The Flutter instance hosted by this window.
   std::unique_ptr<flutter::FlutterViewController> flutter_controller_;
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> desktop_channel_;
+  ResourceDropTarget* resource_drop_ = nullptr;
+  HRESULT drop_registration_ = E_FAIL;
 };
 
 #endif  // RUNNER_FLUTTER_WINDOW_H_

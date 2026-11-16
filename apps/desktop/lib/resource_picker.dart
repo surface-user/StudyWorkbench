@@ -11,11 +11,12 @@ class ResourcePicker extends StatefulWidget {
     required this.backend,
     required this.workspaceId,
     required this.imagesOnly,
+    this.allowUpload = true,
     super.key,
   });
   final Backend backend;
   final String workspaceId;
-  final bool imagesOnly;
+  final bool imagesOnly, allowUpload;
   @override
   State<ResourcePicker> createState() => _ResourcePickerState();
 }
@@ -28,6 +29,7 @@ class _ResourcePickerState extends State<ResourcePicker> {
   bool supported(dynamic resource) => widget.imagesOnly
       ? ['image/png', 'image/jpeg'].contains(resource['mime'])
       : [
+          if (!widget.allowUpload) ...['text/markdown', 'text/html'],
           'image/png',
           'image/jpeg',
           'text/plain',
@@ -121,17 +123,23 @@ class _ResourcePickerState extends State<ResourcePicker> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text('仅选择当前工作空间资源。选择后仍需确认保存笔记；原文件不会替换或删除。'),
-              OutlinedButton(
-                onPressed: busy ? null : upload,
-                child: const Text('从文件添加新资源'),
-              ),
+              if (widget.allowUpload)
+                OutlinedButton(
+                  onPressed: busy ? null : upload,
+                  child: const Text('从文件添加新资源'),
+                ),
               for (final resource in resources)
                 ListTile(
                   title: Text(resource['filename'] as String),
                   subtitle: Text(resource['mime'] as String),
                   onTap: busy ? null : () => Navigator.pop(context, resource),
                 ),
-              if (!busy && resources.isEmpty) const Text('尚无匹配资源，可添加文件或加载下一页'),
+              if (!busy && resources.isEmpty)
+                Text(
+                  widget.allowUpload
+                      ? '尚无匹配资源，可添加文件或加载下一页'
+                      : '尚无可处理资源，请先添加 PDF、DOCX、Markdown、文本、HTML、JSON 或图片',
+                ),
               if (busy) const LinearProgressIndicator(),
               if (more)
                 TextButton(

@@ -1,9 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'backend.dart';
+import 'add_resources_dialog.dart';
 import 'page_activity.dart';
 import 'web_page.dart';
 
@@ -14,12 +12,14 @@ class MediaPage extends StatefulWidget {
     required this.profile,
     this.onActivity,
     this.mediaId,
+    this.onResourcesChanged,
     super.key,
   });
   final Backend backend;
   final String workspaceId, profile;
   final PageActivityChanged? onActivity;
   final String? mediaId;
+  final VoidCallback? onResourcesChanged;
   @override
   State<MediaPage> createState() => _MediaPageState();
 }
@@ -84,15 +84,18 @@ class _MediaPageState extends State<MediaPage> {
     }
   }
 
-  Future<void> import() => run(() async {
-    final path = await const MethodChannel('study/desktop')
-        .invokeMethod<String>('chooseImportFile');
-    if (path == null) return;
-    await widget.backend.uploadMedia(widget.workspaceId, File(path), (value) {
-      if (mounted) setState(() => progress = value);
-    });
-    await load();
-  });
+  Future<void> import() async {
+    await showDialog<void>(
+      context: context,
+      builder: (_) => AddResourcesDialog(
+        backend: widget.backend,
+        workspaceId: widget.workspaceId,
+        onImported: widget.onResourcesChanged,
+      ),
+    );
+    if (mounted) await run(load);
+  }
+
   Future<void> open(dynamic entry) =>
       run(() => openPlayer(entry['id'] as String));
   Future<void> openPlayer(String id) async {
@@ -136,7 +139,7 @@ class _MediaPageState extends State<MediaPage> {
               Text('媒体库', style: Theme.of(context).textTheme.titleLarge),
               FilledButton(
                 onPressed: busy ? null : import,
-                child: const Text('导入本地媒体'),
+                child: const Text('添加资源'),
               ),
               OutlinedButton(
                 onPressed: busy ? null : () => run(load),

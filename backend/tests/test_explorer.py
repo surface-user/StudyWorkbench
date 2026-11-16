@@ -257,6 +257,9 @@ def snapshot(path):
 def assert_preserved(before, after):
     for name, rows in before.items():
         actual = after[name]
+        if name == 'workspace_nodes' and rows and actual and len(actual[0]) == len(rows[0]) + 1:
+            assert all(row[-1] is None for row in actual), 'Upgrades must not remove existing resources'
+            actual = [row[:-1] for row in actual]
         if name == 'attempts' and rows and actual and len(actual[0]) == len(rows[0]) + 1:
             assert all(row[-1] is None for row in actual), 'Old attempts must not acquire invented version bindings'
             actual = [row[:-1] for row in actual]
@@ -275,7 +278,7 @@ def test_0006_compatibility_backup_restore_and_sql_constraints(tmp_path):
         with sqlite3.connect(path) as db:
             assert db.execute('PRAGMA integrity_check').fetchone() == ('ok',)
             assert db.execute('PRAGMA foreign_key_check').fetchall() == []
-            assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0011',)
+            assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0012',)
         with c.app.state.engine.begin() as conn:
             with pytest.raises(IntegrityError):
                 conn.exec_driver_sql("INSERT INTO workspace_nodes(id,workspace_id,kind,name,name_key,resource_id) VALUES ('bad','default','folder','x','x','r')")
@@ -286,7 +289,7 @@ def test_0006_compatibility_backup_restore_and_sql_constraints(tmp_path):
     assert hashlib.sha256((root / 'original.bin').read_bytes()).hexdigest() == checksum
     with client(root) as c:
         assert c.get(PREFIX + '/nodes').json() == nodes
-    backup = list((root / 'backups').glob('study-before-0011-*.db'))
+    backup = list((root / 'backups').glob('study-before-0012-*.db'))
     assert len(backup) == 1 and snapshot(backup[0]) == before
     restore = tmp_path / 'restore'
     restore.mkdir()
@@ -407,7 +410,7 @@ def test_intermediate_revision_preserves_every_old_column(tmp_path, revision):
             for table, rows in before.items():
                 assert db.execute(f'SELECT {columns[table]} FROM "{table}" ORDER BY rowid').fetchall() == rows
             assert db.execute('PRAGMA foreign_key_check').fetchall() == []
-    backup = list((root / 'backups').glob('study-before-0011-*.db'))
+    backup = list((root / 'backups').glob('study-before-0012-*.db'))
     assert len(backup) == 1 and snapshot(backup[0]) == before
 
 

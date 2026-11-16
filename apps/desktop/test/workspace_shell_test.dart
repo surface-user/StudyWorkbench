@@ -260,15 +260,33 @@ void main() {
       final state = tester.state<WorkspaceShellState>(
         find.byType(WorkspaceShell),
       );
-      final originalPage = tester.state(find.byType(TextField));
-      await tester.enterText(find.byType(TextField), '未保存的新草稿');
+      final originalPage = tester.state(
+        find.byWidgetPredicate(
+          (w) => w is TextField && w.key != const ValueKey('resource-search'),
+        ),
+      );
+      await tester.enterText(
+        find.byWidgetPredicate(
+          (w) => w is TextField && w.key != const ValueKey('resource-search'),
+        ),
+        '未保存的新草稿',
+      );
       await tester.tap(find.byKey(const ValueKey('close-tab-q')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('取消关闭'));
       await tester.pumpAndSettle();
       expect(state.layouts['default']!.tabs, hasLength(2));
       expect(
-        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        tester
+            .widget<TextField>(
+              find.byWidgetPredicate(
+                (w) =>
+                    w is TextField &&
+                    w.key != const ValueKey('resource-search'),
+              ),
+            )
+            .controller!
+            .text,
         '未保存的新草稿',
       );
       await tester.tap(find.byKey(const ValueKey('close-tab-q')));
@@ -287,7 +305,14 @@ void main() {
       await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
       await tester.pumpAndSettle();
       expect(state.layouts['default']!.activeId, 'q');
-      expect(tester.state(find.byType(TextField)), same(originalPage));
+      expect(
+        tester.state(
+          find.byWidgetPredicate(
+            (w) => w is TextField && w.key != const ValueKey('resource-search'),
+          ),
+        ),
+        same(originalPage),
+      );
       expect(questionReads, 2);
       await tester.tap(find.byKey(const ValueKey('close-tab-q')));
       await tester.pumpAndSettle();
@@ -299,10 +324,24 @@ void main() {
       await tester.tap(find.byTooltip('重新打开关闭的标签页'));
       await tester.pumpAndSettle();
       expect(
-        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        tester
+            .widget<TextField>(
+              find.byWidgetPredicate(
+                (w) =>
+                    w is TextField &&
+                    w.key != const ValueKey('resource-search'),
+              ),
+            )
+            .controller!
+            .text,
         '已保存草稿',
       );
-      await tester.enterText(find.byType(TextField), '最终保存');
+      await tester.enterText(
+        find.byWidgetPredicate(
+          (w) => w is TextField && w.key != const ValueKey('resource-search'),
+        ),
+        '最终保存',
+      );
       await tester.tap(find.byKey(const ValueKey('close-tab-q')));
       await tester.pumpAndSettle();
       await tester.tap(find.text('保存草稿并关闭'));
@@ -495,10 +534,20 @@ void main() {
         throw StateError('Unexpected $method $path');
       });
       await _show(tester, backend);
-      await tester.enterText(find.byType(TextField), '旧草稿');
+      await tester.enterText(
+        find.byWidgetPredicate(
+          (w) => w is TextField && w.key != const ValueKey('resource-search'),
+        ),
+        '旧草稿',
+      );
       await tester.pump(const Duration(milliseconds: 400));
       expect(drafts, ['旧草稿']);
-      await tester.enterText(find.byType(TextField), '最新中文草稿');
+      await tester.enterText(
+        find.byWidgetPredicate(
+          (w) => w is TextField && w.key != const ValueKey('resource-search'),
+        ),
+        '最新中文草稿',
+      );
       final state = tester.state<WorkspaceShellState>(
         find.byType(WorkspaceShell),
       );

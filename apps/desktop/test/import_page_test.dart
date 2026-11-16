@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:study_workbench/backend.dart';
 import 'package:study_workbench/import_page.dart';
@@ -116,6 +115,12 @@ class _Backend implements Backend {
       saved = true;
       return job;
     }
+    if (path.contains('/resources?')) {
+      return [
+        {'id': 'original', 'filename': '原件.md', 'mime': 'text/markdown'},
+      ];
+    }
+    if (path.endsWith('/analyze')) return job;
     if (path.endsWith('/imports')) return [job];
     if (path.endsWith('/imports/job')) return job;
     if (path.contains('/questions?')) return [];
@@ -333,29 +338,29 @@ void main() {
     expect(backend.writes, 0);
   });
 
-  testWidgets('cancelling native file picker does not submit data', (
-    tester,
-  ) async {
-    final backend = _Backend();
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(const MethodChannel('study/desktop'), (
-          call,
-        ) async {
-          expect(call.method, 'chooseImportFile');
-          return null;
-        });
-    addTearDown(
-      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(const MethodChannel('study/desktop'), null),
-    );
-    await showPage(tester, backend);
-    final count = backend.paths.length;
-    await tester.tap(find.text('选择文件并预览'));
-    await tester.pumpAndSettle();
-    expect(backend.paths.length, count);
-    expect(backend.writes, 0);
-    expect(tester.takeException(), isNull);
-  });
+  testWidgets(
+    'cancel resource selection does not analyze; explicit selection reuses original',
+    (tester) async {
+      final backend = _Backend();
+      await showPage(tester, backend);
+      await tester.tap(find.text('选择已有资源并预览'));
+      await tester.pumpAndSettle();
+      expect(find.text('从文件添加新资源'), findsNothing);
+      await tester.tap(find.text('取消选择'));
+      await tester.pumpAndSettle();
+      expect(backend.paths.where((p) => p.endsWith('/analyze')), isEmpty);
+      await tester.tap(find.text('选择已有资源并预览'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('原件.md'));
+      await tester.pumpAndSettle();
+      expect(
+        backend.paths.where((p) => p.endsWith('/resources/original/analyze')),
+        hasLength(1),
+      );
+      expect(find.text('需要确认的中文笔记'), findsOneWidget);
+      expect(backend.writes, 0);
+    },
+  );
 
   testWidgets(
     'tables contain native cells and scroll horizontally in a narrow view',
