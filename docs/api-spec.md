@@ -73,6 +73,11 @@ layout版本1/2；tabs最多16、closed_tabs最多10、active_tab_id须有效且
 | 方法/路径 | 当前契约 |
 |---|---|
 | POST W/imports?filename=... | 上传原件字节，8MiB；原件先保存，解析后preview/failed，HTTP200不表示正式入库 |
+| POST W/pdf-chunk-jobs | 同空间托管 PDF 的 resource_id、expected_sha256、first_page、last_page。原件最多 8 MiB，每任务至多连续 100 页。相同绑定返回已有任务。 |
+| GET W/pdf-chunk-jobs、GET W/pdf-chunk-jobs/{id} | 按空间分页列出任务，或读取任务状态、已提交页数、下一页与累计图片字节。 |
+| POST W/pdf-chunk-jobs/{id}/advance | 提交期望 first_page，一次执行至多 20 页。重复请求已提交的起始页返回当前进度；状态或页号冲突返回 409。 |
+| POST W/pdf-chunk-jobs/{id}/cancel、resume | 取消使进行中的执行代次失效。显式恢复会校验原件摘要与版本。重启留下的中断任务需显式恢复。 |
+| GET W/pdf-chunk-jobs/{id}/chunks/{first_page} | 已提交区块的原始页图与区域以托管附件 ID 引用。parsed 表示选区解析完成，候选确认另行处理。 |
 | POST W/resources/{resource_id}/analyze | 同空间已有原件校验hash后复用ImportJob，不重复保存原件；不自动确认 |
 | GET W/imports、GET W/imports/{job_id} | 导入历史分页、单任务预览/失败 |
 | POST W/imports/{job_id}/confirm | 预览确认，正式写入题目/材料/笔记；冲突整批拒绝，幂等，不信任来源自报验证状态 |

@@ -106,6 +106,32 @@ class ImportJob(Base):
     created_at: Mapped[str] = mapped_column(String)
 
 
+class PdfChunkJob(Base):
+    __tablename__ = 'pdf_chunk_jobs'
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    workspace_id: Mapped[str] = mapped_column(ForeignKey('workspaces.id'))
+    resource_id: Mapped[str] = mapped_column(ForeignKey('resources.id'))
+    source_sha256: Mapped[str] = mapped_column(String)
+    parser_version: Mapped[str] = mapped_column(String)
+    first_page: Mapped[int] = mapped_column(Integer)
+    last_page: Mapped[int] = mapped_column(Integer)
+    page_count: Mapped[int] = mapped_column(Integer)
+    next_page: Mapped[int] = mapped_column(Integer)
+    generation: Mapped[int] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String)
+    asset_bytes: Mapped[int] = mapped_column(Integer)
+    question_count: Mapped[int] = mapped_column(Integer)
+    material_count: Mapped[int] = mapped_column(Integer)
+
+
+class PdfChunk(Base):
+    __tablename__ = 'pdf_chunks'
+    job_id: Mapped[str] = mapped_column(ForeignKey('pdf_chunk_jobs.id'), primary_key=True)
+    first_page: Mapped[int] = mapped_column(Integer, primary_key=True)
+    last_page: Mapped[int] = mapped_column(Integer)
+    result: Mapped[dict] = mapped_column(JSON)
+
+
 class PassageRecord(Base):
     __tablename__ = "passages"
     id: Mapped[str] = mapped_column(String, primary_key=True)
