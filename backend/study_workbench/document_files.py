@@ -21,7 +21,7 @@ from .backup_archive import archive_path
 from .db import DocumentSave, DocumentWorkfile, Resource, write_transaction
 from .documents import convert_document
 from .explorer import node_in, relative_node
-from .imports import read_resource, resource_path
+from .imports import read_pdf_source, read_resource, resource_path
 from .markdown_merge import preview_merge
 from .office_previews import OfficePreviews
 from .workspaces import require_workspace
@@ -97,6 +97,12 @@ class SaveText(BaseModel):
     model_config = ConfigDict(extra='forbid')
     expected_sha256: str = Field(pattern=r'^[a-f0-9]{64}$')
     text: str = Field(max_length=TEXT_LIMIT)
+
+
+class ColumnPage(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+    page: int = Field(ge=1, le=2000)
 
 
 class CreateCopy(BaseModel):
@@ -361,6 +367,18 @@ class DocumentFiles:
             data, info = self.previews.read_pdf(workspace_id, node_id, preview_id)
             return dict(source_resource_id=info['source_resource_id'], source_sha256=info['source_sha256'],
                         pdf_sha256=info['pdf_sha256'], **raster(data, 'pdf-page', page))
+
+        @router.post('/document-columns')
+        @limited_view
+        def columns(workspace_id: str, node_id: str, body: ColumnPage):
+            with Session(self.engine) as session:
+                node = node_in(session, workspace_id, node_id)
+                if not node.resource_id:
+                    raise HTTPException(422, '请选择托管 PDF 原件')
+                resource_id = node.resource_id
+                data = read_pdf_source(session, self.root, workspace_id, resource_id, body.expected_sha256)
+            return {**raster(data, 'pdf-columns', body.page), 'source_sha256': body.expected_sha256,
+                    'resource_id': resource_id}
 
         @router.get('/document-page')
         @limited_view
