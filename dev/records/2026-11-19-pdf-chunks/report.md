@@ -18,6 +18,8 @@
 
 `python -m ruff check backend tools`、`python tools/export_question_schema.py --check` 和源码模式 `python tools/check_document_workers.py` 退出 0。后者在原有整篇 DOCX/PDF 检查后新增第 2 页片段的实际子进程检查；同一脚本也由 Windows CI 对本次构建出的冻结包执行。以当前提交的运行结果核实冻结覆盖。审查暂缓、人工测试已取消。
 
+#70 首次 CI 的 Windows 冻结包检查通过，Python 3.12 的三条新增子进程测试因找不到 study_workbench 失败，矩阵取消了另一版本。开发环境显式设置了 PYTHONPATH，CI 仅给 pytest 自身配置了源码目录。测试现从 backend 目录执行子进程，沿用同一解释器和断言。原失败保留在[首次 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44495155155)。
+
 ## PAR-03c 分块任务 API、重启与备份
 
 后端按空间、资源、原件 SHA-256、解析版本及页段建唯一任务。一个 advance 最多执行 20 页，领取与提交各自使用短事务。解析在事务外运行，父进程限时 25 秒，stdout 读取上限为 96 MiB 加一个超限探测字节。取消会废弃执行代次；提交前再检查代次、源文件和整个任务累计附件/候选/材料预算。已提交块按任务和起始页唯一索引，步进重放不重复写入。每块的图片复用原有托管资源存储，整库备份检查原件关系、连续性和图像引用。这个接口交付到 parsed，跨块候选拼接和用户确认由 PAR-03d 继续。
