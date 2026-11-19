@@ -23,3 +23,34 @@
 自编 ASCII PDF 在对象流中交错写入右下、左下、右上、左上四行，期望顺序由测试独立断言。业务 HTTP 同时验证版本、空间、页号、两栏坐标和原件字节。首轮双 Python 各 1 通过、5 失败，发现固定版 PDFium 的文本页没有上下文管理器协议；改用 closing 明确释放。专项复验 6 项通过。最终在 pdf-column-preview 副本用 Python 3.12.7 和 3.13.17 各运行 `python -X utf8 -m pytest -q backend/tests/test_document_files.py backend/tests/test_pdf_chunks.py backend/tests/test_markdown_questions.py`，每版各 27 项通过、2 项既有警告，退出 0。原始与最终日志、JUnit 均在副本 artifacts。
 
 `python -m ruff check backend tools`、`python tools/export_question_schema.py --check` 以及源码 `python tools/check_document_workers.py` 均退出 0。冻结包 CI 使用同一份交错双栏样本和独立顺序断言。按本批安排暂缓独立审查，人工测试已取消。此项只交付后端预览，OCR 和双栏拆题另有任务。
+
+## PAR-02c 可选 Windows x64 OCR 开发组件
+
+离线输入为 Tesseract 5.5.4 固定提交源码归档（1971321 字节，SHA-256 445603ab1d0a63df552e193a600d9d5c4021aff36e144f3091af149e5efb381a，解出 748 个普通文件逐一对上官方 Git blob），Leptonica 1.87.0 发布源码包（14802808 字节，c73363397f96eb1295602bf44d708a994ad42046c791bf03ea0505d829bdb6a7），上一节两个语言模型，以及编译工具许可。所有构建、样本、原始日志位于隔离开发副本的 .local 和 artifacts。
+
+在 VS 2022 x64 Native Tools 环境（cl 19.44.35219，CMake 3.31.6，Ninja，CL=/utf-8）使用以下参数；src-lept、src-tess 表示已核来源的解包目录，prefix 为绝对开发目录，以下示例在 PowerShell 中运行。
+
+```powershell
+$prefix = Join-Path $PWD 'prefix'
+$common = '-G','Ninja','-DCMAKE_BUILD_TYPE=Release','-DBUILD_SHARED_LIBS=OFF','-DCMAKE_POLICY_DEFAULT_CMP0091=NEW','-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded','-DCMAKE_FIND_USE_PACKAGE_REGISTRY=OFF','-DCMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY=OFF'
+$codecs = 'ZLIB','PNG','GIF','JPEG','TIFF','WEBP','OPENJPEG' | ForEach-Object { "-DENABLE_$_=OFF" }
+cmake -S src-lept -B build-lept @common @codecs -DSW_BUILD=OFF -DBUILD_PROG=OFF "-DCMAKE_INSTALL_PREFIX=$prefix"
+cmake --build build-lept --parallel 3
+cmake --install build-lept
+cmake -S src-tess -B build-tess @common "-DCMAKE_PREFIX_PATH=$prefix" -DCMAKE_CXX_FLAGS=/DTESSERACT_DISABLE_DEBUG_FONTS -DWIN32_MT_BUILD=ON -DGRAPHICS_DISABLED=ON -DDISABLED_LEGACY_ENGINE=ON -DBUILD_TESTS=OFF -DBUILD_TRAINING_TOOLS=OFF -DDISABLE_ARCHIVE=ON -DDISABLE_CURL=ON -DDISABLE_TIFF=ON -DENABLE_NATIVE=OFF -DOPENMP_BUILD=OFF -DINSTALL_CONFIGS=OFF
+cmake --build build-tess --target tesseract --parallel 3
+```
+
+首次 CMake 编译器检测遇到 PDB 服务 C1902。获得本机编译权限后，首次链接遇到 /MD 与 /MT CRT 冲突，保留两个失败日志。两项目改用同一静态 CRT。起初引擎认出英文，但调试字体初始化请求未编入的 TIFF，首个中文样本也没有词。用显式 Unicode 字符生成新样本，在同一引擎识别出“中文学习”和“今天天气很好”；上游 DebugPixa 构造器支持编译时停用调试字体。应用该开关重编后，PGM 识别过程 stderr 为空。最终 exe 2473472 字节，d825d9d9e94ab996f735e7eba9d199c009481ca9895ad16b1e1b6acfdeb343c0。pefile 检查为 x64 PE，普通导入仅 KERNEL32.dll，无延迟导入。编译器产生的文件按这一次实际哈希锁定，跨机器重编的字节一致性待验证。
+
+在此开发副本执行下列命令（Python 使用既有项目隔离解释器）。阶段目录含中文及空格，准备、全量复核、三个实际识别样本均退出 0。所有模型、程序和许可置于开发副本；Git 只保存工具、测试、固定摘要和报告。
+
+```powershell
+python tools/prepare_ocr_runtime.py prepare --directory '.local/OCR 组件' --engine .local/build-tess-pgm/bin/tesseract.exe --tessdata ../document-layout-plan/artifacts --engine-license .local/src-tess/LICENSE --leptonica-license .local/src-lept/leptonica-license.txt --compiler-license ../ffmpeg-msvc-component/.local/compiler-license/Visual-Studio-2022-Community-License-EN.docx
+python tools/prepare_ocr_runtime.py verify --directory '.local/OCR 组件'
+python tools/check_ocr_component.py --directory '.local/OCR 组件'
+python -X utf8 -m pytest -q backend/tests/test_ocr_component.py backend/tests/test_java_runtime_preparation.py
+```
+
+实测 Tesseract 从管道读自编灰度图，整行英文与简体中文各返回三个词区，文本完全匹配，所有区域位于图内且分值在 0–100；空白图返回零词。双 Python 3.12.7/3.13.17 各 45 项通过，退出 0，含原有 Java 重复 ZIP 项提示。准备测试覆盖被替换的引擎、模型和许可、缺件、额外文件或目录、目标已存在和失败时不会发布半成品。人工测试取消，独立审查暂缓。下一项接入用户指定扫描页，产品安装包、发行签名和完整传递许可另行跟踪。
+静态检查首轮隔离解释器的 python -m ruff 找不到其 Scripts/ruff.exe，退出 1。改用项目原有 release-venv/Scripts/ruff.exe check backend tools 通过，协议检查 python tools/export_question_schema.py --check 通过，均退出 0。
