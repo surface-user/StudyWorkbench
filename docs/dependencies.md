@@ -124,6 +124,16 @@ webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-d
 
 原包含多种许可的完整源码；LGPL主体与可选GPL部分仍按[官方许可](https://ffmpeg.org/legal.html)及全部原文区分，不能把整个tar称单一LGPL。官方[安全页](https://ffmpeg.org/security.html)是维护/公告入口，不构成9.0.2或未来实际构建零漏洞证明。b2仍须真实最小无网络build/协议/codec枚举、PE/CRT及内嵌库原许可/对应源码/构建补丁与再分发义务/漏洞核证；c再做固定受管本地路径/参数、UNC/dref/外部引用拒绝、Job/取消/预算、源码/冻结及原子入库。file协议不能代替OS网络隔离。未闭合前不进入产品包/SBOM已采用集合、不登记可发行或站点下载成功。
 
+### FFmpeg最小本地构建工具（DL-03b2；不进入产品）
+
+官方9.0.2原源码与派生变更分开固定：原tar/10399文件保持；仅新派生副本的configure作真实MSVC本地语言banner识别，mswindres给资源编译加微软标准UTF-8 codepage，完整原/补丁/派生hash和对应源码配方须随组件保留。没有修改上游仓库/缓存或C实现，不以伪造输出跳过compiler/linker/版本/特性检测。固定MSVC14.44.35207/cl19.44.35219与Windows SDK10.0.26100.0，实际CRT/产物PE和再分发义务按最终构建单独核，开发机已安装不构成发行许可结论。
+
+只为构建增加项目私有[MSYS2 GNUmake4.4.1-3](https://packages.msys2.org/packages/make?repo=msys&variant=x86_64)：官方包SHA256 `af0bdba17f06fe037f0194069adaa31a8fe45f1a11381501896aea1fae37bd5d`，make.exe为236000字节/AMD64，SHA256 `91b7e155590d59db22e5eb0a3ffeec6350149f70f9ed2c242d133e584eb72fee`。许可证GPL-3.0-or-later，原COPYING、签名的对应source-only包、GNU源码与打包补丁/原build PKGBUILD保持；这是开发build工具，不链接/复制其实现或运行库进产品，不移植该许可证为产品整体结论。维护证据为官方包页、固定原构建commit3e12c4917255bfd3c4f6c14f43ae6451b737a219及CI来源，具体安全覆盖仍有边界，不宣布零漏洞。
+
+官方小包与source-only签名均固定官方[开发者公钥指纹](https://www.msys2.org/dev/keyring/)5F944B027F7FE2091985AA2EFA11531AA0AA7F57，在新独立项目keyring核验及官方revoked名单核查；不读个人keyring/自动取key或pacman安装。PE imports逐符号核实际原Git MSYS3.6.6、libintl0.22.5和iconv1.18的exports，实际加载路径/hash须保持原件（原始hash在报告）；缺ABI或误加载即停，不能暗换/下载新runtime。使用系统现有bsdtar3.8.9读取zst固定成员，不新增解压器/大工具链或变更系统PATH。既有native GNUmake/NDK的失败各留原证据，NDK compiler和库未引入。
+
+组件仍须锁实际ffmpeg/ffprobe同版、最小无网络build及协议/容器/codec、PE/CRT/全部原许可与对应源/供源/漏洞；开发工具/本机运行库证明不替代产品runtime来源。file-only构建不阻止OS层UNC/外链访问，后续c仍须拒UNC/任意路径/dref/外部引用并执行固定Job/预算/取消/原子入库；无源/冻结产品接入时不得登记已提供下载/合流功能。
+
 ## 待验证与升级门禁
 
 源码依赖漏洞查询使用项目内tools/source_vulnerabilities.py 1.0及[OSV v1官方API](https://google.github.io/osv.dev/api/)，复用既有锁文件解析，仅发送公开PyPI/pub.dev包名、生态和精确版本，后续只取返回公告ID。网络使用Python标准库，没有新运行依赖、第三方扫描器安装或源码上传；查询器及解析器文件SHA256、Python版本随报告固定。OSV当前维护[数据来源](https://google.github.io/osv.dev/data/)包括GitHub/PyPI公告，PyPI与Pub为其支持的生态；公告数据来源许可与应用依赖许可是不同事项，原始返回保留在忽略的artifacts，不随产品分发。

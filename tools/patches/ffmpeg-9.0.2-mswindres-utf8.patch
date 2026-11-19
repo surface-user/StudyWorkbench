@@ -1,0 +1,5 @@
+--- a/compat/windows/mswindres
++++ b/compat/windows/mswindres
+@@ -13 +13 @@
+-EXTRA_OPTS="-nologo"
++EXTRA_OPTS="-nologo -c65001"

@@ -1,0 +1,136 @@
+{
+  "payload": {
+    "schema_version": 1,
+    "kind": "ffmpeg-developer-component-profile",
+    "build_profile": "swb-remux-probe-msvc-v1",
+    "upstream_version": "9.0.2",
+    "source_snapshot_sha256": "7a65ea9dcb64a778fe393c2582628c4ab339092971e0916422c63dd44833d81c",
+    "source_commit": "946fcce07b6dcd0331c8cc609192aeff5e1924f8",
+    "runtime": {
+      "ffmpeg.exe": {
+        "bytes": 584704,
+        "sha256": "8a010c4a4b2be0f7562c76a6df878b7967ae6eb5c6197744a4da538f44699be8"
+      },
+      "ffprobe.exe": {
+        "bytes": 334336,
+        "sha256": "36ef204c32eb85f842f41674095ff9e1f00018201945fef7f7ab121ecb7b2832"
+      },
+      "avcodec-63.dll": {
+        "bytes": 745984,
+        "sha256": "595d0b4ea91c176f6d98d41509c2288210be89e8b147eee91c533c5fa21873f8"
+      },
+      "avformat-63.dll": {
+        "bytes": 955392,
+        "sha256": "79a519d492907818cfa07af5d806e72deff83eab03502c874f7cb0368a91e3ba"
+      },
+      "avfilter-12.dll": {
+        "bytes": 282112,
+        "sha256": "d7ef7f524a08a74745d4d646c8b14e9f57311b24aee7196da42c624a880a3737"
+      },
+      "avutil-61.dll": {
+        "bytes": 979456,
+        "sha256": "3996c56e00ece0c8589548faa23864addb082d5ad3a7bc0c0deb77124a9fb54f"
+      }
+    },
+    "source_legal": {
+      "LICENSE.md": {
+        "bytes": 4346,
+        "sha256": "2e1d16c72fd74e12063776371da757322f8b77589386532f4fd8634bde7de1af"
+      },
+      "COPYING.LGPLv2.1": {
+        "bytes": 26517,
+        "sha256": "246041b6ecf9bc32d718a62c57877c78b5eb397b6467e74ed7ae2626ab189c30"
+      }
+    },
+    "source_config": {
+      "config.h": {
+        "bytes": 25014,
+        "sha256": "8abd747a217b56a482a39d30e590cae0f17a5dc3e2cc36f56935b7653cea9a85"
+      },
+      "config_components.h": {
+        "bytes": 75690,
+        "sha256": "b7e63aff251136086402949c46948ccadb0d47652cc73e65e0479d4d157125ef"
+      },
+      "ffbuild/config.mak": {
+        "bytes": 89453,
+        "sha256": "0255cebc5f0b0152884be8f88c30944d675f664934cf8590405d5239c76c7b0f"
+      }
+    },
+    "compiler_license": {
+      "name": "Visual-Studio-2022-Community-License-EN.docx",
+      "source_url": "https://visualstudio.microsoft.com/wp-content/uploads/2021/11/Visual-Studio-2022-Community-License-EN.docx",
+      "bytes": 62859,
+      "sha256": "41a207b10c8ab91d0d2f10a854715f73dca54509581692d2fe179aa3ffcb8540"
+    },
+    "recipe": {
+      "bytes": 5838,
+      "sha256": "1ce3b39505d0c747bbb42d7facbf150a89b6673ffd55b94bf1af13fc0f9a75da"
+    },
+    "producer": {
+      "msvc": "14.44.35207 / cl19.44.35219",
+      "windows_sdk": "10.0.26100.0 / rc10.0.26100.6584",
+      "msys_make": "4.4.1-3 / developer only",
+      "crt_linkage": "static Microsoft CRT; FFmpeg libraries dynamic",
+      "crt_libraries": [
+        {
+          "name": "LIBCMT.lib",
+          "bytes": 6534094,
+          "sha256": "65af3a213ecb2449d44db0a5f1b058d82c0dd3c746bb81322b5ddcaf402e28c6"
+        },
+        {
+          "name": "OLDNAMES.lib",
+          "bytes": 157422,
+          "sha256": "35bd82cfb02a0146ff9c0ca6bf7dbde61d49c6d4f3493befe584218c370ff41d"
+        },
+        {
+          "name": "libvcruntime.lib",
+          "bytes": 2087406,
+          "sha256": "54dc185bec5f0da8416e89c49f13971a34be2e94a65bbf81bac3ac49ef8f25f9"
+        },
+        {
+          "name": "libucrt.lib",
+          "bytes": 42461468,
+          "sha256": "c3c9603a0281e6dec987bf076b1853130c52d8ee964e84eb1eacee7b1ec447dd"
+        }
+      ]
+    },
+    "capabilities": {
+      "protocols": [
+        "file"
+      ],
+      "demuxers": [
+        "matroska",
+        "mov"
+      ],
+      "muxers": [
+        "ipod",
+        "mov",
+        "mp4",
+        "webm"
+      ],
+      "parsers": [
+        "aac",
+        "ac3",
+        "av1",
+        "h264",
+        "opus",
+        "vp8",
+        "vp9"
+      ],
+      "bsfs": [
+        "aac_adtstoasc",
+        "vp9_superframe"
+      ],
+      "encoders": [],
+      "decoders": [],
+      "hwaccels": []
+    },
+    "readiness": {
+      "developer_prepared": true,
+      "release_ready": false,
+      "product_integration": false,
+      "complete_untrusted_input_policy": false
+    }
+  },
+  "snapshot_sha256": "ee0f21d31ae183a6579bbf0b3414ae84f46d7ce6c6cd5660e07906b0e8e7af9f"
+}
