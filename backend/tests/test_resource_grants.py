@@ -10,7 +10,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy import event
 from study_workbench import agent_access, resource_grants
-from study_workbench.db import Note, Resource, WorkspaceNode, write_transaction
+from study_workbench.db import DocumentWorkfile, Note, Resource, WorkspaceNode, write_transaction
 from study_workbench.imports import note_revision
 from test_document_files import add, working
 from test_explorer import PREFIX, client
@@ -401,3 +401,30 @@ def test_nonregular_opened_descriptor_is_rejected_before_reading(tmp_path, monke
             assert original.read_bytes() == b''
         finally:
             os.close(reader)
+
+
+@pytest.mark.parametrize('representation', ['original_text', 'working_text'])
+def test_foreign_stored_file_path_is_refused_before_open(tmp_path, monkeypatch, representation):
+    with client(tmp_path) as c:
+        raw = b'same bytes in separate workspaces'
+        node, identifier, original = add(c, tmp_path, 'selected.md', raw)
+        working(c, node)
+        selection = node_selection(node, raw, representation=representation)
+        issued = grant(c, selection)
+        assert read(c, issued).status_code == 200
+        with write_transaction(c.app.state.engine) as session:
+            row = (session.get(Resource, identifier) if representation == 'original_text'
+                   else session.get(DocumentWorkfile, node))
+            row.relative_path = row.relative_path.replace('workspaces/default/', 'workspaces/default-other/', 1)
+        resolved = []
+
+        def observe_resolution(root, relative):
+            resolved.append(relative)
+            raise OSError('fixture: resolution denied')
+
+        monkeypatch.setattr(resource_grants, 'resource_path', observe_resolution)
+        assert read(c, issued).status_code == 409
+        assert grant(c, selection).status_code == 409
+        assert read(c, grant(c, node_selection(node))).status_code == 200
+        assert resolved == []
+        assert original.read_bytes() == raw
