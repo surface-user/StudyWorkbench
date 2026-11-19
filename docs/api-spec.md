@@ -268,6 +268,12 @@ selection固定kind=resource_node/legacy_note/learning_mark、严格资源ID、m
 
 POST /{id}/read-resources无选择参数，返回schema_version=1/purpose/workspace_id/resources/context_sha256/binary_attachments_read=false/links_followed=false。resources固定按kind/id排序，含kind/id/mode/metadata/citation及显式text；citation只含对应身份、权威hash/修订及可选行/行hash。context_sha256按既有规范UTF-8 JSON计算，前像排除该派生字段本身，仅表示字节一致性，不证明可信。响应不返回实际文件路径或访问能力。
 
+PDF单页正文另支持resource_node/mode=text/严格page（1..2000且≤实际页数），每节点每grant一页：original_pdf_text要求expected_sha256为原始PDF；office_pdf_text另须preview_id和expected_source_sha256，expected_sha256为该ready派生PDF。额外line/revision、缺少或混入派生参数均拒绝；不自动生成Office预览或换latest。服务端绑定源Resource、预览状态/大小/页数/源与派生hash/转换器与运行时及选项，读前后复核；来源/归属/版本/文件变化整体拒绝。PDF之外未覆盖格式仍只支持元数据。
+
+该项返回source_binary_read=true、text_status=text或no_extractable_text及文字；citation含authority/source_resource_id/content_sha256、v1 pdf_page或office_pdf_page anchor、提取算法/pypdfium2/PDFium版本及文字UTF-8 hash，Office另含转换器/运行时/选项指纹。只引用所选实际PDF页，不伪造行/字位置或原DOCX页/PPT幻灯片号；空文字不代表页面无内容。所选二进制源会本地读取，附件不读、链接不跟随仍为false，不能混淆。
+
+原PDF或Office原件加派生组合≤8MiB；同一请求所有文件（含末尾完整重读）仍共享16MiB。打开路径必须规范且精确属于workspaces/<当前workspace>/，拒绝链接/重解析及非普通描述符；Python无缓冲读按剩余预算限长，实际大小/打开身份/hash变化拒绝。单页取字先核最多16384个UTF-16单位，严格解码/核实际长度，不丢错字或截断，最终文字≤64KiB/规范上下文含hash≤1MiB保持。内部字节+页子进程复用2查看槽，整个context的读取/解析及编码/hash校验共享20秒协作期限；原生子进程按剩余期限停止、实际stdout达到128KiB即拒绝，不以外层等待代替边界；同步本地I/O并非可即时硬中断。普通阅读/拆题/Office引擎预算不改变，也不声称完整OS沙箱。超限413，忙429，页/版本/路径冲突409，损坏/Unicode/超时422；非法封闭参数仍422。普通单页授权UI及更广无模型组合尚待后续交付，详见[Agent契约](agent-design.md#pdf及office派生页文字层r6-01e)。
+
 一次请求每份正文≤64KiB、最终JSON含引用/hash≤1MiB；源文件≤1MiB、累计实际文件读取含核验重读≤16MiB。整体超限413，不截断或返回部分资料。空间/墓碑/版本、文件hash及读取中变化前后检查，非法格式422、缺失/越界身份404、版本/结构/路径冲突409；已授权资料变更须另确认。受管路径拒绝绝对/ADS/重解析点，打开后必须普通文件；不提供全局原子文件系统快照。授权和指纹只留内存，不改持久学习数据、迁移或备份格式，重启失效；返回前复核授权，已返回字节不可召回。细节见[Agent契约](agent-design.md#通用资料受控读取契约r6-01)。
 
 前缀W/analysis-drafts，仅普通用户业务UI使用，无模型/Agent采用工具：

@@ -82,9 +82,9 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | R6-01b 封闭授权与文本读取API | REVIEW | 基于#58实现封闭purpose/选择、共享配额与元数据/版本绑定文本/旧笔记/标记；双1216+77子测试、源码/新冻结HTTP各57、45冻结模块核源和只读库回归已过，旧grant兼容；独立PR/当前CI待交付，无模型/迁移，见原报告 |
 | R6-01c 资料范围确认与撤销UI | BLOCKED | 依赖b明确接口；普通UI逐项/版本/正文确认，保留草稿、撤销/到期与迟到响应，不向外站WebView提供桥或令牌 |
 | R6-01d 无模型组合回归 | BLOCKED | 依赖b/c；源码/冻结、旧grant/候选采用、空间与源变更/重启/全库不恢复grant分别自动化，不接模型，不以设计替代功能完成 |
-| R6-01e 其他格式正文提供器 | IN_PROGRESS | 首批仅设计原PDF或ready Office派生PDF的一个明确页文字层，正文尚未实现；e1/e2/e3分开交付，其他格式/结构正文/OCR/网页/转写及模型继续保留，不以元数据或设计代替整个e完成 |
-| R6-01e1 PDF及Office页文字层契约 | REVIEW | 基于#63文本API，单页/源与派生hash/页级引用、共享预算和严格取字/子进程边界已设计；三文档/Schema检查通过，见[规划契约](agent-design.md#pdf及office派生页文字层规划中r6-01e1)、[原报告](../dev/records/2026-11-14-resource-read/report.md)及[PR #64](https://github.com/surface-user/StudyWorkbench/pull/64)。父#63 CI和本设计当前head CI/主Agent核验待交付，未实现provider |
-| R6-01e2 PDF页文字提供器实现 | BLOCKED | 依赖b和e1有限交付；封闭表示/单页/版本、源与派生有界读取、专用PDFium worker与严格Unicode/共享16MiB/20秒/128KiB输出及负例，保留旧用途/文本；不得自动Office转换或返回截断前缀 |
+| R6-01e 其他格式正文提供器 | IN_PROGRESS | 原PDF或ready Office派生PDF的单明确页文字层API已实现，e2独立交付核验中；e3普通单页确认UI/组合及其他格式、结构正文/OCR/网页/转写和模型仍保留，不以有限提供器代替整个e完成 |
+| R6-01e1 PDF及Office页文字层契约 | DONE | 主Agent核[PR #64](https://github.com/surface-user/StudyWorkbench/pull/64)最终38c1abe/[CI43595667880](https://github.com/surface-user/StudyWorkbench/actions/runs/43595667880)及501原blob/三文档、Schema和双1216/desktop203/45新冻结/API57通过；仅有限设计，e2/e3另行实现，父e未完成 |
+| R6-01e2 PDF页文字提供器实现 | REVIEW | 基于#64扩封闭单页/版本/源Resource ID及有界读取/严格Unicode子进程；最终关联96×2（新47+旧49）、46模块新冻结核源/源码及冻结HTTP/真实普通Office派生和只读库保持通过，见[原报告](../dev/records/2026-11-14-resource-read/report.md)与[PR #74](https://github.com/surface-user/StudyWorkbench/pull/74)。当前head CI/主Agent退出核验待交付，无UI/OCR/模型或自动转换，原失败保留 |
 | R6-01e3 单页确认及无模型组合 | BLOCKED | 依赖e2及c普通资料UI；明确原件/派生版本和页码、正文另选、撤销/到期/迟到响应；源码/新冻结核源及旧grant/普通查看/学习库保持，不接模型或自动OCR |
 | R6-02 | BLOCKED | 待用户明确模型提供方/远端范围/候选场景，并依赖R6-01；继续无模型/无凭据 |
 | REV-01 | BLOCKED | 依ADR0014等待本批已确定开发/自动化切片完成后集中审查；本轮REVIEW只指主Agent核验交付证据，不冒充独立代码审查 |

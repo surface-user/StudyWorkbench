@@ -92,3 +92,51 @@ R6-01e保持IN_PROGRESS，e1设计完成后REVIEW待独立PR/本head CI及主Age
 在resource-read-pdf-plan执行工具Python `-X utf8 artifacts/r601e1/check_changes.py`退出0：仅三文档/498原blob保持/501最终文件，90本地引用及全部被引用标题锚点、64唯一调度行、Git diff --no-index --check、UTF-8/LF、两锁及原b报告完整前缀保持均通过。IQ `-X utf8 tools/export_question_schema.py --check`退出0：Question schemas are current。没有本地产品/模型/窗口测试结论；因产品/测试/协议文件均未变，本地不重复其测试或构建，当前head完整CI另核，不能用设计检查冒充提供器实现验证。
 
 独立草稿[PR #64](https://github.com/surface-user/StudyWorkbench/pull/64)已建立并附当前任务，分支codex/resource-pdf-read-plan依赖#63的codex/resource-read-api精确ca61a8d，首次设计提交06f06d1623030a327e80f1d87fe4d6b2a7fe95af/tree4aafe2d2559346208f24809068b632ce7753c8d7。后续文档提交只补实际PR链接；最终head/tree与该head CI记录PR正文，避免记录自身hash反复改头。e1保持REVIEW，父#63及本项当前CI/主Agent有限核验未取得前不登记DONE；e整体及e2/e3仍未完成。
+
+## R6-01e2 单页文字提供器（2026-11-14开始，11-19恢复）
+
+### 基线、范围及恢复点
+
+主Agent已有限接受#63文本API及#64设计：精确38c1abebcd94c72a82740ccac9d6deafd99c1c6a/treeb477069a7f5a54445ce66f9043bb1c3821b802fb的CI43595667880三job成功，双1216/desktop203/45冻结核源/API57与501远端blob已根核。e2从该精确501文件新建resource-pdf-provider，原#64/旧根/resource-read-ui及用户资料不改；本轮恢复再次查#64仍open/draft/unmerged且头精确相同。AGENTS、requirements/architecture/question-content-spec/task及Agent契约逐字节对应已完整阅读的已接受版本，另核全部实际调用者、现有worker/路径/预算/预览收据和相关测试。
+
+暂停时保留resource_pdf.py新模块、resource_grants和固定内部入口三项未提交改动。q01.xml原为缺测试父目录的49 setup errors；补运行目录后q02.xml实际49通过/14.690秒，恢复时从原XML确认，不把中断的工具回执当作失败或成功。CIM命令行枚举被当前环境拒绝，未据此声明没有残留或终止别人进程；后续Get-Process只读未列Python进程。初次恢复工具JavaScript括号错误没有执行系统命令；修正后继续，不修改旧失败证据。
+
+### 实现与兼容边界
+
+本项扩既有封闭resource_node选择，原PDF或明确ready的DOCX/PPTX派生PDF只读一个授权页。原件/预览归属/当前源及派生hash、选项、转换器/运行时、页数和提取版本绑定；不调用Office转换、拆题、OCR、网页、转写或模型。输出文字及v1页级anchor，不猜原文行/字/区域或PPT页语义；空页只报告no_extractable_text。source_binary_read=true与binary_attachments_read/links_followed=false分开，其他未覆盖格式仍只元数据。旧文本、旧作答用途/返回及100活动grant共享限额不变，临时授权/正文不落持久表或备份。
+
+read_file复用既有作用域和末尾数据行/文件重验，扩为有界原始字节模式；纯文本1MiB不变，PDF或Office源+派生组合8MiB，所有选择实际文件读取含重读仍共享16MiB。打开前规范化archive_path并精确核workspaces/<workspace>/前缀，打开后普通文件/大小/身份/hash校验、无Python缓冲预读、按剩余额度和组合限制限长，增长/别名不重置预算。Office另核所选preview的固定派生路径，不未经适配调用普通read_pdf。根另交[PR #66](https://github.com/surface-user/StudyWorkbench/pull/66) c0bb750对旧原件/工作文件授权路径修复；后续组合须保留#66的原件/工作文件保护及e2的派生固定路径/归属校验，不能用任一方覆盖另一方。当前候选基于#64，不把#66整份实现/测试冒充已组合。
+
+专用resource_pdf仅接已核字节和页，原生先计UTF-16容量≤16384单位再有界分配，核实际长度/严格Unicode/最终64KiB；引用带实际pypdfium2/PDFium及算法版本和文字hash。全context读取/解析以及外层规范编码/hash均受20秒总期限，既有2查看槽共用；短命子进程stdin逐块/剩余deadline，stdout按实际读出到128KiB即停止拒绝，不communicate无界缓存，终止仅使用本次Popen持有进程句柄。最小环境白名单不继承业务凭据，不冒充OS文件/网络沙箱。同步文件I/O不可即时硬中断，子进程终止后的有界清理另保留；槽位在异常清理后也释放。
+
+Windows源venv存在redirector，直接kill它可能遗留实际Python子进程。本实现按固定CPython机制使用sys._base_executable并由服务端设置__PYVENV_LAUNCHER__保持当前venv；未改环境/缓存或安装。已核[3.13.17官方getpath](https://raw.githubusercontent.com/python/cpython/v3.13.17/Modules/getpath.py)与本机只读试探，保持原venv和pypdfium2 5.14.0而进程句柄属于实际解释器；双版本真实child专项另核。冻结包直接启动自身固定内部--read-resource-pdf入口，既有collect-submodules自动收集，不新增依赖/工作流/迁移。普通PDF页图、Office转换器和旧候选业务不改。
+
+### 本地命令、失败与阶段结果
+
+工作目录resource-pdf-provider。Q/P为../starlette-fix/.local/starlette-q-isolated及starlette-p-isolated/Scripts/python.exe，工具解释器为项目既有release-venv；PYTHONDONTWRITEBYTECODE=1，原始JUnit/日志/自建库及生成包均Git忽略。所有以下资料均仓库自编样本或独立测试生成，不操作个人库。
+
+- 新test_resource_pdf初轮q03为26通过/2失败，因误用既有snapshot签名（传了client及目录）；改按现有sqlite路径签名后q04为30通过/26.65秒。后续q05含旧授权为90通过/50.30秒，q06/p06各93通过（54.00/59.59秒）；这些是各自中间版本，不冒充最终计数。Ruff初发现import排序、未用json及测试lambda，按规则修正，未删除负例/降低断言。
+- IQ -X utf8 -m pytest backend/tests/test_resource_pdf.py backend/tests/test_resource_grants.py backend/tests/test_agent_access.py backend/tests/test_analysis_context.py backend/tests/test_analysis_review.py -q --basetemp=artifacts/r601e2/tmp-q07 --junitxml=artifacts/r601e2/q07.xml：无缓冲修正后的业务快照95通过/73.62秒/2既有弃用警告；随后新增真实空文字PDF专项另跑，不把95当最后新测试数。原生链接测试使用Windows权限，目录仅本任务临时样本。
+- Q -m ruff check backend tools：退出0。新增反例涵盖封闭字段、单页/错源/错预览/大小/选项/跨节点、真实PDF child、Unicode/空文字/容量边界、共享读与预读/增长/末尾变更、字节管道超限/阻塞输入/畸形协议/超时、并发槽和持久数据保持；旧授权用途/版本/撤销/重启等仍由原专项执行。
+- IQ tools/check_api_errors.py --test-root .local/pdf-http-source02：退出0，实际82次HTTP/36唯一错误ID，源码真实PDF及明确自造ready Office收据读取、范围/拒绝/重启/全部资源及派生hash/业务DB快照保持。首次source01因独立.local父目录未创建失败，保留事实后建运行父目录并改新source02，不改产品。
+- 同工具加STUDY_OFFICE_RUNTIME=<既有固定Office+Java组合>、--convert-office、--test-root .local/pdf-http-source-office02：退出0，889次HTTP（含等待轮询）/36错误ID。真实普通受管导入→普通Office转换ready→授权单页及源/派生hash→保持DB/原件→重启后重复均通过；不是自造收据冒充转换。source-office01曾自设180秒总体等待，完整运行时校验未完即被探针停止为interrupted，只有source.docx、未进入引擎，原目录和失败保留。改沿既有check_office_previews的600秒等待完整校验；未改变产品90秒引擎或20秒Agent期限，不能将其算作放宽产品测试。
+- 首次并行全量/冻结启动后补了无缓冲读取细节；该轮仅中间源码快照。首次build-backend.ps1在check_frozen_sources准确拒绝resource_grants源不等，退出1；未绕过门禁。经绝对路径核对将自己的旧build/dist及spec完整保存在artifacts/r601e2/failed-freeze01（209.84MiB），不删失败或挪别人产物。稳定源码重新执行./packaging/windows/build-backend.ps1 -Python <Q>，完整日志build02.log，退出0：46冻结模块及嵌套代码/常量等于当时业务源码。后续实测必须用该包，不能用首次差异包。
+
+真实新冻结HTTP/普通Office转换及库保持、最终双版本回归、文档/范围检查和独立PR/当前head CI继续核验；未取得前保持e2 IN_PROGRESS。e3单页UI/总体组合和未覆盖格式仍未实现，不把本实现/单项局部通过记为e或R6整体完成；审查暂缓、人工取消，未合并或发行。
+
+### e2 最终本地证据与交付准备
+
+后续补强未扩大功能：子进程显式PYTHONDONTWRITEBYTECODE=1，避免源模式触碰共享环境字节码缓存；源Resource ID纳入citation及grant上下文指纹，不仅依靠hash/节点关系隐含冻结该身份。外层规范编码/hash后的deadline检查已覆盖，纯文本/作答用途保持。AgentAccess新增长import经Ruff排序，旧构建随后按既有严格代码比较拒绝AgentAccess差异；未用忽略/放宽门禁处理。build02/03/04各自当时成功仅作历史，最终以排序及身份补强后的build05和本head CI为准，自有可再生build/dist顺序复用，不复制或清理他人产物/用户数据。
+
+- 最终Q/P执行上述五个授权相关测试文件，改用tmp-q09/tmp-p09及q09.xml/p09.xml、完整输出q09.log/p09.log：各退出0，96通过/2既有警告（119.75/130.25秒），包含47新增及49旧用例，无失败/跳过。真实空文字PDF子进程也已执行；q08仅新专项47通过/61.32秒，是此前版本记录，不替代最终96。子进程恶意输出/阻塞stdin/畸形协议用本任务自造命令，实测只终止自己持有的实际child并释放共享槽，没有终止其他进程。
+- 两轮本地全量的完整XML保留：full-q01/full-p01为1261通过/77子测试/4既有警告（656.40/692.31秒）；full-q02/full-p02为1263通过/77子测试/4警告（960.58/1032.73秒）。这些运行启动于后续修正前，属于中间模块快照，不能冒充最终所有源码已经本地全量重跑；最终差异由上述96×2及本head全量CI核验，待CI取得前不作最终全量通过结论。47新增数量与最终head全量实际执行数须按当前CI日志另核。
+- Q全Ruff（ruff-final02.log）及IQ tools/export_question_schema.py --check均退出0，协议无漂移。最终./packaging/windows/build-backend.ps1 -Python <Q>退出0，完整build05.log显示46业务模块/嵌套代码常量等于当前源码；最终study_backend.exe为22600069字节/SHA256 f493edc9292c85556c0b2ce5c94f29595eb5d465863990d358d5d58930f91ba0。无新增依赖/锁/迁移/工作流变化，不将开发包称为已签发行包或已组合其他平行PR。
+- 最终IQ tools/check_api_errors.py --test-root .local/pdf-http-source-final01退出0：88次HTTP/36独立错误ID；加--exe dist/study_backend/study_backend.exe、--test-root .local/pdf-http-frozen-final01退出0：86次/36ID。均是当前业务源码/最终新冻结，真实受管PDF及明确自造Office ready收据、源Resource ID/页级引用/文字hash、固定范围/拒绝/重启不恢复授权与全部原件/派生hash/业务DB快照保持通过。HTTP数含受管导入轮询，不能当作88/86条互不重复的业务断言；独立错误ID数实际相同。
+- 最终同工具加--convert-office、STUDY_OFFICE_RUNTIME=<既有固定Office+Java组合>、--exe dist/study_backend/study_backend.exe、--test-root .local/pdf-http-frozen-office-final01退出0，2694次HTTP含完整校验/转换等待轮询、36错误ID，office_conversion_executed=true/frozen=true。确切普通导入→普通转换ready→源与派生文件hash及Source ID绑定→授权取页→业务数据/原件保持→重启后重新普通转换/授权全部通过。源码实际普通转换已在source-office02通过；早期同类冻结frozen-office01的591次结果为旧中间包历史，最终使用本条build05包，不混用。自造收据模式与真实转换模式分别记录，不用前者代替后者。
+- IQ tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/pdf-library-frozen-final01退出0：最终冻结真实数据锁/健康、损坏和孤立字节检测、保存恢复/另存/合并/容量只读报告全部保持，business_bytes_preserved=true/repair_performed=false，各删除授权false。完整结果library-frozen-final01.log；不修复或删除原件/历史/失败文件。
+
+实现、最终相关自动化、源码及最终新冻结的真实HTTP/普通Office派生贯通和文档就绪，e2转REVIEW；独立草稿PR/当前head CI和主Agent有限退出核验继续，原报告保持全部阶段/失败事实。不改原#64或根UI目录，不把e2取字API等同e3界面/组合或e父项全部完成。
+
+工具Python -X utf8 artifacts/r601e2/check_changes.py退出0：11文件白名单、492原blob保持/503最终文件、130本地引用及被引用标题锚点、64唯一调度行、UTF-8/LF/git diff --no-index --check、两锁/工作流及原#64报告完整前缀保持通过。新增仅resource_pdf模块及其47专项测试文件；其余9文件为既有授权/内部入口/真实API探针及本任务现行文档/原报告，无新平行报告或整份artifact入Git。
+
+独立草稿[PR #74](https://github.com/surface-user/StudyWorkbench/pull/74)已建立并附当前任务：codex/resource-pdf-provider基于#64最终38c1abe，首次实现3ac57cc1827cf9d523f732761ef568daae97c6b2/tree3612c01473b712e8896457ac9adec9e8f3482d0e。文档补实际交付链接形成后续提交，最终head/tree/当前CI在PR正文记录，不为记录自身hash循环改头。e2保持REVIEW待当前CI和主Agent核验；审查暂缓/人工取消，未合并或发行，e3及父任务继续。
