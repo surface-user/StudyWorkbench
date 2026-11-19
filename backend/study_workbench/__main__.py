@@ -35,6 +35,10 @@ def main():
         from .document_view_worker import worker
         worker(sys.argv[2])
         return
+    if len(sys.argv) == 4 and sys.argv[1] == '--parse-pdf-pages':
+        from .documents import worker
+        worker('.pdf', page_range=sys.argv[2:4])
+        return
     if len(sys.argv) == 3 and sys.argv[1] == "--parse-document":
         from .documents import worker
         worker(sys.argv[2])
