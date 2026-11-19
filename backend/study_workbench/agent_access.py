@@ -12,7 +12,13 @@ from sqlalchemy.orm import Session
 
 from .learning_records import scoped_attempt
 from .question_files import version_read, version_view
-from .resource_grants import CONTEXT_BYTES, ResourceGrantInput, read_resources
+from .resource_grants import (
+    CONTEXT_BYTES,
+    PDF_REPRESENTATIONS,
+    PDF_SECONDS,
+    ResourceGrantInput,
+    read_resources,
+)
 from .workspaces import require_workspace
 
 
@@ -108,11 +114,14 @@ class AgentAccess:
             raise HTTPException(409, '授权内容无法表示为受控UTF-8数据；原记录保留') from None
 
     def resource_context(self, session, workspace, selections):
+        deadline = monotonic() + PDF_SECONDS if any(s.representation in PDF_REPRESENTATIONS for s in selections) else None
         try:
             result = read_resources(session, self.root, workspace, selections, self.encoded)
             result['context_sha256'] = hashlib.sha256(self.encoded(result)).hexdigest()
             if len(self.encoded(result)) > CONTEXT_BYTES:
                 raise HTTPException(413, '含引用校验的授权上下文超过1MiB')
+            if deadline is not None and monotonic() >= deadline:
+                raise HTTPException(422, '资料正文处理超过20秒；原件保留')
             return result
         except (ValueError, TypeError, UnicodeError, RecursionError):
             raise HTTPException(409, '所选资料结构或版本无效；原记录保留') from None

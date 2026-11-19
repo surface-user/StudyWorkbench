@@ -28,7 +28,7 @@
 | 题目文件 | 检查/旧内容显式转换/确认快照/资产完整性/按确认版作答 | question_files_format.py、question_files.py、app.py |
 | 学习与记录 | 判分、追加作答/评分、组卷、统计、事件、笔记关系和投影 | learning.py、learning_records.py、study_page.dart |
 | 标签和媒体 | EditorTabBar/PageHost稳定实例、关闭释放、独立WebView和播放器能力 | page_host.dart、web_page.dart、media_library.py |
-| 授权与人工候选审核 | 内存显式授权/有界作答与确认版读取、用途隔离的资料元数据及版本绑定文本读取；外部候选修订、拒绝和独立MD采用收据；无模型调用 | agent_access.py、resource_grants.py、analysis_review.py、analysis_review_dialog.dart |
+| 授权与人工候选审核 | 内存显式授权/有界作答与确认版读取、用途隔离的资料元数据、版本绑定文本和PDF/ready Office派生单页文字读取；外部候选修订、拒绝和独立MD采用收据；无模型调用 | agent_access.py、resource_grants.py、resource_pdf.py、analysis_review.py、analysis_review_dialog.dart |
 | 直接媒体下载 | 持久任务/单worker/独占attempt、固定下载子进程/暂停与显式恢复、受管原件入库/媒体身份复用；首批无站点解析/转码 | media_download_http.py、media_download_worker.py、media_downloads.py、media_download_dialog.dart |
 
 资源身份、原件blob、题目ID、确认版ID、tab_id分开，不能用标题/hash代替身份。资源树是受管逻辑目录，不是任意系统文件夹的原地工作区。
