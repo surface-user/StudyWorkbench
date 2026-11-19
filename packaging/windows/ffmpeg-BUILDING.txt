@@ -1,0 +1,50 @@
+StudyWorkbench FFmpeg developer component: swb-remux-probe-msvc-v1
+
+This is a local unsigned developer preparation, not a product installation or release approval.
+Upstream: FFmpeg9.0.2, official commit946fcce07b6dcd0331c8cc609192aeff5e1924f8.
+Original tar:12040788 bytes, SHA2568c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e.
+Release signer:FCF986EA15E6E293A5644F10B4322F04D67658D8 (independent project keyring verification recorded).
+Keep the complete original tar, every original license/notice and the two patches with this recipe.
+
+Build in a NEW project-owned copy. The original authenticated source/tar and prior failures must remain unchanged.
+Use tools/prepare_ffmpeg_component.py prepare-source/verify-source for the original source.
+Apply only tools/patches/ffmpeg-9.0.2-msvc-banner.patch and ffmpeg-9.0.2-mswindres-utf8.patch.
+Exactly two original paths/four lines differ; 10397 other original files must match their authenticated bytes before and after build.
+The first patch recognizes the real localized compiler banner; it does not fabricate output/version or skip a compiler/link test.
+The second adds Microsoft's standard RC -c65001 UTF8 codepage, preserving the real resource compilation.
+No C implementation changes. Generated files are a separate inventory, never accepted in place of changed original bytes.
+
+Existing producer tools: VisualStudio2022Community17.14, MSVC14.44.35207/cl19.44.35219; WindowsSDK10.0.26100.0.
+cl SHA25669106b595bec828cbf942321f98a0cd3a1fc7d6b8460b0b6b7a07a387fcb309c.
+link SHA2560508ca9f8296f49807a597d71af26f1e0301fb1f1d9179165cad0b5013580f79.
+rc SHA256d7cbb732f44216a2a6c6e2dc97c23778c1d8917258e51756a87d5e37e99fb9ef.
+Use VsDevCmd -arch=x64 -host_arch=x64 in a child only; preserve its real SDK INCLUDE/LIB.
+Limit PATH to the fixed MSVC bin, existing Git/usr/bin, fixed SDK x64 bin and System32; no MinGW/NDK libraries or compiler.
+Use an explicit project-owned TEMP/TMP; no user data or environment dump enters the component.
+GNUmake is the project-private MSYS2 4.4.1-3 executable SHA25691b7e155590d59db22e5eb0a3ffeec6350149f70f9ed2c242d133e584eb72fee.
+Its official archive af0bdba17f06fe037f0194069adaa31a8fe45f1a11381501896aea1fae37bd5d and source-only archive were verified with official signer5F944B027F7FE2091985AA2EFA11531AA0AA7F57.
+It is a GPL3 build tool only. Do not include it or its MSYS/libintl/iconv runtime in the product; do not replace any Git DLL.
+The actual loaded original Git runtime paths/hashes and ABI exports were checked separately.
+
+Run the following in the new derived source directory using existing Git Bash (no profile or rc scripts):
+./configure --toolchain=msvc --arch=x86_64 --target-os=win64 --disable-gpl --disable-nonfree --disable-version3 --disable-autodetect --disable-network --disable-x86asm --disable-everything --disable-programs --enable-ffmpeg --enable-ffprobe --disable-static --enable-shared --disable-avdevice --disable-doc --disable-debug --disable-swscale --disable-swresample --disable-iconv --disable-zlib --disable-bzlib --disable-lzma --disable-encoders --disable-decoders --disable-hwaccels --disable-filters --disable-bsfs --disable-protocols --disable-demuxers --disable-muxers --disable-parsers --enable-protocol=file --enable-demuxer=mov,matroska --enable-muxer=mp4,ipod,webm --enable-parser=h264,aac,opus,vp8,vp9,av1 --prefix=D:/computer_work/project/StudyWorkbench/.local/goal-20261112/ffmpeg-msvc-component/.local/component-stage
+Then invoke the fixed private MSYS GNUmake -j2 SHELL=D:/Git/usr/bin/sh.exe.
+The recorded successful source was in-tree; no system install/make install/pacman or cache modification was performed.
+The absolute prefix above records the actual audited build. A new path/toolset/build is a new candidate requiring new hashes and proof; deterministic cross-machine reproduction is not claimed.
+
+Prepare only ffmpeg.exe, ffprobe.exe, avcodec-63.dll, avformat-63.dll, avfilter-12.dll and avutil-61.dll.
+Do not copy unversioned duplicates, _g executables, objects, import libraries, compiler DLLs or config.log/environment.
+The profile records exact pre-sign bytes, PE imports and source/config hashes; signing changes require a separate profile/receipt revalidation.
+
+The audited profile has only file input/output protocol; MOV/Matroska demuxers; MP4/IPOD/MOV/WebM muxers; no encoders/decoders/hardware accelerators or external libraries.
+It has the fixed seven parsers and two automatic bsfs recorded in the profile, and the ffmpeg-required eleven built-in filters.
+No HLS, transcoding, raw streams, external downloader, arbitrary filter/CLI/header or product source/frozen integration is provided.
+file protocol is NOT OS network isolation: UNC/dref/alias/external references/encrypted content must be rejected by the later controlled input policy before user-media processing.
+The local synthetic fixtures are not website download evidence or universal malformed-container proof.
+
+The binaries dynamically link the four FFmpeg libraries and statically include Microsoft CRT code.
+COFF default libraries and matching-object diagnostic link identify MSVC LIBCMT/OLDNAMES/libvcruntime and SDK libucrt; no absence-of-DLL shortcut is used to claim absence of CRT.
+Keep the compiler license original/source and provenance; do not redistribute the compiler or raw static libraries.
+Microsoft licensee eligibility, static CRT obligations, LGPL replacement/corresponding-source/notice/EULA duties, patents and final redistribution approval remain release gates.
+The complete original FFmpeg source plus patches/actual configuration and this recipe must accompany a corresponding-source offer/delivery; a URL alone is insufficient.
+This bundle remains developer_prepared/release_ready=false until REL duties, signatures, payload inventory and explicit release authorization are complete.

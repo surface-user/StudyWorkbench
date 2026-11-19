@@ -1,0 +1,11 @@
+--- a/configure
++++ b/configure
+@@ -5444 +5444 @@
+-    elif VSLANG=1033 $_cc -nologo- 2>&1 | grep -q ^Microsoft || { $_cc -v 2>&1 | grep -q clang && $_cc -? > /dev/null 2>&1; }; then
++    elif VSLANG=1033 $_cc -nologo- 2>&1 | grep -Fq 'Microsoft (R)' || { $_cc -v 2>&1 | grep -q clang && $_cc -? > /dev/null 2>&1; }; then
+@@ -5446 +5446 @@
+-        if VSLANG=1033 $_cc -nologo- 2>&1 | grep -q ^Microsoft; then
++        if VSLANG=1033 $_cc -nologo- 2>&1 | grep -Fq 'Microsoft (R)'; then
+@@ -5449 +5449 @@
+-            _ident=$(VSLANG=1033 $_cc 2>&1 | grep ^Microsoft | head -n1 | tr -d '\r')
++            _ident=$(VSLANG=1033 $_cc 2>&1 | grep -F 'Microsoft (R)' | head -n1 | tr -d '\r')

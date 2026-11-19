@@ -1,0 +1,402 @@
+{
+  "schema_version": 1,
+  "scope": "DL-03b2 unsigned developer component preparation; no product integration or release approval",
+  "profile_payload_sha256": "ee0f21d31ae183a6579bbf0b3414ae84f46d7ce6c6cd5660e07906b0e8e7af9f",
+  "component_snapshot_sha256": "2cd1cbbdc939fc6ab27818a71092e24d122519cdb7fb9dca78c9bf29037e9390",
+  "runtime": {
+    "ffmpeg.exe": {
+      "bytes": 584704,
+      "sha256": "8a010c4a4b2be0f7562c76a6df878b7967ae6eb5c6197744a4da538f44699be8"
+    },
+    "ffprobe.exe": {
+      "bytes": 334336,
+      "sha256": "36ef204c32eb85f842f41674095ff9e1f00018201945fef7f7ab121ecb7b2832"
+    },
+    "avcodec-63.dll": {
+      "bytes": 745984,
+      "sha256": "595d0b4ea91c176f6d98d41509c2288210be89e8b147eee91c533c5fa21873f8"
+    },
+    "avformat-63.dll": {
+      "bytes": 955392,
+      "sha256": "79a519d492907818cfa07af5d806e72deff83eab03502c874f7cb0368a91e3ba"
+    },
+    "avfilter-12.dll": {
+      "bytes": 282112,
+      "sha256": "d7ef7f524a08a74745d4d646c8b14e9f57311b24aee7196da42c624a880a3737"
+    },
+    "avutil-61.dll": {
+      "bytes": 979456,
+      "sha256": "3996c56e00ece0c8589548faa23864addb082d5ad3a7bc0c0deb77124a9fb54f"
+    }
+  },
+  "source": {
+    "original_paths": 10399,
+    "changed_paths": [
+      "configure",
+      "compat/windows/mswindres"
+    ],
+    "changed_lines": 4,
+    "unchanged_paths": 10397,
+    "generated_paths": 725,
+    "pre_and_post_checks_exit": 0,
+    "snapshot_sha256": "7a65ea9dcb64a778fe393c2582628c4ab339092971e0916422c63dd44833d81c"
+  },
+  "real_probes": {
+    "clean_path": "System32 only",
+    "steps": [
+      {
+        "name": "ffmpeg-version",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "cb4c00d3fd65552a3c231cfb18e9ff98fd7b684515412f5ac5e4242649bddfbe"
+      },
+      {
+        "name": "ffmpeg-buildconf",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "2c7756d5844e52b11d19a6e010e9c38f488803cbe448e93d015e6f99d88b6345"
+      },
+      {
+        "name": "ffmpeg-protocols",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "d967f7ff9016bc8c67175d342715fa48e604d57402004cd607b78af0b15b876f"
+      },
+      {
+        "name": "ffmpeg-demuxers",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "6073f0e384172c385a448d153bbdc4e249b8dac37cedb52ede1731945d852c81"
+      },
+      {
+        "name": "ffmpeg-muxers",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "2fe5e8bd1fc5e690693fbbd20f4499d780dbdb8bf05e68ff27e93d1f31de2eaa"
+      },
+      {
+        "name": "ffmpeg-encoders",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "383a419c76d1134e6e3fb1f5414146ea381f8f2f6164bae42180bef86f662a89"
+      },
+      {
+        "name": "ffmpeg-decoders",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "b31e624c9b7a2503880c7d72a952ee29a339ec6298fe2ba5154d5ee970fddb54"
+      },
+      {
+        "name": "ffmpeg-filters",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "93fb97420a9446773db5eec0ad8c55f55b701a08b836d33c4ad3fb11029c73e6"
+      },
+      {
+        "name": "ffmpeg-bsfs",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "4bc27dc0ce7572d33ce9787a178038e248bcd42eb0a49869190c4080e62871e3"
+      },
+      {
+        "name": "ffmpeg-hwaccels",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "14b92924b0b69efdd21dd7ef85a023b126986c1310fc47b7b6ea45435f19175a"
+      },
+      {
+        "name": "ffmpeg-L",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "b98c7507837383d89523e8ec96cb1ee92df621c92bb0e8ff829c908dce48c95f"
+      },
+      {
+        "name": "ffprobe-version",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "ccb58cdf267d53a08c2a83a03618f91002313aeb15f000ad2156e89b2b50162b"
+      },
+      {
+        "name": "ffprobe-buildconf",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "3b3e37f8becbb9a2b4e55dac1a5cff50ba192bc1686e178a9c5e7095321f5ee4"
+      },
+      {
+        "name": "ffprobe-protocols",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "d967f7ff9016bc8c67175d342715fa48e604d57402004cd607b78af0b15b876f"
+      },
+      {
+        "name": "ffprobe-demuxers",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "6073f0e384172c385a448d153bbdc4e249b8dac37cedb52ede1731945d852c81"
+      },
+      {
+        "name": "ffprobe-muxers",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "2fe5e8bd1fc5e690693fbbd20f4499d780dbdb8bf05e68ff27e93d1f31de2eaa"
+      },
+      {
+        "name": "ffprobe-encoders",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "383a419c76d1134e6e3fb1f5414146ea381f8f2f6164bae42180bef86f662a89"
+      },
+      {
+        "name": "ffprobe-decoders",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "b31e624c9b7a2503880c7d72a952ee29a339ec6298fe2ba5154d5ee970fddb54"
+      },
+      {
+        "name": "ffprobe-filters",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "93fb97420a9446773db5eec0ad8c55f55b701a08b836d33c4ad3fb11029c73e6"
+      },
+      {
+        "name": "ffprobe-bsfs",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "4bc27dc0ce7572d33ce9787a178038e248bcd42eb0a49869190c4080e62871e3"
+      },
+      {
+        "name": "ffprobe-L",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "57324e73074bb5113fb1acabfb1183a8730c0c583dc251c0d5438bbd144b669b"
+      },
+      {
+        "name": "input-av.mp4",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "05b8e7254b09d34de25e23388ad4717ac0db9a01c46f96feca90415684c524da"
+      },
+      {
+        "name": "input-audio.m4a",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "9506bc0eb902194569c56cf2a4252e184c8488dc76f4cb93a26c5a7c477bd221"
+      },
+      {
+        "name": "input-av.webm",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "b6602656ccb78be3ad0ce64ba6ea7a0ab8ccfe375482c4cb9b1c1f74765ab5aa"
+      },
+      {
+        "name": "remux-av.mp4",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "output-av.mp4",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "ec91471afd3aa6d91aa733e40becb53a8683d68e322b35035fcc389cda170ebf"
+      },
+      {
+        "name": "remux-audio.m4a",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "output-audio.m4a",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "58a9d465cb37038ab7cb45a6b297b40aec3b8aac43cd0b6ae5c97f6265986a68"
+      },
+      {
+        "name": "remux-av.webm",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "output-av.webm",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "e7d45f8c092e192172f44a66fface1fe6c46a8f45309c720ec689a5c267833a8"
+      },
+      {
+        "name": "extract-video",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "merge-pair",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "pair-output",
+        "exit": 0,
+        "expected": 0,
+        "output_sha256": "dd6e6b9a318e54d0220e525d216b2513fa7ab2bd3de493bf056ba0ff8b31dfde"
+      },
+      {
+        "name": "network-unsupported",
+        "exit": 1,
+        "expected": 1,
+        "output_sha256": "2ec0959e98561058d36e901582b3fa4f26b9152aafd72e327d18e4ba596178ec"
+      },
+      {
+        "name": "concat-unsupported",
+        "exit": 1,
+        "expected": 1,
+        "output_sha256": "22683d5965a53257d61694b82ecd073048bf12918ec249d5f077954a782c11d3"
+      },
+      {
+        "name": "invalid-container",
+        "exit": 1,
+        "expected": 1,
+        "output_sha256": "99d7c2e803fda691f7514bb42515c0141d45d53a18e610fe0410d2cfe6236e16"
+      },
+      {
+        "name": "hls-unsupported",
+        "exit": 1,
+        "expected": 1,
+        "output_sha256": "85d4238012ff04e03e51a8e644d5bc6274e25fe565c16693bfcee244e9305ff4"
+      }
+    ],
+    "parser_api": "av_parser_iterate using fixed 9.0.2 avcodec.h ABI; developer process only",
+    "independent_decode": {
+      "independent_generator_version": "FFmpeg7.1/imageio0.6.0 existing GPLv3+ dev tool only",
+      "generator_sha256": "2ce797a0f88d7f067180338fb227f7b1928ea727bd9a4d7a1d022f7c52af71a3",
+      "simulated_pair_each_stream_packet_payload_unchanged": true,
+      "steps": [
+        {
+          "file": "av.mp4",
+          "exit": 0,
+          "bytes": 2177,
+          "sha256": "f2d33cf05bed34b21f3d78aa00038d30151e73ae346b447696edb80a0baa57ec"
+        },
+        {
+          "file": "audio.m4a",
+          "exit": 0,
+          "bytes": 911,
+          "sha256": "e565ff96511608a947d69b4fbf413fe42a76d945a097642872b3ac07cc1960b7"
+        },
+        {
+          "file": "av.webm",
+          "exit": 0,
+          "bytes": 877,
+          "sha256": "07abd999343e249d54fa8a89a0512b7de10da6ad14d191f767b95b0f474f2ade"
+        },
+        {
+          "file": "video.mp4",
+          "exit": 0,
+          "bytes": 1479,
+          "sha256": "45fdb2e24994372e8b7568399e5c57e016550bd80ec60d10dc13dbc3a4929d7a"
+        },
+        {
+          "file": "pair.mp4",
+          "exit": 0,
+          "bytes": 2177,
+          "sha256": "f2d33cf05bed34b21f3d78aa00038d30151e73ae346b447696edb80a0baa57ec"
+        }
+      ],
+      "product_decoder_adopted": false
+    },
+    "website_or_product_proof": false
+  },
+  "preparation": {
+    "q_exit": 0,
+    "p_independent_verify_exit": 0,
+    "files": 17,
+    "executes_binary": false,
+    "release_ready": false
+  },
+  "unit_tests": {
+    "q02": 13,
+    "p01": 13,
+    "ruff_exit": 0
+  },
+  "limitations": [
+    "MOV-only dref disable options; no complete external-reference/UNC/encryption preflight is implemented",
+    "file-only protocol is not OS network isolation",
+    "Microsoft static CRT licensee eligibility and release redistribution/LGPL duties remain gates",
+    "Official security page does not establish exact native build or static CRT vulnerability clearance",
+    "Pre-sign fixed profile; signing requires new integrity reconciliation",
+    "No source/frozen product worker or site download integration"
+  ],
+  "evidence_selection": {
+    "reason": "Sanitized sizes/hashes/exit records support only this fixed developer build; no binary/source tar/user media/raw environment is uploaded",
+    "raw_root": "artifacts/dl03b2/",
+    "raw_files": [
+      {
+        "path": "artifacts/dl03b2/source03-before-proof.json",
+        "bytes": 317,
+        "sha256": "fe263722eee45a3112b009901e225b35303f30566fac14fb42bf24f11cf1ceaf"
+      },
+      {
+        "path": "artifacts/dl03b2/source03-post-originals.json",
+        "bytes": 106149,
+        "sha256": "a9537f2d3972d8cdad8be7ed5c5032f98cba50656621ba77f381a8f384bb09b4"
+      },
+      {
+        "path": "artifacts/dl03b2/configure-msvc10.txt",
+        "bytes": 2292,
+        "sha256": "5826ab58dc6e3f889b9dda44d498a749274ca98bc03601d314202b88cb05f2e9"
+      },
+      {
+        "path": "artifacts/dl03b2/make-msvc10.txt",
+        "bytes": 16689,
+        "sha256": "c36d69e309bb48c642f00ba85cf3d3b3104b1dc1f251468b2b661c11a82eb700"
+      },
+      {
+        "path": "artifacts/dl03b2/component-probe04.json",
+        "bytes": 6975,
+        "sha256": "36aab84a6db97dfd101e6b7bde3aff3cd92d2ac8635090d07b3b72a65ba47d11"
+      },
+      {
+        "path": "artifacts/dl03b2/independent-decode.json",
+        "bytes": 1133,
+        "sha256": "13a3460a85ed9cb16d1a6a6f2d3486e12258b19b2f39c88a65de8b13b95154fb"
+      },
+      {
+        "path": "artifacts/dl03b2/msys-make-signature.json",
+        "bytes": 857,
+        "sha256": "19eeb52828019e18e9e17429f0faedd6e32c3e6d54709c6eae392c09f8983023"
+      },
+      {
+        "path": "artifacts/dl03b2/msys-make-dependencies.json",
+        "bytes": 2427,
+        "sha256": "fa6cf7522be9cf8e335154d3e22c8fdb613656bf6c4034d0622355df01fe4a4b"
+      },
+      {
+        "path": "artifacts/dl03b2/msys-make-loaded-modules.json",
+        "bytes": 575,
+        "sha256": "7a9fd088f6342bc1ddb3c6895a490839ef3b8ae18dfa36de222945ee78bad859"
+      },
+      {
+        "path": "artifacts/dl03b2/preparation01.txt",
+        "bytes": 268,
+        "sha256": "7f3dc9cc295840475fea64c51a67aa64a1a46fdc12affbfff22d95d9e91502eb"
+      },
+      {
+        "path": "artifacts/dl03b2/verification-p01.txt",
+        "bytes": 268,
+        "sha256": "7f3dc9cc295840475fea64c51a67aa64a1a46fdc12affbfff22d95d9e91502eb"
+      },
+      {
+        "path": "artifacts/dl03b2/binary-q02.xml",
+        "bytes": 2098,
+        "sha256": "b80284dcf3b15ffd6d38d3abc4162b7b6bdf50e51b72862290f92632ef72e8bb"
+      },
+      {
+        "path": "artifacts/dl03b2/binary-p01.xml",
+        "bytes": 2098,
+        "sha256": "950518c0c5e60bd46aeef1b868e770b8c69b66d009b9d4294b6544547524d3b7"
+      }
+    ]
+  }
+}

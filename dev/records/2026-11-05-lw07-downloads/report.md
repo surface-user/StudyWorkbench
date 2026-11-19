@@ -281,3 +281,51 @@ MSVC configure-msvc-01退出1：实际cl中文banner前缀，官方probe_cc固�
 最终六文件交付检查：IQ `-X utf8 .local/validate_delivery.py` 退出0，497基线blob逐核，仅3原文档修改/494原文件不变，加3新文件；91本地引用/9锚点、68种原任务ID、原报告完整前缀、两锁/运行代码保持；逐文件no-index diff --check无空白错误。相同IQ环境Question Schema `--check`退出0。最终代码专项q04退出0（26通过/1权限skip），Ruff再核退出0；未以重复运行抹去q01/q02失败。b1进入REVIEW，PR和当前head CI仍待交付，b2/c不因此完成。
 
 首次GitHub create_tree被自动审批拒绝，原因为project source/reports/evidence上传的精确payload与目标未核定；首次未上传/未建commit、分支或PR。随后只读核根origin为https://github.com/surface-user/StudyWorkbench.git、已接受#57同公开repo/精确base；六文件仅3既有文档+开发工具/测试/精选摘要，无上游tar/源码包、原config.log/环境、实际PGP key块、私钥/token/个人DB或媒体。PGP公开签名键只记录公开指纹/输入hash，不属私钥。逐文件SHA256/Gitblob/字节数、494不变与报告前缀已核；按用户每小项PR和主Agentb1授权，原连接器同一create_tree在证据补全后获自动审批通过（tree4f9f9f543e5d606abd603d25993150c862c41493），未换通道或规避限制。该树不是已交PR，当前CI另核。
+
+
+## 2026-11-14 DL-03b2：最小MSVC组件准备（进行中）
+
+b1在独立[PR#61](https://github.com/surface-user/StudyWorkbench/pull/61)以head e11d3da114fe0fc59da9da296c04109842fb1cba/tree d5cb57a343903ab7f6e8b449b9f3fd0e5b7cc673交付，当前[CI43590065914](https://github.com/surface-user/StudyWorkbench/actions/runs/43590065914)三job成功/45步成功+既有公网分支1跳过；两版原生Windows Server2025各1207通过/4warnings/0skip，27新case全执行（真实文件symlink、目录junction与归档symlink为不同边界），Flutter203/Windows/COM/44模块新冻结/API34/旧冻结回归成功。两个原JUnit ZIP与GitHub digest逐核，P23158B/8e8e58c5823ce65027e864dad110c163faa6a6f39459b520fc2b9150a411a547、Q22822B/02eb1ae41e325a0f1c0931ae5333304c72928e635baa4ca5d4e43fcd14f9f2e8；本地26+1权限skip仍保留，不因CI成功抹去。本轮从该精确500blob另建ffmpeg-msvc-component副本；b1旧head不改，最终接受由主Agent另核。
+
+### 派生源码、构建工具与保留的失败
+
+官方原tar/认证source目录保持只读。先按固定canonical源快照7a65ea9dcb64a778fe393c2582628c4ab339092971e0916422c63dd44833d81c逐10399原文件读hash/写后读比；仅在新派生source02给configure同一probe_cc分支5444/5446/5449三处grep ^Microsoft改为固定ASCII子串Microsoft (R)匹配，不伪造输出/补空版本，不改实际编译链接检查或C实现。实际cl中文banner有Microsoft (R)但不以Microsoft开头，link原输出以Microsoft开头且有Linker，二者原无输入exit2/1561仅是只读banner探针；真实configure随后照常执行所有编译链接/特性测试。原configure311304B SHA5b281b249ad5ad859030b4da0a24ec105b5abff7b3d87a65b302df8bf5fd9833，三行补丁686B SHA7550115a9c3f80f8960e7654cc08b64a7137953b96bd3c35f3f7b95f99c13aea，派生311324B SHAa512e0f6872453482bcf95ea2a4cc5d7a2ba246c74925f9fc47d35eae2527bed。首次Node复制30s超时部分保留source01，改原生helper完成source02；原/派生后验各10399，10398不变、新生成30文件另列。
+
+固定cl19.44.35219/14.44.35207 SHA69106b595bec828cbf942321f98a0cd3a1fc7d6b8460b0b6b7a07a387fcb309c、link SHA0508ca9f8296f49807a597d71af26f1e0301fb1f1d9179165cad0b5013580f79。parent及VS child环境仅必要allowlist，自有TEMP/TMP、GNU工具来自原Git/usr/bin，不把MinGW/NDK compiler或库放PATH/LIB/INCLUDE。source02 in-tree由主Agent明确授权，原认证source/tar不动，生成文件不能覆盖原路径后重签当通过。真实MSVC configure退出0，实际network/GPL/nonfree/version3/autodetect均0、file唯一协议、无encoder/decoder/hwaccel；能力和实际二进制尚待构建后重核。
+
+现有MinGW GNUmake4.4.1的真实make因Win32到MSYS shell引号边界在MSVC -showIncludes依赖awk失败，exit2；标准SHELL=bash/.SHELLFLAGS=-c及.ONESHELL/-ec均用正确自编mini复现，不继续无限换参数。相同官方完整依赖命令独立Bash脚本真实exit0、空输入awk exit0，未跳依赖检查。首mini有JS替换串$$的fixture转义错误，保留后以正确$$0再验仍同边界。NDK r28c/28.2.13676358现存GNUmake4.3 SHA0399888d520b66cd75e9bf3abc8453af188a5a51484326730b58bfd675cb373c，同mini仍失败，故未用其构建组件。
+
+主Agent批准项目私有、仅build的MSYS2 make4.4.1-3小包；[官方包页](https://packages.msys2.org/packages/make?repo=msys&variant=x86_64)固定package514683B/SHAaf0bdba17f06fe037f0194069adaa31a8fe45f1a11381501896aea1fae37bd5d；签名566B/SHA7f53c96aeb1a29d9917e2b00e9f709fbdc5b0458e6535e88b1fed69365191265。对应source-only2348028B/SHAb4ca441780273aba4ac44437ea1606dc058a6c0924e16296783c2b3107d32de1、签名566B/SHA1b3dd9618082ee7b05e5ded3c3293e4f2f3bb19db601601d2efb99bda50ff386。正常HTTPS固定repo.msys2.org、禁止redirect/8MiB上限，未pacman/系统安装、不动现有Git DLL/缓存。新.gmk01 keyring用官方[开发者指纹](https://www.msys2.org/dev/keyring/)5F944B027F7FE2091985AA2EFA11531AA0AA7F57，固定官方Git公钥blob0a597d95fa9f64963f531edb2e7206bedae75e14并核revoked列表；两个包各唯一VALIDSIG匹配、4步GPG退出0，无个人keyring/自动取key/agent。仅信任固定官方指纹，不把unknown trust当web-of-trust。
+
+现有System32 bsdtar3.8.9/libzstd1.5.7只读列名并-xOf固定成员到stdout，由Python写项目新文件，未按任意归档路径落盘/执行PKGBUILD。原build PKGBUILD SHA69f87ad52645f139fece88d002729ae58741910346fb60cf6049b2e36a5bfb04匹配.BUILDINFO及固定Git3e12c4917255bfd3c4f6c14f43ae6451b737a219；不使用6月仅SPDX更名后的master配方冒充原build。签名source中GNU make4.4.1源SHAdd16fb1d67bfab79a72f5e8390735c49e3e8e70b4945a15ab1f81ddb78658fb3、gcc15原补丁与GNU-Make-COPYING保持。构建工具GPL3与产品FFmpeg许可证分别记录，工具/其运行库不进产品payload，不把其本机来源当产品CRT来源。
+
+私有make.exe236000B/SHA91b7e155590d59db22e5eb0a3ffeec6350149f70f9ed2c242d133e584eb72fee，AMD64；imports与原Git MSYS/intl/iconv exports逐符号匹配。真实mini进程观察3DLL加载路径均原D:/Git/usr/bin，固定SHA为msys-2.0.dll3.6.6 10b69b6df16643a9a65b634b58f64c82d274a9fbff2db7aca738fc0088ed4494、msys-intl-8.dll0.22.5 50f7de0c712d867ddca2c9eb8562ca6ee2d69e120e798ec6126ad29dd1ed5402、msys-iconv-2.dll1.18 ab12c26e29aa8849df5fe4284e462cc5795c4414104507fdd4099104940e9501；无新runtime下载或替换，缺符号/误加载即停止。GNUmake4.4.1/x86_64-pc-cygwin版本探针0，同awk正mini实际0、false负mini实际2且未执行后续标记，才进行一次真实make。
+
+### RC UTF-8新失败与最小修正依据
+
+真实MSYS make已编译多批官方C文件，但资源编译config.h第9行真实中文CC_IDENT在默认codepage产生RC2001 newline in constant/RC1116，make exit2；原source02、make-msvc08.txt与全部先前失败保留，未产出可用binary。微软官方[RC命令行](https://learn.microsoft.com/en-us/windows/win32/menurc/using-rc-the-rc-command-line-)明确/c设NLS codepage、允许-代替/。定向probe使用同SDK/同config.h/同libavfilter/avfilterres.rc，仅在真实rc.exe加-c65001，输出新.local/rc-utf8-probe.res，exit0，来源artifacts/dl03b2/resource-utf8-msvc09.txt；没有改source/生成配置。实际SDK rc.exe10.0.26100.0/FileVersion10.0.26100.6584/SHA d7cbb732f44216a2a6c6e2dc97c23778c1d8917258e51756a87d5e37e99fb9ef。
+
+主Agent已明确批准只在新source03副本保留configure三行，再将compat/windows/mswindres第13行EXTRA_OPTS=-nologo增加-c65001。原脚本636B/SHA486da18800afa4031f2d5be97d74155ecb87e1780687e7d8dbeee9521512e8cb/Git8c14c96bae451183b291dc92c31f90461cdf6105，派生644B/SHA6e0241d34ca37c549a8a7f59cb36c07bdef941cf5f0036e3b40b9ca6b8f230ad，独立单hunk补丁SHAb2cc2e4a9fc26e94cd4014b703e2f0a5a4701c981c41d520192c754719ed7dfc。先将上述依据记本报告，再执行该新副本修正与真实构建。固定两原文件/4行，其余10397原文件须前后逐hash；不改C实现/版本检测，不伪造banner，不把file-only协议说成OS网络隔离。组件PE/CRT、协议/格式/外部引用/对应源及许可证未核前b2不记完成。
+
+主Agent已独立接受b1有限DONE：再次逐500远端blob/6文件核定，并从固定tar实核10399文件/snapshot7a65退出0，当前CI/decodedlogs/两原JUnit均确认；#61旧head保持。新source03配置额外关闭不需要的swscale/swresample两库（ffmpeg固定依赖为avcodec/avfilter/avformat/threads），不是新增转码能力；每项真实依赖/编译检测保持，实际结果另记。
+
+
+### 2026-11-19恢复核定、真实组件与有限交付
+
+暂停后先核已留成功构建/样本，未重跑已通过的构建。source03真实configure/make均0，关闭swscale/swresample后只产avcodec/avformat/avfilter/avutil四库及两CLI；6个AMD64文件共3881984字节，精确hash见packaging/windows/ffmpeg-component-profile.json。source03前/后各核原/派生10399路径，只有两脚本/四行，10397不变；725新生成文件另列，未以生成后hash掩盖原件修改。无MSYS/GCC/VC runtime DLL导入，内组件import逐符号匹配；这不代表无静态CRT。
+
+原COFF directives真实LIBCMT/OLDNAMES，匹配实际对象/参数的新诊断链接输出搜索MSVC LIBCMT/OLDNAMES/libvcruntime及SDK libucrt；记录的是默认库/诊断搜索及固定库bytes/hash，不把searched说成逐成员loaded或把诊断产物冒充原组件。微软官方Community许可docx原文62859字节/SHA41a207b10c8ab91d0d2f10a854715f73dca54509581692d2fe179aa3ffcb8540及REDIST官方页已取读；compiler licensee资格、静态CRT分发义务和LGPL替换/供源/NOTICE/EULA/专利仍为REL门槛，不作法律通过。未复制编译器或裸静态库进组件。
+
+已有imageio0.6开发FFmpeg7.1固定SHA2ce797a0f88d7f067180338fb227f7b1928ea727bd9a4d7a1d022f7c52af71a3仅生成16x16黑色视频/单声道静音，实际-L为GPLv3+，不能把wrapper BSD标签套到其exe，也未把该exe/运行库放进组件。三个原创输入均小于3KiB，无下载/录音/用户原件。新组件clean PATH仅System32的37步expected exits均通过，实际file为唯一input/output协议、空encoder/decoder/hwaccel，公开av_parser_iterate枚举7parser。H264/AAC MP4、AAC M4A、VP9/Opus WebM探测与copy、独立音视频再合并均过，每流每包SHA/size保持，源字节hash不变；既有独立开发解码器对5个输出全部decode0。HTTPS/concat/HLS/坏容器负例非0，各原输出保留。
+
+probe01误设不存在的-parsers CLI返回AVERROR_OPTION_NOT_FOUND（非崩溃）；probe02误给ffprobe用仅ffmpeg提供的-hwaccels；probe03误把MOV专有dref选项交WebM，均为实际未支持参数的fixture失败并保留。按固定源码公开API/各CLI及分格式配方修正后probe04完整通过，未删codec/packet断言、修改binary或降低门槛。MOV默认enable_drefs=0且固定MOV配方显式关闭enable_drefs/use_absolute_path；完整外部引用/UNC/加密容器前检及Job/预算等仍由c实现，不能仅凭file-only或一次copy将恶意输入登记安全。没有执行任何新站点请求或产品源/冻结接入。
+
+新增离线tools/prepare_ffmpeg_binary.py、固定profile/完整BUILDING配方及13项policy负例。工具不联网/安装/执行二进制：先从固定原tar重建期望、核两脚本派生与其余原件、实际配置及PE闭包，再输出全新目录；锁preimage只含payload，派生digest不含自身，verify从固定profile重建期望，篡改后自重签/额外文件/错误数据类型均拒绝。17文件包括6原生文件、完整原tar、2补丁、实际3配置、原LGPL/LICENSE、微软原许可、BUILDING和profile；不打包config.log/环境、开发make/旧GPL生成器、样本、编译器或裸CRT静态库。readiness明确developer_prepared=true、release_ready=false、product_integration=false、complete_untrusted_input_policy=false。签名改变bytes须另做profile/完整性对账，未声称可跨机器确定性重建。
+
+实际IQ命令 tools/prepare_ffmpeg_binary.py prepare --package ../ffmpeg-component/.local/upstream/ffmpeg-9.0.2.tar.xz --build-directory .local/derived-source-03 --compiler-license .local/compiler-license/Visual-Studio-2022-Community-License-EN.docx --directory .local/prepared-component-01，退出0；IP独立verify --directory .local/prepared-component-01退出0，均17文件/snapshot2cd1cbbdc939fc6ab27818a71092e24d122519cdb7fb9dca78c9bf29037e9390。完整对应源已实际在本地包，不只留URL。
+
+新增专项在IQ/IP分别 -X utf8 -m pytest -q backend/tests/test_ffmpeg_binary_preparation.py --basetemp=.local/binary-q02或p01 --junitxml=artifacts/dl03b2/binary-q02.xml或p01.xml，各13通过/退出0；Ruff对新增工具/测试退出0。暂停前profile手抄libucrt digest多一字节被校验拒绝，已改从原文件直接生成；严格重复宏初版误拒官方同值LIBSMBCLIENT=0，现仅接受同值重复/拒冲突，已用负例固定；Ruff首次import排序修正，原失败记录保留。恢复时Node会话失效导致首个测试文件未写出/pytest未找到文件（q01日志），恢复文件会话并实际建文件后q02运行，未虚报初轮通过。
+
+11-19只读重核官方download仍列9.0.2，security页为维护/修复公告来源，不是该配置和静态CRT逐漏洞映射清零；未为时间变化盲升或重构建。原失败全留。精选[组件准备证据](evidence/ffmpeg-binary-preparation.json)只含来源/原始日志hash、元数据/exit，不含tar/exe/媒体/个人数据或环境。b2仅有限developer组件准备待独立PR/current CI与主Agent核验，c完整受控输入/进程/队列及REL义务未完成；审查按用户要求暂缓，人工取消，未合并/发行。
+
+最终范围检查已实际完整运行：500基线blob/3原文档变更/497保持、7新文件共10文件；93本地引用/9锚点、70类旧任务ID、原报告完整前缀、两锁和运行代码保持，逐文件diff --check无空白错误，Question Schema/Ruff退出0。首次复制检查脚本时误用双换行锚点使脚本截断、未产生检查摘要；识别空输出后停止计入结果，校正单换行锚点并断言存在后完整74行运行，以上才是有效检查。b2提交10文件仅文本工具/测试/两极小补丁/profile/配方/三文档/精选证据；不上传exe/DLL/tar/docx/样本、临时下载地址、个人数据或原环境日志。
