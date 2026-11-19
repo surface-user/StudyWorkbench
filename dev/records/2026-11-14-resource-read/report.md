@@ -136,3 +136,7 @@ Windows源venv存在redirector，直接kill它可能遗留实际Python子进程�
 - IQ tools/check_library_integrity.py --exe dist/study_backend/study_backend.exe --test-root .local/pdf-library-frozen-final01退出0：最终冻结真实数据锁/健康、损坏和孤立字节检测、保存恢复/另存/合并/容量只读报告全部保持，business_bytes_preserved=true/repair_performed=false，各删除授权false。完整结果library-frozen-final01.log；不修复或删除原件/历史/失败文件。
 
 实现、最终相关自动化、源码及最终新冻结的真实HTTP/普通Office派生贯通和文档就绪，e2转REVIEW；独立草稿PR/当前head CI和主Agent有限退出核验继续，原报告保持全部阶段/失败事实。不改原#64或根UI目录，不把e2取字API等同e3界面/组合或e父项全部完成。
+
+工具Python -X utf8 artifacts/r601e2/check_changes.py退出0：11文件白名单、492原blob保持/503最终文件、130本地引用及被引用标题锚点、64唯一调度行、UTF-8/LF/git diff --no-index --check、两锁/工作流及原#64报告完整前缀保持通过。新增仅resource_pdf模块及其47专项测试文件；其余9文件为既有授权/内部入口/真实API探针及本任务现行文档/原报告，无新平行报告或整份artifact入Git。
+
+独立草稿[PR #74](https://github.com/surface-user/StudyWorkbench/pull/74)已建立并附当前任务：codex/resource-pdf-provider基于#64最终38c1abe，首次实现3ac57cc1827cf9d523f732761ef568daae97c6b2/tree3612c01473b712e8896457ac9adec9e8f3482d0e。文档补实际交付链接形成后续提交，最终head/tree/当前CI在PR正文记录，不为记录自身hash循环改头。e2保持REVIEW待当前CI和主Agent核验；审查暂缓/人工取消，未合并或发行，e3及父任务继续。
