@@ -4,7 +4,7 @@
 
 ## 当前已实现
 
-当前迁移链为0001→0016，末版0016_analysis_review。此处描述代码schema，不表示任何个人库已经升级；开发仅使用隔离样本验证，不打开个人数据库。
+当前迁移链为0001→0017，末版0017_pdf_chunks。此处描述代码schema，不表示任何个人库已经升级；开发仅使用隔离样本验证，不打开个人数据库。
 
 | 实体 | 职责及约束 |
 |---|---|
@@ -15,6 +15,7 @@
 | resource_add_jobs | 来源本地路径、目标父级、状态/取消、逐项结果和复制收据；路径留本机库，不写Git |
 | media_entries | 媒体路径/hash/MIME、入库状态和播放位置/倍速/字幕；经节点适配 |
 | media_download_jobs | 同空间request_id幂等、受控HTTPS来源/文件名/父目录、queued/running/paused/interrupted/failed/ready状态、attempt独占路径、进度/强ETag/前缀hash及结果；source_url含query只存个人库，不由列表返回。父目录复合FK；重启中断不自动联网，重新开始保留旧attempt文件；完成字节直接作为不可变媒体原件，无正文镜像 |
+| pdf_chunk_jobs / pdf_chunks | 每个空间按资源、原件摘要、解析器版本和连续页段唯一建任务。执行代次拒绝迟到结果。区块按任务和起始页唯一，原始页号、片段和托管附件引用随进度一同提交。 |
 | document_workfiles / document_saves | 显式MD工作副本、索引hash；old/new hash及prepared/committed/interrupted/conflict保存收据 |
 | markdown_note_creations | 自由MD笔记创建收据；id同时为预分配节点ID，resource_id独立；workspace_id/request_id唯一、规范请求JSON、prepared/ready/interrupted/conflict及错误；初始MD/hash及受管相对路径由ID/规范名称确定性派生，不存正文镜像 |
 | document_previews | 同空间节点/原件、源hash、运行时/选项指纹、状态、派生PDF路径/hash/大小/页数与错误 |

@@ -234,8 +234,8 @@ def test_old_schema_restore_preserves_old_rows_and_retains_migration_backup(tmp_
     store.create_backup(source, package)
     assert inspect_archive(package)['schema_revision'] == '0006'
     result = store.restore_backup(package, target, tmp_path / 'settings.json')
-    assert result['schema_revision'] == '0016'
-    assert list((target / 'backups').glob('study-before-0016-*.db'))
+    assert result['schema_revision'] == '0017'
+    assert list((target / 'backups').glob('study-before-0017-*.db'))
     with sqlite3.connect(target / 'study.db') as connection:
         assert connection.execute('SELECT response FROM attempts WHERE id=12').fetchone()[0] == '{"text":"原作答"}'
         assert connection.execute('SELECT title FROM notes WHERE id=\'n\'').fetchone()[0] == '笔记'

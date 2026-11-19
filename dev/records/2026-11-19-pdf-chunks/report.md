@@ -19,3 +19,13 @@
 `python -m ruff check backend tools`、`python tools/export_question_schema.py --check` 和源码模式 `python tools/check_document_workers.py` 退出 0。后者在原有整篇 DOCX/PDF 检查后新增第 2 页片段的实际子进程检查；同一脚本也由 Windows CI 对本次构建出的冻结包执行。以当前提交的运行结果核实冻结覆盖。审查暂缓、人工测试已取消。
 
 #70 首次 CI 的 Windows 冻结包检查通过，Python 3.12 的三条新增子进程测试因找不到 study_workbench 失败，矩阵取消了另一版本。开发环境显式设置了 PYTHONPATH，CI 仅给 pytest 自身配置了源码目录。测试现从 backend 目录执行子进程，沿用同一解释器和断言。原失败保留在[首次 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44495155155)。
+
+## PAR-03c 分块任务 API、重启与备份
+
+后端按空间、资源、原件 SHA-256、解析版本及页段建唯一任务。一个 advance 最多执行 20 页，领取与提交各自使用短事务。解析在事务外运行，父进程限时 25 秒，stdout 读取上限为 96 MiB 加一个超限探测字节。取消会废弃执行代次；提交前再检查代次、源文件和整个任务累计附件/候选/材料预算。已提交块按任务和起始页唯一索引，步进重放不重复写入。每块的图片复用原有托管资源存储，整库备份检查原件关系、连续性和图像引用。这个接口交付到 parsed，跨块候选拼接和用户确认由 PAR-03d 继续。
+
+从 schema 0016 加两张表升级到 0017。对旧库重新执行逐表字段/旧作答、升级前备份的一致性测试。现有当前版本/备份名称断言随本次迁移前移，未知版本拒绝用例改用 0018。使用独立人工生成的 PDF 和数据库，没有读取个人库。
+
+在 pdf-chunk-jobs 副本，以 Python 3.13.17 与 3.12.7 执行 `python -X utf8 -m pytest backend/tests/test_pdf_chunks.py backend/tests/test_backup_archive.py backend/tests/test_backup_store.py -q`。首轮各 64 通过、1 失败，Windows 沙箱拒绝创建备份旧用例需要的目录联接。针对该用例在项目隔离目录用原生权限两版复验，各 1 通过。加入完整备份还原/引用拒绝后，对最终业务代码原生运行整组，各 66 项通过、2 项既有弃用警告，退出 0，JUnit 在 artifacts/native-final-q.xml、native-final-p.xml。
+
+新增 `test_intermediate_revision_preserves_every_old_column[0016]` 两版各 1 项通过，退出 0。另有首次 Ruff 报 1 处导入次序，整理后 `python -m ruff check backend tools` 与 `python tools/export_question_schema.py --check` 退出 0。实际自动化覆盖双提交、20/21 页边界、取消后迟到结果、重启中断、源路径/版本不符、累计超限、备份恢复。选区自动抽题与当前提交的完整 CI 单列跟踪。
