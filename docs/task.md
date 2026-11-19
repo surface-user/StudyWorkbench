@@ -61,7 +61,12 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | REL-05 | BLOCKED | 依赖OFF-02与REL-01至04；候选组装完成后仍需REV-01，发布/合并未授权 |
 | FMT-01 | DONE | 主Agent已核复杂矩阵76×2、源码/新冻结DOCX/PPTX各3页及XLSX2表15格、有限无短名目录；[草稿PR #30](https://github.com/surface-user/StudyWorkbench/pull/30)最终c352424的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43067590610)成功；不代表任意文档保真/整卷禁用8.3，见[原报告](../dev/records/2026-11-04-lw06-formats/report.md) |
 | PAR-01 | DONE | 主Agent已核双Python专项各30及12项环境失败的原生复验，原失败保留；[草稿PR #26](https://github.com/surface-user/StudyWorkbench/pull/26)最终1d103f3的[CI #149](https://github.com/surface-user/StudyWorkbench/actions/runs/43061041645)成功；限定显式题号/共享材料候选范围，见[报告](../dev/records/2026-11-12-complex-question-splitting/report.md) |
-| PAR-02、PAR-03 | READY | 设计工作可先行；OCR实施依赖固定离线组件/语言资源评估，分块实施依赖预算/取消/重启契约，禁止直接放宽保护 |
+| PAR-02 | READY | OCR 实施依赖固定离线组件和语言资源评估，多栏另行设计。 |
+| PAR-03 大文档分块提取 | IN_PROGRESS | 先覆盖原生 PDF，预算、取消及恢复见[分块协议](question-markdown-spec.md#pdf-chunk-jobs)。 |
+| PAR-03a 分块协议 | REVIEW | [任务报告](../dev/records/2026-11-19-pdf-chunks/report.md)。 |
+| PAR-03b PDF 页区间解析 | READY | 在一次有界子进程中只渲染指定页，保留原始页码及候选边界提示，回归旧整篇解析。 |
+| PAR-03c 分块任务 API 与持久化 | BLOCKED | 依赖 b。核对原件、原子记录进度、显式取消与恢复、并发重试和累计预算。 |
+| PAR-03d 端到端分块验证 | BLOCKED | 依赖 c。覆盖跨块题目与材料、确认幂等、重启及源码与冻结包一致性。 |
 | DL-01 | DONE | 主Agent结合已验收#24核#38真实Range/同域与跨域重定向及未注入冻结恢复，原DL-01证据范围已完成；LW-07站点提取/转码等后续保留 |
 | DL-01a 公网下载与恢复证据 | DONE | 主Agent已核源码/冻结公网下载、独立摘要、重启/整库恢复及无强ETag拒绝；[草稿PR #24](https://github.com/surface-user/StudyWorkbench/pull/24)最终91db704的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43059706025)成功；该切片当时未覆盖的真实Range/重定向已由#38补齐，父DL-01已DONE |
 | DL-01b 公网Range与重定向 | DONE | 主Agent已核[草稿PR #38](https://github.com/surface-user/StudyWorkbench/pull/38)最终842b19d的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43362970857)三组46步成功及原始摘要；真实源码206与冻结恢复结果通过，旧DNS/MIME/探针失败保留。诊断工具已纳本组合，产品下载代码未变 |
@@ -144,7 +149,7 @@ LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人�
 | FMT-01 / P1，属LW-06/R3 | 扩展复杂DOCX/PPTX/XLSX安全/版式矩阵 | DONE，有限矩阵开发交付完成；76×2专项、源码/新冻结3页DOCX/PPTX和2表15格XLSX、有限无短名目录及#30最终head CI均经主Agent核验，见上方调度和[LW-06报告](../dev/records/2026-11-04-lw06-formats/report.md)。损坏压缩流异常已修，旧失败保留；不认证任意保真/整卷无短名/极端路径；审查暂缓、人工取消，未合并/发行 |
 | PAR-01 / P1，属M2-04 | 复杂题号/共享材料确定性候选 | DONE，有限题号/显式范围候选交付完成，双Python专项各30、原生复验及#26最终head CI已由主Agent核验，见上方调度和[原报告](../dev/records/2026-11-12-complex-question-splitting/report.md)。跨页原图/区域随MD保留，缺号/重号/乱序不关联，原件/旧确认版不变；OCR、多栏、任意编号不在本切片，审查暂缓、人工取消，未合并/发行 |
 | PAR-02 / P2，属M2-04，依赖样本/组件评估 | 多栏与离线OCR分开切片设计/实现 | 待设计；固定离线组件/语言资源/许可/预算后分别PR，多栏阅读顺序/OCR置信提示/拒绝/超时/重启有自动化；不自动下载模型或上传资料 |
-| PAR-03 / P2，属M2-04 | 更大文档/分块任务 | 待设计；原件/页区间/进度与取消/重启/幂等/预算契约先行，不直接放宽25秒/20页等原保护；旧小文件回归保持 |
+| PAR-03 / P2，属M2-04 | 更大文档/分块任务 | 按 PAR-03a–d 分步交付；先验证 PDF 的原件身份、页区间、边界和任务恢复，再扩展格式 |
 | DL-01 / P1，属LW-07 | 当前直接HTTPS下载公网证据补齐 | DONE；#24已核同一CC0源的源码/冻结TLS下载、独立hash、入库、重启/完整恢复；#38已核真实源码Range/If-Range/206、同域/跨域302与未注入冻结恢复，并通过当前head CI。冻结206由严格产品校验和最终文件结果推断，原DNS及探针失败保留，见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)及#38最终核验；不扩展站点/转码，不放宽网络门禁 |
 | DL-02 / P2，属M4/LW-07，依赖来源/组件设计 | 站点提取与质量选择；传输/UI可再拆PR | 用户已选B站/抖音/爱奇艺，先B站；#45共同受控设计已DONE，B站有限元数据/质量预览实施先行。实际来源/授权样本、原子候选确认、直链headers与分轨交接/合流、实际固定组件许可及Windows验证继续，不能用预览代替完整下载目标 |
 | DL-03 / P2，属M4，依赖格式/轨道交接及二进制选择 | FFmpeg合流/转码与入库 | 待设计；审查实际构建开关/来源及LGPL/GPL/nonfree义务，命令参数受控、超时/取消/失败原件保留、磁盘预算与备份覆盖；不得据本机生成样本假称可分发 |
