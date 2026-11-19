@@ -1,5 +1,6 @@
 """Check additive API errors through real source/frozen HTTP with fresh generated data."""
 import argparse
+import io
 import json
 import os
 import queue
@@ -35,6 +36,16 @@ def main():
     checks = 0
     node = None
     surviving_grant = None
+    import pypdfium2 as pdfium
+    sample = Path(__file__).resolve().parents[1] / 'contracts/samples/numbered-questions.pdf'
+    output = io.BytesIO()
+    with pdfium.PdfDocument.new() as document, pdfium.PdfDocument(sample) as numbered:
+        for _ in range(19):
+            document.new_page(50, 50).close()
+        document.import_pages(numbered)
+        document.save(output)
+    pdf_bytes = output.getvalue()
+    chunk_url = source_resource = None
     for restart in (False, True):
         token = secrets.token_urlsafe(32)
         process = subprocess.Popen(command + ['--data-dir', str(root / 'data'), '--media', str(media)],
@@ -105,6 +116,34 @@ def main():
             error('/api/workspaces/missing/nodes/' + node, 404, 'not_found')
             document, _ = request(prefix + '/nodes/' + node + '/document')
             assert 'kept' in document['text']
+            if not restart:
+                original, _ = request(prefix + '/imports?filename=chunk.pdf', pdf_bytes,
+                                      headers={'Content-Type': 'application/pdf'})
+                assert original['status'] == 'failed'
+                source_resource = original['resource_id']
+                bound, _ = request(prefix + '/pdf-chunk-jobs', {'resource_id': source_resource,
+                    'expected_sha256': original['sha256'], 'first_page': 1, 'last_page': 21})
+                chunk_url = prefix + '/pdf-chunk-jobs/' + bound['id']
+                step, _ = request(chunk_url + '/advance', {'first_page': 1})
+                assert step['completed_pages'] == 20
+                cancelled, _ = request(chunk_url + '/cancel', {})
+                assert cancelled['status'] == 'cancelled'
+            else:
+                previous, _ = request(chunk_url)
+                assert previous['status'] == 'cancelled' and previous['completed_pages'] == 20
+                request(chunk_url + '/resume', {})
+                final, _ = request(chunk_url + '/advance', {'first_page': 21})
+                assert final['status'] == 'parsed'
+                batch, _ = request(chunk_url + '/preview', {})
+                drafts = batch['preview']['question_drafts']
+                assert [d['source_pages'] for d in drafts] == [[20, 21], [21]]
+                path = prefix + '/imports/' + batch['id'] + '/question-markdown'
+                selection = {'expected_revision': batch['draft_revision'], 'selected': [0], 'confirm': True}
+                stored, _ = request(path, selection)
+                repeated, _ = request(path, selection)
+                assert stored == repeated and stored[0]['source_pages'] == [20, 21]
+                original_bytes, _ = request(prefix + '/resources/' + source_resource, raw=True)
+                assert original_bytes == pdf_bytes
             grants = prefix + '/agent-grants'
             if restart:
                 error(grants + '/' + surviving_grant + '/read-resources', 404, 'not_found', {})
@@ -154,7 +193,7 @@ def main():
             assert not process.stderr.read().strip(), 'Backend emitted unexpected stderr'
     print(json.dumps(dict(checks=checks, unique_error_ids=len(identifiers), restarted=True,
                          resource_grants_checked=True, resource_grants_not_restored=True,
-                         receipts_preserved=True, media_range_preserved=True, frozen=bool(args.exe))))
+                         pdf_chunk_confirmation_checked=True, receipts_preserved=True, media_range_preserved=True, frozen=bool(args.exe))))
 
 
 if __name__ == '__main__':

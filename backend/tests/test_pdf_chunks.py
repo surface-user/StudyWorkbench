@@ -127,3 +127,65 @@ def test_parsed_job_survives_backup_and_foreign_association_is_rejected(tmp_path
         db.execute("UPDATE pdf_chunk_jobs SET source_sha256=?", ('0' * 64,))
     with pytest.raises(ValueError, match='原件'):
         backup_store.create_backup(root, tmp_path / 'invalid.zip')
+
+
+def test_cross_chunk_material_preview_confirmation_and_whole_import_stay_separate(tmp_path):
+    from test_complex_question_splitting import grouped_sample
+
+    output = io.BytesIO()
+    with pdfium.PdfDocument.new() as doc, pdfium.PdfDocument(grouped_sample('pdf')) as two_pages:
+        for _ in range(19):
+            doc.new_page(50, 50).close()
+        doc.import_pages(two_pages)
+        doc.save(output)
+    raw = output.getvalue()
+    with client(tmp_path) as c:
+        original = upload(c, raw, '考题.pdf').json()
+        assert original['status'] == 'failed'
+        job = c.post(API, json=dict(resource_id=original['resource_id'], expected_sha256=original['sha256'],
+                                    first_page=1, last_page=21)).json()
+        url = API + '/' + job['id']
+        assert c.post(url + '/advance', json={'first_page': 1}).json()['next_page'] == 21
+        assert c.post(url + '/preview').status_code == 409
+    with client(tmp_path) as c:
+        assert c.post(url + '/advance', json={'first_page': 21}).json()['status'] == 'parsed'
+        result = c.post(url + '/preview')
+        assert result.status_code == 200, result.text
+        batch = result.json()
+        drafts = batch['preview']['question_drafts']
+        assert len(drafts) == 2 and len(batch['preview']['blocks']) == 21
+        shared = drafts[0]['shared_materials'][0]
+        assert shared == drafts[1]['shared_materials'][0] and shared['source_pages'] == [20, 21]
+        assert all(d['source_pages'] == [21] for d in drafts)
+        assert 'Shared material continues here.' in batch['question_markdown'][0]
+        assert c.post(url + '/preview').json()['draft_revision'] == batch['draft_revision']
+        assert c.get(SCOPE + '/question-markdown').json() == []
+        assert c.post(f"{SCOPE}/imports/{job['id']}/retry").status_code == 409
+        assert c.post(f"{SCOPE}/imports/{job['id']}/confirm").status_code == 409
+        selection = dict(expected_revision=batch['draft_revision'], selected=[1], confirm=True)
+        confirm = f"{SCOPE}/imports/{job['id']}/question-markdown"
+        created = c.post(confirm, json=selection)
+        assert created.status_code == 200, created.text
+        assert created.json() == c.post(confirm, json=selection).json()
+        assert c.post(confirm, json={**selection, 'selected': [0]}).status_code == 409
+        assert c.post(url + '/preview').json()['status'] == 'confirmed'
+        assert upload(c, raw, '同一原件.pdf').json()['id'] == original['id']
+        assert c.get(f"{SCOPE}/resources/{original['resource_id']}").content == raw
+
+
+def test_editing_selected_second_page_crops_the_original_page(tmp_path):
+    from test_complex_question_splitting import grouped_sample
+    from test_draft_editing import edit
+
+    with client(tmp_path) as c:
+        body = request_job(c, grouped_sample('pdf'), 2)
+        body['first_page'] = 2
+        url = API + '/' + c.post(API, json=body).json()['id']
+        assert c.post(url + '/advance', json={'first_page': 2}).status_code == 200
+        batch = c.post(url + '/preview').json()
+        assert batch['preview']['warnings'] and len(batch['preview']['blocks']) == 1
+        box = batch['preview']['question_drafts'][0]['regions'][0]['box']
+        updated = edit(c, batch, 'split_region', position=0, cut=(box[1] + box[3])/2, title='第二段')
+        assert updated.status_code == 200, updated.text
+        assert all(d['source_pages'] == [2] for d in updated.json()['preview']['question_drafts'])
+        assert c.post(url + '/preview').json()['draft_revision'] == updated.json()['draft_revision']

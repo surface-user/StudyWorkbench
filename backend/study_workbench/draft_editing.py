@@ -38,9 +38,10 @@ def cropped_draft(session, root, workspace_id, preview, original, regions):
     total = 0
     for region in regions:
         number = region['page']
-        if not 1 <= number <= len(pages):
+        index = number - preview.get('page_range', [1])[0]
+        if not 0 <= index < len(pages):
             raise HTTPException(422, '找不到原页图，请重新解析原件')
-        resource = session.get(Resource, pages[number - 1]['attachment_id'])
+        resource = session.get(Resource, pages[index]['attachment_id'])
         if resource is None or resource.workspace_id != workspace_id:
             raise HTTPException(422, '页图不属于当前工作空间')
         data = read_resource(root, resource)
