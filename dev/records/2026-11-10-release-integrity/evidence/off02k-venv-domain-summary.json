@@ -1,0 +1,416 @@
+{
+  "scope": "Only fixed venv redirector native imports; two Python entry images and all child execution chains unproved",
+  "base_head": "4d9eb0216bde10a9ad0d57006420c5993cf926bf",
+  "base_tree": "d43f13279bc241049f0b195f57f31af0cefb7286",
+  "tool_sha256": {
+    "tools/native_dependencies.py": "2df90bcabb30fdd354873ff66b3401b1e9f79d7d3579d6453a5653343394cd7d",
+    "tools/check_native_dependencies.py": "e24288dc94c77d067f3405ab81fde53f88725ee5b6bbfadbb2c26e85e0650fa7",
+    "tools/check_release.py": "db8b13d72cd6b78a41476f922b0c7c048c4811836131a72a8b731ef20d759a84"
+  },
+  "component_inventory_sha256": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+  "input_files": 19743,
+  "pe_images": 351,
+  "previous_unknown": 81,
+  "added": [
+    "converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe"
+  ],
+  "remaining_unknown": 80,
+  "raw_report": {
+    "path": "artifacts/off02k/real01.json",
+    "bytes": 999905,
+    "sha256": "cfe562e7df5688ba5bc46cc4fc25bf92e813b14f641bfbc9a17362399f47fe73"
+  },
+  "verification_sha256": "4f5af03ca54076cb22dc5b732576668ff9f1f172f1e0d886a7c2cd15e3f11f5c",
+  "old_report_sha256": "e14dfa5bc7aaa5a2b702697daabd98e803fb09586cb063befc23094529f91530",
+  "source_archive": {
+    "url": "https://www.python.org/ftp/python/3.13.15/Python-3.13.15.tar.xz",
+    "version": "3.13.15",
+    "bytes": 23160540,
+    "archive_sha256": "1e66a7945a48390ee4c2a4268a0e4185884059a13c4aab6d148aa208deea4a76",
+    "members": [
+      {
+        "member": "Python-3.13.15/Programs/python.c",
+        "bytes": 266,
+        "sha256": "e95aa9b44746ea3b42859fdbbd07cda8f223e78e49556678d87f1283fcfaa1f0"
+      },
+      {
+        "member": "Python-3.13.15/PC/WinMain.c",
+        "bytes": 492,
+        "sha256": "22f6aa21eb27bc97ba1888a16a30c3dd61aefcf1e53bccfe8d89898484fcac10"
+      },
+      {
+        "member": "Python-3.13.15/PC/venvlauncher.c",
+        "bytes": 13531,
+        "sha256": "3e534d781343250e507656f7606256d0b8bc89c11f4c780fc482d94e7e00363a"
+      },
+      {
+        "member": "Python-3.13.15/PCbuild/python.vcxproj",
+        "bytes": 7745,
+        "sha256": "0a1abd022e6e947833931344e944e1fa567e8a12c2ce652ba88145bbc122a8b3"
+      },
+      {
+        "member": "Python-3.13.15/PCbuild/pythonw.vcxproj",
+        "bytes": 4873,
+        "sha256": "38efacbbe460965a0a34eae512d0c0aadc8d8003ce95e396d2a79a6f1ab7c216"
+      },
+      {
+        "member": "Python-3.13.15/PCbuild/venvlauncher.vcxproj",
+        "bytes": 4899,
+        "sha256": "e5e7550a5afd7145ce2ca38babe97c7bc0d279645f61828a689a324da6a289ed"
+      },
+      {
+        "member": "Python-3.13.15/PCbuild/pyproject.props",
+        "bytes": 17489,
+        "sha256": "3ecd18a1526d2337f9100119b1efc50cb5b36c33cdea1cc7ec73b0d627add914"
+      },
+      {
+        "member": "Python-3.13.15/Lib/venv/__init__.py",
+        "bytes": 30481,
+        "sha256": "6bb44af4e52578bb575ead2e65f825e3b7d286452ee59b6041703057e84db5ef"
+      }
+    ]
+  },
+  "libreoffice_commit": "bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1",
+  "sources": [
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/pyuno/zipcore/python.cxx",
+      "git_blob": "a65067bf3509695cec661a932682bf84d1bca34c",
+      "bytes": 6792,
+      "sha256": "94277db75a1af510e0b501f582154aeb90a281c360bd9c37ecc90b5ec50e5df4"
+    },
+    {
+      "url": "https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/external/python3/ExternalPackage_python3.mk",
+      "git_blob": "3e0b8a02bc9fd6ed69490232b90a563077c7b6f3",
+      "bytes": 71038,
+      "sha256": "ab1072bb01c6ac0725a4657b3f7bdd725b22966fe925e1f9959b0a3f69bb8431"
+    }
+  ],
+  "windows_sources": [
+    "https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order",
+    "https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setdlldirectoryw"
+  ],
+  "office_venv": {
+    "roots": [
+      "converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe"
+    ],
+    "directories": [
+      "converters/libreoffice/program/python-core-3.13.15/bin"
+    ],
+    "crt_directories": [
+      "converters/libreoffice/program/python-core-3.13.15/bin"
+    ],
+    "registered_directories": [],
+    "nodes": [
+      "converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe"
+    ],
+    "edges": [
+      {
+        "source": "converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe",
+        "name": "api-ms-win-core-path-l1-1-0.dll",
+        "kind": "import",
+        "resolution": "api-set-contract",
+        "target": null
+      },
+      {
+        "source": "converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe",
+        "name": "kernel32.dll",
+        "kind": "import",
+        "resolution": "host-system-file",
+        "target": "kernel32.dll"
+      }
+    ],
+    "pinned_inputs": {
+      "component_inventory_sha256": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+      "roots": {
+        "converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe": "d74e6696ab20f2934a02017e8571891c5a5234daaa9f846f41101d7dfda331e3"
+      },
+      "unclassified_images": {
+        "converters/libreoffice/program/python-core-3.13.15/bin/python.exe": "c8443dd73561ef6c6badee158c5b3725d99c8680e966c486dce75c2cef7287f5",
+        "converters/libreoffice/program/python-core-3.13.15/bin/pythonw.exe": "5e4fc492b974eeb9364cbb05d1528beb6f0a228de0f8e4a1bddc1f632d3c77ad"
+      }
+    }
+  },
+  "original_four_domains_equal": true,
+  "selected_sha256": {
+    "converters/libreoffice/program/python-core-3.13.15/bin/pythonw.exe": "5e4fc492b974eeb9364cbb05d1528beb6f0a228de0f8e4a1bddc1f632d3c77ad",
+    "converters/libreoffice/runtime-lock.json": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+    "converters/libreoffice/program/vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+    "converters/libreoffice/program/python-core-3.13.15/bin/python.exe": "c8443dd73561ef6c6badee158c5b3725d99c8680e966c486dce75c2cef7287f5",
+    "converters/libreoffice/program/python313.dll": "3541781d0f86ad409c6ee43689e4fc9e77ade77e267f0fed2a40f6206c156d78",
+    "converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe": "d74e6696ab20f2934a02017e8571891c5a5234daaa9f846f41101d7dfda331e3",
+    "converters/libreoffice/program/python.exe": "b5689b53440c1c3c491a3d967a3a1f70b3694dcdf3623b5d0fb30e728dc35932"
+  },
+  "selected_input_count": 7,
+  "negative_counterfactuals": [
+    {
+      "case": "missing-venv",
+      "rejected": true,
+      "reason": "Office venv/Python bin PE set changed; renew loading evidence",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "missing-unclassified-python",
+      "rejected": true,
+      "reason": "Office venv/Python bin PE set changed; renew loading evidence",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "changed-venv",
+      "rejected": true,
+      "reason": "Office venv/Python bin path or bytes changed: converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "x86-venv",
+      "rejected": true,
+      "reason": "Office venv/Python bin architecture changed: converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "PE32-venv",
+      "rejected": true,
+      "reason": "Office venv/Python bin architecture changed: converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "CLR-venv",
+      "rejected": true,
+      "reason": "Office venv/Python bin requires fixed native executable headers: converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "DLL-venv",
+      "rejected": true,
+      "reason": "Office venv/Python bin requires fixed native executable headers: converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "not-executable",
+      "rejected": true,
+      "reason": "Office venv/Python bin requires fixed native executable headers: converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "unknown-native-header",
+      "rejected": true,
+      "reason": "Office venv/Python bin requires fixed native executable headers: converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "extra-bin-image",
+      "rejected": true,
+      "reason": "Office venv/Python bin PE set changed; renew loading evidence",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "relocated-venv",
+      "rejected": true,
+      "reason": "Office venv/Python bin PE set changed; renew loading evidence",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "changed-unclassified-pythonw",
+      "rejected": true,
+      "reason": "Office venv/Python bin path or bytes changed: converters/libreoffice/program/python-core-3.13.15/bin/pythonw.exe",
+      "phase": "fixed policy"
+    },
+    {
+      "case": "no-program-borrow-python313.dll-import",
+      "rejected": true,
+      "reason": "Unresolved import: converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe -> python313.dll; loading directories=['converters/libreoffice/program/python-core-3.13.15/bin']; elsewhere=['converters/libreoffice/program/python313.dll']; system CRT cannot satisfy private dependencies",
+      "phase": "graph after baseline authentication"
+    },
+    {
+      "case": "no-program-borrow-python313.dll-delay",
+      "rejected": true,
+      "reason": "Unresolved delay: converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe -> python313.dll; loading directories=['converters/libreoffice/program/python-core-3.13.15/bin']; elsewhere=['converters/libreoffice/program/python313.dll']; system CRT cannot satisfy private dependencies",
+      "phase": "graph after baseline authentication"
+    },
+    {
+      "case": "no-program-borrow-vcruntime140.dll-import",
+      "rejected": true,
+      "reason": "Unresolved import: converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe -> vcruntime140.dll; loading directories=['converters/libreoffice/program/python-core-3.13.15/bin']; elsewhere=['converters/libreoffice/program/vcruntime140.dll']; system CRT cannot satisfy private dependencies",
+      "phase": "graph after baseline authentication"
+    },
+    {
+      "case": "no-program-borrow-vcruntime140.dll-delay",
+      "rejected": true,
+      "reason": "Unresolved delay: converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe -> vcruntime140.dll; loading directories=['converters/libreoffice/program/python-core-3.13.15/bin']; elsewhere=['converters/libreoffice/program/vcruntime140.dll']; system CRT cannot satisfy private dependencies",
+      "phase": "graph after baseline authentication"
+    }
+  ],
+  "tests": [
+    {
+      "run": "q01",
+      "python": "3.13.17",
+      "exit_code": 0,
+      "tests": 251,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "sha256": "8e64cd210a3015dfe83faf68db777dfa0923857cba8c8b1d1cd7476b530db6e7",
+      "command": "python -X utf8 -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py backend/tests/test_office_java_bundle.py backend/tests/test_java_runtime_preparation.py -q --basetemp=.local/off02k-q01 --junitxml=artifacts/off02k/q01.xml"
+    },
+    {
+      "run": "p01",
+      "python": "3.12.7",
+      "exit_code": 0,
+      "tests": 251,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "sha256": "04977c89442f1e9457d4cb918962f02a87d5a3a5c3ca0de4149428ed4bfc4597",
+      "command": "python -X utf8 -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py backend/tests/test_office_java_bundle.py backend/tests/test_java_runtime_preparation.py -q --basetemp=.local/off02k-p01 --junitxml=artifacts/off02k/p01.xml"
+    }
+  ],
+  "unclassified_python_failures": [
+    {
+      "path": "converters/libreoffice/program/python-core-3.13.15/bin/python.exe",
+      "closed": false,
+      "reason": "Unresolved import: converters/libreoffice/program/python-core-3.13.15/bin/python.exe -> python313.dll; loading directories=['converters/libreoffice/program/python-core-3.13.15/bin']; elsewhere=['converters/libreoffice/program/python313.dll']; system CRT cannot satisfy private dependencies"
+    },
+    {
+      "path": "converters/libreoffice/program/python-core-3.13.15/bin/pythonw.exe",
+      "closed": false,
+      "reason": "Unresolved import: converters/libreoffice/program/python-core-3.13.15/bin/pythonw.exe -> python313.dll; loading directories=['converters/libreoffice/program/python-core-3.13.15/bin']; elsewhere=['converters/libreoffice/program/python313.dll']; system CRT cannot satisfy private dependencies"
+    }
+  ],
+  "actual_fixed_PE_literals": [
+    {
+      "path": "program/python.exe",
+      "encoding": "UTF-16LE",
+      "literal": "\\python-core-3.13.15\\bin\\python.exe",
+      "offset": 18688
+    },
+    {
+      "path": "program/python.exe",
+      "encoding": "UTF-16LE",
+      "literal": "\\python-core-3.13.15\\lib",
+      "offset": 18496
+    },
+    {
+      "path": "program/python-core-3.13.15/bin/venvlauncher.exe",
+      "encoding": "UTF-16LE",
+      "literal": "pyvenv.cfg",
+      "offset": 131176
+    },
+    {
+      "path": "program/python-core-3.13.15/bin/venvlauncher.exe",
+      "encoding": "UTF-16LE",
+      "literal": "python.exe",
+      "offset": 131648
+    }
+  ],
+  "diagnostic_probe": {
+    "sha256": "b12ebc8eb04f5f2e1b91b04d0425f3c3ff073217043433cc175aa1005381da9b",
+    "cases": [
+      {
+        "image": "python.exe",
+        "mode": "application-directory-only",
+        "closed": false,
+        "nodes": 0,
+        "edges": 0,
+        "error": "Unresolved import: converters/libreoffice/program/python-core-3.13.15/bin/python.exe -> python313.dll; loading directories=['converters/libreoffice/program/python-core-3.13.15/bin']; elsewhere=['converters/libreoffice/program/python313.dll']; system CRT cannot satisfy private dependencies"
+      },
+      {
+        "image": "python.exe",
+        "mode": "algebraic-add-program-not-runtime-certified",
+        "closed": true,
+        "nodes": 3,
+        "edges": 33,
+        "error": null
+      },
+      {
+        "image": "pythonw.exe",
+        "mode": "application-directory-only",
+        "closed": false,
+        "nodes": 0,
+        "edges": 0,
+        "error": "Unresolved import: converters/libreoffice/program/python-core-3.13.15/bin/pythonw.exe -> python313.dll; loading directories=['converters/libreoffice/program/python-core-3.13.15/bin']; elsewhere=['converters/libreoffice/program/python313.dll']; system CRT cannot satisfy private dependencies"
+      },
+      {
+        "image": "pythonw.exe",
+        "mode": "algebraic-add-program-not-runtime-certified",
+        "closed": true,
+        "nodes": 3,
+        "edges": 33,
+        "error": null
+      },
+      {
+        "image": "venvlauncher.exe",
+        "mode": "application-directory-only",
+        "closed": true,
+        "nodes": 1,
+        "edges": 2,
+        "error": null
+      },
+      {
+        "image": "venvlauncher.exe",
+        "mode": "algebraic-add-program-not-runtime-certified",
+        "closed": true,
+        "nodes": 1,
+        "edges": 2,
+        "error": null
+      }
+    ]
+  },
+  "venv_role": {
+    "source": "PC/venvlauncher.c",
+    "producer": "Lib/venv/__init__.py",
+    "role": "complete native redirector and venv creation asset; conservatively included only as a potential native main image",
+    "configuration": "Find adjacent or parent pyvenv.cfg, read home, then launch original Python",
+    "missing_fixed_configuration": [
+      "program/python-core-3.13.15/bin/pyvenv.cfg",
+      "program/python-core-3.13.15/pyvenv.cfg"
+    ],
+    "absence_proves_product_unreachable": false,
+    "actual_child_execution_observed": false
+  },
+  "followup_new_composition": {
+    "status": "proposed, not implemented or validated; original components unchanged",
+    "task": "OFF-02l",
+    "priority": "solve both Python entry images and controlled runtime evidence together",
+    "proposed_copies": [
+      {
+        "source": "program/python313.dll",
+        "proposed_target": "program/python-core-3.13.15/bin/python313.dll",
+        "bytes": 7202648,
+        "sha256": "3541781d0f86ad409c6ee43689e4fc9e77ade77e267f0fed2a40f6206c156d78"
+      },
+      {
+        "source": "program/python3.dll",
+        "proposed_target": "program/python-core-3.13.15/bin/python3.dll",
+        "bytes": 68952,
+        "sha256": "2e27b898de15ab5ffd1c8fa4445786c8d048cf1afddc3087a4d08f418e338e6d"
+      },
+      {
+        "source": "program/vcruntime140.dll",
+        "proposed_target": "program/python-core-3.13.15/bin/vcruntime140.dll",
+        "bytes": 124544,
+        "sha256": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066"
+      }
+    ],
+    "required_exit_checks": [
+      "Version and pin exact old/new layouts and source-copy identities; preserve old component generation/validation compatibility.",
+      "Prove the fixed python3 ABI forwarders bind the adjacent Python313 image; no global-name or host fallback.",
+      "Static native domains use bin application/private CRT directory; extension imports use their actual child-process domain, not the Office-host domain.",
+      "Run both python.exe and pythonw.exe in isolated jobs with controlled input/environment/CWD, file output, time/disk/process limits and actual mapped DLL identities.",
+      "Exercise standard library, ssl/hashlib, ctypes and sqlite; verify exact prefix/path and private DLL hashes, plus source/matching frozen orchestration.",
+      "Reject missing/tampered files before launch even if host CRT exists; test foreign PATH/Python/Java variables, cancellation/timeout and unchanged original components.",
+      "Keep dynamic/system/SxS and unrelated unknowns explicit; current-head CI and independent PR required."
+    ]
+  },
+  "boundaries": [
+    "Only venvlauncher native imports close in its own bin application directory: one node, kernel32 host leaf plus API-set, no private CRT/Python DLL import.",
+    "LO proxy only targets python.exe and prepends program to inherited PATH; it does not set controlled DLL directories or prove the Pythonw route.",
+    "Standard Windows System32/Windows/CWD search precedes PATH and parent SetDllDirectory may affect children; adding program algebraically is not runtime certification.",
+    "Python main functions call Py_Main after static import resolution; they cannot repair missing pre-entry DLL selection.",
+    "Venv configuration absence and producer copying do not prove runtime exclusion or authorize execution; child chains remain unknown.",
+    "Source/asset association and literal identities do not establish reproducible compilation.",
+    "check_release unchanged; 80 unknown images still block release. No original PE/source execution, install, edit/deletion, product API/UI/dependency changes, merge or release."
+  ],
+  "source_component_executed": false,
+  "child_execution_chain_certified": false,
+  "product_release_ready": false,
+  "selection_reason": "Fixed source identities, limited PE/source-role evidence, exact finite graph/failures and proposed followup only; full sources/archive/graph/raw logs and failed reads stay ignored artifacts"
+}
