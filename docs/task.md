@@ -64,9 +64,9 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | PAR-02 | READY | OCR 实施依赖固定离线组件和语言资源评估，多栏另行设计。 |
 | PAR-03 大文档分块提取 | IN_PROGRESS | 先覆盖原生 PDF，预算、取消及恢复见[分块协议](question-markdown-spec.md#pdf-chunk-jobs)。 |
 | PAR-03a 分块协议 | DONE | [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44492950993)通过。 [PR #68](https://github.com/surface-user/StudyWorkbench/pull/68)，[任务报告](../dev/records/2026-11-19-pdf-chunks/report.md)。 |
-| PAR-03b PDF 页区间解析 | REVIEW | 在一次有界子进程中只渲染指定页，保留原始页码及候选边界提示，回归旧整篇解析。 |
-| PAR-03c 分块任务 API 与持久化 | REVIEW | 依赖 [b 子进程](https://github.com/surface-user/StudyWorkbench/pull/70)。核对原件、原子记录进度、显式取消与恢复、并发重试和累计预算。 |
-| PAR-03d 端到端分块验证 | BLOCKED | 依赖 c。覆盖跨块题目与材料、确认幂等、重启及源码与冻结包一致性。 |
+| PAR-03b PDF 页区间解析 | DONE | [PR #70](https://github.com/surface-user/StudyWorkbench/pull/70) 修复 CI 子进程工作目录后，[当前 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44497612890)通过。 在一次有界子进程中只渲染指定页，保留原始页码及候选边界提示，回归旧整篇解析。 |
+| PAR-03c 分块任务 API 与持久化 | DONE | [PR #71](https://github.com/surface-user/StudyWorkbench/pull/71) 的[当前 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44497652513)通过。 依赖 [b 子进程](https://github.com/surface-user/StudyWorkbench/pull/70)。核对原件、原子记录进度、显式取消与恢复、并发重试和累计预算。 |
+| PAR-03d 端到端分块验证 | REVIEW | 依赖[持久化 API #71](https://github.com/surface-user/StudyWorkbench/pull/71)。覆盖跨块题目与材料、确认幂等、重启及源码与冻结包一致性。 |
 | DL-01 | DONE | 主Agent结合已验收#24核#38真实Range/同域与跨域重定向及未注入冻结恢复，原DL-01证据范围已完成；LW-07站点提取/转码等后续保留 |
 | DL-01a 公网下载与恢复证据 | DONE | 主Agent已核源码/冻结公网下载、独立摘要、重启/整库恢复及无强ETag拒绝；[草稿PR #24](https://github.com/surface-user/StudyWorkbench/pull/24)最终91db704的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43059706025)成功；该切片当时未覆盖的真实Range/重定向已由#38补齐，父DL-01已DONE |
 | DL-01b 公网Range与重定向 | DONE | 主Agent已核[草稿PR #38](https://github.com/surface-user/StudyWorkbench/pull/38)最终842b19d的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43362970857)三组46步成功及原始摘要；真实源码206与冻结恢复结果通过，旧DNS/MIME/探针失败保留。诊断工具已纳本组合，产品下载代码未变 |

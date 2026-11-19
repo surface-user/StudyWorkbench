@@ -5,20 +5,22 @@ import os
 import subprocess
 import sys
 import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Timer
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .backup_archive import archive_path
-from .db import PdfChunk, PdfChunkJob, Resource, write_transaction
+from .db import ImportJob, PdfChunk, PdfChunkJob, Resource, write_transaction
 from .document_files import limited_view, raster
-from .imports import persist_assets, read_resource
-from .question_splitting import START
+from .imports import describe, persist_assets, read_resource
+from .question_protocol import Content
+from .question_splitting import START, DraftSplitter, all_blocks
 from .workspaces import require_workspace
 
 VERSION = 'pdf-chunks-v1'
@@ -103,6 +105,57 @@ def parse_pages(data, first, last):
     if 'error' in result:
         raise ValueError('PDF 分块原件无效或解析超限')
     return result
+
+
+def assemble(session, job, title):
+    splitter = DraftSplitter()
+    pages = []
+    expected = job.first_page
+    for piece in session.scalars(select(PdfChunk).where(PdfChunk.job_id == job.id).order_by(PdfChunk.first_page)):
+        if piece.first_page != expected or piece.last_page > job.last_page:
+            raise HTTPException(409, '已提交区块不连续')
+        expected = piece.last_page + 1
+        pages.extend(block for block in piece.result['blocks'] if block['type'] == 'image')
+        for fragment in piece.result['fragments']:
+            if fragment['ambiguous']:
+                splitter.group = splitter.current = None
+                splitter.warn('部分页面的题号位置不确定，已保留原页并停止自动接续。')
+                continue
+            marker = fragment['marker']
+            if marker is not None:
+                match = START.fullmatch(marker)
+                if match is None:
+                    raise HTTPException(409, '已保存的题目标记不匹配')
+                splitter.begin(match)
+            current = splitter.current
+            if current is not None:
+                for field in ('blocks', 'source_pages', 'regions'):
+                    current[field].extend(fragment[field])
+    if expected != job.last_page + 1:
+        raise HTTPException(409, '所选区间尚未提交完整')
+    drafts = splitter.finish()
+    if job.first_page > 1:
+        splitter.warn('选区起点之前可能有题干或材料，首题号前的内容保留在原页。')
+    if job.last_page < job.page_count:
+        splitter.warn('选区末尾可能截断题目或材料，请核对原件后确认。')
+    if not drafts:
+        splitter.warn('未识别到可靠题号，原页保留。')
+    adapter = TypeAdapter(Content)
+    try:
+        for draft in drafts:
+            adapter.validate_python(all_blocks(draft))
+        adapter.validate_python(pages)
+    except ValidationError:
+        raise HTTPException(422, '候选内容超过题目协议预算，请缩小页段') from None
+    preview = dict(kind='note', title=title, blocks=pages, question_drafts=drafts,
+                   warnings=splitter.warnings, page_range=[job.first_page, job.last_page])
+    # Shared material is serialized once per associated question in the legacy preview.
+    byte_count = 0
+    for part in json.JSONEncoder(ensure_ascii=False).iterencode(preview):
+        byte_count += len(part.encode('utf8'))
+        if byte_count > 8 * 1024 * 1024:
+            raise HTTPException(413, '候选预览超过 8 MiB，请缩小页段')
+    return preview
 
 
 def pdf_chunk_router(engine, root):
@@ -208,6 +261,27 @@ def pdf_chunk_router(engine, root):
             if isinstance(error, HTTPException):
                 raise
             raise HTTPException(422, '分块解析失败或累计预算超限，已提交进度和原件保留') from error
+
+    @router.post('/{job_id}/preview')
+    def preview(workspace_id: str, job_id: str):
+        with write_transaction(engine) as session:
+            job = scoped_job(session, workspace_id, job_id)
+            if job.status != 'parsed' or job.parser_version != VERSION:
+                raise HTTPException(409, '需要先完成当前版本的全部所选页')
+            source(session, root, workspace_id, job.resource_id, job.source_sha256)
+            original = session.get(Resource, job.resource_id)
+            batch = session.get(ImportJob, job.id)
+            if batch is None:
+                title = f'{original.original_name}（第 {job.first_page} 至 {job.last_page} 页）'
+                batch = ImportJob(id=job.id, workspace_id=workspace_id, resource_id=original.id,
+                                  parser_version=job.parser_version, status='preview', error=None,
+                                  preview=assemble(session, job, title),
+                                  created_at=datetime.now(timezone.utc).isoformat())
+                session.add(batch)
+            elif (batch.workspace_id, batch.resource_id, batch.parser_version) != (
+                    workspace_id, job.resource_id, job.parser_version):
+                raise HTTPException(409, '候选批次与分块任务的来源不符')
+            return describe(batch, original, preview=True)
 
     @router.get('/{job_id}/chunks/{first_page}')
     def chunk(workspace_id: str, job_id: str, first_page: int):

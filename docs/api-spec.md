@@ -77,6 +77,7 @@ layout版本1/2；tabs最多16、closed_tabs最多10、active_tab_id须有效且
 | GET W/pdf-chunk-jobs、GET W/pdf-chunk-jobs/{id} | 按空间分页列出任务，或读取任务状态、已提交页数、下一页与累计图片字节。 |
 | POST W/pdf-chunk-jobs/{id}/advance | 提交期望 first_page，一次执行至多 20 页。重复请求已提交的起始页返回当前进度；状态或页号冲突返回 409。 |
 | POST W/pdf-chunk-jobs/{id}/cancel、resume | 取消使进行中的执行代次失效。显式恢复会校验原件摘要与版本。重启留下的中断任务需显式恢复。 |
+| POST W/pdf-chunk-jobs/{id}/preview | 全部所选页解析后生成拆题预览。重复调用返回已有修订及编辑结果，通过现有 question-markdown 接口逐题显式确认。整篇导入重试不能覆盖页段预览。 |
 | GET W/pdf-chunk-jobs/{id}/chunks/{first_page} | 已提交区块的原始页图与区域以托管附件 ID 引用。parsed 表示选区解析完成，候选确认另行处理。 |
 | POST W/resources/{resource_id}/analyze | 同空间已有原件校验hash后复用ImportJob，不重复保存原件；不自动确认 |
 | GET W/imports、GET W/imports/{job_id} | 导入历史分页、单任务预览/失败 |

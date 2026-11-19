@@ -29,3 +29,15 @@
 在 pdf-chunk-jobs 副本，以 Python 3.13.17 与 3.12.7 执行 `python -X utf8 -m pytest backend/tests/test_pdf_chunks.py backend/tests/test_backup_archive.py backend/tests/test_backup_store.py -q`。首轮各 64 通过、1 失败，Windows 沙箱拒绝创建备份旧用例需要的目录联接。针对该用例在项目隔离目录用原生权限两版复验，各 1 通过。加入完整备份还原/引用拒绝后，对最终业务代码原生运行整组，各 66 项通过、2 项既有弃用警告，退出 0，JUnit 在 artifacts/native-final-q.xml、native-final-p.xml。
 
 新增 `test_intermediate_revision_preserves_every_old_column[0016]` 两版各 1 项通过，退出 0。另有首次 Ruff 报 1 处导入次序，整理后 `python -m ruff check backend tools` 与 `python tools/export_question_schema.py --check` 退出 0。实际自动化覆盖双提交、20/21 页边界、取消后迟到结果、重启中断、源路径/版本不符、累计超限、备份恢复。选区自动抽题与当前提交的完整 CI 单列跟踪。
+
+## PAR-03d 跨块题目、共享材料和显式确认
+
+解析完成后显式创建页段预览，按原页序连续拼接题目或共享材料。尚未识别到题号的前缀留在原页。不可定位的布局阻断自动接续。复用现有编辑、确认、Markdown 导出和修订摘要，保留原始页号和选定范围。相同预览或确认重放返回已有结果。旧整篇导入继续取自己的导入任务，整篇重试不会改写选区候选。选区公开预览按现有每题内容协议验证，序列化预算为 8 MiB。
+
+在 pdf-chunk-candidates 独立副本对 21 页自建样本先提交前 20 页、重启、提交第 21 页，验证共享材料跨页关联两题、文字片段、正式题目只在显式确认后出现、已确认修订和原件字节保持。另测仅选择原件第 2 页后，从原始坐标继续裁题。旧裁切算法将绝对页码直接作为页图数组索引，专门回归修补前 1 失败（HTTP 422），保存于 artifacts/crop-before.log。现在按所选起页换算索引；旧整篇入口默认从第 1 页算起。
+
+Python 3.12.7 和 3.13.17 未设置 PYTHONPATH，分别执行 `python -X utf8 -m pytest -q backend/tests/test_pdf_chunks.py backend/tests/test_documents.py backend/tests/test_complex_question_splitting.py backend/tests/test_markdown_questions.py backend/tests/test_draft_editing.py`，各 46 项通过、2 个既有弃用警告，退出 0。首次 Ruff 报两处导入顺序，修正后再运行通过。原件和门户数据均为本任务生成。
+
+`python tools/check_api_errors.py --test-root artifacts/http01` 首轮在既有外部 Origin 拒绝检查读响应时遇到 Windows 10054 连接复位，退出 1。使用新建的 http02 隔离数据目录重跑同一脚本退出 0。使用 `packaging/windows/build-backend.ps1` 打包，首次打包期间裁题模块发生修正，核源拒绝旧模块，保留 artifacts/build.log。稳定源重建退出 0，46 个冻结模块与源码逐一匹配。对新生成的 exe 执行 `tools/check_api_errors.py --exe dist/study_backend/study_backend.exe --test-root artifacts/frozen-final` 退出 0。源码与冻结各 68 项 HTTP 检查、31 个不同错误 ID，均实际经过重启、续题、两次同选确认及原件字节校验。记录位于 artifacts/build-final.log、frozen-final.log 及两版 final JUnit。
+
+本次覆盖原生 PDF 有界分块的后端路径，更大字节原件、OCR、多栏和桌面入口仍在任务表分别跟踪。人工测试已取消，独立审查按本批要求暂缓。当前提交的 CI 另核。
