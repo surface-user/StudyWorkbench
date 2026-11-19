@@ -63,8 +63,8 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | PAR-01 | DONE | 主Agent已核双Python专项各30及12项环境失败的原生复验，原失败保留；[草稿PR #26](https://github.com/surface-user/StudyWorkbench/pull/26)最终1d103f3的[CI #149](https://github.com/surface-user/StudyWorkbench/actions/runs/43061041645)成功；限定显式题号/共享材料候选范围，见[报告](../dev/records/2026-11-12-complex-question-splitting/report.md) |
 | PAR-02 | READY | OCR 实施依赖固定离线组件和语言资源评估，多栏另行设计。 |
 | PAR-03 大文档分块提取 | IN_PROGRESS | 先覆盖原生 PDF，预算、取消及恢复见[分块协议](question-markdown-spec.md#pdf-chunk-jobs)。 |
-| PAR-03a 分块协议 | REVIEW | [任务报告](../dev/records/2026-11-19-pdf-chunks/report.md)。 |
-| PAR-03b PDF 页区间解析 | READY | 在一次有界子进程中只渲染指定页，保留原始页码及候选边界提示，回归旧整篇解析。 |
+| PAR-03a 分块协议 | REVIEW | [PR #68](https://github.com/surface-user/StudyWorkbench/pull/68)，[任务报告](../dev/records/2026-11-19-pdf-chunks/report.md)。 |
+| PAR-03b PDF 页区间解析 | REVIEW | 在一次有界子进程中只渲染指定页，保留原始页码及候选边界提示，回归旧整篇解析。 |
 | PAR-03c 分块任务 API 与持久化 | BLOCKED | 依赖 b。核对原件、原子记录进度、显式取消与恢复、并发重试和累计预算。 |
 | PAR-03d 端到端分块验证 | BLOCKED | 依赖 c。覆盖跨块题目与材料、确认幂等、重启及源码与冻结包一致性。 |
 | DL-01 | DONE | 主Agent结合已验收#24核#38真实Range/同域与跨域重定向及未注入冻结恢复，原DL-01证据范围已完成；LW-07站点提取/转码等后续保留 |
@@ -86,7 +86,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | R6-01a 通用资料受控读取契约 | DONE | 主Agent核[PR #58](https://github.com/surface-user/StudyWorkbench/pull/58)最终13f4163的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43585526915)成功、双1188/203/44新冻结与499原blob；只完成设计，b/c/d/e另行落地，见原报告 |
 | R6-01b 封闭授权与文本读取API | DONE | [PR #63](https://github.com/surface-user/StudyWorkbench/pull/63) 的 [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43594836585) 通过，后端两个版本各1216项，冻结包57项HTTP检查通过。路径归属补充验证见b1。 |
 | R6-01c 资料范围确认与撤销UI | BLOCKED | 依赖b明确接口；普通UI逐项/版本/正文确认，保留草稿、撤销/到期与迟到响应，不向外站WebView提供桥或令牌 |
-| R6-01b1 读取文件前核实路径所属空间 | REVIEW | 依赖已交付的[资料授权 API](https://github.com/surface-user/StudyWorkbench/pull/63)。原件、工作文件及核验重读均须在打开前核对持久路径属于所选空间。 |
+| R6-01b1 读取文件前核实路径所属空间 | DONE | [PR #66](https://github.com/surface-user/StudyWorkbench/pull/66) 当前提交 c0bb750 的[三组 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44492081114)通过，本地两版各 51 项。 |
 | R6-01d 无模型组合回归 | BLOCKED | 依赖b/c；源码/冻结、旧grant/候选采用、空间与源变更/重启/全库不恢复grant分别自动化，不接模型，不以设计替代功能完成 |
 | R6-01e 其他格式正文提供器 | READY | a设计已满足，可先设计相应格式精确提取/引用契约；PDF/Office等先设计源/派生hash/位置与预算，首批元数据支持不替代该项，OCR/网页/转写及模型继续另排 |
 | R6-02 | BLOCKED | 待用户明确模型提供方/远端范围/候选场景，并依赖R6-01；继续无模型/无凭据 |

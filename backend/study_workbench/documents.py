@@ -35,12 +35,14 @@ def convert_document(data, name):
     return value
 
 
-def extract(data, suffix):
+def extract(data, suffix, *, page_range=None):
     from PIL import Image
     from pydantic import TypeAdapter
 
     from .question_protocol import Content
 
+    if page_range is not None and suffix != '.pdf':
+        raise ValueError('PDF 页区间只适用于 PDF 原件')
     blocks, assets = [], []
     total = 0
 
@@ -124,9 +126,19 @@ def extract(data, suffix):
         splitter = DraftSplitter()
         current = None
         try:
-            if not 0 < len(document) <= 20:
-                raise ValueError("PDF 最多 20 页，请拆分后导入")
-            for index in range(len(document)):
+            page_count = len(document)
+            if page_range is None:
+                if not 0 < page_count <= 20:
+                    raise ValueError("PDF 最多 20 页，请拆分后导入")
+                first, last = 1, page_count
+            else:
+                first, last = page_range
+                if (type(first) is not int or type(last) is not int
+                        or not 1 <= first <= last <= page_count <= 2000 or last - first >= 20):
+                    raise ValueError('PDF 页区间无效，每块最多 20 页，原件最多 2000 页')
+            fragments = []
+            question_count = material_count = 0
+            for index in range(first - 1, last):
                 page = document[index]
                 try:
                     width, height = page.get_size()
@@ -135,17 +147,28 @@ def extract(data, suffix):
                     text(f"第 {index + 1} 页")
                     textpage = page.get_textpage()
                     try:
+                        if page_range is not None and textpage.count_chars() > 200000:
+                            raise ValueError('PDF 单页提取文本过长')
                         page_text = textpage.get_text_bounded()
                         text(page_text)
                         starts = []
+                        missing_position = False
                         search_index = 0
                         for match in START.finditer(page_text):
+                            if page_range is not None:
+                                if match['first'] is None:
+                                    question_count += 1
+                                else:
+                                    material_count += 1
+                                if max(question_count, material_count) > 200:
+                                    raise ValueError('PDF 分块超过 200 道题目或 200 组材料')
                             search = textpage.search(match.group().strip(), index=search_index)
                             try:
                                 found = search.get_next()
                             finally:
                                 search.close()
                             if found is None:
+                                missing_position = True
                                 continue
                             search_index = found[0] + found[1]
                             left, bottom, right, top = textpage.get_charbox(found[0])
@@ -155,9 +178,13 @@ def extract(data, suffix):
                     bitmap = page.render(scale=min(2.0, 1600 / width))
                     try:
                         picture = bitmap.to_pil()
-                        image(picture, f"PDF 第 {index + 1} 页原貌")
+                        page_image = image(picture, f"PDF 第 {index + 1} 页原貌")
                         # Single-column candidates only; retain full-width regions and expose them for review.
-                        if any(starts[i][1] >= starts[i + 1][1] for i in range(len(starts) - 1)):
+                        ambiguous = any(a[1] >= b[1] for a, b in zip(starts, starts[1:]))
+                        if page_range is not None:
+                            ambiguous = (ambiguous or missing_position or any(
+                                not 0 <= top < height for _, top in starts))
+                        if ambiguous:
                             starts = []
                             current = None
                             if splitter.group is not None:
@@ -165,11 +192,18 @@ def extract(data, suffix):
                                 splitter.group = None
                             splitter.current = None
                         segments = []
+                        if page_range is not None:
+                            current = {'marker': None, 'ambiguous': ambiguous,
+                                       'blocks': [], 'regions': [], 'source_pages': []}
                         if current is not None:
                             end = starts[0][0].start() if starts else len(page_text)
                             segments.append((current, 0, starts[0][1] if starts else height, page_text[:end]))
                         for position, (match, top) in enumerate(starts):
-                            current = splitter.begin(match)
+                            if page_range is None:
+                                current = splitter.begin(match)
+                            else:
+                                current = {'marker': match.group().strip(), 'ambiguous': False,
+                                           'blocks': [], 'regions': [], 'source_pages': []}
                             end = starts[position + 1][0].start() if position + 1 < len(starts) else len(page_text)
                             bottom = starts[position + 1][1] if position + 1 < len(starts) else height
                             if current is not None:
@@ -177,15 +211,20 @@ def extract(data, suffix):
                         for draft, top, bottom, value in segments:
                             if bottom - top < 1:
                                 continue
-                            crop = picture.crop((0, int(top / height * picture.height), picture.width,
-                                                 min(picture.height, int(bottom / height * picture.height) + 1)))
-                            try:
-                                draft['blocks'].append(image(crop, f"第{index + 1}页题目区域", append=False))
-                            finally:
-                                crop.close()
+                            if page_range is not None and top == 0 and bottom == height:
+                                draft['blocks'].append(page_image)
+                            else:
+                                crop = picture.crop((0, int(top / height * picture.height), picture.width,
+                                                     min(picture.height, int(bottom / height * picture.height) + 1)))
+                                try:
+                                    draft['blocks'].append(image(crop, f"第{index + 1}页题目区域", append=False))
+                                finally:
+                                    crop.close()
                             if value.strip():
                                 draft['blocks'].extend({'type': 'text', 'text': value[i:i + 20000]}
                                                        for i in range(0, len(value), 20000))
+                            if page_range is not None:
+                                fragments.append(draft)
                             draft['source_pages'].append(index + 1)
                             draft['regions'].append({'page': index + 1, 'box': [0, top / height, 1, bottom / height]})
                         picture.close()
@@ -195,6 +234,14 @@ def extract(data, suffix):
                     page.close()
         finally:
             document.close()
+        if page_range is not None:
+            warnings = []
+            if first > 1:
+                warnings.append('选区起点之前可能有题干或材料')
+            if last < page_count:
+                warnings.append('选区末尾可能截断题目或材料')
+            return {'page_count': page_count, 'first_page': first, 'last_page': last,
+                    'blocks': blocks, 'fragments': fragments, '_assets': assets, 'warnings': warnings}
         drafts = splitter.finish()
         warnings = ["PDF按显式题号生成单栏裁切候选，跨页延续同题或材料；裁图保留公式和插图，文字仅供检索。扫描件无OCR，多栏及未支持题号需手动处理；不推断缺失答案。",
                     "仅显式材料标题和完整有序题号范围自动归组为候选；其他卷头/材料仍在整篇预览，须核对或手动归组。",
@@ -211,12 +258,22 @@ def extract(data, suffix):
     return {"kind": "note", "blocks": blocks, "question_drafts": drafts, "warnings": warnings, "_assets": assets}
 
 
-def worker(suffix):
+def worker(suffix, *, page_range=None):
     data = sys.stdin.buffer.read(8 * 1024 * 1024 + 1)
     try:
         if len(data) > 8 * 1024 * 1024:
             raise ValueError("文档超过 8 MiB")
-        value = extract(data, suffix)
+        if page_range is not None:
+            if any(not value.isascii() or not value.isdecimal() or len(value) > 4 for value in page_range):
+                raise ValueError('PDF 页码必须为 1 至 2000 的十进制整数')
+            page_range = tuple(map(int, page_range))
+        value = extract(data, suffix, page_range=page_range)
+        if page_range is not None:
+            raw = json.dumps(value, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+            if len(raw) > 96 * 1024 * 1024:
+                raise ValueError('PDF 分块输出超限')
+            sys.stdout.buffer.write(raw)
+            return
     except ValueError as error:
         # Only our own policy errors may be shown; native errors contain input fragments.
         message = str(error)
@@ -224,4 +281,4 @@ def worker(suffix):
         value = {"error": safe[:240]}
     except Exception:
         value = {"error": "文档解析失败，请检查格式、加密和大小；原件保留"}
-    print(json.dumps(value, ensure_ascii=False), flush=True)
+    print(json.dumps(value, ensure_ascii=page_range is not None), flush=True)
