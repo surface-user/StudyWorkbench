@@ -140,3 +140,25 @@ Windows源venv存在redirector，直接kill它可能遗留实际Python子进程�
 工具Python -X utf8 artifacts/r601e2/check_changes.py退出0：11文件白名单、492原blob保持/503最终文件、130本地引用及被引用标题锚点、64唯一调度行、UTF-8/LF/git diff --no-index --check、两锁/工作流及原#64报告完整前缀保持通过。新增仅resource_pdf模块及其47专项测试文件；其余9文件为既有授权/内部入口/真实API探针及本任务现行文档/原报告，无新平行报告或整份artifact入Git。
 
 独立草稿[PR #74](https://github.com/surface-user/StudyWorkbench/pull/74)已建立并附当前任务：codex/resource-pdf-provider基于#64最终38c1abe，首次实现3ac57cc1827cf9d523f732761ef568daae97c6b2/tree3612c01473b712e8896457ac9adec9e8f3482d0e。文档补实际交付链接形成后续提交，最终head/tree/当前CI在PR正文记录，不为记录自身hash循环改头。e2保持REVIEW待当前CI和主Agent核验；审查暂缓/人工取消，未合并或发行，e3及父任务继续。
+
+## R6-01f 后端授权路径组合回归（2026-11-19）
+
+### 已交付输入与最小范围
+
+主Agent已有限接受e2：#74最终5ab4ccdfbc3df4e80baf3022c3a7a908bb383b81/tree53e5e57ca698e0db40d8ca495ff6332483a71749，当前[CI44504052672](https://github.com/surface-user/StudyWorkbench/actions/runs/44504052672)三job成功，双1263/4既有警告、desktop203、46冻结模块核源及冻结API81次HTTP/36独立错误ID。CI使用自造ready收据，office_conversion_executed=false；本地最终新冻结真实普通Office转换后2694次含轮询HTTP/36错误ID及双版全量原记录另经主Agent核实，不混同两类证据。e2可记有限DONE，e/R6父项、UI/e3及完整发行仍保留。
+
+#66 c0bb750605a737ec74b7a9d483d26bec68ee7f41/tree86975048accdad35833e094719b7a2869922abb5直接基于#63 ca61a8da28c87c90236217d7c1d57b8c0582c4de；其[CI44492081114](https://github.com/surface-user/StudyWorkbench/actions/runs/44492081114)成功。#74基于#64 38c1abe（父06f06d1，祖先同为ca61a8d），没有直接包含#66提交。核五文件实际差异后，#66唯一产品变化是规范化archive_path再核前两段精确workspaces/<workspace>；#74共用read_file已先规范化再核精确workspaces/<workspace>/前缀，规范路径禁止空段，两者对原件/工作文件语义等价。PDF原件沿同一保护，Office派生另核所选ready收据及固定preview路径。未通过简单合并覆盖其中任一保护，也不重复改产品代码。
+
+主Agent授权仅补#66两项持久回归及任务/原报告。从#74精确503远端blob新建resource-backend-combo，逐Git blob核503文件；AGENTS、requirements/architecture/question-content-spec/task对应先前已完整阅读版本，现行调用者和路径契约无变化。原resource-pdf-provider/#74、#66及根UI副本保持。两例从#66实际patch提取，分别篡改持久Resource/DocumentWorkfile路径到default-other，断言已发grant读取与新正文授权均409、元数据仍200、路径解析从未调用且原件字节不变；不是只测内存选择字段。两例先在#74未改产品上独立试探Q/P各2通过，再纳现有test_resource_grants.py以免持久回归遗漏。
+
+本项仅改该既有测试和两份任务文档，业务源码、接口/锁/工作流及原件保持。审查按ADR0014暂缓，人工按ADR0013取消；独立草稿PR/当前head CI与主Agent核验为有限交付门禁，不要求合并或发行。旧失败完整保留，未重复执行真实Office转换或新本地冻结构建；与#74产品逐字节一致及原冻结核源可以复用其自动化边界，当前CI仍需重新构建及全量验证。
+
+### f 本地自动化及交付准备
+
+工作目录resource-backend-combo，复用Q/P固定3.13.17/3.12.7隔离解释器，PYTHONDONTWRITEBYTECODE=1，不安装或变更环境。Q/P -X utf8 -m pytest backend/tests/test_resource_grants.py backend/tests/test_resource_pdf.py backend/tests/test_agent_access.py backend/tests/test_analysis_context.py backend/tests/test_analysis_review.py -q --basetemp=artifacts/r601f/tmp-q02或tmp-p02 --junitxml=artifacts/r601f/q02.xml或p02.xml，均退出0，各98通过/2既有警告（76.57/82.81秒）、无失败/跳过；即#74原96与本次2例。tmp-q01/p01首次各97通过/1失败，原重解析点测试创建Windows目录联接被沙箱拒绝（Access denied），原XML/日志保留。重跑仅使用已授权的本任务临时目录本机链接权限，不改测试/产品保护，不接触其他目录或进程。
+
+Q tools/check_frozen_sources.py --exe ../resource-pdf-provider/dist/study_backend/study_backend.exe退出0，46业务模块及嵌套代码/常量匹配当前源码。业务/工具/打包/锁全部原blob保持，本项不为两例测试另复制或重建本地包。原#74新冻结f493edc9292c85556c0b2ce5c94f29595eb5d465863990d358d5d58930f91ba0仅用于源码等价与既有运行证据，不将文档/测试候选说成新的已签发行产物。
+
+工具解释器release-venv -m ruff check backend tools及Q tools/export_question_schema.py --check均退出0。首次Q -m ruff因隔离环境只读复用ruff模块而其Scripts/ruff.exe不存在失败，改用已有工具解释器，不安装/拷贝工具；此失败与产品无关。artifacts/r601f/check_changes.py初次精确检出追加测试末尾多空行，去掉该空行后退出0：3文件白名单、500原blob保持/最终503文件、75本地引用/标题锚点、65唯一调度行、LF/UTF8/diff --check以及旧报告完整前缀保持。没有新增报告/依赖/生产行为或整份artifact入Git；R6-01f转REVIEW待独立草稿PR/当前CI及主Agent核验。
+
+独立草稿[PR #77](https://github.com/surface-user/StudyWorkbench/pull/77)已创建并附任务，codex/resource-backend-scope-regressions基于#74最终5ab4ccd；初提交2990ac6345163a22d0a36662b01cc85b7a953f25/tree7fb77134132be1668617259d56285f641b0fcc54。补实际PR链接后仍为3文件，当前head/tree及其CI在PR正文记录，不为自引hash循环改头。R6-01f待本头CI/主Agent有限退出核验，未动旧头、合并或发行。
