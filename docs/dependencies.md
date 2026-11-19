@@ -113,3 +113,7 @@ OSV在线查询不提供固定数据库快照或全库新鲜度证明，报告�
 锁版本不代表无漏洞；有限源范围查询不构成完整漏洞审计、法律认证或全部上游版本复核。发行前必须核实际传递依赖、二进制配置、NOTICE/SBOM/签名和干净机；保留PDFium BUILD_LICENSES等组合许可，构建环境包清单不是完整发行SBOM。
 
 flutter_inappwebview_windows0.6.0与VS18旧协程头存在历史STL1011失败，CI固定windows-2022/VS2022；升级工具链前重验。WebView原生焦点/DPI/合成、Office复杂字体版式、媒体编码/音轨、NuGet供应链/离线构建及安装升级仍有未验项。历史来源见[依赖快照](../dev/archive/baseline-20261030/docs/dependencies.md)，仅需溯源时读取。
+
+## 可选的本地 OCR 开发组件
+
+当前 Windows x64 开发组件采用 Tesseract 5.5.4、Leptonica 1.87.0 和 tessdata_fast 4.1.0 的 eng、chi_sim。引擎与模型采用 Apache-2.0，Leptonica 按上游保留声明的 BSD 类许可随组件备份。构建使用 VS 2022 Community 静态 CRT，另保留编译器许可原文；再分发许可、全部内嵌来源、漏洞检查与签名仍须在发行候选上核查。实测仅使用有界灰度 PGM，Windows 系统字体只用于生成自编测试输入。准备工具固定一个实际构建的全部七个文件、大小和 SHA-256。构建配方和 Windows 实测见[组件报告](../dev/records/2026-11-19-columns-ocr/report.md)。[引擎上游](https://github.com/tesseract-ocr/tesseract/releases/tag/5.5.4) · [图像库上游](https://github.com/DanBloomberg/leptonica/releases/tag/1.87.0) · [语言数据](https://github.com/tesseract-ocr/tessdata_fast/tree/65727574dfcd264acbb0c3e07860e4e9e9b22185)
