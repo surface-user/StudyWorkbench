@@ -160,3 +160,5 @@ Windows源venv存在redirector，直接kill它可能遗留实际Python子进程�
 Q tools/check_frozen_sources.py --exe ../resource-pdf-provider/dist/study_backend/study_backend.exe退出0，46业务模块及嵌套代码/常量匹配当前源码。业务/工具/打包/锁全部原blob保持，本项不为两例测试另复制或重建本地包。原#74新冻结f493edc9292c85556c0b2ce5c94f29595eb5d465863990d358d5d58930f91ba0仅用于源码等价与既有运行证据，不将文档/测试候选说成新的已签发行产物。
 
 工具解释器release-venv -m ruff check backend tools及Q tools/export_question_schema.py --check均退出0。首次Q -m ruff因隔离环境只读复用ruff模块而其Scripts/ruff.exe不存在失败，改用已有工具解释器，不安装/拷贝工具；此失败与产品无关。artifacts/r601f/check_changes.py初次精确检出追加测试末尾多空行，去掉该空行后退出0：3文件白名单、500原blob保持/最终503文件、75本地引用/标题锚点、65唯一调度行、LF/UTF8/diff --check以及旧报告完整前缀保持。没有新增报告/依赖/生产行为或整份artifact入Git；R6-01f转REVIEW待独立草稿PR/当前CI及主Agent核验。
+
+独立草稿[PR #77](https://github.com/surface-user/StudyWorkbench/pull/77)已创建并附任务，codex/resource-backend-scope-regressions基于#74最终5ab4ccd；初提交2990ac6345163a22d0a36662b01cc85b7a953f25/tree7fb77134132be1668617259d56285f641b0fcc54。补实际PR链接后仍为3文件，当前head/tree及其CI在PR正文记录，不为自引hash循环改头。R6-01f待本头CI/主Agent有限退出核验，未动旧头、合并或发行。

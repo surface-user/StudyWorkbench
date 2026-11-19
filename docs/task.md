@@ -86,7 +86,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | R6-01e1 PDF及Office页文字层契约 | DONE | 主Agent核[PR #64](https://github.com/surface-user/StudyWorkbench/pull/64)最终38c1abe/[CI43595667880](https://github.com/surface-user/StudyWorkbench/actions/runs/43595667880)及501原blob/三文档、Schema和双1216/desktop203/45新冻结/API57通过；仅有限设计，e2/e3另行实现，父e未完成 |
 | R6-01e2 PDF页文字提供器实现 | DONE | 主Agent核[PR #74](https://github.com/surface-user/StudyWorkbench/pull/74)最终5ab4ccd/[CI44504052672](https://github.com/surface-user/StudyWorkbench/actions/runs/44504052672)成功、双1263/desktop203/46冻结核源/API81；本地源码与新冻结真实普通Office派生/授权及只读库保持已核，见[原报告](../dev/records/2026-11-14-resource-read/report.md)。仅有限后端交付，无UI/OCR/模型或自动转换，原失败保留 |
 | R6-01e3 单页确认及无模型组合 | BLOCKED | 依赖e2及c普通资料UI；明确原件/派生版本和页码、正文另选、撤销/到期/迟到响应；源码/新冻结核源及旧grant/普通查看/学习库保持，不接模型或自动OCR |
-| R6-01f 后端授权路径组合回归 | REVIEW | 基于#74核#66原件/工作文件保护已等价包含，只补两项持久回归并保留PDF/派生保护；产品代码未重复实现。双版本关联各98、原包46模块核源/静态与范围检查通过，独立PR/当前head CI待交付，见原报告；不依赖UI，不代替d/e3或发行完成 |
+| R6-01f 后端授权路径组合回归 | REVIEW | 基于#74核#66原件/工作文件保护已等价包含，只补两项持久回归并保留PDF/派生保护；产品代码未重复实现。双版本关联各98、原包46模块核源/静态与范围检查通过，见[PR #77](https://github.com/surface-user/StudyWorkbench/pull/77)与原报告；当前head CI/主Agent核验待交付，不依赖UI，不代替d/e3或发行完成 |
 | R6-02 | BLOCKED | 待用户明确模型提供方/远端范围/候选场景，并依赖R6-01；继续无模型/无凭据 |
 | REV-01 | BLOCKED | 依ADR0014等待本批已确定开发/自动化切片完成后集中审查；本轮REVIEW只指主Agent核验交付证据，不冒充独立代码审查 |
 | M0-08及统一导入历史自动化 | READY | 可继续只读/隔离启动恢复和原生COM回归；原失败/个人库保持，不恢复人工门禁 |
