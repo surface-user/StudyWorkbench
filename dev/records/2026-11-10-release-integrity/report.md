@@ -939,3 +939,36 @@ IQ artifacts/off02j/select_evidence.py退出0，筛出[共享摘要](evidence/of
 有限实现、相关自动化和文档完成转REVIEW，独立草稿PR/当前head CI及主Agent退出核验仍须完成；没有本地重复构建未变的产品/Flutter或运行Office/Java/Python辅助程序，CI另做完整产品构建与冻结回归。81未知仍严格阻断check_release，静态覆盖不证明辅助程序可从产品启动、Python子链/动态DLL或完整Office已闭合。完整SBOM/许可/漏洞/签名发行及剩余加载角色另继续；审查暂缓、人工取消、未合并/发行。
 
 IQ artifacts/off02j/check_docs.py退出0：6文件范围、494个未变base blob、旧报告完整前缀、UTF-8/LF/逐文件git diff --check、97本地引用和58唯一调度行通过。已创建并附加[独立草稿PR #65](https://github.com/surface-user/StudyWorkbench/pull/65)，基于#60，分支codex/office-program-launchers，首实现提交c2ff67601abbe3f688cd9bbb9b585e3ea883ec20/tree e1551448e87f48e0c3f0de02a9134d6bdb1e8510。补入本交付链接后仍同一6文件；最终head/完整CI及有限核验结论在PR实时正文维护，不为写自身最终SHA循环改变head。未改#60、原组件或check_release，未合并/发行。
+
+## 2026-11-19：OFF-02k venv单入口静态域及Python实际缺口
+
+主Agent已有限接受#65最终4d9eb0216bde10a9ad0d57006420c5993cf926bf/tree d43f13279bc241049f0b195f57f31af0cefb7286，当前CI43595724853三组成功（1238×2、Flutter203、44模块新冻结及API34/既定链；45步成功、原分支限定公网探针1跳过），并独立只读复算19743原件/351 PE/旧三域/29新增81未知/56末hash18反例且三输出字节保持。OFF-02k副本office-python-launchers已在11-14逐500 blob复制；11-19恢复时重新核远端head、全部500本地blob与组合锁未变，无半成品tracked修改，根旧checkout及#65不动。必读文档/现行约束沿该固定base，未恢复人工或集中审查。
+
+先只读固定三份bin EXE及LO代理、program Python313/CRT。实际python.exe SHA256 c8443dd73561ef6c6badee158c5b3725d99c8680e966c486dce75c2cef7287f5与pythonw.exe SHA256 5e4fc492b974eeb9364cbb05d1528beb6f0a228de0f8e4a1bddc1f632d3c77ad各8条普通导入、无延迟，依赖python313.dll及VCRUNTIME140；二者在bin本目录缺这两文件。仅[bin]/CRT[bin]均静态Unresolved python313；代数加program可各得3节点33边，但此为反事实目录集合，未作为受控运行证明或用于门禁。venvlauncher.exe SHA256 d74e6696ab20f2934a02017e8571891c5a5234daaa9f846f41101d7dfda331e3实际只有kernel32与API-set两条普通导入，无私有CRT/Python DLL或延迟边，自己的应用目录即可构成1根1节点2边。主Agent据此批准仅新增该潜在原生入口，两个Python入口和所有子执行链继续未知；不为减少数字放宽目录。
+
+固定CPython3.13.15官方tar.xz 23160540字节/SHA256 1e66a7945a48390ee4c2a4268a0e4185884059a13c4aab6d148aa208deea4a76只读8个≤1MiB普通源成员，归档前后hash保持；Programs/python.c与PC/WinMain.c均仅调用Py_Main，静态DLL选择发生在这些入口之前，无法靠Py_Main补救缺失的先行依赖。固定LO bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1的ExternalPackage规则放三EXE到bin、Python313到program；pyuno/zipcore/python.cxx显式拼core/bin/python.exe，只前置program到原PATH，保留原PATH并传NULL环境/CWD，没有设置DLL搜索目录。代理PE中还逐固定hash核UTF-16LE实际core-3.13.15/bin/python.exe及lib常量（偏移18688/18496），仅加强固定源/资产关联，不构成可重现编译或实际执行证明。Windows标准搜索中System32/Windows/CWD位于PATH前，父SetDllDirectory还可影响子进程，因此不能把program提升成私有CRT已确定来源；pythonw亦没有已证代理目标边。
+
+PC/venvlauncher.c先从自身旁边或上一级找pyvenv.cfg，读取home后拼原Python程序并CreateProcess；固定两cfg路径均缺失，按固定源会在子执行前返回配置错误，但未执行PE验证此分支。Lib/venv/__init__.py会复制launcher生成环境；这些角色和缺配置都不能证明原资产从产品不可达或允许排除未知。只保守覆盖其有效原生主程序的静态导入，源外的动态行为、配置/子进程仍不认证。源码工程RuntimeLibrary=MultiThreaded与实际无CRT导入一致，venv PE中的pyvenv.cfg/python.exe常量也在原hash下核对。源全文与全部上游资产仍留ignored artifacts。
+
+六文件实现限共享native_dependencies/对应专项、packaging/task、本原报告及精选JSON。helper先核精确组合锁156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9，再核bin全部3 PE集合/路径/hash/AMD64-PE32+/可执行非DLL/CLR0；只有venvlauncher为根，另外两个明确列unclassified_images。新office_venv仅[core/bin]搜索且CRT也仅[core/bin]，不借program、Java或Python扩展域；原Office/Java/office_python/office_program每字段保持，check_release和产品不改。
+
+IQ/IP复用starlette-fix/.local/starlette-{q,p}-isolated/Scripts/python.exe（3.13.17/3.12.7、pytest9.0.3），各执行python -X utf8 -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py backend/tests/test_office_java_bundle.py backend/tests/test_java_runtime_preparation.py -q --basetemp=.local/off02k-{q,p}01 --junitxml=artifacts/off02k/{q,p}01.xml：均退出0、251通过/0失败错误跳过（旧227+新增24），原重复ZIP预期警告各1保留。覆盖精确锁预算/三PE完整性、被保留的两入口变更同样拒绝、原生头/CLR/架构、唯一静态根与另两未知，以及普通/延迟反事实不能借program DLL/CRT。Q -m ruff check backend tools和Q tools/export_question_schema.py --check均退出0；链接测试只在新隔离目录按既有本机权限运行，不修改共享环境。
+
+IQ -X utf8 artifacts/off02k/verify_real.py退出0：完整19743实际文件逐hash/351 PE，原四域及pinned_java_libraries逐字段等于#65图；仅venv一根一节点两边新增1覆盖，81→80未知且pe_coverage仍partial。7关键原件末hash与路径集/组合锁保持；16实际PE内存元数据及图反事实拒绝，两个Python入口只用bin的静态缺DLL失败如实保留，不借program将其冒充通过。原图999905字节/SHA256 cfe562e7df5688ba5bc46cc4fc25bf92e813b14f641bfbc9a17362399f47fe73。helper预设--read-only供独立复算：先记录raw/verified/summary字节hash，仅断言重算与现存内容一致并末核三输出不变；不进入写出分支。未运行任何Office附带PE、归档源码或安装操作。
+
+IQ artifacts/off02k/select_evidence.py退出0，晋升[共享摘要](evidence/off02k-venv-domain-summary.json)19567字节/SHA256 2f5cec80b18b5075c661f51f26b268d08a58b8bc22d383dee0d1f881871dd582，仅保留8个归档源/2个固定LO源身份、实际导入/常量/角色、7原件hash、16反例、2已知入口失败及251×2 JUnit。完整源、图、原始日志/样本均留ignored artifacts。一次旧PE摘要按dict误读list、一次PowerShell通配路径rg失败和一次文档patch上下文不符均未产生业务改动，失败工具记录及转录保持，不计成产品测试失败或成功。11-14中断前未运行正式实物测试；本段251×2及完整核证均为本次恢复后实际新采集。
+
+### OFF-02l 优先后续：一次解决两个Python入口与运行证据
+
+这是待固化的候选设计，未实施、未生成新组合、未运行其测试，不将建议本身视为缺口已闭合。优先在新目录构造自包含bin，逐字复制原锁program/python313.dll、program/python3.dll及program/vcruntime140.dll；均来自现有固定Office来源，不能借Java的不同CRT或系统运行库，原Office/Java/组合组件保持不动。Python3稳定ABI DLL一并规划，避免把Python313移动到新邻接位置后遗漏其adjacent python3加载路径；固定转发目标也必须证明，不只依据零导入。当前compose与OfficeRuntime按原Office+Java+8份program CRT精确比对文件集，单纯添加三文件会被拒绝，故必须同步版本化新布局和验证，不用通用目录豁免绕过。
+
+自动化出口先明确，再实施同一两入口切片：
+
+1. 固定原/新布局标识、三复制的源目标/hash与精确派生锁，验证新完整文件集；默认旧组合生成字节/加载/来源及原五域结果保持兼容。支持新布局的各固定来源工具须重新绑定准确来源，不能泛化接受任意额外文件。
+2. 证明固定Python3 ABI转发绑定邻接Python313的实际身份；两EXE静态应用/CRT域只用bin，扩展库按真实Python子进程的lib+bin及bin CRT建域，不能借Office宿主的lib+program域。
+3. 在全新任务目录中，两个入口均用固定参数/受控代码、最小环境、空白CWD和进程Job/时间/输出预算运行；pythonw通过受控文件输出结果，不依赖控制台或人工窗口。核sys.executable/prefix/path与实际映射DLL的组件相对路径/hash，确认bin私有Python/ABI/CRT来源。
+4. 两入口均跑标准库、ssl/hashlib、ctypes及sqlite的有限探针与退出/重启，并经源码和匹配新冻结的既有启动/编排链复验；动态观察只对已实际模块作有限结论，不认证所有动态路径/SxS或干净机。
+5. 缺失/篡改三文件、错误布局/版本、外来PATH/PYTHONHOME/Java变量、主机已有同名CRT的环境仍须在启动前拒绝错误组合；超时/取消/失败输出保留、无遗留子进程、原组件和学习数据字节保持。拒绝不能仅靠开发机最终是否能启动。
+6. 完整相关自动化、原组件兼容回归、独立草稿PR与当前head CI均完成后才能登记该有限运行切片交付；其余模板/托管/x86/系统来源及发行未知继续阻断，不能只用减少PE数量销项。
+
+OFF-02k本项实现/相关自动化/文档完成转REVIEW，独立草稿PR/当前head CI及主Agent核验仍须完成。80未知和另两实际Python缺口保留，OFF-02l作为优先后续而非混进本PR；审查暂缓、人工取消、未合并/发行。

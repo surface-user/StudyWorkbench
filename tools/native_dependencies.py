@@ -39,6 +39,36 @@ OFFICE_PROGRAM_ENTRIES = ('gengal.exe gpgme-w32spawn.exe mar.exe minidump_upload
     'simpress.exe smath.exe soffice.bin soffice.com soffice.exe soffice_safe.exe spsupp_helper.exe '
     'sweb.exe swriter.exe uno.exe unoinfo.exe unopkg.bin unopkg.com unopkg.exe update_service.exe '
     'updater.exe xpdfimport.exe').split()
+OFFICE_VENV_LOCK_SHA256 = '156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9'
+
+
+def office_venv_entries(payload, nodes, office):
+    """Only the fixed venv redirector's native imports; no Python child-chain certification."""
+    lock = payload.get(office + 'runtime-lock.json')
+    if lock is None:
+        raise ValueError('Missing fixed Office venv component inventory')
+    with lock.open('rb') as stream:
+        raw = stream.read(4 * 1024 * 1024 + 1)
+    if len(raw) > 4 * 1024 * 1024 or hashlib.sha256(raw).hexdigest() != OFFICE_VENV_LOCK_SHA256:
+        raise ValueError('Office venv component inventory changed; renew loading evidence')
+    files = json.loads(raw)['files']
+    directory = office + 'program/python-core-3.13.15/bin/'
+    expected = {directory + name for name in ('python.exe', 'pythonw.exe', 'venvlauncher.exe')}
+    if {name for name in nodes if name.startswith(directory)} != expected:
+        raise ValueError('Office venv/Python bin PE set changed; renew loading evidence')
+    for name in sorted(expected):
+        image = nodes[name]
+        if image['sha256'] != files.get(name.removeprefix(office)):
+            raise ValueError('Office venv/Python bin path or bytes changed: ' + image['path'])
+        if image['machine'] != 0x8664 or image['magic'] != 0x20B:
+            raise ValueError('Office venv/Python bin architecture changed: ' + image['path'])
+        flags = image.get('characteristics')
+        if flags is None or not flags & 0x0002 or flags & 0x2000 or image.get('clr_rva') != 0:
+            raise ValueError('Office venv/Python bin requires fixed native executable headers: ' + image['path'])
+    root = directory + 'venvlauncher.exe'
+    return dict(component_inventory_sha256=OFFICE_VENV_LOCK_SHA256,
+                roots={root: files[root.removeprefix(office)]},
+                unclassified_images={name: files[name.removeprefix(office)] for name in sorted(expected - {root})})
 
 
 def office_program_entries(payload, nodes, office):
@@ -372,6 +402,10 @@ def inspect_dependencies(payload, system):
         program_entries = office_program_entries(payload, nodes, office)
         domains['office_program'] = closure(nodes, list(program_entries['roots']), [program], [program], system)
         domains['office_program']['pinned_inputs'] = program_entries
+        venv_entries = office_venv_entries(payload, nodes, office)
+        venv_bin = program + '/python-core-3.13.15/bin'
+        domains['office_venv'] = closure(nodes, list(venv_entries['roots']), [venv_bin], [venv_bin], system)
+        domains['office_venv']['pinned_inputs'] = venv_entries
     covered = {name for domain in domains.values() for name in domain['nodes']}
     return dict(scope='documented-entry-and-plugin-domains-v1', pe_images=len(nodes),
                 pe_coverage='partial' if len(covered) < len(nodes) else 'all-images-in-declared-static-domains',

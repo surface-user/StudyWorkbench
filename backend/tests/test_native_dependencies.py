@@ -282,6 +282,7 @@ def test_registered_office_entries_share_the_existing_loading_domain_and_unknown
     # This earlier fixture exercises UNO only; the complete fixed Python policy has its own fixture below.
     monkeypatch.setattr(native, 'office_python_libraries', lambda *_: dict(extensions={}))
     monkeypatch.setattr(native, 'office_program_entries', lambda *_: dict(roots={}))
+    monkeypatch.setattr(native, 'office_venv_entries', lambda *_: dict(roots={}))
     office, payload, policy = uno_registry
     program = office + 'program/'
     roots = ['soffice.com', 'soffice.bin', 'officebean.dll', 'javavmlo.dll', 'jvmfwklo.dll',
@@ -352,6 +353,7 @@ def test_fixed_java_images_keep_launchers_out_of_the_office_dll_domain(
         native, java_registry, tmp_path, monkeypatch):
     monkeypatch.setattr(native, 'office_python_libraries', lambda *_: dict(extensions={}))
     monkeypatch.setattr(native, 'office_program_entries', lambda *_: dict(roots={}))
+    monkeypatch.setattr(native, 'office_venv_entries', lambda *_: dict(roots={}))
     office, payload, nodes, _, _ = java_registry
     program = office + 'program/'
     for name in ['soffice.com', 'soffice.bin', 'officebean.dll', 'javavmlo.dll', 'jvmfwklo.dll',
@@ -554,6 +556,7 @@ def test_fixed_python_policy_rejects_unproven_inputs(native, python_registry, da
 
 def test_python_domain_preserves_other_domains_and_unknown_images(native, python_registry, tmp_path, monkeypatch):
     monkeypatch.setattr(native, 'office_program_entries', lambda *_: dict(roots={}))
+    monkeypatch.setattr(native, 'office_venv_entries', lambda *_: dict(roots={}))
     office, payload, nodes, _ = python_registry
     program = office + 'program/'
     for name in ['soffice.com', 'soffice.bin', 'officebean.dll', 'javavmlo.dll', 'jvmfwklo.dll',
@@ -668,6 +671,7 @@ def test_program_policy_rejects_unproven_main_images(native, program_registry, d
 
 
 def test_program_domain_retains_child_template_managed_and_x86_unknowns(native, program_registry, tmp_path, monkeypatch):
+    monkeypatch.setattr(native, 'office_venv_entries', lambda *_: dict(roots={}))
     office, payload, nodes, _ = program_registry
     program = office + 'program/'
     unknown = ['python-core-3.13.15/bin/python.exe', 'templates/raw.exe', 'managed.dll']
@@ -692,6 +696,7 @@ def test_program_domain_retains_child_template_managed_and_x86_unknowns(native, 
 @pytest.mark.parametrize('kind', ['import', 'delay'])
 @pytest.mark.parametrize('foreign', ['java/bin', 'program/python-core-3.13.15/lib'])
 def test_program_domain_cannot_borrow_foreign_dependency(native, program_registry, tmp_path, monkeypatch, kind, foreign):
+    monkeypatch.setattr(native, 'office_venv_entries', lambda *_: dict(roots={}))
     office, payload, nodes, _ = program_registry
     program = office + 'program/'
     monkeypatch.setattr(native, 'pe_nodes', lambda _: nodes)
@@ -713,3 +718,90 @@ def test_program_private_crt_stays_in_program(native, program_registry, tmp_path
     (tmp_path / 'vcruntime140.dll').write_bytes(b'host CRT cannot rescue an Office launcher')
     with pytest.raises(ValueError, match=f'Unresolved {kind}.*system CRT'):
         native.closure(nodes, list(policy['roots']), [program], [program], tmp_path)
+
+
+@pytest.fixture
+def venv_registry(native, program_registry, tmp_path, monkeypatch):
+    office, payload, nodes, lock = program_registry
+    manifest = json.loads(lock.read_bytes())
+    directory = 'program/python-core-3.13.15/bin/'
+    for name in ('python.exe', 'pythonw.exe', 'venvlauncher.exe'):
+        relative = directory + name
+        data = ('self-authored inactive Python launcher fixture: ' + relative).encode()
+        path = tmp_path / relative
+        path.parent.mkdir(exist_ok=True, parents=True)
+        path.write_bytes(data)
+        payload[office + relative] = path
+        manifest['files'][relative] = hashlib.sha256(data).hexdigest()
+        nodes[office + relative] = node(office + relative, digest=manifest['files'][relative])
+    nodes[office + directory + 'venvlauncher.exe']['edges'] = [
+        ('kernel32.dll', 'import'), ('api-ms-win-core-path-l1-1-0.dll', 'import')]
+    for name in ('python.exe', 'pythonw.exe'):
+        nodes[office + directory + name]['edges'] = [('python313.dll', 'import'), ('vcruntime140.dll', 'import')]
+    (tmp_path / 'kernel32.dll').write_bytes(b'self-authored host-presence fixture')
+    raw = json.dumps(manifest).encode()
+    lock.write_bytes(raw)
+    for constant in ('OFFICE_PYTHON_LOCK_SHA256', 'OFFICE_PROGRAM_LOCK_SHA256', 'OFFICE_VENV_LOCK_SHA256'):
+        monkeypatch.setattr(native, constant, hashlib.sha256(raw).hexdigest())
+    return office, payload, nodes, lock
+
+
+@pytest.mark.parametrize('damage', ['missing-lock', 'changed-lock', 'big-lock', 'missing-venv', 'missing-console',
+    'missing-windowed', 'extra-exe', 'extra-dll', 'moved-venv', 'changed-venv', 'architecture', 'header',
+    'dll-flag', 'not-executable', 'managed-clr', 'unknown-flags', 'unknown-clr', 'changed-console', 'console-architecture'])
+def test_venv_policy_rejects_unproven_bin_images(native, venv_registry, damage):
+    office, payload, nodes, lock = venv_registry
+    directory = office + 'program/python-core-3.13.15/bin/'
+    if damage == 'missing-lock':
+        del payload[office + 'runtime-lock.json']
+    elif damage in {'changed-lock', 'big-lock'}:
+        lock.write_bytes(b'changed' if damage == 'changed-lock' else b'x' * (4 * 1024 * 1024 + 1))
+    elif damage.startswith('missing-'):
+        del nodes[directory + {'missing-venv': 'venvlauncher.exe', 'missing-console': 'python.exe',
+                               'missing-windowed': 'pythonw.exe'}[damage]]
+    elif damage in {'extra-exe', 'extra-dll'}:
+        name = directory + ('extra.exe' if damage == 'extra-exe' else 'vcruntime140.dll')
+        nodes[name] = node(name)
+    elif damage == 'moved-venv':
+        nodes[office + 'program/venvlauncher.exe'] = nodes.pop(directory + 'venvlauncher.exe')
+    else:
+        image = nodes[directory + ('python.exe' if 'console' in damage else 'venvlauncher.exe')]
+        field, value = {'changed-venv': ('sha256', 'changed'), 'architecture': ('machine', 0x14c),
+            'header': ('magic', 0x10B), 'dll-flag': ('characteristics', 0x2002),
+            'not-executable': ('characteristics', 0), 'managed-clr': ('clr_rva', 4096),
+            'unknown-flags': ('characteristics', None), 'unknown-clr': ('clr_rva', None),
+            'changed-console': ('sha256', 'changed'), 'console-architecture': ('machine', 0x14c)}[damage]
+        image[field] = value
+    before = {name: path.read_bytes() for name, path in payload.items()}
+    with pytest.raises(ValueError, match='Office venv'):
+        native.office_venv_entries(payload, nodes, office)
+    assert {name: path.read_bytes() for name, path in payload.items()} == before
+
+
+def test_venv_domain_is_only_its_native_main_image_not_python_children(native, venv_registry, tmp_path, monkeypatch):
+    office, payload, nodes, _ = venv_registry
+    directory = office + 'program/python-core-3.13.15/bin/'
+    monkeypatch.setattr(native, 'pe_nodes', lambda _: nodes)
+    before = {name: path.read_bytes() for name, path in payload.items()}
+    report = native.inspect_dependencies(payload, tmp_path)
+    domain = report['domains']['office_venv']
+    assert domain['roots'] == domain['nodes'] == [directory + 'venvlauncher.exe']
+    assert domain['directories'] == domain['crt_directories'] == [directory.rstrip('/')]
+    assert len(domain['edges']) == 2
+    assert {row['path'] for row in report['unproven_runtime_candidates']} == {
+        directory + 'python.exe', directory + 'pythonw.exe', office + 'program/twain32shim.exe'}
+    assert set(domain['pinned_inputs']['unclassified_images']) == {directory + 'python.exe', directory + 'pythonw.exe'}
+    assert report['pe_coverage'] == 'partial'
+    assert {name: path.read_bytes() for name, path in payload.items()} == before
+
+
+@pytest.mark.parametrize('kind', ['import', 'delay'])
+@pytest.mark.parametrize('dependency', ['vcruntime140.dll', 'python313.dll'])
+def test_venv_domain_never_borrows_program_crt_or_python(native, venv_registry, tmp_path, monkeypatch, kind, dependency):
+    office, payload, nodes, _ = venv_registry
+    directory = office + 'program/python-core-3.13.15/bin/'
+    monkeypatch.setattr(native, 'pe_nodes', lambda _: nodes)
+    domain = native.inspect_dependencies(payload, tmp_path)['domains']['office_venv']
+    nodes[directory + 'venvlauncher.exe']['edges'] = [(dependency, kind)]
+    with pytest.raises(ValueError, match=f'Unresolved {kind}.*{dependency}'):
+        native.closure(nodes, domain['roots'], domain['directories'], domain['crt_directories'], tmp_path)

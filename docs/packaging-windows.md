@@ -62,7 +62,9 @@ Office子进程才接收包内JAVA_HOME、UNO_JAVA_JFW_JREHOME文件URI和headle
 
 program直属的固定30个AMD64原生EXE/COM/BIN另作office_program保守静态入口。精确组合锁/31个启动文件全集与hash、架构/PE头、EXECUTABLE_IMAGE/非DLL及无CLR描述符均校验；唯一x86 TWAIN同时认证身份但仍排除/未知。该域只搜索program，私有CRT也只在program，不借Java或Python目录；原Office、Java、Python域保持。Windows的应用目录规则及固定LO launcher/loader源将这些文件视为潜在独立主程序，绝不表示产品执行过GUI、更新服务、上传或其他辅助工具，也不新增用户可启动能力。
 
-固定LO通用launcher显式启动同目录soffice.exe，soffice/unopkg包装器选择同目录.bin；program/python.exe则显式启动python-core/bin/python.exe并设置其环境。这里只核各主文件的普通/延迟原生导入，Python代理的三个bin子程序仍未知，不将CreateProcess边当DLL依赖或借父域自动闭合。父进程SetDllDirectory、环境/CWD、SxS、已加载模块、KnownDLL、动态模块及系统来源继续保留边界；模板/托管/x86/子执行链未知仍阻断check_release，未证明完整Office运行时闭合。
+固定LO通用launcher显式启动同目录soffice.exe，soffice/unopkg包装器选择同目录.bin；program/python.exe则显式启动python-core/bin/python.exe并设置其环境。这里只核各主文件的普通/延迟原生导入，两个Python bin入口与venv子执行链仍未知，不将CreateProcess边当DLL依赖或借父域自动闭合。父进程SetDllDirectory、环境/CWD、SxS、已加载模块、KnownDLL、动态模块及系统来源继续保留边界；模板/托管/x86/子执行链未知仍阻断check_release，未证明完整Office运行时闭合。
+
+固定bin目录的三个PE另受精确组合锁/完整集合/hash、架构和原生主程序头约束；仅venvlauncher.exe加入office_venv潜在静态入口，搜索及私有CRT目录都仅为自身bin。其固定实际导入只有kernel32和API-set，不借program或其他域；这是venv重定向器/生成环境资产的静态原生图，不证明产品调用或其子进程已闭合。相邻及上级pyvenv.cfg当前缺失，缺配置与producer复制角色不能用来排除未知或推断产品不可达。python.exe/pythonw.exe仍缺自身目录内的Python313及CRT；LO代理仅前置program到原PATH，Windows系统/CWD及父DLL搜索状态等在前，不能把静态代数加入program当包内运行证明。
 
 ## Office Python模板来源证据
 
@@ -183,6 +185,8 @@ python tools/source_licenses.py --package-config apps/desktop/.dart_tool/package
 ## 规划中
 
 自动升级/完整回滚产品流程、下载/转码组件、正式签名发行按专项实施。FFmpeg须先锁定实际构建开关与LGPL/GPL/nonfree及来源义务；本地生成样本不等于可随产品分发。
+
+OFF-02l优先评估两个Python入口的自包含新组合：在新组件bin复制原锁Python313/Python3 ABI及同版CRT，原组件不动；版本化原/新精确布局和来源，保留旧组合生成/加载兼容。须同时证明固定ABI转发绑定、两个入口及扩展实际进程域，进行隔离环境下的模块路径/hash、标准库/ssl/ctypes/sqlite、pythonw受控文件输出及源码/匹配冻结回归；缺失/篡改须在启动前拒绝，即使主机已有CRT也不能补齐。该方案尚未实施，具体自动出口见发行原报告，不把复制建议或静态计数当运行验证。
 
 ## 待验证
 
