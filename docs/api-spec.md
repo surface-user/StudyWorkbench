@@ -268,7 +268,7 @@ selection固定kind=resource_node/legacy_note/learning_mark、严格资源ID、m
 
 POST /{id}/read-resources无选择参数，返回schema_version=1/purpose/workspace_id/resources/context_sha256/binary_attachments_read=false/links_followed=false。resources固定按kind/id排序，含kind/id/mode/metadata/citation及显式text；citation只含对应身份、权威hash/修订及可选行/行hash。context_sha256按既有规范UTF-8 JSON计算，前像排除该派生字段本身，仅表示字节一致性，不证明可信。响应不返回实际文件路径或访问能力。
 
-一次请求每份正文≤64KiB、最终JSON含引用/hash≤1MiB；源文件≤1MiB、累计实际文件读取含核验重读≤16MiB。整体超限413，不截断或返回部分资料。空间/墓碑/版本、文件hash及读取中变化前后检查，非法格式422、缺失/越界身份404、版本/结构/路径冲突409；已授权资料变更须另确认。受管路径拒绝绝对/ADS/重解析点，打开后必须普通文件；不提供全局原子文件系统快照。授权和指纹只留内存，不改持久学习数据、迁移或备份格式，重启失效；返回前复核授权，已返回字节不可召回。细节见[Agent契约](agent-design.md#通用资料受控读取契约r6-01)。
+一次请求每份正文≤64KiB、最终JSON含引用/hash≤1MiB；源文件≤1MiB、累计实际文件读取含核验重读≤16MiB。整体超限413，不截断或返回部分资料。空间/墓碑/版本、文件hash及读取中变化前后检查，非法格式422、缺失/越界身份404、版本/结构/路径冲突409；已授权资料变更须另确认。每次打开原件或工作文件前，先按规范相对路径逐段核对 workspaces/<当前空间>/，再检查受管目录和重解析点。打开后必须是普通文件；不提供全局原子文件系统快照。授权和指纹只留内存，不改持久学习数据、迁移或备份格式，重启失效；返回前复核授权，已返回字节不可召回。细节见[Agent契约](agent-design.md#通用资料受控读取契约r6-01)。
 
 前缀W/analysis-drafts，仅普通用户业务UI使用，无模型/Agent采用工具：
 

@@ -62,3 +62,11 @@ Q/P分别执行`-X utf8 -m pytest -q --basetemp=.local/full-q01`或`full-p01`，
 本次实际新study_backend.exe为22589083字节，SHA256=c66a0be1f525c1b1a6e822ce09186e9bacbf9e3a70b27df4bb2a35d0a984ca9c；45模块核源和frozen HTTP57对应该包。不是旧#49/#53包，不宣称已组合后续其他平行PR、完整SBOM/签名或发行。当前task转REVIEW，独立草稿PR及当前head CI继续核验，c/d仍不冒充已完成。
 
 根执行`artifacts/goal-20261112/check_resource_read_api.py`退出0：501文件/10变更/491原blob保持，135本地引用/7锚点、61唯一调度行和48任务前缀集合保持；旧报告完整前缀、两依赖锁/工作流保持，Git diff --no-index --check逐变更文件通过。发布仅这10个源码/测试/现行文档/原报告，生成包、日志、样本库和临时grant不上传。全部原工作区未提交文件保持。独立PR只交付本API，不组合平行Office/下载/SBOM任务。
+
+## 2026-11-19 授权文件路径的空间归属（R6-01b1）
+
+第63号PR按空间选择数据库记录，但文件解析只检查了资料库根目录。现在使用现有 archive_path 校验持久相对路径，并在每一次解析前比较 workspaces 和完整空间ID两个路径段。原件、已保存工作文件及核验重读共用此检查。元数据请求仍只读索引。
+
+在独立 resource-read-owner 副本使用自建记录测试。首次用 pytest.fail 监测路径解析，测试客户端退出时遮蔽原异常，原日志保留。改为计数并返回受控 I/O 异常，再对第63号PR源码运行 pytest -k foreign_stored，退出1。两个用例均因观察到相邻空间的路径进入解析而失败。相同用例在新代码上确认创建和重复读取均返回409，解析次数为零，原件字节保持。测试未访问其他空间的实际内容。
+
+Python 3.12.7 和 3.13.17 分别执行 python -m pytest backend/tests/test_resource_grants.py backend/tests/test_agent_access.py backend/tests/test_analysis_context.py backend/tests/test_analysis_review.py -q，各退出0，51项通过、2项既有弃用警告。python -m ruff check backend tools 和 python tools/export_question_schema.py --check 均退出0。证据在独立副本 artifacts/owner。小项暂记REVIEW，按草稿PR的当前提交核对CI后交付。人工测试已取消，审查暂缓。

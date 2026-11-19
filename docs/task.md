@@ -79,8 +79,9 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | WEB-01、MED-01 | READY | 既有隔离WebView/媒体服务可用于自动化矩阵；模拟/HTTP不冒充实际解码或硬件证据 |
 | R6-01 | IN_PROGRESS | 现有临时grant和普通资料接口可复用；先由R6-01a落实明确资料/笔记/书签、位置/用途/版本/预算与撤销边界，再分API/UI实施；不接模型/凭据或扩大旧analyze_attempts授权 |
 | R6-01a 通用资料受控读取契约 | DONE | 主Agent核[PR #58](https://github.com/surface-user/StudyWorkbench/pull/58)最终13f4163的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43585526915)成功、双1188/203/44新冻结与499原blob；只完成设计，b/c/d/e另行落地，见原报告 |
-| R6-01b 封闭授权与文本读取API | REVIEW | 基于#58实现封闭purpose/选择、共享配额与元数据/版本绑定文本/旧笔记/标记；双1216+77子测试、源码/新冻结HTTP各57、45冻结模块核源和只读库回归已过，旧grant兼容；独立PR/当前CI待交付，无模型/迁移，见原报告 |
+| R6-01b 封闭授权与文本读取API | DONE | [PR #63](https://github.com/surface-user/StudyWorkbench/pull/63) 的 [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43594836585) 通过，后端两个版本各1216项，冻结包57项HTTP检查通过。路径归属补充验证见b1。 |
 | R6-01c 资料范围确认与撤销UI | BLOCKED | 依赖b明确接口；普通UI逐项/版本/正文确认，保留草稿、撤销/到期与迟到响应，不向外站WebView提供桥或令牌 |
+| R6-01b1 读取文件前核实路径所属空间 | REVIEW | 依赖已交付的[资料授权 API](https://github.com/surface-user/StudyWorkbench/pull/63)。原件、工作文件及核验重读均须在打开前核对持久路径属于所选空间。 |
 | R6-01d 无模型组合回归 | BLOCKED | 依赖b/c；源码/冻结、旧grant/候选采用、空间与源变更/重启/全库不恢复grant分别自动化，不接模型，不以设计替代功能完成 |
 | R6-01e 其他格式正文提供器 | READY | a设计已满足，可先设计相应格式精确提取/引用契约；PDF/Office等先设计源/派生hash/位置与预算，首批元数据支持不替代该项，OCR/网页/转写及模型继续另排 |
 | R6-02 | BLOCKED | 待用户明确模型提供方/远端范围/候选场景，并依赖R6-01；继续无模型/无凭据 |
