@@ -1,10 +1,12 @@
 """Check additive API errors through real source/frozen HTTP with fresh generated data."""
 import argparse
+import hashlib
 import json
 import os
 import queue
 import re
 import secrets
+import struct
 import subprocess
 import sys
 import threading
@@ -12,6 +14,24 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
+
+
+def media_fixture():
+    """Generated container structure only; sample bytes intentionally do not prove codec validity."""
+    def box(kind, raw):
+        return struct.pack('>I4s', len(raw) + 8, kind) + raw
+    ftyp = box(b'ftyp', b'isom\0\0\0\0isom')
+    sample = box(b'avc1', b'\0' * 6 + b'\0\1' + b'\0' * 70 + box(b'avcC', b'\1' + b'\0' * 6))
+    tables = box(b'stsd', struct.pack('>II', 0, 1) + sample)
+    tables += box(b'stts', struct.pack('>IIII', 0, 1, 1, 1))
+    tables += box(b'stsc', struct.pack('>IIIII', 0, 1, 1, 1, 1))
+    tables += box(b'stsz', struct.pack('>III', 0, 4, 1))
+    tables += box(b'stco', struct.pack('>III', 0, 1, len(ftyp) + 8))
+    dref = box(b'dref', struct.pack('>II', 0, 1) + box(b'url ', b'\0\0\0\1'))
+    info = box(b'vmhd', b'\0\0\0\1' + b'\0' * 8) + box(b'dinf', dref) + box(b'stbl', tables)
+    handler = box(b'hdlr', b'\0' * 8 + b'vide' + b'\0' * 12)
+    track = box(b'tkhd', b'\0' * 84) + box(b'mdia', box(b'mdhd', b'\0' * 24) + handler + box(b'minf', info))
+    return ftyp + box(b'mdat', b'\0' * 4) + box(b'moov', box(b'mvhd', b'\0' * 100) + box(b'trak', track))
 
 
 def main():
@@ -34,6 +54,7 @@ def main():
     private = 'private-fixture-https://example.invalid/?secret=not-echoed'
     checks = 0
     node = None
+    media_item = None
     for restart in (False, True):
         token = secrets.token_urlsafe(32)
         process = subprocess.Popen(command + ['--data-dir', str(root / 'data'), '--media', str(media)],
@@ -94,6 +115,20 @@ def main():
             assert isinstance(validation['detail'], list) and validation['detail']
             error('/api/workspaces', 413, 'payload_too_large', (b'x' * 4096 for _ in range(17)))
             prefix = '/api/workspaces/default'
+            if not restart:
+                media_item, _ = request(prefix + '/media/import?filename=input.mp4', media_fixture())
+            preview_path = prefix + '/media/' + media_item['id'] + '/input-preview'
+            expected = {'expected_sha256': media_item['sha256']}
+            preview, _ = request(preview_path, expected)
+            assert preview['policy_version'] == 'local-mp4-input-v1' and not preview['native_probe_performed']
+            assert preview['streams'] == [{'role': 'video', 'declared_codec': 'h264'}]
+            assert preview['sha256'] == hashlib.sha256(media_fixture()).hexdigest()
+            error(preview_path, 409, 'conflict', {'expected_sha256': '0' * 64})
+            error(preview_path, 422, 'validation_failed', {**expected, 'path': private})
+            error(preview_path, 401, 'unauthorized', expected, headers={'Authorization': ''})
+            error('/api/workspaces/missing/media/' + media_item['id'] + '/input-preview', 404, 'not_found', expected)
+            assert request(prefix + '/media')[0] == [media_item]
+            assert (root / 'data/workspaces/default/media' / (media_item['id'] + '.mp4')).read_bytes() == media_fixture()
             body = {'name': 'kept.md', 'request_id': 'api-error-fixture-note'}
             note, _ = request(prefix + '/markdown-notes', body)
             assert node is None or note['resource_item_id'] == node
@@ -126,7 +161,8 @@ def main():
             assert process.returncode == 0, 'Backend exited unexpectedly'
             assert not process.stderr.read().strip(), 'Backend emitted unexpected stderr'
     print(json.dumps(dict(checks=checks, unique_error_ids=len(identifiers), restarted=True,
-                         receipts_preserved=True, media_range_preserved=True, frozen=bool(args.exe))))
+                         receipts_preserved=True, media_range_preserved=True, local_media_input_preview=True,
+                         native_probe_performed=False, frozen=bool(args.exe))))
 
 
 if __name__ == '__main__':

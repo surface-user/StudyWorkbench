@@ -215,6 +215,12 @@ TXT结果kind=text_resource且content_sha256绑定已核原件；正文命中时
 
 POST W/media/import?filename=...为MP4/WebM/M4A流式导入≤512MiB；GET W/media?offset=0&limit=50；GET W/media/{id}/player核对hash后发放只绑定该媒体的临时能力。专用 `/media/library/{id}/player|content|state?cap=...`，content支持GET/HEAD/Range，state为GET/POST(position/speed/subtitle)。能力不是业务Bearer，失效/归档/文件变化拒绝，重启重新申请，不暴露主机桥。
 
+POST W/media/{id}/input-preview为只读本地来源预检。请求仅`expected_sha256`（严格64位小写hex字符串，额外字段拒绝）；沿用Bearer/Host/Origin/同空间和既有2份查看任务共享并发预算（忙429），不接路径/URL/header/命令。仅ready媒体、当前数据库摘要与请求一致，且原件实际大小/hash一致时处理；来源记录须规范同空间media原件或downloads attempt路径。拒绝UNC/映射网络盘/设备路径/符号链接/重解析点，读取前后核句柄及路径身份/大小/时间，变化409；未加OS排他锁，不能作为后续写入或native授权，后续须再次核源。
+
+首版policy_version=`local-mp4-input-v1`仅接受严格有界的非分片MP4 H.264/AAC、M4A AAC结构子集；单个视频/音频各最多1轨，必须有样本表和本文件mdat引用、单个self-contained dref，拒外部引用、加密/未知box/重复单值box及其他布局。WebM、分片MP4/DASH、其他codec、QuickTime音频版本等明确422，不改变旧导入/播放器兼容。预算512MiB原件、2MiB实际元数据读取、4096个box、每表至多100万项、30秒协作检查；超预算413，阻塞系统调用无即时终止保证。常规文本标签中的URL只是元数据，不作为外部来源执行。
+
+响应仅`media_id/policy_version/container/streams/size/sha256/native_probe_performed`；container=mp4，streams含role=video|audio、declared_codec=h264|aac，无标题/标签/路径或传输URL，native_probe_performed恒false。结构/声明不证明媒体可解码或完整有效；不执行FFmpeg、不创建下载/合流任务、能力或数据库收据，不修改文件/播放数据，不持久缓存或落库。现有导入的magic检查、历史媒体保留及播放入口不因严格预检被改写。实际探测、WebM/分片扩展、固定进程/取消/队列与最终原子入库仍规划中。实现见[media_inputs.py](../backend/study_workbench/media_inputs.py)。
+
 保留 `/api/questions/demo`、`/api/attempts`（GET/POST）、W/questions/demo、`/api/player`及`/media/demo?cap=...`。旧业务入口固定default空间，不跟随当前UI空间暗改作用域；演示题展示包含答案，不是保密考试接口。
 
 ## 离线完整学习库备份恢复（LW-05）

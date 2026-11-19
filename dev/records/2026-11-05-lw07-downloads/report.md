@@ -329,3 +329,28 @@ probe01误设不存在的-parsers CLI返回AVERROR_OPTION_NOT_FOUND（非崩溃�
 11-19只读重核官方download仍列9.0.2，security页为维护/修复公告来源，不是该配置和静态CRT逐漏洞映射清零；未为时间变化盲升或重构建。原失败全留。精选[组件准备证据](evidence/ffmpeg-binary-preparation.json)只含来源/原始日志hash、元数据/exit，不含tar/exe/媒体/个人数据或环境。b2仅有限developer组件准备待独立PR/current CI与主Agent核验，c完整受控输入/进程/队列及REL义务未完成；审查按用户要求暂缓，人工取消，未合并/发行。
 
 最终范围检查已实际完整运行：500基线blob/3原文档变更/497保持、7新文件共10文件；93本地引用/9锚点、70类旧任务ID、原报告完整前缀、两锁和运行代码保持，逐文件diff --check无空白错误，Question Schema/Ruff退出0。首次复制检查脚本时误用双换行锚点使脚本截断、未产生检查摘要；识别空输出后停止计入结果，校正单换行锚点并断言存在后完整74行运行，以上才是有效检查。b2提交10文件仅文本工具/测试/两极小补丁/profile/配方/三文档/精选证据；不上传exe/DLL/tar/docx/样本、临时下载地址、个人数据或原环境日志。
+
+
+## 2026-11-19 DL-03c1：本地MP4/M4A来源预检
+
+基线为已有限接受的[PR#67](https://github.com/surface-user/StudyWorkbench/pull/67)，head1ecbf479ac194259ecca3a0ff3354d84b2de602a/tree dc12904a7b67dba2f7d0dbec2949500a3a45f4c0；新media-input-policy副本507blob逐核一致，旧checkout/PR不改。#67当前[CI44492322858](https://github.com/surface-user/StudyWorkbench/actions/runs/44492322858)三job成功，两版各1220/新13、Flutter203/44新冻结/API34；主Agent已独立verify实际17文件及三CI，b2有限DONE。b2的37步真实copy/probe与5decode、全对应源/静态CRT边界继续有效，未重复已验证构建，也未据此宣称产品native接入或发行就绪。
+
+c1只增加POST media/{id}/input-preview的后端产品入口，无桌面调用、原生执行或新持久状态。明确选MediaEntry稳定ID和expected_sha256，复用鉴权/同空间/ready状态与资源路径、既有2查看槽；规范同空间media原件或downloads路径，再核实际大小/hash与源变化。不接外部路径/URL/headers/凭据/命令，不创建cap/下载/合流或改播放状态。只读文件元数据/内容，不写原件或数据库；其结果不是后续native授权，c2须重新核验/冻结输入。无迁移或备份schema变化，c3若需新增持久来源/attempt将与主Agent核实施head，避免撞PDF链已规划0017。
+
+local-mp4-input-v1只支持非分片MP4 H264/AAC、M4A AAC的保守结构子集：白名单路径/唯一单值box、1视频/1音频、单个self-contained dref、对应样本表/mdat边界，AAC ES URL/依赖flags与其他对象拒绝；文本标签不当作传输来源执行。WebM/分片MP4/DASH、其他codec/未知layout、外部引用/alias、加密、重复/截断/异常count拒绝，旧导入magic/原件留存与播放器兼容不改。输出仅声明codec/role，native_probe_performed=false，不能证明codec可解码/文件全部有效。固定512MiB输入、2MiB实际元数据读取、4096box/100万表项、30秒协作检查；未知布局保持拒绝，不把这一子集冒称完整恶意媒体沙箱。路径/句柄前后观察不是OS排他锁，阻塞系统调用不能承诺即时取消；原生Job/EOF/共享预算/取消、WebM/分片扩展和最终入库均未完成。
+
+规则核对使用固定认证FFmpeg9.0.2官方源libavformat/mov.c的mov_read_dref/parse_table/ES描述与默认box处理；仅据此核标准字段及解释，不复制C实现，不自称clean-room。[官方格式文档](https://ffmpeg.org/ffmpeg-formats.html#mov_002c-mp4_002c-ismv)核对dref开关；[Matroska元素规范](https://www.matroska.org/technical/elements.html)只供后续WebM边界评估，本版没有冒称WebM已接。没有新增站点访问/换源/UA/cookie或重复B站412请求；DL-02b1三次失败和三站未完成继续保留。
+
+### 自动化、失败保留与证据边界
+
+IQ为相邻starlette-q-isolated CPython3.13.17，IP为starlette-p-isolated CPython3.12.7，既有Starlette1.3.1/pytest9.0.3锁和共享环境不改。最终两版均执行 `-m pytest backend/tests/test_media_inputs.py backend/tests/test_media_library.py -q --basetemp=.local/c1-q06`（IP为p01）及对应 `--junitxml=artifacts/dl03c1/q06.xml`/p01.xml，退出0，各42通过/0skip（39新增+3旧媒体）。实际Windows junction创建/拒绝均执行，源文件保留；盒边界/样本表、dref外链/UNC/alias、codec/加密/分片、预算/摘要/替换、严格请求/鉴权/同空间/忙/不写库和旧WebM导入保留均覆盖。单元结构样本为源码拼装、sample字节故意不可解码，不将它们作为播放或copy证明。
+
+已有原创真实编码样本av.mp4（2177B/SHA2411bd2e6c0ccee4aafa95e560f44ddd08aef4b15125094a9b2e7eb65e6fab25）及audio.m4a（911B/SHA9bfd9f2c05af35aeb733ba0cd9d7de3eb62437390326607da0ce327a5e245352）的新只读预检通过，分别声明H264+AAC/AAC，前后hash保持；它们的实际编码/独立decode证明沿用b2原日志，不复制媒体进Git。没有重建或修改已交组件/源目录。
+
+既有 `tools/check_api_errors.py` 增补本地媒体预检与摘要错误、额外path拒绝、鉴权/隔离/原件保持，不另造进程框架或新通用执行器。IQ source命令 `tools/check_api_errors.py --test-root .local/c1-source-api01` 退出0，47checks/26独立错误ID、重启/旧收据/Range保持。`packaging/windows/build-backend.ps1 -Python ../starlette-fix/.local/starlette-q-isolated/Scripts/python.exe` 退出0，干净新冻结45模块逐源码/常量一致；同IQ `tools/check_api_errors.py --exe dist/study_backend/study_backend.exe --test-root .local/c1-frozen-api01` 退出0，同47项/重启通过，frozen真。实际冻结构建与原件hash检查不替代当前head远端CI，PR/current CI另核。
+
+失败完整保留：首次样本helper未设PYTHONPATH，ModuleNotFound退出1，未执行样本检查；加backend后原生Windows fstat与path.stat的ctime语义不同导致初版误报409，现各API自身前后ctime比较，交叉仅dev/ino/size/mtime，保留现场。首次从media_library顶层导入document_files触发document_files→explorer→media_library间接环，q01 collection两错误；已在router factory延迟导入同一limited_view，未复制/削弱并发守卫。q02/q03各39通过后新增边界，q04为40通过/2失败：AAC负例替换串未匹配（显式assert阻止假测）和沙箱禁止junction；修正fixture真实flags偏移，q05仍仅junction Access denied、41通过。保留原失败并在已授权新隔离目录原生复验q06/IP p01，各42实际通过，不skip、不降低断言。真实junction测试还固定原始root先lstat再resolve，避免把根junction解析后误信任。首Ruff E731/后import排序修正，最终全backend/tools Ruff退出0。首Question Schema命令误写不存在generate_question_schema.py，工具退出1/未跑检查，随后改用仓库实际export_question_schema.py --check核验，结果另记，不冒称首命令通过。
+
+精选[输入策略证据](evidence/media-input-policy.json)仅保留固定源码/选取原日志hash、输入摘要/计数/退出码，支持本切片声明；原JUnit/冻结构建和自建隔离库留artifacts/.local，不上传媒体/数据库/包/环境。c1实现及相关自动化完成，待独立草稿PR/current CI与主Agent核验；代码审查按用户要求暂缓，人工按11-06取消，未合并/发行。c2固定component探测/Job和c3队列/合流/备份迁移继续，不把整个DL-03登记完成。
+
+最终打包范围首检发现本机Path.write_text默认转CRLF，旧报告整文件换行不符原blob，检查失败即停止上传；已仅归一回原LF，保留原正文前缀。此处是交付文本规范修正，不改业务代码或测试门槛。

@@ -3,8 +3,9 @@ import hashlib
 import html
 import json
 import os
+import re
 import secrets
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Query, Request
@@ -16,9 +17,15 @@ from starlette.concurrency import run_in_threadpool
 
 from .db import MediaEntry, write_transaction
 from .imports import resource_path
+from .media_inputs import inspect_media_input
 from .workspaces import require_workspace
 
 MEDIA_LIMIT = 512 * 1024 * 1024
+
+
+class InputPreview(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    expected_sha256: str = Field(strict=True, pattern=r'^[0-9a-f]{64}$')
 
 
 def media_mime(suffix, header, size):
@@ -48,6 +55,9 @@ def describe(item):
 
 
 def media_routers(engine, root):
+    # Explorer imports media_mime; defer the existing shared viewer budget until router creation.
+    from .document_files import limited_view
+
     api = APIRouter(prefix='/api/workspaces/{workspace_id}')
     public = APIRouter(prefix='/media/library')
     grants = {}
@@ -134,6 +144,23 @@ def media_routers(engine, root):
             while len(grants) > 256:
                 grants.pop(next(iter(grants)))
             return {'url': f'{str(request.base_url).rstrip("/")}/media/library/{item.id}/player?cap={cap}'}
+
+    @api.post('/media/{media_id}/input-preview')
+    @limited_view
+    def input_preview(workspace_id: str, media_id: str, body: InputPreview):
+        with Session(engine) as session:
+            item = entry(session, workspace_id, media_id)
+            if item.status != 'ready' or body.expected_sha256 != item.sha256:
+                raise HTTPException(409, '媒体状态或摘要已改变，请刷新后重新选择；原文件保留')
+            parts = PurePosixPath(item.relative_path).parts
+            local = len(parts) == 4 and parts[2] == 'media' and parts[3] in (item.id + '.mp4', item.id + '.m4a', item.id + '.webm')
+            downloaded = (len(parts) == 5 and parts[2] == 'downloads' and re.fullmatch('[0-9a-f]{32}', parts[3]) and
+                          re.fullmatch(r'[1-9][0-9]*\.(mp4|m4a|webm)', parts[4]))
+            if (parts[:2] != ('workspaces', workspace_id) or not (local or downloaded) or
+                    PurePosixPath(item.relative_path).as_posix() != item.relative_path):
+                raise HTTPException(409, '媒体来源记录无效，原文件保留')
+            result = inspect_media_input(root, item.relative_path, item.size, item.sha256, item.mime)
+            return {'media_id': item.id, **result}
 
     def allowed(session, media_id, cap):
         grant = grants.get(cap)
