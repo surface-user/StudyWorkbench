@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "scope": "DL-03c1-local-mp4-input-preview",
+  "base_commit": "1ecbf479ac194259ecca3a0ff3354d84b2de602a",
+  "policy_version": "local-mp4-input-v1",
+  "native_probe_performed": false,
+  "database_schema_changed": false,
+  "ffmpeg_rebuilt": false,
+  "network_site_requests": 0,
+  "sources": {
+    "backend/study_workbench/media_inputs.py": {
+      "bytes": 14590,
+      "sha256": "7e073a6d680258ecc8ff43b612a91d29381b52664abef3d555dc280ae7c76611"
+    },
+    "backend/study_workbench/media_library.py": {
+      "bytes": 10316,
+      "sha256": "c2a2aee134ffca558ca79d9eb11731e222a415386a54de4d252dcdd4c257ef28"
+    },
+    "backend/tests/test_media_inputs.py": {
+      "bytes": 12133,
+      "sha256": "a0fceb15ae506be443f44585dd3ca81190afacba10a03f2e027950a38948ba1c"
+    },
+    "tools/check_api_errors.py": {
+      "bytes": 9336,
+      "sha256": "7aec108d6b8b495e86b4d08b9b00be1a28d938ea04634b7cf84c4abe408b6cbd"
+    }
+  },
+  "retained_logs": {
+    "artifacts/dl03c1/q01.xml": {
+      "bytes": 3318,
+      "sha256": "d01ae0e886716201b66454dbc32a71778cf5543c6da3b7278b22f5980a9aa0e9"
+    },
+    "artifacts/dl03c1/q02.xml": {
+      "bytes": 8123,
+      "sha256": "86628f436b2e9b3d84db4fdc8129a33cd715e717e74977dbf84ec8d372a3e6f9"
+    },
+    "artifacts/dl03c1/q03.xml": {
+      "bytes": 8123,
+      "sha256": "b4b9ccd973486aa6f051f8798978c1695caa5639b4ea3463c9a6f76c7cd9cca3"
+    },
+    "artifacts/dl03c1/q04.xml": {
+      "bytes": 11887,
+      "sha256": "5a421c939c5650710dd5f4a8d652102166e13b8e34e44dca6df9f645b661e7d0"
+    },
+    "artifacts/dl03c1/q05.xml": {
+      "bytes": 10750,
+      "sha256": "cec70d6d1725e960ed25ccec88faec23e8a59485a8ed132f38821f8dd3eb877b"
+    },
+    "artifacts/dl03c1/q06.xml": {
+      "bytes": 8556,
+      "sha256": "50081e4794a199259cb2522fddac1fc2bd4da0b529f0f4fc36b9ccf97c12c22a"
+    },
+    "artifacts/dl03c1/p01.xml": {
+      "bytes": 8556,
+      "sha256": "4025ef34442fe3898694ccf1b462eaa43bac5a276ab1d40a6d07a2945c5725b7"
+    },
+    "artifacts/dl03c1/freeze01.txt": {
+      "bytes": 18404,
+      "sha256": "2fc4455a3749e2cadb2b4713e42ed82bd646d19b081a23c9140867f15317599c"
+    }
+  },
+  "final_related_tests": {
+    "python3.13.17": {
+      "passed": 42,
+      "skipped": 0,
+      "exit": 0
+    },
+    "python3.12.7": {
+      "passed": 42,
+      "skipped": 0,
+      "exit": 0
+    }
+  },
+  "real_api_checks": {
+    "source": 47,
+    "frozen": 47,
+    "unique_errors_each": 26,
+    "restarted": true,
+    "exit": 0
+  },
+  "frozen_source_modules": 45,
+  "release_ready": false,
+  "selection_reason": "Bounded input policy and source/frozen read-only API only; no source media, personal data, raw environment or transport credentials included."
+}

@@ -192,7 +192,9 @@ LW-07首批采用用户确认有权下载的直接HTTPS媒体文件，只保留�
 
 ### 格式、轨道与队列交接（规划中）
 
-本节是后续实现契约，不增加当前API、表或FFmpeg能力。预览只供选择；用户明确选择质量/音轨、空间/目录/名称并确认权利后才可创建下载。复用MediaDownloadJob、MediaEntry、32待办/单worker，不建立另一份站点队列。
+当前只读`media/{id}/input-preview`独立核验显式选中的本地MediaEntry、同空间来源及expected/实际hash；local-mp4-input-v1仅非分片MP4 H.264/AAC、M4A AAC的有界结构子集，WebM/分片/其他布局拒绝。返回声明codec与native_probe_performed=false，不创任务/落库、不调用FFmpeg或授权后续处理；完整字段/预算见[API](api-spec.md#媒体与旧default兼容入口)。这项预检不是下述站点候选确认、真实native探测、DASH合流或来源快照实现；旧导入与播放保留，后续原生worker仍须重验/冻结来源。
+
+下述交接是后续实现契约，不增加当前站点确认API、表或FFmpeg能力。预览只供选择；用户明确选择质量/音轨、空间/目录/名称并确认权利后才可创建下载。复用MediaDownloadJob、MediaEntry、32待办/单worker，不建立另一份站点队列。
 
 | 形态 | 交接与首批限制 |
 | --- | --- |
