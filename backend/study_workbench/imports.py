@@ -17,6 +17,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
+from .backup_archive import archive_path
 from .db import (
     ImportJob,
     Note,
@@ -112,6 +113,27 @@ def read_resource(root, resource):
         raise HTTPException(409, "原件不可读取，请检查数据目录；任务记录已保留") from error
     if len(data) != resource.size or hashlib.sha256(data).hexdigest() != resource.sha256:
         raise HTTPException(409, "原件校验失败，文件可能已被修改")
+    return data
+
+
+def read_pdf_source(session, root, workspace, resource_id, expected):
+    require_workspace(session, workspace)
+    item = session.get(Resource, resource_id)
+    if item is None or item.workspace_id != workspace:
+        raise HTTPException(404, 'PDF 原件不存在')
+    try:
+        parts = archive_path(item.relative_path).split('/')
+    except ValueError:
+        parts = []
+    if len(parts) < 3 or parts[:2] != ['workspaces', workspace] or item.sha256 != expected:
+        raise HTTPException(409, '原件版本或工作空间路径不符')
+    if not 0 < item.size <= 8 * 1024 * 1024:
+        raise HTTPException(413, '此项 PDF 提取最多支持 8 MiB 原件')
+    if Path(item.original_name).suffix.lower() != '.pdf':
+        raise HTTPException(422, '请选择托管 PDF 原件')
+    data = read_resource(root, item)
+    if not data.startswith(b'%PDF-'):
+        raise HTTPException(422, 'PDF 原件格式无效')
     return data
 
 

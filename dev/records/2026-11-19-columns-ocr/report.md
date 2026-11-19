@@ -15,3 +15,11 @@
 | LICENSE | 11358 | cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30 |
 
 引擎与固定语言仓的 LICENSE 同为 Git blob `d645695673349e3947e8e5ae42332d0ac3164cd7`，内容为 Apache License 2.0。该对应关系只覆盖两个上游根许可。此次没有执行 OCR，识别效果以及最终发行物的传递许可继续由后续小项验证。新项目依赖尚未加入。人工测试取消，独立审查暂缓。
+
+## PAR-02b 原生双栏单页预览
+
+业务入口要求当前空间的资料节点、预期原件摘要和原始页号。复用分块任务的 PDF 身份与 8 MiB 读取检查、文档查看的两个并发槽和 20 秒子进程。在明确选择双栏时，按页边框中线划分左右两栏，按纵坐标从上到下排序，返回文字、原页归一化包围框、页号及原件摘要。单独文字对象跨中线、文字行重叠、空栏、嵌套版式或旋转等不确定情况返回 available=false 与原因。仅支持可分开的水平文字行，图片和题干的跨栏归属另行实施。未引入依赖。
+
+自编 ASCII PDF 在对象流中交错写入右下、左下、右上、左上四行，期望顺序由测试独立断言。业务 HTTP 同时验证版本、空间、页号、两栏坐标和原件字节。首轮双 Python 各 1 通过、5 失败，发现固定版 PDFium 的文本页没有上下文管理器协议；改用 closing 明确释放。专项复验 6 项通过。最终在 pdf-column-preview 副本用 Python 3.12.7 和 3.13.17 各运行 `python -X utf8 -m pytest -q backend/tests/test_document_files.py backend/tests/test_pdf_chunks.py backend/tests/test_markdown_questions.py`，每版各 27 项通过、2 项既有警告，退出 0。原始与最终日志、JUnit 均在副本 artifacts。
+
+`python -m ruff check backend tools`、`python tools/export_question_schema.py --check` 以及源码 `python tools/check_document_workers.py` 均退出 0。冻结包 CI 使用同一份交错双栏样本和独立顺序断言。按本批安排暂缓独立审查，人工测试已取消。此项只交付后端预览，OCR 和双栏拆题另有任务。

@@ -11,8 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .db import ImportJob, MarkdownQuestion, PdfChunkJob, Resource, write_transaction
-from .imports import read_resource, resource_path, validate_attachments
-from .pdf_chunks import source as chunk_source
+from .imports import read_pdf_source, read_resource, resource_path, validate_attachments
 from .question_splitting import all_blocks, draft_revision, markdown
 from .workspaces import require_workspace
 
@@ -60,7 +59,7 @@ def markdown_router(engine, root):
             else:
                 if chunk_job.workspace_id != workspace_id or chunk_job.resource_id != job.resource_id:
                     raise HTTPException(409, '分块候选与原件关联不符')
-                chunk_source(session, root, workspace_id, original.id, chunk_job.source_sha256)
+                read_pdf_source(session, root, workspace_id, original.id, chunk_job.source_sha256)
             for ordinal in body.selected:
                 validate_attachments(session, workspace_id, all_blocks(drafts[ordinal]), root)
             results = []

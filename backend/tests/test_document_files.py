@@ -237,3 +237,59 @@ def test_0007_to_head_backup_preserves_all_old_rows_and_failure_rollback(tmp_pat
             assert db.execute('PRAGMA foreign_key_check').fetchall() == []
     backups = list((root / 'backups').glob('study-before-0017-*.db'))
     assert backups and all(snapshot(path) == before for path in backups)
+
+
+def column_fixture(lines, rotation=0):
+    # Write separate PDF text objects in caller-provided order.
+    body = b'\n'.join(f'BT /F1 12 Tf {x} {y} Td ({text}) Tj ET'.encode() for x, y, text in lines)
+    objects = [b'<< /Type /Catalog /Pages 2 0 R >>', b'<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+               f'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 400 400] /Rotate {rotation} '.encode()
+               + b'/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',
+               b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+               f'<< /Length {len(body)} >>\nstream\n'.encode() + body + b'\nendstream']
+    data = bytearray(b'%PDF-1.4\n')
+    offsets = []
+    for number, obj in enumerate(objects, 1):
+        offsets.append(len(data))
+        data.extend(f'{number} 0 obj\n'.encode() + obj + b'\nendobj\n')
+    start = len(data)
+    data.extend(b'xref\n0 6\n0000000000 65535 f \n')
+    for offset in offsets:
+        data.extend(f'{offset:010d} 00000 n \n'.encode())
+    data.extend(f'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n{start}\n%%EOF'.encode())
+    return bytes(data)
+
+
+def test_column_preview_uses_selected_resource_and_geometric_reading_order(tmp_path):
+    raw = (Path(__file__).parents[2] / 'contracts/samples/two-column-order.pdf').read_bytes()
+    with client(tmp_path) as c:
+        node, resource, original = add(c, tmp_path, 'columns.pdf', raw)
+        body = dict(page=1, expected_sha256=hashlib.sha256(raw).hexdigest())
+        url = f'{PREFIX}/nodes/{node}/document-columns'
+        response = c.post(url, json=body)
+        assert response.status_code == 200, response.text
+        value = response.json()
+        assert value['available'] and value['page'] == value['page_count'] == 1
+        assert value['resource_id'] == resource and value['source_sha256'] == body['expected_sha256']
+        assert [col['text'] for col in value['columns']] == ['Left first\nLeft second', 'Right first\nRight second']
+        left, right = [col['box'] for col in value['columns']]
+        assert 0 < left[0] < left[2] < 0.5 < right[0] < right[2] < 1
+        assert all(0 < bounds[1] < bounds[3] < 1 for bounds in [left, right])
+        assert c.post(url.replace('/default/', '/missing/'), json=body).status_code == 404
+        assert c.post(url, json={**body, 'page': 2}).status_code == 422
+        assert c.post(url, json={**body, 'expected_sha256': '0' * 64}).status_code == 409
+        assert original.read_bytes() == raw
+
+
+@pytest.mark.parametrize(('lines', 'rotation', 'reason'), [
+    ([], 0, 'empty_column'),
+    ([(20, 300, 'Left only')], 0, 'empty_column'),
+    ([(165, 300, 'Spanning title on both sides')], 0, 'cross_column_text'),
+    ([(20, 300, 'x'), (205, 300, 'y')], 90, 'rotated_page'),
+    ([(20, 300, 'Left'), (60, 300, 'same line'), (220, 300, 'Right')], 0, 'overlapping_lines'),
+])
+def test_uncertain_column_layout_returns_no_partial_order(lines, rotation, reason):
+    from study_workbench.document_view_worker import render
+
+    value = render(column_fixture(lines, rotation), 'pdf-columns')
+    assert value == dict(page=1, page_count=1, available=False, reason=reason)

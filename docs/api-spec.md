@@ -116,6 +116,7 @@ creation_status为prepared/ready/interrupted/conflict；status在未完成时同
 | GET N/document | 类型、当前hash/来源hash、副本/变化状态及文本/页数/图片/DOCX结构；Office附能力和当前源预览，读取不启动转换 |
 | GET N/document：通用文本 | TXT/JSON/CSV/LOG/VTT/SRT返回type=text、source_format和position_kind；TXT为text_line，其余resource。≤1MiB严格UTF-8，非法编码422、超限413；原文字面显示，不自动解析题库、不执行公式/脚本，工作副本编辑仍仅MD |
 | GET N/document：XLSX | type=spreadsheet、source_format=xlsx、position_kind=resource、renderer_version=xlsx-values-v1；sheets含name/state/cells（address/value/formula/cache_missing），另有cell_count。公式仅取现有缓存、无缓存提示，字符串字面显示，无编辑/计算/网络读取；源超16MiB为413，损坏/不支持/预算/20秒超时422 |
+| POST N/document-columns | 传原件 expected_sha256 及 1 起算的 page。读取已选单页的等宽双栏。结果含 resource_id、source_sha256、page、page_count、renderer_version，available=true 时按左、右返回有序文字及归一化包围框，布局不可判定时返回 available=false 和原因。 |
 | GET N/document-page?page=1 | PDF页图PNG base64、来源hash及渲染器版本 |
 | GET N/relative-image?path=... | 同空间逻辑树相对PNG/JPEG，拒绝网络/绝对/越根；允许树内父导航，目标缺失404 |
 | POST N/working-copy | expected_sha256，仅MD显式创建，原件不变 |

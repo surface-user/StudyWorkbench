@@ -59,3 +59,11 @@ assert chunk['fragments'][0]['marker'] is None and any(part['marker'] for part i
 assert all(part['source_pages'] == [2] and not part['ambiguous'] for part in chunk['fragments'])
 assert len(chunk['warnings']) == 1 and chunk['_assets']
 print('pdf: absolute page range, continuation and question marker passed')
+
+raw = (root / 'contracts/samples/two-column-order.pdf').read_bytes()
+response = subprocess.run([*command, '--view-document', 'pdf-columns'], input=b'{"page":1}\n' + raw,
+                          capture_output=True, check=True, timeout=20, env=environment, cwd=root)
+columns = json.loads(response.stdout)
+assert columns['available'] and columns['page'] == columns['page_count'] == 1
+assert [c['text'] for c in columns['columns']] == ['Left first\nLeft second', 'Right first\nRight second']
+print('pdf: explicit two-column reading order passed')

@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import pypdfium2 as pdfium
 import pytest
-from study_workbench import backup_store, pdf_chunks
+from study_workbench import backup_store, imports, pdf_chunks
 from test_imports import SCOPE, client, upload
 
 API = SCOPE + '/pdf-chunk-jobs'
@@ -106,7 +106,7 @@ def test_chunk_job_rejects_scope_source_hash_and_budget(tmp_path, monkeypatch):
         with sqlite3.connect(tmp_path / 'study.db') as db:
             db.execute("UPDATE resources SET relative_path='workspaces/default-other/originals/x' WHERE id=?",
                        (body['resource_id'],))
-        monkeypatch.setattr(pdf_chunks, 'read_resource', lambda *_: pytest.fail('resolved a foreign path'))
+        monkeypatch.setattr(imports, 'read_resource', lambda *_: pytest.fail('resolved a foreign path'))
         assert c.post(url + '/resume').status_code == 409
         assert c.post(API, json=body).status_code == 409
 
