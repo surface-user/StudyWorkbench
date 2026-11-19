@@ -79,7 +79,7 @@ def test_pdf_page_worker_preserves_continuation_and_absolute_coordinates():
     with pytest.raises(ValueError, match='20 页'):
         extract(data, '.pdf')
     result = subprocess.run([sys.executable, '-m', 'study_workbench', '--parse-pdf-pages', '21', '21'],
-                            input=data, capture_output=True, check=True, timeout=25)
+                            input=data, capture_output=True, check=True, timeout=25, cwd=Path(__file__).parents[1])
     chunk = json.loads(result.stdout)
     assert (chunk['first_page'], chunk['last_page'], chunk['page_count']) == (21, 21, 22)
     assert len(chunk['warnings']) == 2
@@ -132,5 +132,5 @@ def test_pdf_chunk_unlocated_marker_cannot_extend_a_previous_question(monkeypatc
 ])
 def test_pdf_chunk_worker_rejects_invalid_input_before_parsing(first, size, error):
     result = subprocess.run([sys.executable, '-m', 'study_workbench', '--parse-pdf-pages', first, '1'],
-                            input=bytes(size), capture_output=True, check=True, timeout=25)
+                            input=bytes(size), capture_output=True, check=True, timeout=25, cwd=Path(__file__).parents[1])
     assert error in json.loads(result.stdout)['error']

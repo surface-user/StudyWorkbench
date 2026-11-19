@@ -17,3 +17,5 @@
 在独立 pdf-chunk-worker 副本，Python 3.13.17 / 3.12.7 执行 `python -X utf8 -m pytest backend/tests/test_documents.py backend/tests/test_complex_question_splitting.py -q`。首轮各 27 通过。补充输入边界后，两版各 1 失败、27 通过、3 个错误：Windows 默认管道编码使中文拒绝结果无法按 JSON UTF-8 解码，pytest 又将整份 8 MiB 测试参数编码进测试名称，超过 Windows 环境变量长度。分块的错误改用 ASCII 转义 JSON，测试改以大小参数生成同样字节。复验两版分别 30 通过、2 个既有弃用警告，退出 0。所有中间日志及最终 JUnit 位于副本 artifacts。未更改旧解析语义或删减错误断言。
 
 `python -m ruff check backend tools`、`python tools/export_question_schema.py --check` 和源码模式 `python tools/check_document_workers.py` 退出 0。后者在原有整篇 DOCX/PDF 检查后新增第 2 页片段的实际子进程检查；同一脚本也由 Windows CI 对本次构建出的冻结包执行。以当前提交的运行结果核实冻结覆盖。审查暂缓、人工测试已取消。
+
+#70 首次 CI 的 Windows 冻结包检查通过，Python 3.12 的三条新增子进程测试因找不到 study_workbench 失败，矩阵取消了另一版本。开发环境显式设置了 PYTHONPATH，CI 仅给 pytest 自身配置了源码目录。测试现从 backend 目录执行子进程，沿用同一解释器和断言。原失败保留在[首次 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44495155155)。
