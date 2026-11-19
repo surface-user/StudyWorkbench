@@ -9,6 +9,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, field_validator, model_validator
 from sqlalchemy import LargeBinary, cast, func, select
 
+from .backup_archive import archive_path
 from .db import DocumentWorkfile, LearningMark, Note, Resource, WorkspaceNode
 from .document_files import PLAIN_TEXT_SUFFIXES, TEXT_LIMIT
 from .imports import note_revision, resource_path
@@ -85,8 +86,12 @@ def read_resources(session, root, workspace, selections, encode):
         nonlocal remaining
         if root is None:
             raise HTTPException(503, '当前未配置资料读取服务')
-        if ':' in relative or any(p in {'.', '..'} for p in relative.replace('\\', '/').split('/')):
-            raise HTTPException(409, '资料路径无效；原件保留')
+        try:
+            parts = archive_path(relative).split('/')
+        except ValueError:
+            raise HTTPException(409, '资料路径无效；原件保留') from None
+        if len(parts) < 3 or parts[:2] != ['workspaces', workspace]:
+            raise HTTPException(409, '资料路径不属于授权空间')
         try:
             def opener(path, flags):
                 return os.open(path, flags | getattr(os, 'O_NONBLOCK', 0) | getattr(os, 'O_NOFOLLOW', 0))
