@@ -172,6 +172,16 @@ python tools/source_licenses.py --package-config apps/desktop/.dart_tool/package
 
 项目代码MIT与`unimathsymbols.txt`的LPPL-1.3-or-later分开映射，保留数据作者、原头部日期及vendor修改后未更新通知的事实。补齐原文仍保留上游归档缺文、LPPL原Work/修改条件待核；此组件有issue，CLI仍退出2，完整产品/归档来源/分发义务仍false。该补充不向产品payload添加数据或修改原依赖，不证明HTML/MathML导出已受支持；最终发行复制/成员范围和义务另核。
 
+## 固定后端原生许可复制
+
+当前`release_inventory.py --stage`会在写任何许可前检查`backend/_internal/libcrypto-3.dll`、`libssl-3.dll`及`libffi-8.dll`。使用仓库[固定来源及许可原文](../packaging/licenses/cpython-native-3.13.17/provenance.json)：三件全无时兼容通用旧stage并记录未应用；只含部分、字节不符或来源/原文/目的冲突时失败，保留已有文件。不会根据文件名或PE版本套用许可。
+
+三件全部符合固定hash时，把两份原文按原bytes写入`licenses/_native/cpython-native-3.13.17/`，并在`build-inventory.json.native_license_texts`记录profile摘要、三DLL及两原文路径/hash、提供者commit和归档URL/hash。该独立目录避免与环境包、Dart及原native缓存许可相互覆盖。已有相同原文直接复用，冲突不覆盖；复制中失败保留原清单及已产生的输出，不删除或自动回滚用户文件。原profile/许可目录的Git属性禁用文本换行转换，使Windows检出仍保持原始摘要。
+
+`check_release.py`对含三件的stage要求这份声明及两原文实际存在，再从固定profile和实际DLL/许可字节独立核对；即使外层文件清单/hash一起被修改，缺许可或伪造来源声明仍拒绝。未含三件的旧通用stage可不含新字段。profile和原文单文件各限1MiB，DLL各限8MiB，拒绝链接/重解析、非法来源和目的，写入前后重核输入。构建目录须稳定，前后校验不构成原子文件系统快照。
+
+`applied=true`只表示本固定子集的两份许可已随此stage交付。`product_licenses_complete`、`distribution_obligations_reviewed`、`vulnerabilities_verified`和`release_ready`仍为false；其他许可义务、原生来源、漏洞与签名继续分别核验，静态加载门禁保持。
+
 ## 规划中
 
 自动升级/完整回滚产品流程、下载/转码组件、正式签名发行按专项实施。FFmpeg须先锁定实际构建开关与LGPL/GPL/nonfree及来源义务；本地生成样本不等于可随产品分发。

@@ -965,3 +965,38 @@ REL-01h转REVIEW，四文件范围检查/最终精选只读一致及独立草稿
 工具解释器-m ruff check backend tools及Q tools/export_question_schema.py --check实际退出0。artifacts/rel01i/check_changes.py退出0：7文件白名单、503原blob保持/最终510文件、95本地引用/被引标题、67唯一调度行、旧报告完整前缀及所有业务/工具/锁/工作流保持。许可例外不是放宽来源校验，两原文均与官方归档及Git blob精确相同；未提交原归档、完整响应、DLL或测试库。独立PR/当前head CI继续，有限项仍REVIEW。
 
 独立草稿[PR #88](https://github.com/surface-user/StudyWorkbench/pull/88)已创建并附任务，codex/cpython-native-source-licenses基于#81最终aba16ba；首次提交b4d5a7f0dad07fd9452290c5a8125ab53de47d9d/tree069170ed1f383332f932a638694450246cbe1369。补实际链接后保持7文件及510最终blob，原许可CRLF/hash不变；最终head/tree/当前CI在PR正文记录，不循环改自引hash。REL-01i保持REVIEW待本head CI及主Agent有限核验，未合并或发行。
+
+## 2026-11-20：REL-02c 固定原生许可打包及清单校验
+
+### 输入及有限设计
+
+主Agent已独立核#88最终481d93aacb5f3468c7e54d5989b0f365721b0081/treedf02e594d7d633119146e5621cab076c8aed2d42的[CI44683111794](https://github.com/surface-user/StudyWorkbench/actions/runs/44683111794)完整成功，另实际执行只读helper退出0：969文件/三DLL/两原文/三组件及summary a783111…、CDX 2d572e96…相符，REL-01i可有限DONE。该head实际双1265/4既有警告（Q526.20s/P498.43s）、desktop203/46冻结/API81/36错误ID及原链通过，45步成功/限定公网1跳过。原头及其证据不改。
+
+主Agent明确优先修正最终stage许可交付缺口，覆盖无三件旧stage兼容、部分/变更失败、重复执行和失败保留。从#88精确510文件新建backend-native-license-stage，基础/相关规范对应已读现行版；补核全部collector/checker调用者、既有collection/staged fixture与打包链。当前build-release调用release_inventory后再check_release，可在既有两入口完成，无新工具框架/依赖/业务API或后端模块。计划八文件：两工具、原专项、打包指南/task/本原报告、精选摘要及Git属性；Git属性是保持固定provenance/许可原bytes不随Windows换行设置转换所需。
+
+主Agent另行原生漏洞复扫已发现OpenSSL3.5.9八条上游版本命中；具体影响/修复由漏洞专项继续，不能把本许可复制当作可发行或无漏洞结论。固定三DLL若升级/变字节会被此旧profile拒绝，必须另行更新来源绑定，不能自动沿用旧身份/许可。
+
+### 已实现行为
+
+release_inventory在任何许可写入前基于实际stage相对路径预检。backend/_internal的libcrypto-3.dll、libssl-3.dll、libffi-8.dll三件全无时不读profile，保持通用旧stage可用并记录applied=false；出现部分、大小/hash不符、重复目标或非法profile/原文/目的时立即失败。只接受固定两提供者及其来源格式/三目标/两原文，profile和许可各1MiB、DLL各8MiB，拒绝链接/重解析、重复JSON键和非法源/目的。
+
+全部符合时，原文写入独立licenses/_native/cpython-native-3.13.17目录，避免环境包/dart/native缓存许可碰撞；原raw bytes和CRLF保持。已有相同字节直接复用，冲突不覆盖；新文件用xb创建，写前及写后重核三DLL/profile/原文及目的。发生I/O错误不删除部分输出、不替换旧manifest，供检查及重试；已成功的原文重试可复用且mtime保持。稳定构建目录是前提，不把前后校验说成原子或对抗性文件系统沙箱。
+
+build-inventory新增native_license_texts，记录profile摘要、三DLL路径/大小/hash、两许可来源/目的/hash及提供者commit/归档URL/hash。applied=true仅表示此stage的固定原文子集已交付，完整许可、义务、漏洞验证和release_ready均false。原profile保留i时点的证据状态，新清单只陈述本stage实际结果。check_release重新从固定profile和实际字节构造期待声明，再独立核字段/原文；删清单字段、删原文并同步改外层清单、伪造原文/DLL并重算外层hash仍失败，且不写stage。原CPython版本、数据库/文件集合/hash、AMD64/PE32+和原生加载/未分类门禁保持，未豁免或删除其他DLL。
+
+### 命令、失败和最终自动化
+
+复用固定Q/P3.13.17/3.12.7隔离环境与工具release-venv，PYTHONDONTWRITEBYTECODE=1，不改共享环境/缓存/组件或个人数据。实际生产代码仅两打包工具；没有本机重建未变的46后端业务模块，当前head CI仍需完整构建/全量。
+
+- 原collector专项Q q01实际54通过/2.58秒。新增初轮q02为75通过/5失败，因collection fixture保留producer的--stage参数后直接调用checker，命中了argparse SystemExit2；按check_release真实位置参数设置sys.argv后重跑，未降低拒绝/保持断言。原q02日志/XML及临时目录保留。
+- Q03请求自动审批服务stream disconnected，动作未执行，非不安全判定也不计代码失败/通过；P03正常执行201通过/9.36秒。按同一审批路径顺序重试Q04实际201通过/8.06秒，不绕过审批。后续补来源/目的六反例后才形成最终版本。
+- Q/P -m pytest backend/tests/test_release_inventory.py backend/tests/test_native_dependencies.py backend/tests/test_frozen_sbom.py -q --basetemp=artifacts/rel02c/tmp-q05或tmp-p05 --junitxml=artifacts/rel02c/q05.xml或p05.xml，最终各实际退出0，207通过（Q9.04/P8.99秒），无失败/错误/跳过/警告。含32新增及175既有；普通无目标stage、六种部分集合、变件/源文/源profile/目的冲突、来源/路径/声明错误、重解析拒绝、读取后变更、I/O失败保留及重试、清单连同外层hash篡改均覆盖。旧Windows联接反例只在任务临时目录按原权限执行。
+- Q artifacts/rel02c/probe_real.py实际退出0：从固定f493包只读复制三个真实DLL到新组件stage，真正调用collector.main两次，生成201文件清单与两原文。73为构建环境包数，不能认作内嵌成员。界面/SDK元数据明确自造惰性fixture、无renderer和完整应用载荷，此为组件交付实证；全应用/Office/安装器未据此通过。
+- 完成场景两次运行所有字节完全一致，两许可mtime未变，三DLL及原始输入/969源包指纹保持；真实组件缺一、字节损坏、已有目的冲突三独立场景均拒绝，原清单与已有字节fingerprint全部相同。旧输出不清理。manifest SHA256 878a54c14f4b1a0bb0cd47f8032d6759a2282f6c6508da0c1e4e882afa02823f，原实证report SHA256 dd06b0d6de4023336f8367ffadf7056bfdb3031dad0ec7074869fdcaa4df5cfe；原日志/组件stage/自造配置仅留ignored。
+- Q artifacts/rel02c/probe_real.py --read-only实际退出0，重新核源包/源文、清单/记录、两目的原文、重复保持和三拒绝现场，不写入stage或摘要。证据筛选器仅保存支持固定子集结论的字段，[精选摘要](evidence/native-license-stage-summary.json)6,947字节/SHA256 939bd8ba741b7309fea66f921feadb02d201d13c865386fdbcba872b1951427a；不复制完整stage/环境表或原日志进Git。
+
+实现、最终相关自动化及真实组件复制/保持/只读核证完成，REL-02c转REVIEW；规范引用/差异及最终工具哈希一致性、独立草稿PR/当前head CI和主Agent有限核验继续。OpenSSL版本命中、其他native/继承条件/完整义务/签名与全产品发行仍未解决，许可复制不能消除此阻断。审查按用户要求暂缓，人工取消；未合并/发布，不恢复人工测试或删除失败。
+
+工具解释器-m ruff check backend tools及Q tools/export_question_schema.py --check实际退出0。Q select_evidence.py --read-only及probe_real.py --read-only均退出0；精选与实际清单/原文/源包保持吻合。artifacts/rel02c/check_changes.py退出0：八文件、503原blob保持/最终511文件、105本地引用及标题、68唯一调度行、UTF8/LF/逐文件diff --check、旧报告完整前缀及46后端业务源码/所有原provenance和许可/依赖锁/工作流保持。没有把raw stage或整份环境包表作为evidence提交。
+
+最后补明确DLL→提供者归属约束，防止profile把OpenSSL与libffi成员互换而冒用许可来源。最终Q/P把临时目录和XML改为q06/p06，相关三文件各实际208通过（Q10.50/P9.56秒），包含33新增和175原项；q05/p05的207是该补强前记录，原XML保持。最新工具Ruff仍退出0；Q probe_real.py --repeat-complete用当前守卫真正再调用collector.main，仍相同manifest878a54…、全部stage字节及两许可mtime不变。随后只读核证与精选一致退出0，当前摘要6,947字节/939bd8ba741b7309fea66f921feadb02d201d13c865386fdbcba872b1951427a，纳入本次重复调用结果hash，不把中间工具hash当最终版本。
