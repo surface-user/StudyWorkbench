@@ -928,3 +928,13 @@ REL-01h转REVIEW，四文件范围检查/最终精选只读一致及独立草稿
 工具解释器-m ruff check backend tools、Q tools/export_question_schema.py --check均退出0。artifacts/rel01h/check_changes.py退出0：仅4文件、501原blob保持/最终505文件、90本地引用及被引标题、66唯一调度行、UTF8/LF/逐文件diff --no-index --check、原报告完整前缀和所有业务/工具/打包/锁/工作流保持。未在旧#77头补写CI或本报告，独立PR交付链接及最终头CI继续跟进。
 
 独立草稿[PR #81](https://github.com/surface-user/StudyWorkbench/pull/81)已创建并附任务，codex/current-backend-source-evidence基于#77最终12a1411；首次提交c391290f5c747af28c6bf91ab091a0f6227867e4/tree5439d74cf9c27d39e5e59d6dc9d711561ad94c6c。补实际链接后仍为四文件、505最终blob；最终head/tree/当前CI在PR正文跟进，不循环写自引hash。REL-01h保持REVIEW待本head CI与主Agent有限核验，源产物及历史CRT不可读边界不变。
+
+## REL-04a Windows 冻结后端验签
+
+从 #81 的 aba16ba 分出。Windows 原生信任检查针对指定目录的 study_backend.exe；读句柄在核对 SHA256、内嵌签名、签名证书 SHA256 及时间戳证书期间保持打开，禁止并发写入或删除该文件。证书标识来自发行方独立记录。目录或文件为重解析点时拒绝。验证结果适用于本机信任策略和该文件，不涉及目录内其他文件或实际签发。此切片不使用私钥、不生成发行候选。
+
+自动化命令在 Python 3.12.7 和 3.13.17 下均为 `python -m pytest -q backend/tests/test_backend_signature.py backend/tests/test_release_inventory.py`。首轮各 53 通过、3 失败。子进程继承另一版本 PowerShell 的模块路径，签名样本未能读取；另两个原有目录联接用例在普通权限下创建夹具失败。改从当前 PowerShell 安装加载内置模块并以 .NET 流计算哈希，有目录联接权限后原断言原样复跑，各 56 通过、退出 0。Ruff 全部与 `tools/export_question_schema.py --check` 均退出 0。原始结果在忽略的 artifacts/test-{p,q}.log 与 artifacts/rel04a-rerun-{p,q}.log。
+
+本机 Windows SDK 10.0.26100.0 的 x64 signtool.exe 复制成同名夹具，文件 SHA256 为 010B6A17FD7803E3FC74AF1F2E89BBD2BD225AAB5F3368F4ED7D7EA4A09EB287，签名者证书 SHA256 为 D557F0A8B156BCFA8197BA58A72CCE491CDB7584EEAAF7D513CDAD2F337A6086。与另行读取的证书字节核对成功；错误证书、缺配置、非十六进制摘要、修改一个字节后用旧文件摘要以及为篡改文件重新计算摘要的情况均失败。此正例仅证明验证器接受真实的带时间戳 Windows 签名。
+
+对 #84 实测的冻结后端运行同一命令，使用其实际 SHA256 24D0C43C4C0A45633B426526F3F4079E8B01C3B7BC39E08DF9F27EA51B84C1BB 和本次夹具签名者证书标识，Windows 报 NotSigned、工具退出 1。正式签署需发行方身份、受控签署环境和时间戳服务，签后再生成候选清单。按用户要求暂缓审查、取消人工测试；PR 与当前提交 CI 以关联检查为准。
