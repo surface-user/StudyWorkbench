@@ -6,12 +6,18 @@ import os
 from pathlib import Path
 
 from native_dependencies import inspect_dependencies
-from release_inventory import check_backend_install_metadata, stage_files
+from release_inventory import (
+    check_backend_install_metadata,
+    stage_files,
+    verify_native_license_texts,
+    verify_staged_python_licenses,
+)
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("stage", type=Path)
+    parser.add_argument('--python-license-sha256')
     args = parser.parse_args()
     stage = args.stage.resolve()
     payload = stage_files(stage)
@@ -27,6 +33,7 @@ def main():
         path = payload[relative]
         with path.open("rb") as handle:
             assert hashlib.file_digest(handle, "sha256").hexdigest() == expected, relative
+    verify_native_license_texts(stage, payload, inventory.get("native_license_texts"))
     files = {path.name.lower() for path in payload.values()}
     assert "python313.dll" in files and "python312.dll" not in files
     report = inspect_dependencies(payload, Path(os.environ['SystemRoot']) / 'System32')
@@ -34,6 +41,7 @@ def main():
     if report['unproven_runtime_candidates']:
         raise ValueError('Native runtime coverage incomplete: unclassified PE images block release; '
                          'establish auditable execution domains or non-runtime classification first')
+    verify_staged_python_licenses(stage, payload, inventory.get('python_license_bundle'), args.python_license_sha256)
     print(f"PASS: {len(inventory['files'])} file hashes, CPython version, no database, main-process x64 headers, "
           "declared static native loading domains; not a clean-VM or full loader test")
 
