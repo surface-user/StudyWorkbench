@@ -117,6 +117,7 @@ M2-03由已交付LW-05承接；M2-04由PAR/FMT、M2-05由既有a–h及后续i/j
 | OFF-02l、OFF-02m Office 内置 Python 与文本编码 | DONE | [#82](https://github.com/surface-user/StudyWorkbench/pull/82) · [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44679690453)；[#87](https://github.com/surface-user/StudyWorkbench/pull/87) · [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44682889216)。专项组件剩 78 个未知加载关系。 |
 | REL-04a 冻结后端验签 | DONE | [#85](https://github.com/surface-user/StudyWorkbench/pull/85) · [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44681767359)。真实已签样本通过，项目当前未签名后端被拒。 |
 | REL-03d 原生漏洞核对、REL-03e 修复 | REVIEW / BLOCKED | [#91](https://github.com/surface-user/StudyWorkbench/pull/91) 保留两个来源的查询差异。补丁包、关联清单、兼容回归和复扫另行追踪。 |
+| REL-03f 冻结 Python 漏洞、REL-03g 修复 | REVIEW | [#96](https://github.com/surface-user/StudyWorkbench/pull/96) 在旧包 55 个已归属软件包中查到 OpenTelemetry API 1.45.1 公告。已锁定 1.45.2，重建后端内 28 个模块与修复版 wheel 相符；135 个源码锁定包复扫无返回公告。见[修复报告](../dev/records/2026-11-20-opentelemetry-update/report.md)。OpenSSL 单独跟踪。 |
 
 ## 当前任务
 

@@ -4,6 +4,8 @@
 
 ## 已采用的运行与构建依赖
 
+后端传递依赖 OpenTelemetry API 锁定 1.45.2，许可证为 Apache-2.0。Windows 冻结包内受影响的传播器模块及其余 27 个实际内嵌模块已与官方 wheel 对照，核对范围及上游来源见[修复报告](../dev/records/2026-11-20-opentelemetry-update/report.md)。
+
 | 依赖/版本 | 许可及来源 | Windows证据与边界 |
 |---|---|---|
 | docling-slim 2.142.1 / docling-core 2.104.0 | MIT；[官方仓库](https://github.com/docling-project/docling)、已安装wheel版本和LICENSE | 直接使用Word后端，不启用模型、OCR、LibreOffice或插件；Python3.12/3.13源进程和3.13冻结子进程实测；复杂版式未完整验证 |
