@@ -1,4 +1,5 @@
 """Streamed local media import and per-media capabilities, never a business-token bridge."""
+import asyncio
 import hashlib
 import html
 import json
@@ -6,6 +7,7 @@ import os
 import re
 import secrets
 from pathlib import Path, PurePosixPath
+from threading import Event
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Query, Request
@@ -18,6 +20,7 @@ from starlette.concurrency import run_in_threadpool
 from .db import MediaEntry, write_transaction
 from .imports import resource_path
 from .media_inputs import inspect_media_input
+from .media_probes import probe_media_input
 from .workspaces import require_workspace
 
 MEDIA_LIMIT = 512 * 1024 * 1024
@@ -26,6 +29,14 @@ MEDIA_LIMIT = 512 * 1024 * 1024
 class InputPreview(BaseModel):
     model_config = ConfigDict(extra='forbid')
     expected_sha256: str = Field(strict=True, pattern=r'^[0-9a-f]{64}$')
+
+
+async def cancel_probe_on_disconnect(request, cancelled):
+    # Wait on the real ASGI receive; immediate CancelScope polling can miss middleware disconnects.
+    while True:
+        if (await request.receive())['type'] == 'http.disconnect':
+            cancelled.set()
+            return
 
 
 def media_mime(suffix, header, size):
@@ -54,7 +65,7 @@ def describe(item):
             'sha256': item.sha256, 'status': item.status, 'playback': item.playback}
 
 
-def media_routers(engine, root):
+def media_routers(engine, root, probe_stopping):
     # Explorer imports media_mime; defer the existing shared viewer budget until router creation.
     from .document_files import limited_view
 
@@ -145,12 +156,10 @@ def media_routers(engine, root):
                 grants.pop(next(iter(grants)))
             return {'url': f'{str(request.base_url).rstrip("/")}/media/library/{item.id}/player?cap={cap}'}
 
-    @api.post('/media/{media_id}/input-preview')
-    @limited_view
-    def input_preview(workspace_id: str, media_id: str, body: InputPreview):
+    def selected_input(workspace_id, media_id, expected):
         with Session(engine) as session:
             item = entry(session, workspace_id, media_id)
-            if item.status != 'ready' or body.expected_sha256 != item.sha256:
+            if item.status != 'ready' or expected != item.sha256:
                 raise HTTPException(409, '媒体状态或摘要已改变，请刷新后重新选择；原文件保留')
             parts = PurePosixPath(item.relative_path).parts
             local = len(parts) == 4 and parts[2] == 'media' and parts[3] in (item.id + '.mp4', item.id + '.m4a', item.id + '.webm')
@@ -159,8 +168,41 @@ def media_routers(engine, root):
             if (parts[:2] != ('workspaces', workspace_id) or not (local or downloaded) or
                     PurePosixPath(item.relative_path).as_posix() != item.relative_path):
                 raise HTTPException(409, '媒体来源记录无效，原文件保留')
-            result = inspect_media_input(root, item.relative_path, item.size, item.sha256, item.mime)
-            return {'media_id': item.id, **result}
+            return item.relative_path, item.size, item.sha256, item.mime
+
+    @api.post('/media/{media_id}/input-preview')
+    @limited_view
+    def input_preview(workspace_id: str, media_id: str, body: InputPreview):
+        return {'media_id': media_id, **inspect_media_input(root, *selected_input(workspace_id, media_id, body.expected_sha256))}
+
+    @api.post('/media/{media_id}/native-probe')
+    async def native_probe(workspace_id: str, media_id: str, body: InputPreview, request: Request):
+        cancelled = Event()
+        @limited_view
+        def operation():
+            selected = selected_input(workspace_id, media_id, body.expected_sha256)
+            result = probe_media_input(root, workspace_id, media_id, *selected, cancelled, probe_stopping)
+            if selected_input(workspace_id, media_id, body.expected_sha256) != selected:
+                raise HTTPException(409, '媒体来源记录在探测期间改变；结果已作废，原文件保留')
+            return result
+        task = asyncio.create_task(run_in_threadpool(operation))
+        disconnected = asyncio.create_task(cancel_probe_on_disconnect(request, cancelled))
+        try:
+            return await asyncio.shield(task)
+        except BaseException:
+            cancelled.set()
+            try:
+                await asyncio.shield(task)
+            except Exception:
+                pass
+            raise
+        finally:
+            cancelled.set()
+            disconnected.cancel()
+            try:
+                await disconnected
+            except asyncio.CancelledError:
+                pass
 
     def allowed(session, media_id, cap):
         grant = grants.get(cap)

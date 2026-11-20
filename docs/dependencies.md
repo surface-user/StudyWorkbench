@@ -81,7 +81,7 @@ pytest固定9.0.3；[官方2026-04-07发行说明](https://github.com/pytest-dev
 
 FMT-01的自编复杂样本工具固定[python-pptx 1.0.2](https://pypi.org/project/python-pptx/1.0.2/)（MIT，2024-08-07发布，Python≥3.8）和[XlsxWriter 3.2.5](https://pypi.org/project/xlsxwriter/3.2.5/)（BSD-2-Clause，2025-06-17发布，Python≥3.8）；固定官方wheel SHA256见[样本工具清单](../tools/sample-authoring-requirements.txt)。二者为独立可选开发工具，安装到本任务.local/authoring，借用已锁定python-docx/Pillow/lxml等环境生成本地自编样本，不进入后端依赖或冻结包。Windows x64/Python3.13生成成功不代表其他平台验证，也不是漏洞或传递许可证审查结论；不称固定版本为今日最新版。
 
-webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-dlp2026.10.21仅做过历史开发预备，未接入产品；当前直接HTTPS下载队列已用CPython标准库实现。FFmpeg未选定产品二进制/构建配置，不能只按主体许可证发行。Seal只参考交互，不复制GPLv3代码/资源。
+webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-dlp2026.10.21仅做过历史开发预备，未接入产品；当前直接HTTPS下载队列已用CPython标准库实现。FFmpeg的固定开发组件和可选同步探测见后文，产品发行采用及完整义务仍未闭合，不能只按主体许可证发行。Seal只参考交互，不复制GPLv3代码/资源。
 
 ### 站点提取候选（未采用）
 
@@ -104,9 +104,9 @@ webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-d
 
 建议在所选站点可完全受控的前提下评估固定源码适配；现有`YoutubeDL`的[request director](https://github.com/yt-dlp/yt-dlp/blob/f264a6cbd1f630894da0f368df00f8aae50140e0/yt_dlp/YoutubeDL.py#L4343)提供请求处理入口，但这只是候选接入点，不证明每个提取器都不绕过它。`skip_download`/JSON输出、关闭配置/插件等CLI选项不能证明内部请求执行本项目DNS固定/TLS/预算；无法覆盖全部网络路径的stock CLI禁止作为可用产品方案。先按[规划契约](learning-workbench-contracts.md#站点提取与质量选择规划中未接入产品)验证有限站点，再决定是否采用及具体分发方式。来源证据和限制续记[下载报告](../dev/records/2026-11-05-lw07-downloads/report.md)。
 
-### FFmpeg本地轨道处理候选（未采用）
+### FFmpeg本地轨道处理候选（发行未采用）
 
-格式/轨道与队列交接见[规划契约](learning-workbench-contracts.md#格式轨道与队列交接规划中)。本切片不选择或下载产品二进制，不因开发机有FFmpeg或一次自编样本成功就登记已支持合流/HLS。实际ffmpeg/ffprobe须同一固定发行/构建，记录版本、源码commit/对应源码、Windows x64架构、每文件SHA256、构建配方和维护/安全证据。
+格式/轨道与队列交接见[规划契约](learning-workbench-contracts.md#格式轨道与队列交接规划中)。本节列发行门禁；固定开发组件及可选同步探测另见后文，不据此登记已支持合流/HLS。实际ffmpeg/ffprobe须同一固定发行/构建，记录版本、源码commit/对应源码、Windows x64架构、每文件SHA256、构建配方和维护/安全证据。
 
 官方[下载页](https://ffmpeg.org/download.html)提供源码并链接第三方Windows构建，不把第三方exe称为官方二进制；实际供应来源另核。官方[许可说明](https://ffmpeg.org/legal.html)区分LGPL主体与可选GPL部分，主体标签不能代表所选构建及外部库；逐实际配置核GPL/nonfree选项、链接方式、全部内嵌/外部原文、NOTICE、对应源码和再分发义务，纳入REL-01/02/03及签名后payload，不据单一许可证名宣布可发行。
 
@@ -120,7 +120,7 @@ webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-d
 
 `tools/prepare_ffmpeg_component.py`仅用既有CPython标准库和项目文件遍历入口，提供离线`prepare-source`/`verify-source`。先核整个原包固定size/hash，再严格筛tar根、相对路径/大小/总数/总量、普通文件/目录、大小写冲突/父子冲突、链接/reparse，目标必须全新；保留全部原文件与失败部分，不覆盖原件。source-lock使用schema_version=1，SHA256 preimage仅为排序/紧凑/UTF-8 canonical payload，派生snapshot_sha256在外层，不进入自身preimage。复验从固定原tar重新生成期望清单，核每个文件、实际全集与四个Git blob；修改后重算自签清单也不能蒙混通过。工具本身不联网、不调用GPG、configure或任意外部命令；此处固定包hash来自本轮实际官方签名核证，不以运行时未核PGP充当每次执行都已验签。
 
-在已有受支持Python中，从仓库根显式执行`python tools/prepare_ffmpeg_component.py prepare-source --package <已获取的固定tar.xz> --directory <不存在的新目录>`，复验用`verify-source`相同参数。输入包和父目录必须本地既有且无链接，输出保持项目内新目录；没有自动下载/安装/更新。开发机MSVC中文banner识别失败和MinGW实际配置超出最小集合均保留，未产出或锁定可用二进制。Windows支持当前只证明源码准备与真实NTFS junction拒绝，不代表ffmpeg可执行组件或产品冻结接入。
+在已有受支持Python中，从仓库根显式执行`python tools/prepare_ffmpeg_component.py prepare-source --package <已获取的固定tar.xz> --directory <不存在的新目录>`，复验用`verify-source`相同参数。输入包和父目录必须本地既有且无链接，输出保持项目内新目录；没有自动下载/安装/更新。b1阶段开发机MSVC中文banner识别失败和MinGW实际配置超出最小集合均保留，当时未产出或锁定可用二进制；其源码准备与真实NTFS junction拒绝不等于后续b2组件或c接入证明。
 
 原包含多种许可的完整源码；LGPL主体与可选GPL部分仍按[官方许可](https://ffmpeg.org/legal.html)及全部原文区分，不能把整个tar称单一LGPL。官方[安全页](https://ffmpeg.org/security.html)是维护/公告入口，不构成9.0.2或未来实际构建零漏洞证明。b2仍须真实最小无网络build/协议/codec枚举、PE/CRT及内嵌库原许可/对应源码/构建补丁与再分发义务/漏洞核证；c再做固定受管本地路径/参数、UNC/dref/外部引用拒绝、Job/取消/预算、源码/冻结及原子入库。file协议不能代替OS网络隔离。未闭合前不进入产品包/SBOM已采用集合、不登记可发行或站点下载成功。
 
@@ -133,6 +133,14 @@ webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-d
 官方小包与source-only签名均固定官方[开发者公钥指纹](https://www.msys2.org/dev/keyring/)5F944B027F7FE2091985AA2EFA11531AA0AA7F57，在新独立项目keyring核验及官方revoked名单核查；不读个人keyring/自动取key或pacman安装。PE imports逐符号核实际原Git MSYS3.6.6、libintl0.22.5和iconv1.18的exports，实际加载路径/hash须保持原件（原始hash在报告）；缺ABI或误加载即停，不能暗换/下载新runtime。使用系统现有bsdtar3.8.9读取zst固定成员，不新增解压器/大工具链或变更系统PATH。既有native GNUmake/NDK的失败各留原证据，NDK compiler和库未引入。
 
 组件仍须锁实际ffmpeg/ffprobe同版、最小无网络build及协议/容器/codec、PE/CRT/全部原许可与对应源/供源/漏洞；开发工具/本机运行库证明不替代产品runtime来源。file-only构建不阻止OS层UNC/外链访问，后续c仍须拒UNC/任意路径/dref/外部引用并执行固定Job/预算/取消/原子入库；无源/冻结产品接入时不得登记已提供下载/合流功能。
+
+### 固定开发组件与可选同步探测（非发行采用）
+
+已固定的Windows x64开发组件来自上述官方9.0.2与已记录最小MSVC派生构建；精确6个PE、配置/对应源/补丁/许可资产见[profile](../packaging/windows/ffmpeg-component-profile.json)及[完整配方](../packaging/windows/ffmpeg-BUILDING.txt)。实际仅file协议、无encoder/decoder/hwaccel，4个共享FFmpeg库和两CLI；静态Microsoft CRT仍有独立再分发条件，LGPL主体不能替代组合许可/供源/漏洞/签名门禁。开发准备包的原readiness（release_ready/product_integration/complete_untrusted_input_policy=false）保持，不以运行接入重写旧认证记录或发行结论。
+
+可选同步probe由[media_probe_runtime.py](../backend/study_workbench/media_probe_runtime.py)校验整个固定17资产及清单：canonical payload的snapshot=`2cd1cbbdc939fc6ab27818a71092e24d122519cdb7fb9dca78c9bf29037e9390`、profile=`ee0f21d31ae183a6579bbf0b3414ae84f46d7ce6c6cd5660e07906b0e8e7af9f`，派生hash不进入自身preimage；少/多文件、链接/重解析、改后自重签或不匹配bytes均拒绝。仅在开发进程可用STUDY_FFMPEG_RUNTIME定位同一已核组件，仍须全量pin；默认源码根.local/ffmpeg-runtime、冻结包父目录converters/ffmpeg。无PATH查找、自动安装/下载/更新或HTTP任意路径入口，发行脚本尚不捆绑此可选组件。
+
+实际处理限于c1的非分片MP4 H264/AAC与M4A AAC，受管媒体ID/expected hash、独占源副本、固定MOV参数/无网络编译配置、Job/EOF/HTTP断开取消，输出为有界实际元数据，非decode或合流。原始帧/下载来源和实际站点能力不由此验证；WebM/分片/DASH/HLS、持久来源/attempt、合流发布及最终发行仍未完成。Windows源码/冻结与限制证据见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)，原工具/RC/管道/真实取消失败保留。
 
 ## 待验证与升级门禁
 

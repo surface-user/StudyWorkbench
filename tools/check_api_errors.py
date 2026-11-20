@@ -45,6 +45,7 @@ def main():
     media.write_bytes(bytes(range(256)) * 8)
     command = [str(args.exe.resolve())] if args.exe else [sys.executable, '-m', 'study_workbench']
     environment = {**os.environ, 'PYTHONUTF8': '1', 'PYTHONIOENCODING': 'utf-8'}
+    environment['STUDY_FFMPEG_RUNTIME'] = str(root / 'missing-optional-media-runtime')
     if args.exe:
         environment['PATH'] = str(Path(os.environ['SystemRoot']) / 'System32')
         environment.pop('PYTHONPATH', None)
@@ -127,6 +128,8 @@ def main():
             error(preview_path, 422, 'validation_failed', {**expected, 'path': private})
             error(preview_path, 401, 'unauthorized', expected, headers={'Authorization': ''})
             error('/api/workspaces/missing/media/' + media_item['id'] + '/input-preview', 404, 'not_found', expected)
+            error(prefix + '/media/' + media_item['id'] + '/native-probe', 503, 'unavailable', expected)
+            error(prefix + '/media/' + media_item['id'] + '/native-probe', 422, 'validation_failed', {**expected, 'command': private})
             assert request(prefix + '/media')[0] == [media_item]
             assert (root / 'data/workspaces/default/media' / (media_item['id'] + '.mp4')).read_bytes() == media_fixture()
             body = {'name': 'kept.md', 'request_id': 'api-error-fixture-note'}

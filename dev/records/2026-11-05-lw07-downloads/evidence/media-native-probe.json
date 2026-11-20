@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "scope": "DL-03c2-local-native-probe",
+  "base_commit": "ec9afd6263b1b34ab174473c1e2c92635c7df7d2",
+  "component_snapshot_sha256": "2cd1cbbdc939fc6ab27818a71092e24d122519cdb7fb9dca78c9bf29037e9390",
+  "policy_version": "local-mp4-input-v1",
+  "probe_version": "ffprobe-mp4-local-v1",
+  "final_related_each": 92,
+  "new_cases": 50,
+  "local_real_source_frozen_checks_each": 10,
+  "local_compatibility_checks_each": 51,
+  "frozen_modules": 47,
+  "backup_file_count": 9,
+  "probe_backup_files_equal": 6,
+  "schema_revision": "0016",
+  "migration_added": false,
+  "ffmpeg_rebuilt": false,
+  "release_ready": false,
+  "network_site_requests": 0,
+  "sources": {
+    "backend/study_workbench/media_probe_runtime.py": {
+      "bytes": 5772,
+      "sha256": "ad1f461af03bbacc643765bd36ce535c984e3dafbd55f0d9196804d4c10c4a29"
+    },
+    "backend/study_workbench/media_probes.py": {
+      "bytes": 14857,
+      "sha256": "110520fb63423aa7af18f366db7007618e08b23571bd0ecc3ecc4c9e22a46e8a"
+    },
+    "backend/study_workbench/media_library.py": {
+      "bytes": 12053,
+      "sha256": "e8ca2cb62279e81a808eaa244cde9e90ef553b0699d1672e387515acbaa82030"
+    },
+    "backend/study_workbench/media_inputs.py": {
+      "bytes": 14733,
+      "sha256": "e77258600ebea05ca611cf7b8f9d5ab104310577b2c2df0539714ae64c3d1f37"
+    },
+    "backend/study_workbench/app.py": {
+      "bytes": 11909,
+      "sha256": "a08c6e6688a6f2b4caddbd5ed2db90ac5e27bb09552e405594dba7afb4992f8b"
+    },
+    "backend/study_workbench/__main__.py": {
+      "bytes": 8911,
+      "sha256": "40f7f284f676dd6c027c0bd7185940b71f5f9ffbd1ae28f9aeb2c5d03e0e1e21"
+    },
+    "backend/tests/test_media_probes.py": {
+      "bytes": 14909,
+      "sha256": "e3537c7b2cd25285bcc7f35be173ca5d905f42a98eef1f263cab04c7caa186dc"
+    },
+    "tools/check_media_probes.py": {
+      "bytes": 7486,
+      "sha256": "ddd4892d64615dfd77db85c752fa9541839f05c29799786565f3e9c5cccea9a2"
+    },
+    "tools/check_api_errors.py": {
+      "bytes": 9663,
+      "sha256": "58a555003d19c5e7b594129583ad71806240f5684ddda5821a0af70a680d9bd9"
+    }
+  },
+  "retained_logs": {
+    "artifacts/dl03c2/q01.xml": {
+      "bytes": 8556,
+      "sha256": "1172d2f5694fb0af2202bc65040d40a8170315b0b7addeb506182b3279dd2f46"
+    },
+    "artifacts/dl03c2/q02.xml": {
+      "bytes": 14877,
+      "sha256": "4c0d1a0c4a741fe1eb1c990bd5e340021169a4e2f88b90530b10d72c6fd5c943"
+    },
+    "artifacts/dl03c2/q03.xml": {
+      "bytes": 17909,
+      "sha256": "85e1b038da49110c365746fca7d0469170e1c55d82f418c45aec590456b1e206"
+    },
+    "artifacts/dl03c2/q04.xml": {
+      "bytes": 18046,
+      "sha256": "7025c0cf3ecc4d7ce8d0a071945a48e2f4ce610f1e961e59653d2e9dd03849f7"
+    },
+    "artifacts/dl03c2/p01.xml": {
+      "bytes": 17909,
+      "sha256": "0ec986b2074497b9b128478dee9e46d3237deba5846fe545b33f5530fa9b937f"
+    },
+    "artifacts/dl03c2/p02.xml": {
+      "bytes": 18047,
+      "sha256": "28038aee81c47e1792119f916f7c2f2799f978a92c7e354e32c598fc62fffd8c"
+    },
+    "artifacts/dl03c2/freeze01.txt": {
+      "bytes": 18430,
+      "sha256": "c13481005feec4bf6d9d1ba4c5b146c66375a6bdc3c3e5eddd618468ad19e518"
+    },
+    "artifacts/dl03c2/source03.txt": {
+      "bytes": 192,
+      "sha256": "ad666cca6bf88d8a6ebb896d0d1d263f8838c16d6a82af3fc4bb57cba85407ba"
+    },
+    "artifacts/dl03c2/native-log-index.json": {
+      "bytes": 7169,
+      "sha256": "6ec9d32ea3d25ac151e918360cc17bec019f1a1042115c3cd5ce12c9c38e3512"
+    }
+  },
+  "selection_reason": "Exact component with local generated inputs; bounded source/frozen metadata and cancellation only. No CI native component, site evidence, full decode or release claim."
+}

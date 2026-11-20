@@ -354,3 +354,36 @@ IQ为相邻starlette-q-isolated CPython3.13.17，IP为starlette-p-isolated CPyth
 精选[输入策略证据](evidence/media-input-policy.json)仅保留固定源码/选取原日志hash、输入摘要/计数/退出码，支持本切片声明；原JUnit/冻结构建和自建隔离库留artifacts/.local，不上传媒体/数据库/包/环境。c1实现及相关自动化完成，待独立草稿PR/current CI与主Agent核验；代码审查按用户要求暂缓，人工按11-06取消，未合并/发行。c2固定component探测/Job和c3队列/合流/备份迁移继续，不把整个DL-03登记完成。
 
 最终打包范围首检发现本机Path.write_text默认转CRLF，旧报告整文件换行不符原blob，检查失败即停止上传；已仅归一回原LF，保留原正文前缀。此处是交付文本规范修正，不改业务代码或测试门槛。
+
+
+## 2026-11-19/20 DL-03c2：固定组件同步探测
+
+11-20续做先重核真实工作区/远端：根checkout仍a959b9f31d5f511eb785dea6b398ee7c10e262ff，原两untracked保持；c1的[PR#73](https://github.com/surface-user/StudyWorkbench/pull/73)仍open/draft/head ec9afd6263b1b34ab174473c1e2c92635c7df7d2、[CI44503692940](https://github.com/surface-user/StudyWorkbench/actions/runs/44503692940)三job成功，已获主Agent有限DONE。c2使用该精确510blob/tree3d2711f28f945c6b04e2183b418b58193ce34a0c的新media-native-probe副本，不改旧head/原件/缓存。
+
+### 实现与固定边界
+
+同步POST media/{id}/native-probe仅沿用strict expected_sha256，同空间/ready/规范受管来源和实际摘要；复用2查看槽，无桌面入口、第二持久队列或新表。组件只取开发进程STUDY_FFMPEG_RUNTIME或固定源码/冻结默认路径，不从PATH/HTTP body选程序。media_probe_runtime.py逐校17资产与清单、固定snapshot2cd1cbbdc939fc6ab27818a71092e24d122519cdb7fb9dca78c9bf29037e9390/profileee0f21d31ae183a6579bbf0b3414ae84f46d7ce6c6cd5660e07906b0e8e7af9f，canonical payload不含自身派生hash；链接/reparse/映射盘/UNC、少/多文件、改后自签或错误bytes拒绝。源/许可仍为b2原包，不为本轮重新构建FFmpeg、下载站点媒体、安装系统工具或改readiness原记录。
+
+原件先验→server_uuid新目录独占复制/核SHA→私有worker对子本结构重验→既有WindowsProcessJob挂起先assign再resume固定ffprobe，返回前再核原件与数据库选择。副本/原始native JSON/结果/tmp留在workspaces/<space>/media-probes/<uuid>，不覆盖旧探测/原媒体。没有数据库探测收据/重启重放，不按hash认领逻辑媒体或把它冒充下载attempt；现有完整备份保存这些字节，不恢复进程/授权。
+
+固定配方只MOV/file，enable_drefs/use_absolute_path显式0、禁外来参数/filters/配置/插件；固定show_entries不输出tags/filename/URL，单块分配32MiB、输出读取256KiB。实际仅非分片MP4 H264/AAC及M4A AAC，与c1声明角色/codec须一致，最多1视频/1音频；native实际duration/尺寸/采样率字段和父端IPC再做独立严格类型/枚举/长度/来源身份白名单。native_probe_performed=true只证明已执行受控元数据探测，不代表decode、全文件有效、可播放、合流或站点支持；WebM/分片/DASH/HLS/其他codec继续拒绝。
+
+总60秒含组件校验/复制/结构及native；输入512MiB，复制前磁盘≥source+16MiB，实际Job共1GiB/最多4进程/kill-on-close。probesize/analyzeduration不是硬磁盘读取配额，不据其宣称完整OS沙箱；本地阻塞IO不承诺即时中断，也仍有校验到打开间的OS竞争窗口。组件未发行采用：完整native/静态CRT漏洞、供源/NOTICE/EULA/再分发与签名/安装门禁仍属REL，原developer包product_integration=false不是本轮静默改成法律/发行通过。
+
+关闭HTTP连接只置本次取消Event；真实ASGI receive监听断开，不用零等待is_disconnected轮询。桌面父stdin EOF在现有serve回调先置app.state.media_probe_stopping，避免uvicorn等待同步请求结束后才进入lifespan；私有worker stdin EOF协作取消，2秒未退仅终止本次helper，Job句柄关闭结束其后代。正常结果文件出现由父端关闭stdin确认，worker raw os.read无BufferedReader退出锁并join；结果完整退出后才采用。旧下载/Office的Job接口未复制或更改，普通导入/播放器/库表/锁保持。
+
+### 实际自动化与保留的失败
+
+最终IQ3.13.17/IP3.12.7分别 `-m pytest backend/tests/test_media_probes.py backend/tests/test_media_inputs.py backend/tests/test_media_library.py -q --basetemp=.local/c2-q04`（IP p02）及artifacts/dl03c2/q04.xml、p02.xml，退出0，各92通过/0skip（50新增+原42）。实际Windows Job查询证明1GiB/4进程/kill-on-close，真实子进程归属及关闭后结束、测试自有外部进程仍存活；另一个明确标为测试替身的自有不读stdin helper，真实2秒宽限后被终止，不能拿它充FFmpeg成功。纯policy组件fixture只用自有dat字节/临时固定digest测试校验拒绝，从未执行或冒称真实FFmpeg。覆盖native字段/非有限/重复JSON/深度节点/超字节、父端IPC、组件少多改/自重签、取消/超时、严格API/鉴权/隔离/429、原媒体保护。
+
+真实正向仅用b2原创16×16黑色视频/静音样本，固定两个旧hash（av.mp4 2177B/SHA2411bd2e6c0ccee4aafa95e560f44ddd08aef4b15125094a9b2e7eb65e6fab25、audio.m4a 911B/SHA9bfd9f2c05af35aeb733ba0cd9d7de3eb62437390326607da0ce327a5e245352）。IQ `tools/check_media_probes.py --runtime .local/ffmpeg-runtime --fixtures ../ffmpeg-msvc-component/.local/remux-fixtures01 --test-root .local/probe-source03` 退出0/10checks；真实源码MP4/M4A返回200、200ms，16×16 H264/AAC及48kHz/mono AAC。探测冻结副本已成功产生native结果后再对改过的原件返回409，改过字节保留；真实HTTP断开得到cancelled，随后同媒体真实探测仍200，父EOF中的同步请求409且后端正常退出，原fixture源hash保持。
+
+`packaging/windows/build-backend.ps1 -Python ../starlette-fix/.local/starlette-q-isolated/Scripts/python.exe` 退出0，新冻结47应用模块逐源/常量一致；同IQ运行上述checker加 `--exe dist/study_backend/study_backend.exe --test-root .local/probe-frozen01` 退出0，同10checks、真实MP4/M4A/陈旧结果/HTTP断开/父EOF和源hash保持全部通过。新冻结独立CLI只清其自身DLL目录，主业务进程不改DLL设置；实际native组件原hash不变。对应native JSON原件已另存artifacts/dl03c2，profile/样本仍在隔离.local，未上传媒体/组件/数据库。
+
+既有 `tools/check_api_errors.py --test-root .local/c2-source-api01` 与加同exe的c2-frozen-api01各退出0，51checks/30错误ID、重启/旧收据/Range保留；显式missing组件路径测503及额外command拒绝422，不利用CI或开发机PATH冒充native。CI不携带该未发行FFmpeg包和原创编码样本，其绿灯将证明单元/真实Windows Job、缺组件和现有冻结链；实际固定组件正向明确以上述本地源/冻结证据为准，不等同三站公网或完整decode矩阵。
+
+原件保留与备份另外实核：干净real-api02自建库执行现有全部空间backup→新目录restore，两个CLI退出0，9文件/393255字节、schema0016；6个media-probes字节逐个一致，SQLite integrity_check=ok、无FK错误，原库/原fixture保留。未用故意改坏原件的负例库去伪造备份通过，不新增迁移或修改旧备份验证。
+
+失败保留：首real-api01内native已写正确metadata，但API两次409；首helper只打印未assert，命令退出0不能当成功，具体旧子进程错误码未记录，不编造退出原因。明确发现正常结果/控制stdin退出握手不完整，增加结果→EOF确认/raw read/join，real-api02才加断言得到两200。真实source01后又发现关闭HTTP连接仍得到native成功（取消断言失败/exit1），不能被单元监听模拟掩盖；改成等待真实ASGI断开并将同一取消Event断言迁到新监听后，source02/source03及冻结原断言全部通过，原source01目录/输出仍留。首次Ruff import与22个同一行分支错误修正，不改业务断言；q02为81通过、加父端白名单后q03/p01各91，最后加真实不响应helper兜底与429后q04/p02各92。原始JSON按运行分别保存，旧失败不被新的计数替代。
+
+全backend/tools Ruff、Question Schema --check、最终47模块source/frozen再核均退出0。精选[原生探测证据](evidence/media-native-probe.json)仅固定实现/原日志hash、有限计数与来源，原始日志/JUnit和自建库不入Git。c2实现/相关自动化完成，等待独立草稿PR/current head CI与主Agent核验；审查按用户要求暂缓、人工/CUA取消，不擅自合并/发行。c3仍须复用MediaDownloadJob的本地来源/attempt/轨道模型、共享预算/取消重启/旧字节保护、合流输出/崩溃收据和最终原子入库；迁移先协调主Agent实际集成head（PDF已有0017），三站确认/下载、分片/轨道扩展仍未完成，不以本轮probe替代真实下载目标。

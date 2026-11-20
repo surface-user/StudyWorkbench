@@ -219,7 +219,15 @@ POST W/media/{id}/input-preview为只读本地来源预检。请求仅`expected_
 
 首版policy_version=`local-mp4-input-v1`仅接受严格有界的非分片MP4 H.264/AAC、M4A AAC结构子集；单个视频/音频各最多1轨，必须有样本表和本文件mdat引用、单个self-contained dref，拒外部引用、加密/未知box/重复单值box及其他布局。WebM、分片MP4/DASH、其他codec、QuickTime音频版本等明确422，不改变旧导入/播放器兼容。预算512MiB原件、2MiB实际元数据读取、4096个box、每表至多100万项、30秒协作检查；超预算413，阻塞系统调用无即时终止保证。常规文本标签中的URL只是元数据，不作为外部来源执行。
 
-响应仅`media_id/policy_version/container/streams/size/sha256/native_probe_performed`；container=mp4，streams含role=video|audio、declared_codec=h264|aac，无标题/标签/路径或传输URL，native_probe_performed恒false。结构/声明不证明媒体可解码或完整有效；不执行FFmpeg、不创建下载/合流任务、能力或数据库收据，不修改文件/播放数据，不持久缓存或落库。现有导入的magic检查、历史媒体保留及播放入口不因严格预检被改写。实际探测、WebM/分片扩展、固定进程/取消/队列与最终原子入库仍规划中。实现见[media_inputs.py](../backend/study_workbench/media_inputs.py)。
+响应仅`media_id/policy_version/container/streams/size/sha256/native_probe_performed`；container=mp4，streams含role=video|audio、declared_codec=h264|aac，无标题/标签/路径或传输URL，native_probe_performed恒false。结构/声明不证明媒体可解码或完整有效；不执行FFmpeg、不创建下载/合流任务、能力或数据库收据，不修改文件/播放数据，不持久缓存或落库。现有导入的magic检查、历史媒体保留及播放入口不因严格预检被改写。独立同步native探测见下文；WebM/分片扩展、持久队列/合流与最终原子入库仍规划中。实现见[media_inputs.py](../backend/study_workbench/media_inputs.py)。
+
+POST W/media/{id}/native-probe沿用相同严格expected_sha256请求、空间/状态/来源校验及2查看槽；同步返回结果，无桌面调用或另建持久队列。仅Windows x64已核固定可选组件，缺失/资产摘要变化503；不从PATH或用户HTTP字段取组件、路径或参数。只接受上述非分片MP4/M4A子集，原件先验、独占复制/核摘要、对副本重验后固定ffprobe探测，返回前再次核原件与数据库选择；变化409，不自动采用旧版本结果。探测仅元数据，不解码、转码、合流、创建播放器能力或入库。
+
+成功响应增加probe_version=`ffprobe-mp4-local-v1`、component_snapshot_sha256与duration_ms，native_probe_performed=true；streams各有index、role、codec、duration_ms，video另width/height（1..32768）、audio另sample_rate（8000..192000）/channels（1..8），仍仅各1轨。duration_ms为1..604800000，实际codec/角色须与结构声明一致。父进程只接受严格有界字段/类型/固定身份；不返回native原始JSON、tags、路径、命令或stderr。成功不保证播放/全包可解码，也不能当作稍后处理的永久授权。
+
+总60秒协作期限含组件校验/复制/原件重验与native；输入≤512MiB，复制前剩余空间≥源大小+16MiB，固定元数据输出≤256KiB。native每次只读固定本地副本，MOV dref关闭、file协议白名单、禁任意CLI/filters；现有Windows Job在挂起时分配再启动、1GiB/4进程/kill-on-close，单次分配上限32MiB。probesize/analyzeduration是FFmpeg分析参数，不是硬总磁盘读取额度；OS阻塞调用不承诺即时中断，file-only也不是OS网络沙箱。
+
+关闭该HTTP连接取消本次同步请求；后端桌面父stdin EOF先置停止事件，随后正常关闭服务。私有worker控制stdin EOF取消native，正常固定结果文件出现后父端关闭控制管道确认退出；2秒不退出则仅终止本次helper，Job随句柄关闭终止其后代。取消409、预算413、格式/元数据超子集422、空间不足507，原件及已生成字节保留。每次新`workspaces/<workspace>/media-probes/<server_uuid>/source.mp4|m4a`、probe.json/result.json及tmp不覆盖旧目录；无数据库探测收据/重启重放，不作为下载attempt；当前完整备份逐文件保留这些新字节，但恢复不恢复进程授权。没有自动清理、重试、独立取消UI或持久探测队列。
 
 保留 `/api/questions/demo`、`/api/attempts`（GET/POST）、W/questions/demo、`/api/player`及`/media/demo?cap=...`。旧业务入口固定default空间，不跟随当前UI空间暗改作用域；演示题展示包含答案，不是保密考试接口。
 
