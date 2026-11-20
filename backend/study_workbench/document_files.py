@@ -360,7 +360,7 @@ class DocumentFiles:
                 try:
                     preview = convert_document(data, original.original_name)
                     result.update(type='word', blocks=preview['blocks'], assets=preview.get('_assets', []),
-                                  warnings=preview['warnings'], converter_version='docling-structure-v1')
+                                  warnings=preview['warnings'], converter_version='docling-structure-v2')
                 except ValueError as error:
                     raise HTTPException(422, 'Word结构预览失败或超限；原件保留，可在外部转PDF后添加') from error
             elif suffix in {'.docx', '.pptx'}:

@@ -126,7 +126,7 @@ def extract(data, suffix, *, page_range=None, two_columns=False):
         from docling.backend.msword_backend import MsWordDocumentBackend
         from docling.datamodel.base_models import InputFormat
         from docling.datamodel.document import InputDocument
-        from docling_core.types.doc import ContentLayer
+        from docling_core.types.doc import ContentLayer, RichTableCell
 
         try:
             with ZipFile(io.BytesIO(data)) as archive:
@@ -152,13 +152,22 @@ def extract(data, suffix, *, page_range=None, two_columns=False):
                 raise ValueError("Word 文档结构无效")
             try:
                 converted = document._backend.convert()
-                for item, _ in converted.iterate_items(included_content_layers=set(ContentLayer)):
+                cell_roots = set()
+                cell_depth = None
+                for item, depth in converted.iterate_items(with_groups=True, included_content_layers=set(ContentLayer)):
+                    if cell_depth is not None and depth <= cell_depth:
+                        cell_depth = None
+                    if cell_depth is None and item.self_ref in cell_roots:
+                        cell_depth = depth
                     if str(item.label) == "formula":
                         blocks.append({"type": "latex", "tex": item.text, "display": True})
                     elif str(item.label) == "table":
-                        # Preserve all text and cell order without flattening merged cells into false columns.
-                        text(item.export_to_markdown(doc=converted))
-                    elif getattr(item, "text", ""):
+                        rendered = item.export_to_markdown(doc=converted)
+                        text(rendered)
+                        if rendered.strip():
+                            cell_roots.update(cell.ref.cref for cell in item.data.table_cells if isinstance(cell, RichTableCell))
+                    # Rich-cell paragraphs are already serialized within the table.
+                    elif getattr(item, "text", "") and cell_depth is None:
                         marker = f"{item.marker} " if getattr(item, 'enumerated', False) else ''
                         text(marker + item.text)
                     elif str(item.label) == "picture" and item.image:
