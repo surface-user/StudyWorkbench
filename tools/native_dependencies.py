@@ -54,6 +54,48 @@ OFFICE_LOCALE_IMAGES = {
     'localedata_euro.dll': '0e0b70511ae9653286acf47f9f5040b057c860bb508c0b156004268d30a3f0a5',
     'localedata_others.dll': 'af772a495d9d33b3160b5342d0d842293e3a5ad6ce636de16b454061ee38397d',
 }
+OFFICE_ENVIRONMENT_LOCK_SHA256 = '156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9'
+OFFICE_ENVIRONMENT_IMAGES = {
+    'cppu3.dll': 'c3cb0f14e9875eb445378eda73b0949f8b71f5cb24c6d53680f7445fa0ecaa12',
+    'mscx_uno.dll': 'd9f7629cc782c613b1789d1e9112fc7225bc35adfc5ebf420fd8ad73acf133ca',
+    'affine_uno_uno.dll': '686f978cbba4d1044990a85d91f5ba01e452aa3d39ecbf14310bd41a5ebfda5f',
+    'purpenvhelper3MSC.dll': '94eb1b748bcb5b339a0ccc261e447be5892978bc41e705e546f054507f0ec517',
+}
+
+
+def office_environment_entries(payload, nodes, office):
+    """Only fixed mscx/affine registrations and their cppu-relative native bindings."""
+    lock = payload.get(office + 'runtime-lock.json')
+    if lock is None:
+        raise ValueError('Missing fixed Office environment component inventory')
+    with lock.open('rb') as stream:
+        raw = stream.read(4 * 1024 * 1024 + 1)
+    if (len(raw) > 4 * 1024 * 1024 or hashlib.sha256(raw).hexdigest()
+            not in {OFFICE_ENVIRONMENT_LOCK_SHA256, OFFICE_SELFCONTAINED_LOCK_SHA256}):
+        raise ValueError('Office environment component changed; renew loading evidence')
+    registry_name = 'program/services/services.rdb'
+    registry = payload.get(office + registry_name)
+    if registry is None:
+        raise ValueError('Missing fixed Office environment service registration')
+    with registry.open('rb') as stream:
+        registered = stream.read(1024 * 1024 + 1)
+    if (len(registered) > 1024 * 1024
+            or hashlib.sha256(registered).hexdigest() != OFFICE_UNO_FILES[registry_name]):
+        raise ValueError('Office environment service registration changed')
+    files, selected = json.loads(raw)['files'], {}
+    for name, expected in OFFICE_ENVIRONMENT_IMAGES.items():
+        relative = 'program/' + name
+        key, node = office + relative, nodes.get((office + relative).casefold())
+        if (files.get(relative) != expected or node is None or node['sha256'] != expected
+                or node['machine'] != 0x8664 or node['magic'] != 0x20B
+                or node['characteristics'] & 0x2002 != 0x2002 or node['clr_rva'] != 0):
+            raise ValueError('Office environment native image differs: ' + name)
+        selected[key] = expected
+    return dict(roots=[office + 'program/affine_uno_uno.dll', office + 'program/mscx_uno.dll'],
+        caller=office + 'program/cppu3.dll', image_sha256=selected,
+        configured_descriptors=['mscx', 'mscx:affine'],
+        service_registration_sha256={office + registry_name: OFFICE_UNO_FILES[registry_name]},
+        other_descriptors_and_purposes_certified=False)
 
 
 def office_locale_entries(payload, nodes, office):
@@ -473,12 +515,14 @@ def inspect_dependencies(payload, system):
         uno_entries = office_uno_entries(payload, office)
         text_entries = office_textencoding_entries(payload, nodes, office)
         locale_entries = office_locale_entries(payload, nodes, office)
+        environment_entries = office_environment_entries(payload, nodes, office)
         domains['office'] = closure(nodes, sorted(set(roots) | uno_entries.keys()
-            | set(text_entries['roots']) | set(locale_entries['roots'])),
+            | set(text_entries['roots']) | set(locale_entries['roots']) | set(environment_entries['roots'])),
                                     [program, java, server], [program], system)
         domains['office']['uno_entries'] = uno_entries
         domains['office']['text_encoding_entries'] = text_entries
         domains['office']['locale_data_entries'] = locale_entries
+        domains['office']['environment_binding_entries'] = environment_entries
         domains['office']['uno_configuration_sha256'] = {
             office + name: digest for name, digest in OFFICE_UNO_FILES.items()}
         python_libraries = office_python_libraries(payload, nodes, office)

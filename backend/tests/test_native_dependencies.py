@@ -279,6 +279,7 @@ def test_untrusted_xml_is_rejected_before_parsing(native, uno_registry, monkeypa
 @pytest.mark.parametrize('damage', ['none', 'missing-entry', 'missing-transitive', 'architecture'])
 def test_registered_office_entries_share_the_existing_loading_domain_and_unknown_gate(
         native, uno_registry, tmp_path, monkeypatch, damage):
+    monkeypatch.setattr(native, 'office_environment_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_locale_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_textencoding_entries', lambda *_: dict(roots=[]))
     # This earlier fixture exercises UNO only; the complete fixed Python policy has its own fixture below.
@@ -353,6 +354,7 @@ def java_registry(native, uno_registry, tmp_path, monkeypatch):
 
 def test_fixed_java_images_keep_launchers_out_of_the_office_dll_domain(
         native, java_registry, tmp_path, monkeypatch):
+    monkeypatch.setattr(native, 'office_environment_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_locale_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_textencoding_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_python_libraries', lambda *_: dict(extensions={}))
@@ -559,6 +561,7 @@ def test_fixed_python_policy_rejects_unproven_inputs(native, python_registry, da
 
 
 def test_python_domain_preserves_other_domains_and_unknown_images(native, python_registry, tmp_path, monkeypatch):
+    monkeypatch.setattr(native, 'office_environment_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_locale_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_textencoding_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_program_entries', lambda *_: dict(roots={}))
@@ -677,6 +680,7 @@ def test_program_policy_rejects_unproven_main_images(native, program_registry, d
 
 
 def test_program_domain_retains_child_template_managed_and_x86_unknowns(native, program_registry, tmp_path, monkeypatch):
+    monkeypatch.setattr(native, 'office_environment_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_locale_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_textencoding_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_venv_entries', lambda *_: dict(roots={}))
@@ -704,6 +708,7 @@ def test_program_domain_retains_child_template_managed_and_x86_unknowns(native, 
 @pytest.mark.parametrize('kind', ['import', 'delay'])
 @pytest.mark.parametrize('foreign', ['java/bin', 'program/python-core-3.13.15/lib'])
 def test_program_domain_cannot_borrow_foreign_dependency(native, program_registry, tmp_path, monkeypatch, kind, foreign):
+    monkeypatch.setattr(native, 'office_environment_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_locale_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_textencoding_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_venv_entries', lambda *_: dict(roots={}))
@@ -789,6 +794,7 @@ def test_venv_policy_rejects_unproven_bin_images(native, venv_registry, damage):
 
 
 def test_venv_domain_is_only_its_native_main_image_not_python_children(native, venv_registry, tmp_path, monkeypatch):
+    monkeypatch.setattr(native, 'office_environment_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_locale_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_textencoding_entries', lambda *_: dict(roots=[]))
     office, payload, nodes, _ = venv_registry
@@ -810,6 +816,7 @@ def test_venv_domain_is_only_its_native_main_image_not_python_children(native, v
 @pytest.mark.parametrize('kind', ['import', 'delay'])
 @pytest.mark.parametrize('dependency', ['vcruntime140.dll', 'python313.dll'])
 def test_venv_domain_never_borrows_program_crt_or_python(native, venv_registry, tmp_path, monkeypatch, kind, dependency):
+    monkeypatch.setattr(native, 'office_environment_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_locale_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_textencoding_entries', lambda *_: dict(roots=[]))
     office, payload, nodes, _ = venv_registry
@@ -852,6 +859,7 @@ def selfcontained_registry(native, venv_registry, tmp_path, monkeypatch):
 
 def test_child_python_and_extensions_use_bin_crt_while_office_host_keeps_program(
         native, selfcontained_registry, tmp_path, monkeypatch):
+    monkeypatch.setattr(native, 'office_environment_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_locale_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_textencoding_entries', lambda *_: dict(roots=[]))
     office, payload, nodes, _ = selfcontained_registry
@@ -901,6 +909,7 @@ def test_selfcontained_bin_policy_requires_exact_native_companion_set(native, se
 
 @pytest.mark.parametrize('kind', ['import', 'delay'])
 def test_child_context_does_not_fall_back_to_host_crt(native, selfcontained_registry, tmp_path, monkeypatch, kind):
+    monkeypatch.setattr(native, 'office_environment_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_locale_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_textencoding_entries', lambda *_: dict(roots=[]))
     office, payload, nodes, _ = selfcontained_registry
@@ -951,6 +960,7 @@ def textencoding_registry(native, request, tmp_path, monkeypatch):
 
 def test_fixed_textencoding_adds_one_potential_root_without_new_search_or_other_domain_changes(
         native, textencoding_registry, tmp_path, monkeypatch):
+    monkeypatch.setattr(native, 'office_environment_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_locale_entries', lambda *_: dict(roots=[]))
     office, payload, nodes, _ = textencoding_registry
     target = office + 'program/sal_textenclo.dll'
@@ -1009,6 +1019,7 @@ def test_textencoding_requires_exact_component_and_source_hashes(native, textenc
 
 @pytest.mark.parametrize('kind', ['import', 'delay'])
 def test_textencoding_cannot_borrow_java_or_system_crt(native, textencoding_registry, tmp_path, monkeypatch, kind):
+    monkeypatch.setattr(native, 'office_environment_entries', lambda *_: dict(roots=[]))
     monkeypatch.setattr(native, 'office_locale_entries', lambda *_: dict(roots=[]))
     office, payload, nodes, _ = textencoding_registry
     domain = native.inspect_dependencies(payload, tmp_path)['domains']['office']
@@ -1064,6 +1075,7 @@ def locale_registry(native, textencoding_registry, tmp_path, monkeypatch):
 
 
 def test_locale_providers_preserve_old_graph_search_crt_and_other_domains(native, locale_registry, tmp_path, monkeypatch):
+    monkeypatch.setattr(native, 'office_environment_entries', lambda *_: dict(roots=[]))
     office, payload, nodes, _ = locale_registry
     before_bytes = {name: path.read_bytes() for name, path in payload.items()}
     expected = {office + 'program/localedata_' + lang + '.dll' for lang in ('en', 'es', 'euro', 'others')}
@@ -1136,12 +1148,151 @@ def test_same_named_locale_provider_in_java_does_not_replace_fixed_program_image
 
 
 @pytest.mark.parametrize('kind', ['import', 'delay'])
-def test_locale_provider_cannot_borrow_crt_from_other_domain_or_system(native, locale_registry, tmp_path, kind):
+def test_locale_provider_cannot_borrow_crt_from_other_domain_or_system(native, locale_registry, tmp_path, monkeypatch, kind):
+    monkeypatch.setattr(native, 'office_environment_entries', lambda *_: dict(roots=[]))
     office, payload, nodes, _ = locale_registry
     domain = native.inspect_dependencies(payload, tmp_path)['domains']['office']
     target = office + 'program/localedata_es.dll'
     nodes[target]['edges'] = [('vcruntime140.dll', kind)]
     nodes[office + 'java/bin/vcruntime140.dll'] = nodes.pop(office + 'program/vcruntime140.dll')
     (tmp_path / 'vcruntime140.dll').write_bytes(b'Host CRT must not fill private dependency')
+    with pytest.raises(ValueError, match=f'Unresolved {kind}.*system CRT'):
+        native.closure(nodes, [target], domain['directories'], domain['crt_directories'], tmp_path)
+
+
+@pytest.fixture
+def environment_registry(native, locale_registry, tmp_path, monkeypatch):
+    office, payload, nodes, lock = locale_registry
+    manifest = json.loads(lock.read_bytes())
+    registry = 'program/services/services.rdb'
+    data = (b'<components xmlns="http://openoffice.org/2010/uno-components">'
+        b'<component loader="com.sun.star.loader.SharedLibrary" environment="mscx" '
+        b'uri="vnd.sun.star.expand:$LO_LIB_DIR/mergedlo.dll">'
+        b'<implementation name="com.sun.star.i18n.LocaleDataImpl"/></component>'
+        b'<component loader="com.sun.star.loader.SharedLibrary" environment="mscx:affine" '
+        b'uri="vnd.sun.star.expand:$LO_LIB_DIR/mergedlo.dll">'
+        b'<implementation name="com.sun.star.comp.sdbc.ado.ODriver"/></component></components>')
+    payload[office + registry].write_bytes(data)
+    digest = hashlib.sha256(data).hexdigest()
+    manifest['files'][registry] = digest
+    monkeypatch.setattr(native, 'OFFICE_UNO_FILES', {**native.OFFICE_UNO_FILES, registry: digest})
+    images = {}
+    for name in ('cppu3.dll', 'mscx_uno.dll', 'affine_uno_uno.dll', 'purpenvhelper3MSC.dll',
+        'log_uno_uno.dll', 'unsafe_uno_uno.dll'):
+        data = ('independent fixed environment fixture ' + name).encode()
+        path = tmp_path / 'program' / name
+        path.write_bytes(data)
+        digest = hashlib.sha256(data).hexdigest()
+        payload[office + 'program/' + name] = path
+        manifest['files']['program/' + name] = digest
+        key = (office + 'program/' + name).casefold()
+        nodes[key] = node(office + 'program/' + name, digest=digest)
+        nodes[key]['characteristics'] = 0x2002
+        if name not in ('log_uno_uno.dll', 'unsafe_uno_uno.dll'):
+            images[name] = digest
+    program = office + 'program/'
+    nodes[program + 'soffice.bin']['edges'].append(('cppu3.dll', 'import'))
+    nodes[program + 'cppu3.dll']['edges'] = [('vcruntime140.dll', 'import')]
+    nodes[program + 'mscx_uno.dll']['edges'] = [('cppu3.dll', 'import')]
+    nodes[program + 'affine_uno_uno.dll']['edges'] = [('purpenvhelper3msc.dll', 'import')]
+    nodes[program + 'purpenvhelper3msc.dll']['edges'] = [('cppu3.dll', 'import')]
+    raw = json.dumps(manifest).encode()
+    lock.write_bytes(raw)
+    digest = hashlib.sha256(raw).hexdigest()
+    monkeypatch.setattr(native, 'OFFICE_ENVIRONMENT_IMAGES', images)
+    for constant in ('OFFICE_TEXTENC_LOCK_SHA256', 'OFFICE_LOCALE_LOCK_SHA256', 'OFFICE_ENVIRONMENT_LOCK_SHA256'):
+        monkeypatch.setattr(native, constant, digest)
+    if 'python_launchers' in manifest:
+        monkeypatch.setattr(native, 'OFFICE_SELFCONTAINED_LOCK_SHA256', digest)
+    else:
+        for constant in ('OFFICE_PYTHON_LOCK_SHA256', 'OFFICE_PROGRAM_LOCK_SHA256', 'OFFICE_VENV_LOCK_SHA256'):
+            monkeypatch.setattr(native, constant, digest)
+    return office, payload, nodes, lock
+
+
+def test_configured_environments_add_two_roots_three_nodes_and_keep_other_purposes_unknown(
+        native, environment_registry, tmp_path, monkeypatch):
+    office, payload, nodes, _ = environment_registry
+    program = office + 'program/'
+    before_bytes = {name: path.read_bytes() for name, path in payload.items()}
+    with monkeypatch.context() as old_policy:
+        old_policy.setattr(native, 'office_environment_entries', lambda *_: dict(roots=[]))
+        before = native.inspect_dependencies(payload, tmp_path)
+    after = native.inspect_dependencies(payload, tmp_path)
+    old, new = before['domains']['office'], after['domains']['office']
+    roots = {program + 'mscx_uno.dll', program + 'affine_uno_uno.dll'}
+    newly_covered = roots | {program + 'purpenvhelper3msc.dll'}
+    assert set(new['roots']) == set(old['roots']) | roots
+    assert set(new['nodes']) == set(old['nodes']) | newly_covered
+    for key in ('directories', 'crt_directories', 'registered_directories', 'uno_entries',
+        'uno_configuration_sha256', 'text_encoding_entries', 'locale_data_entries'):
+        assert new[key] == old[key]
+    assert {key: value for key, value in after['domains'].items() if key != 'office'} == {
+        key: value for key, value in before['domains'].items() if key != 'office'}
+    assert {row['path'].casefold() for row in after['unproven_runtime_candidates']} == {
+        row['path'].casefold() for row in before['unproven_runtime_candidates']} - newly_covered
+    assert {program + 'log_uno_uno.dll', program + 'unsafe_uno_uno.dll'} <= {
+        row['path'] for row in after['unproven_runtime_candidates']}
+    assert after['pe_coverage'] == 'partial'
+    assert new['environment_binding_entries']['other_descriptors_and_purposes_certified'] is False
+    assert {name: path.read_bytes() for name, path in payload.items()} == before_bytes
+
+
+@pytest.mark.parametrize('name', ['cppu3.dll', 'mscx_uno.dll', 'affine_uno_uno.dll', 'purpenvhelper3MSC.dll'])
+@pytest.mark.parametrize('damage', ['missing', 'changed'])
+def test_fixed_binding_caller_roots_and_transitive_helper_require_source_identity(
+        native, environment_registry, name, damage):
+    office, payload, nodes, _ = environment_registry
+    key = (office + 'program/' + name).casefold()
+    if damage == 'missing':
+        del nodes[key]
+    else:
+        nodes[key]['sha256'] = 'changed'
+    with pytest.raises(ValueError, match='Office environment'):
+        native.office_environment_entries(payload, nodes, office)
+
+
+@pytest.mark.parametrize('name', ['cppu3.dll', 'affine_uno_uno.dll'])
+@pytest.mark.parametrize('field,value', [('machine', 0x14c), ('magic', 0x10b), ('characteristics', 0x0002),
+    ('characteristics', 0x2000), ('clr_rva', 4096)])
+def test_environment_native_image_headers_are_required(native, environment_registry, name, field, value):
+    office, payload, nodes, _ = environment_registry
+    nodes[office + 'program/' + name][field] = value
+    with pytest.raises(ValueError, match='Office environment'):
+        native.office_environment_entries(payload, nodes, office)
+
+
+@pytest.mark.parametrize('damage', ['missing-lock', 'changed-lock', 'missing-registry', 'changed-registry', 'registry-budget'])
+def test_environment_component_and_fixed_registration_must_match(native, environment_registry, damage):
+    office, payload, nodes, lock = environment_registry
+    if damage == 'missing-lock':
+        del payload[office + 'runtime-lock.json']
+    elif damage == 'changed-lock':
+        lock.write_bytes(lock.read_bytes() + b' ')
+    elif damage == 'missing-registry':
+        del payload[office + 'program/services/services.rdb']
+    else:
+        payload[office + 'program/services/services.rdb'].write_bytes(
+            b'changed registration' if damage == 'changed-registry' else b'x' * (1024 * 1024 + 1))
+    with pytest.raises(ValueError, match='Office environment'):
+        native.office_environment_entries(payload, nodes, office)
+
+
+def test_transitive_purpose_helper_cannot_be_replaced_by_java_copy(native, environment_registry):
+    office, payload, nodes, _ = environment_registry
+    key = office + 'program/purpenvhelper3msc.dll'
+    nodes[office + 'java/bin/purpenvhelper3msc.dll'] = nodes.pop(key)
+    with pytest.raises(ValueError, match='Office environment'):
+        native.office_environment_entries(payload, nodes, office)
+
+
+@pytest.mark.parametrize('kind', ['import', 'delay'])
+def test_environment_binding_cannot_borrow_foreign_or_system_crt(native, environment_registry, tmp_path, kind):
+    office, payload, nodes, _ = environment_registry
+    domain = native.inspect_dependencies(payload, tmp_path)['domains']['office']
+    target = office + 'program/mscx_uno.dll'
+    nodes[target]['edges'] = [('vcruntime140.dll', kind)]
+    nodes[office + 'java/bin/vcruntime140.dll'] = nodes.pop(office + 'program/vcruntime140.dll')
+    (tmp_path / 'vcruntime140.dll').write_bytes(b'Host CRT must not replace private binding dependency')
     with pytest.raises(ValueError, match=f'Unresolved {kind}.*system CRT'):
         native.closure(nodes, [target], domain['directories'], domain['crt_directories'], tmp_path)
