@@ -537,3 +537,9 @@ Q最终全量：Q -X utf8 -m pytest -q --basetemp=D:/computer_work/project/Study
 提交前Q -X utf8 artifacts/legacy_assets_validate.py再次核对新记录改动：七份明确文件，其余432份#14基线保持，48文档相对链接、规范UTF-8/LF、尾空白及git diff --no-index --check无告警，辅助检查退出0。独立草稿PR及其最终head CI未核实前保持待交付；原根工作区未提交内容和失败/恢复证据不改，不接模型、人工测试、合并或发行，M2-05/task.md整体未完成。后续未登记目录恢复/重新登记尚缺目标身份/关联/确认规则，不从本项检查结果推断恢复授权，不继续编造容量统计切片。
 
 实际交付：[独立草稿PR #15](https://github.com/surface-user/StudyWorkbench/pull/15)，分支codex/extracted-question-assets-integrity，base=#14最终9336d2f5728edb76529ee0178b3694fd2c119d40，实现3f1391bf4fd5ad0a70fba8fb4658dd6af5221d2f。推送前再次核对父PR未变；七份源文件按规范UTF-8/LF Base64上传并逐一核对Git blob SHA，远端实现commit差异仅七份，其余432份基线保持。以expected_sha推进独立分支，未强推，不改原根工作区；按用户持续开发/独立PR及原报告授权补本链接与task状态。最终head/正式自审COMMENT/完整CI运行及核对时间和交付结论在PR描述维护，不为记录自身SHA循环提交。当前只有自审，无独立审查；最终head全CI未核实前待交付，不沿用#14或实现提交绿灯，不合并/发行，整个M2-05/task.md仍未完成。
+
+## M2-05i1 派生题目恢复契约
+
+以 #84 最终 c6be373 的 514 个文件为基线逐一核对 Git blob。核对 markdown_questions 的写盘及数据库提交顺序、共享材料的图片遍历、分块选区元数据、巡检的五类派生目录和备份对未知字节的保留方式。旧 Markdown 没有可靠的历史批次和候选序号，文件尾部的自述信息不足以恢复登记。契约因此要求用户选定批次和序号，以数据库登记的原件、实际生成的完整 MD 及附件字节核对关系。i2 交付只读准备，i3 交付显式新位置恢复和重复请求收据；这里尚无新接口或数据迁移。
+
+在独立目录分别以 Python 3.12.7 和 3.13.17 执行 `python -m pytest -q backend/tests/test_markdown_questions.py backend/tests/test_legacy_asset_integrity.py backend/tests/test_backup_store.py::test_offline_roundtrip_all_spaces_history_workfiles_snapshots_and_unknown_bytes`，各 22 通过、两个既有弃用提示，退出 0。两种写盘中断、旧题和共享材料图片、原件和未登记字节的备份往返使用已有自动化；这些结果只证实现有行为。见忽略的 artifacts/i1-p.log、i1-q.log。后续须验证来源不唯一时的拒绝、确认前后字节变化、并发请求、重启及新位置收据。审查暂缓、人工测试按指令取消。

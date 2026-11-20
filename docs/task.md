@@ -66,9 +66,9 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | PAR-02b 原生双栏文字预览 | DONE | 用户指定单页的左右栏文字、原页位置与无法排序的提示，[#76](https://github.com/surface-user/StudyWorkbench/pull/76)，[当前提交 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44506256549)。 |
 | PAR-02c 固定 Windows OCR 组件 | DONE | [#78](https://github.com/surface-user/StudyWorkbench/pull/78) 的[当前提交 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44510080692)通过。 固定开发构建、两个模型与许可；在中文路径实测英、简中及空白，有界 PGM 输入和篡改回归见[报告](../dev/records/2026-11-19-columns-ocr/report.md)。 |
 | PAR-02d 扫描页候选文字 | DONE | [#80](https://github.com/surface-user/StudyWorkbench/pull/80) 的[当前提交 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44678350119)通过。 用户选定扫描页的中英文识别、原页词区、低置信提示与取消已通过源码和冻结 HTTP 验证，见[报告](../dev/records/2026-11-19-columns-ocr/report.md)。 |
-| PAR-02e 双栏拆题与共享材料 | REVIEW | 显式双栏页段已有区域、跨栏续题、材料归组和逐题确认；双 Python 各 60 项，源码和冻结包通过真实 HTTP，[报告](../dev/records/2026-11-19-columns-ocr/report.md)。 |
+| PAR-02e 双栏拆题与共享材料 | DONE | [PR #83](https://github.com/surface-user/StudyWorkbench/pull/83) 的[当前提交 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44679491427)通过。双 Python 各 60 项，源码和冻结包通过双栏位置、跨栏续题、共享材料和逐题确认的真实 HTTP 检查。[报告](../dev/records/2026-11-19-columns-ocr/report.md) |
 | PAR-03 大文档分块提取 | IN_PROGRESS | 原生 PDF 的页段读取、恢复和显式确认已交付 a–d，e 已在 128 MiB 边界通过冻结验证。其他文档格式另行细化。预算、取消及恢复见[分块协议](question-markdown-spec.md#pdf-chunk-jobs)。 |
-| PAR-03e 较大托管 PDF 的流式校验与分块 | REVIEW | 1 MiB 分块校验、可定位快照和 128 MiB 原件上限；两版 Python 各 58 项，源码和最终冻结包通过取消恢复及选题确认，[报告](../dev/records/2026-11-19-pdf-chunks/report.md)。 |
+| PAR-03e 较大托管 PDF 的流式校验与分块 | DONE | [PR #84](https://github.com/surface-user/StudyWorkbench/pull/84) 的[当前提交 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44680779685)通过。原件上限 128 MiB；两版 Python 各 58 项，源码和冻结包通过取消恢复及选题确认，已核对远端全部 514 个文件。[报告](../dev/records/2026-11-19-pdf-chunks/report.md) |
 | PAR-03a 分块协议 | DONE | [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44492950993)通过。 [PR #68](https://github.com/surface-user/StudyWorkbench/pull/68)，[任务报告](../dev/records/2026-11-19-pdf-chunks/report.md)。 |
 | PAR-03b PDF 页区间解析 | DONE | [PR #70](https://github.com/surface-user/StudyWorkbench/pull/70) 修复 CI 子进程工作目录后，[当前 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44497612890)通过。 在一次有界子进程中只渲染指定页，保留原始页码及候选边界提示，回归旧整篇解析。 |
 | PAR-03c 分块任务 API 与持久化 | DONE | [PR #71](https://github.com/surface-user/StudyWorkbench/pull/71) 的[当前 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44497652513)通过。 依赖 [b 子进程](https://github.com/surface-user/StudyWorkbench/pull/70)。核对原件、原子记录进度、显式取消与恢复、并发重试和累计预算。 |
@@ -84,7 +84,10 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | LW-07a | DONE | 主Agent已核双Python专项各11、Flutter专项6/全量196及静态检查；[草稿PR #27](https://github.com/surface-user/StudyWorkbench/pull/27)最终6af0360的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43060817695)成功；50条历史分页/刷新/迟到响应开发交付完成，审查暂缓，见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md) |
 | UPD-01 | BLOCKED | 完整升级回滚流程依赖稳定发行产物和签名方案；保留旧库保护，未授权发布更新 |
 | API-01 | DONE | 主Agent按原退出条件核API-01a兼容结构/脱敏/关联ID及调用方与冻结实证；[草稿PR #34](https://github.com/surface-user/StudyWorkbench/pull/34)最终8b29a27的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43091834219)三组45步通过，API-01/a有限开发交付完成，已纳本组合；历史Office偶发失败保留 |
-| M2-05i | READY | 05g/h巡检及完整备份已实现；先设计身份/来源/附件关系与显式确认，不自动恢复或删除 |
+| M2-05i | IN_PROGRESS | 05g/h 巡检与完整备份已交付，按 i1 来源及确认契约、i2 只读候选核对、i3 新位置恢复与幂等收据分别跟踪。 |
+| M2-05i1 派生题目恢复契约 | REVIEW | 已定义候选目录、来源与附件逐项核对及新位置确认的[契约](question-markdown-spec.md#derived-question-recovery)。既有中断和完整备份回归见[报告](../dev/records/2026-11-06-library-integrity/report.md#m2-05i1-派生题目恢复契约)。 |
+| M2-05i2 旧提取题目恢复预览 | READY | 依 i1 契约实现用户点选单个候选目录的只读核对；未登记、附件不全、同批歧义及预算情况分别验证。 |
+| M2-05i3 新位置恢复与收据 | BLOCKED | 依赖 i2 可复验的来源与候选摘要；另行实现显式确认、事务收据、并发重试和重启恢复。 |
 | M2-05j | BLOCKED | 依赖05i的关系设计；容量报告已实现，实际清理另需具体授权 |
 | M3-03a、M3-03b、M3-03c | READY | 富内容、知识关系、复习评价分别先明确契约；M3-03d已单列REVIEW，不把规模回归当作算法效果通过 |
 | WEB-01、MED-01 | READY | 既有隔离WebView/媒体服务可用于自动化矩阵；模拟/HTTP不冒充实际解码或硬件证据 |
@@ -174,7 +177,7 @@ LW-00设计已形成，LW-01至05本地实现与验证见各任务报告，人�
 | LW-07a / 下载历史 | 完整下载历史分页界面 | DONE，50条分页/稳定排序与上界、轮询/失败保留/重试/迟到响应保护已交付；专项11×2、Flutter6/全量196、#27最终head CI由主Agent核验，见上方调度和[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)。默认活动排序保持；时间上界非事务快照，不清除任务/attempt；审查暂缓、人工取消，未合并/发行 |
 | UPD-01 / 发行长期规划 | 自动升级与完整回滚产品流程；依赖稳定发行产物/签名方案及现有备份保护，方案先行 | 待设计、未实施；依据[打包指南](packaging-windows.md#规划中)。明确更新来源、版本/来源校验、前后端/组件配套、失败回退和配置/旧库保留；分别形成升级与回滚切片/故障自动化，不执行破坏性数据库降级。REL-05的安装升级/卸载验证继续保留，不能代替本项产品流程；发布更新另授权 |
 | API-01 / 公共接口规划 | 统一error.code/message/request_id错误响应契约 | DONE，原契约要求的detail兼容、422脱敏、关联ID与幂等ID分离及桌面/冻结调用回归已由[草稿PR #34](https://github.com/surface-user/StudyWorkbench/pull/34)交付，主Agent核当前head CI通过；当前已纳本组合，见[API原报告](../dev/records/2026-11-12-api-errors/report.md)。不把未要求的进一步细分错误码作为原任务退出条件；审查暂缓、人工取消、未合并/发行 |
-| M2-05i / PLAN-04恢复设计 | 旧提取题目及其他派生候选的恢复/重新登记；依赖05g/h巡检、已有恢复点和完整备份 | 待设计、未实施；先确定恢复目标身份、附件/题目/来源关系、原件hash、显式确认与幂等收据。形成新位置恢复/失败/重试/重启/跨空间等自动化要求；不从目录存在或无引用推断可恢复/可弃，不重复05a–h，不自动改写或删除 |
+| M2-05i / PLAN-04恢复设计 | 旧提取题目及其他派生候选的恢复/重新登记；依赖05g/h巡检、已有恢复点和完整备份 | 设计见 i1。先交付 i2 只读匹配，再交付 i3 新位置恢复；其他类别按各自的登记和修订关系处理。巡检及容量统计保持只读。 |
 | M2-05j / PLAN-04留存设计 | 失败副本与派生文件留存/清理策略；依赖05d/e/f容量报告及i的关系设计 | 待设计、未实施；先明确引用判定、保护清单、预览/用户同意和中断恢复规则，原件/确认版/学习历史/失败证据保留。逻辑长度不当作可回收容量，当前报告不增加删除建议；实际清理须另获具体授权 |
 | M3-03a / 作答扩展 | 富内容作答扩展；依赖既有题目协议/不可变确认版/追加记录 | 待设计、未实施；先明确本切片输入格式、附件归属和编辑/展示范围，再验证七类/缺答案兼容、旧作答/评分/确认版保持及备份恢复；不擅自增加未确认题型或猜答案 |
 | M3-03b / 知识体系 | 科目知识点体系与关系；依赖现有知识点/事件投影和同空间资源 | 待设计、未实施；先定用户自定义分类/关系/修订契约，形成跨空间拒绝、改名移动/删除语义、旧数据迁移与备份回归；不硬编码408/数学等科目，不提前建新表 |
