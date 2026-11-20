@@ -119,6 +119,7 @@ M2-03由已交付LW-05承接；M2-04由PAR/FMT、M2-05由既有a–h及后续i/j
 | REL-03d 原生漏洞核对、REL-03e 修复 | REVIEW / BLOCKED | [#91](https://github.com/surface-user/StudyWorkbench/pull/91) 保留两个来源的查询差异。补丁包、关联清单、兼容回归和复扫另行追踪。 |
 | REL-03f 冻结 Python 漏洞、REL-03g 修复 | REVIEW | [#96](https://github.com/surface-user/StudyWorkbench/pull/96) 在旧包 55 个已归属软件包中查到 OpenTelemetry API 1.45.1 公告。已锁定 1.45.2，重建后端内 28 个模块与修复版 wheel 相符；135 个源码锁定包复扫无返回公告。见[修复报告](../dev/records/2026-11-20-opentelemetry-update/report.md)。OpenSSL 单独跟踪。 |
 | REL-05a 后端安装来源元数据 | REVIEW | 对含本机安装路径的实际开发包拒绝打包，干净环境按同一 wheel 的包名重建后通过。两个 Python 版本各 115 项。见[打包证据](../dev/records/2026-11-20-backend-install-metadata/report.md)。其余发行条件继续跟踪。 |
+| REL-01j 修复后后端文件级 SBOM | REVIEW | 对 [#98](https://github.com/surface-user/StudyWorkbench/pull/98) 的同一实际包记录全部 970 个文件的路径和摘要，列出 59 个有来源证据的库。见[标准 SBOM](../dev/records/2026-11-20-patched-backend-sbom/evidence/backend.cdx.json)及[范围和复验方法](../dev/records/2026-11-20-patched-backend-sbom/report.md)。整包组件身份和传递关系仍在核对。 |
 
 ## 当前任务
 
