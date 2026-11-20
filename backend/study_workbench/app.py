@@ -3,6 +3,7 @@ import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
+from threading import Event
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
@@ -87,12 +88,14 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
     learning_marks = LearningMarks(documents)
     question_files = QuestionFiles(documents)
     downloads = MediaDownloads(engine, data_dir)
+    media_probe_stopping = Event()
     agent_access = AgentAccess(engine, data_dir)
     analysis_reviews = AnalysisReviews(engine, data_dir, agent_access, markdown_notes, documents)
 
     @asynccontextmanager
     async def lifespan(_):
         yield
+        media_probe_stopping.set()
         await run_in_threadpool(downloads.close)
         await run_in_threadpool(documents.close)
         await run_in_threadpool(explorer.close)
@@ -106,6 +109,7 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
     app.state.learning_marks = learning_marks
     app.state.question_files = question_files
     app.state.downloads = downloads
+    app.state.media_probe_stopping = media_probe_stopping
     app.state.agent_access = agent_access
     app.state.analysis_reviews = analysis_reviews
     install_error_handlers(app)
@@ -233,7 +237,7 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
     app.include_router(records_router(engine), dependencies=auth)
     app.include_router(markdown_router(engine, data_dir), dependencies=auth)
     app.include_router(draft_router(engine, data_dir), dependencies=auth)
-    media_api, media_public = media_routers(engine, data_dir)
+    media_api, media_public = media_routers(engine, data_dir, media_probe_stopping)
     app.include_router(media_api, dependencies=auth)
     app.include_router(media_public)
     return app

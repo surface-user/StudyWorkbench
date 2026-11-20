@@ -36,11 +36,13 @@ def descriptor(raw, offset, tag):
 
 
 class MP4Input:
-    def __init__(self, handle, size, deadline):
+    def __init__(self, handle, size, deadline, checkpoint=lambda: None):
         self.handle, self.size, self.deadline = handle, size, deadline
+        self.external_checkpoint = checkpoint
         self.box_count = self.metadata_bytes = 0
 
     def checkpoint(self):
+        self.external_checkpoint()
         if time.monotonic() > self.deadline:
             raise HTTPException(413, '媒体预检超过时间预算，原文件保留')
 
@@ -231,7 +233,7 @@ class MP4Input:
         return streams
 
 
-def inspect_media_input(root, relative, size, sha256, mime):
+def inspect_media_input(root, relative, size, sha256, mime, checkpoint=lambda: None):
     """Only a server-selected managed path; no write, network, subprocess or grant creation."""
     try:
         # Inspect the supplied root before resource_path resolves it, so a junction is not trusted away.
@@ -254,7 +256,7 @@ def inspect_media_input(root, relative, size, sha256, mime):
             require(stat.S_ISREG(before.st_mode))
             if before.st_size != size:
                 raise HTTPException(409, '媒体已改变，原文件保留；请刷新后重新选择')
-            policy = MP4Input(handle, size, deadline)
+            policy = MP4Input(handle, size, deadline, checkpoint)
             checksum = hashlib.sha256()
             for _ in range((size + 1048575) // 1048576):
                 policy.checkpoint()

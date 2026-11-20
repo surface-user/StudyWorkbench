@@ -31,6 +31,7 @@
 | 授权与人工候选审核 | 内存显式授权/有界作答与确认版读取；外部候选修订、拒绝和独立MD采用收据；无模型调用 | agent_access.py、analysis_review.py、analysis_review_dialog.dart |
 | 直接媒体下载 | 持久任务/单worker/独占attempt、固定下载子进程/暂停与显式恢复、受管原件入库/媒体身份复用；首批无站点解析/转码 | media_download_http.py、media_download_worker.py、media_downloads.py、media_download_dialog.dart |
 | 本地媒体输入预检 | 显式媒体ID/expected hash、同空间受管来源与实际摘要、有界非分片MP4/M4A结构子集；复用2份查看并发，只返回声明、不执行原生工具或写收据 | media_inputs.py、media_library.py |
+| 本地媒体同步探测 | 可选固定FFmpeg组件/完整资产摘要，显式媒体ID重验与独占副本，固定ffprobe配方、已有Windows Job/私有EOF/HTTP断开取消；仅非分片MP4/M4A，无持久队列/合流/新表，发行未就绪 | media_probe_runtime.py、media_probes.py、media_library.py、__main__.py |
 
 资源身份、原件blob、题目ID、确认版ID、tab_id分开，不能用标题/hash代替身份。资源树是受管逻辑目录，不是任意系统文件夹的原地工作区。
 
