@@ -32,7 +32,7 @@ from .documents import CHUNK_PDF_LIMIT
 from .question_protocol import Content, QuestionBundle
 from .workspaces import require_workspace
 
-PARSER_VERSION = "builtin-4-grouped-md-docling-2.142.1-pdfium-5.14.0"
+PARSER_VERSION = "builtin-4-grouped-md-docling-2.142.1-pdfium-5.14.0-cell-text-v2"
 
 
 class PlainHTML(HTMLParser):

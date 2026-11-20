@@ -42,6 +42,19 @@ def test_real_offline_document_worker_retains_images_and_original(tmp_path, suff
         assert c.post(f"{SCOPE}/imports/{job['id']}/retry").status_code == 409
 
 
+def test_numbered_rich_docx_cell_keeps_text_math_and_images_in_its_question(monkeypatch, tmp_path):
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[2] / 'tools'))
+    from numbered_cell_sample import check_numbered_cell, numbered_cell_docx
+
+    raw = numbered_cell_docx()
+    check_numbered_cell(extract(raw, '.docx'))
+    with client(tmp_path) as c:
+        job = upload(c, raw, 'table.docx').json()
+        assert job['status'] == 'preview' and job['parser_version'].endswith('-cell-text-v2')
+        assert [q['title'].split('.')[0] for q in job['preview']['question_drafts']] == ['1', '2', '3']
+        assert c.get(f"{SCOPE}/resources/{job['resource_id']}").content == raw
+
+
 def test_docx_archive_limits_external_entities_and_macros_reject():
     for filename, data in [('word/document.xml', b'<!DOCTYPE evil>'), ('word/vbaProject.bin', b'macro'),
                            ('word/media/test.svg', b'<svg/>'), ('word/charts/chart.xml', b'<chart/>')]:

@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from numbered_cell_sample import check_numbered_cell, numbered_cell_docx
+
 root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
 parser.add_argument('--exe', type=Path)
@@ -49,6 +51,11 @@ for suffix in ('docx', 'pdf'):
     else:
         assert any(b['type'] == 'latex' for b in drafts[0]['blocks'])
     print(f'{suffix}: two numbered question candidates, image/math and cross-page boundaries passed')
+
+response = subprocess.run([*command, '--parse-document', '.docx'], input=numbered_cell_docx(), capture_output=True,
+                          check=True, timeout=45, env=environment, cwd=root)
+check_numbered_cell(json.loads(response.stdout))
+print('docx: numbered rich table cell stays with its original question, including image and math')
 
 raw = (root / 'contracts/samples/numbered-questions.pdf').read_bytes()
 response = subprocess.run([*command, '--parse-pdf-pages', '2', '2'], input=raw, capture_output=True,
