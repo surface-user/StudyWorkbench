@@ -91,6 +91,7 @@ layout版本1/2；tabs最多16、closed_tabs最多10、active_tab_id须有效且
 | GET W/export | ZIP含原件/题目/笔记/hash，128MiB原件/32MiB元数据；不是整库恢复包 |
 | POST W/imports/{job_id}/question-drafts/edit | expected_revision、action=merge_next/split_block/split_region/share/rename及对应字段；陈旧或已入库拒绝 |
 | POST W/imports/{job_id}/question-markdown | expected_revision、selected严格不同整数下标、confirm=true；同组选题幂等，另一组409 |
+| POST W/imports/{job_id}/question-markdown/recovery-preview | 当前空间内只读核对一个未登记的题目目录。请求含 directory_id（32 位小写十六进制）、ordinal（从 0 开始的候选序号）和 expected_revision。成功返回 matched、题名、来源及附件标识/摘要、候选 SHA256。来源或成员不符/同批歧义/已登记返回 409，超预算 413，资料处理槽位占满 429。 |
 | GET W/question-markdown | search标题、offset/limit分页旧MD摘要 |
 | GET W/question-markdown/{id} | 原题块、MD内容、来源/资源ID，不等同可判分题 |
 
