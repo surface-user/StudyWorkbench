@@ -28,6 +28,7 @@ from .db import (
     Resource,
     write_transaction,
 )
+from .documents import CHUNK_PDF_LIMIT
 from .question_protocol import Content, QuestionBundle
 from .workspaces import require_workspace
 
@@ -116,7 +117,7 @@ def read_resource(root, resource):
     return data
 
 
-def read_pdf_source(session, root, workspace, resource_id, expected):
+def pdf_item(session, workspace, resource_id, expected, limit):
     require_workspace(session, workspace)
     item = session.get(Resource, resource_id)
     if item is None or item.workspace_id != workspace:
@@ -127,14 +128,53 @@ def read_pdf_source(session, root, workspace, resource_id, expected):
         parts = []
     if len(parts) < 3 or parts[:2] != ['workspaces', workspace] or item.sha256 != expected:
         raise HTTPException(409, '原件版本或工作空间路径不符')
-    if not 0 < item.size <= 8 * 1024 * 1024:
-        raise HTTPException(413, '此项 PDF 提取最多支持 8 MiB 原件')
+    if not 0 < item.size <= limit:
+        raise HTTPException(413, f'此项 PDF 提取最多支持 {limit // (1024 * 1024)} MiB 原件')
     if Path(item.original_name).suffix.lower() != '.pdf':
         raise HTTPException(422, '请选择托管 PDF 原件')
+    return item
+
+
+def read_pdf_source(session, root, workspace, resource_id, expected):
+    item = pdf_item(session, workspace, resource_id, expected, 8 * 1024 * 1024)
     data = read_resource(root, item)
     if not data.startswith(b'%PDF-'):
         raise HTTPException(422, 'PDF 原件格式无效')
     return data
+
+
+def check_chunk_pdf(session, root, workspace, resource_id, expected, *, output=None):
+    item = pdf_item(session, workspace, resource_id, expected, CHUNK_PDF_LIMIT)
+    path = resource_path(root, item.relative_path)
+    digest = hashlib.sha256()
+    count = 0
+    try:
+        if not stat.S_ISREG(path.lstat().st_mode):
+            raise HTTPException(409, 'PDF 原件不是普通文件')
+        with path.open('rb') as source:
+            if os.fstat(source.fileno()).st_size != item.size:
+                raise HTTPException(409, 'PDF 原件长度已变化')
+            while data := source.read(min(1024 * 1024, item.size - count + 1)):
+                if count == 0 and not data.startswith(b'%PDF-'):
+                    raise HTTPException(422, 'PDF 原件格式无效')
+                count += len(data)
+                if count > item.size:
+                    raise HTTPException(409, 'PDF 原件长度已变化')
+                digest.update(data)
+                if output is not None:
+                    try:
+                        output.write(data)
+                    except OSError as error:
+                        raise HTTPException(507, '无法保存本次 PDF 解析快照') from error
+    except OSError as error:
+        raise HTTPException(409, 'PDF 原件不可读取') from error
+    if count != item.size or digest.hexdigest() != expected:
+        raise HTTPException(409, 'PDF 原件摘要已变化')
+    if output is not None:
+        try:
+            output.flush()
+        except OSError as error:
+            raise HTTPException(507, '无法保存本次 PDF 解析快照') from error
 
 
 def source_claims(value, resource_id):

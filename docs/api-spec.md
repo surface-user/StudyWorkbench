@@ -73,7 +73,7 @@ layout版本1/2；tabs最多16、closed_tabs最多10、active_tab_id须有效且
 | 方法/路径 | 当前契约 |
 |---|---|
 | POST W/imports?filename=... | 上传原件字节，8MiB；原件先保存，解析后preview/failed，HTTP200不表示正式入库 |
-| POST W/pdf-chunk-jobs | 同空间托管 PDF 的 resource_id、expected_sha256、first_page、last_page。原件最多 8 MiB，每任务至多连续 100 页。可选 layout 取 single_column（默认）或 two_columns。栏序纳入解析器版本，相同原件和页段可分别保留两种布局的独立进度与候选。相同绑定返回已有任务。 |
+| POST W/pdf-chunk-jobs | 同空间托管 PDF 的 resource_id、expected_sha256、first_page、last_page。此接口接受已通过资料添加保存在当前空间的 PDF，原件最多 128 MiB，每任务至多连续 100 页。可选 layout 取 single_column（默认）或 two_columns。栏序纳入解析器版本，相同原件和页段可分别保留两种布局的独立进度与候选。相同绑定返回已有任务。 |
 | GET W/pdf-chunk-jobs、GET W/pdf-chunk-jobs/{id} | 按空间分页列出任务，或读取任务状态、已提交页数、下一页与累计图片字节。 |
 | POST W/pdf-chunk-jobs/{id}/advance | 提交期望 first_page，一次执行至多 20 页。重复请求已提交的起始页返回当前进度；状态或页号冲突返回 409。 |
 | POST W/pdf-chunk-jobs/{id}/cancel、resume | 取消使进行中的执行代次失效。显式恢复会校验原件摘要与版本。重启留下的中断任务需显式恢复。 |

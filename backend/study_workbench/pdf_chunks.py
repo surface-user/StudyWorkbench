@@ -17,8 +17,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .db import ImportJob, PdfChunk, PdfChunkJob, Resource, write_transaction
-from .document_files import limited_view, raster
-from .imports import describe, persist_assets, read_pdf_source
+from .document_files import limited_view
+from .imports import check_chunk_pdf, describe, persist_assets
 from .question_protocol import Content
 from .question_splitting import START, DraftSplitter, all_blocks
 from .workspaces import require_workspace
@@ -57,36 +57,45 @@ def scoped_job(session, workspace, job_id):
     return job
 
 
-def parse_pages(data, first, last, version=VERSION):
+def chunk_snapshot():
+    try:
+        return tempfile.TemporaryFile()
+    except OSError as error:
+        raise HTTPException(507, '无法创建本次 PDF 解析快照') from error
+
+
+def run_pdf_worker(source, arguments, limit, timeout):
     cmd = [sys.executable]
     if not getattr(sys, 'frozen', False):
         cmd.extend(['-m', 'study_workbench'])
-    cmd.extend(['--parse-pdf-columns' if version == COLUMN_VERSION else '--parse-pdf-pages', str(first), str(last)])
+    cmd.extend(arguments)
     env = {**os.environ, 'PYTHONPATH': str(Path(__file__).resolve().parents[1]), 'PYTHONUTF8': '1'}
-    # With stdin staged separately, a full input pipe cannot block draining bounded stdout.
-    with tempfile.TemporaryFile() as input_file:
-        input_file.write(data)
-        input_file.seek(0)
-        with subprocess.Popen(cmd, stdin=input_file, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                              env=env, creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0) as proc:
-            timer = Timer(25, proc.kill)
-            timer.start()
-            try:
-                raw = proc.stdout.read(OUTPUT_LIMIT + 1)
-                if len(raw) > OUTPUT_LIMIT:
-                    raise ValueError('PDF 分块输出超限')
-                if proc.wait():
-                    raise ValueError('PDF 分块解析中断或超时')
-            finally:
-                timer.cancel()
-                if proc.poll() is None:
-                    proc.kill()
-                proc.wait()
-                timer.join()
+    source.seek(0)
+    with subprocess.Popen(cmd, stdin=source, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                          env=env, creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0) as proc:
+        timer = Timer(timeout, proc.kill)
+        timer.start()
+        try:
+            raw = proc.stdout.read(limit + 1)
+            if len(raw) > limit:
+                raise ValueError('PDF 分块输出超限')
+            if proc.wait():
+                raise ValueError('PDF 分块解析中断或超时')
+        finally:
+            timer.cancel()
+            if proc.poll() is None:
+                proc.kill()
+            proc.wait()
+            timer.join()
     result = json.loads(raw)
     if 'error' in result:
         raise ValueError('PDF 分块原件无效或解析超限')
     return result
+
+
+def parse_pages(source, first, last, version=VERSION):
+    mode = '--parse-pdf-columns' if version == COLUMN_VERSION else '--parse-pdf-pages'
+    return run_pdf_worker(source, [mode, str(first), str(last)], OUTPUT_LIMIT, 25)
 
 
 def assemble(session, job, title):
@@ -151,16 +160,20 @@ def pdf_chunk_router(engine, root):
     def create(workspace_id: str, body: CreateJob):
         if not 0 <= body.last_page - body.first_page < 100:
             raise HTTPException(422, '请选择连续的 1 至 100 页')
-        with Session(engine) as session:
-            data = read_pdf_source(session, root, workspace_id, body.resource_id, body.expected_sha256)
-        page_count = raster(data, 'pdf-info')['page_count']
+        with chunk_snapshot() as source:
+            with Session(engine) as session:
+                check_chunk_pdf(session, root, workspace_id, body.resource_id, body.expected_sha256, output=source)
+            try:
+                page_count = run_pdf_worker(source, ['--count-pdf-chunk-pages'], 4096, 20)['page_count']
+            except (OSError, ValueError, KeyError) as error:
+                raise HTTPException(422, 'PDF 页数读取失败、已加密或超限') from error
         if body.last_page > page_count:
             raise HTTPException(422, '选择超出原件页数')
         key = dict(workspace_id=workspace_id, resource_id=body.resource_id, source_sha256=body.expected_sha256,
                    parser_version=COLUMN_VERSION if body.layout == 'two_columns' else VERSION,
                    first_page=body.first_page, last_page=body.last_page)
         with write_transaction(engine) as session:
-            read_pdf_source(session, root, workspace_id, body.resource_id, body.expected_sha256)
+            check_chunk_pdf(session, root, workspace_id, body.resource_id, body.expected_sha256)
             job = session.scalar(select(PdfChunkJob).filter_by(**key))
             if job is None:
                 job = PdfChunkJob(**key, id=uuid4().hex, status='ready', page_count=page_count,
@@ -196,7 +209,7 @@ def pdf_chunk_router(engine, root):
             job = scoped_job(session, workspace_id, job_id)
             if job.status == 'running' or job.parser_version not in VERSIONS:
                 raise HTTPException(409, '任务正在解析或解析器版本已变')
-            read_pdf_source(session, root, workspace_id, job.resource_id, job.source_sha256)
+            check_chunk_pdf(session, root, workspace_id, job.resource_id, job.source_sha256)
             if job.status != 'parsed':
                 job.status = 'ready'
             return details(job)
@@ -205,19 +218,21 @@ def pdf_chunk_router(engine, root):
     @limited_view
     def advance(workspace_id: str, job_id: str, body: Advance):
         first = body.first_page
-        with write_transaction(engine) as session:
-            job = scoped_job(session, workspace_id, job_id)
-            if session.get(PdfChunk, (job_id, first)) is not None:
-                return details(job)
-            if job.next_page != first or job.status != 'ready' or job.parser_version not in VERSIONS:
-                raise HTTPException(409, '任务进度或状态已变，请重新查看')
-            data = read_pdf_source(session, root, workspace_id, job.resource_id, job.source_sha256)
-            last = min(first + 19, job.last_page)
-            job.generation += 1
-            version = job.parser_version
-            generation, job.status = job.generation, 'running'
+        generation = None
         try:
-            result = parse_pages(data, first, last, version)
+            with chunk_snapshot() as source:
+                with write_transaction(engine) as session:
+                    job = scoped_job(session, workspace_id, job_id)
+                    if session.get(PdfChunk, (job_id, first)) is not None:
+                        return details(job)
+                    if job.next_page != first or job.status != 'ready' or job.parser_version not in VERSIONS:
+                        raise HTTPException(409, '任务进度或状态已变，请重新查看')
+                    check_chunk_pdf(session, root, workspace_id, job.resource_id, job.source_sha256, output=source)
+                    last = min(first + 19, job.last_page)
+                    job.generation += 1
+                    version = job.parser_version
+                    generation, job.status = job.generation, 'running'
+                result = parse_pages(source, first, last, version)
             asset_bytes = sum(len(base64.b64decode(asset['data'], validate=True)) for asset in result['_assets'])
             markers = [START.fullmatch(f['marker']) for f in result['fragments'] if f['marker'] is not None]
             if any(m is None for m in markers):
@@ -227,7 +242,7 @@ def pdf_chunk_router(engine, root):
                 job = scoped_job(session, workspace_id, job_id)
                 if job.status != 'running' or job.generation != generation:
                     raise HTTPException(409, '任务已取消或执行批次已变')
-                read_pdf_source(session, root, workspace_id, job.resource_id, job.source_sha256)
+                check_chunk_pdf(session, root, workspace_id, job.resource_id, job.source_sha256)
                 if (result['first_page'], result['last_page'], result['page_count']) != (first, last, job.page_count):
                     raise ValueError('PDF 页区间发生变化')
                 job.asset_bytes += asset_bytes
@@ -241,6 +256,8 @@ def pdf_chunk_router(engine, root):
                 job.status = 'parsed' if last == job.last_page else 'ready'
                 return details(job)
         except Exception as error:
+            if generation is None:
+                raise
             with write_transaction(engine) as session:
                 job = session.get(PdfChunkJob, job_id)
                 if job and job.generation == generation and job.status == 'running':
@@ -255,7 +272,7 @@ def pdf_chunk_router(engine, root):
             job = scoped_job(session, workspace_id, job_id)
             if job.status != 'parsed' or job.parser_version not in VERSIONS:
                 raise HTTPException(409, '需要先完成当前版本的全部所选页')
-            read_pdf_source(session, root, workspace_id, job.resource_id, job.source_sha256)
+            check_chunk_pdf(session, root, workspace_id, job.resource_id, job.source_sha256)
             original = session.get(Resource, job.resource_id)
             batch = session.get(ImportJob, job.id)
             if batch is None:

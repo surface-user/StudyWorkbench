@@ -106,7 +106,7 @@ def test_chunk_job_rejects_scope_source_hash_and_budget(tmp_path, monkeypatch):
         with sqlite3.connect(tmp_path / 'study.db') as db:
             db.execute("UPDATE resources SET relative_path='workspaces/default-other/originals/x' WHERE id=?",
                        (body['resource_id'],))
-        monkeypatch.setattr(imports, 'read_resource', lambda *_: pytest.fail('resolved a foreign path'))
+        monkeypatch.setattr(imports, 'resource_path', lambda *_: pytest.fail('resolved a foreign path'))
         assert c.post(url + '/resume').status_code == 409
         assert c.post(API, json=body).status_code == 409
 
@@ -248,3 +248,45 @@ def test_ambiguous_figure_preserves_full_page_and_yields_no_guessed_draft(drawin
     assert len(result['_assets']) == 1 and result['blocks'][-1]['type'] == 'image'
     assert len(result['fragments']) == 1 and result['fragments'][0]['ambiguous']
     assert not result['fragments'][0]['blocks']
+
+
+def test_chunk_snapshot_read_budget_disk_failure_and_stale_copy(tmp_path, monkeypatch):
+    from fastapi import HTTPException
+    from sqlalchemy.orm import Session
+    from test_document_files import add
+
+    raw = b'%PDF-' + b'A' * (8 * 1024 * 1024)
+    digest = hashlib.sha256(raw).hexdigest()
+    with client(tmp_path) as c, Session(c.app.state.engine) as session:
+        node, identifier, path = add(c, tmp_path, 'large.pdf', raw)
+        assert c.post(f'{SCOPE}/nodes/{node}/document-columns',
+                      json={'expected_sha256': digest, 'page': 1}).status_code == 413
+        source_args = session, tmp_path, 'default', identifier, digest
+
+        class Sink(io.BytesIO):
+            def write(self, data):
+                assert len(data) <= 1024 * 1024
+                return super().write(data)
+
+        snapshot = Sink()
+        imports.check_chunk_pdf(*source_args, output=snapshot)
+        assert snapshot.getvalue() == raw
+
+        class Full(Sink):
+            def flush(self):
+                raise OSError('full')
+
+        with pytest.raises(HTTPException) as full:
+            imports.check_chunk_pdf(*source_args, output=Full())
+        assert full.value.status_code == 507
+        with path.open('r+b') as changed:
+            changed.seek(-1, 2)
+            changed.write(b'B')
+        with pytest.raises(HTTPException) as stale:
+            imports.check_chunk_pdf(*source_args)
+        assert stale.value.status_code == 409 and snapshot.getvalue() == raw
+        monkeypatch.setattr(imports, 'CHUNK_PDF_LIMIT', len(raw) - 1)
+        monkeypatch.setattr(imports, 'resource_path', lambda *_: pytest.fail('over-budget source was opened'))
+        with pytest.raises(HTTPException) as oversized:
+            imports.check_chunk_pdf(*source_args)
+        assert oversized.value.status_code == 413

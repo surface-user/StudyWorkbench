@@ -15,6 +15,10 @@ from .data_root import DataLock, relocate, validate_root, write_settings
 
 
 def main():
+    if sys.argv[1:] == ['--count-pdf-chunk-pages']:
+        from .documents import worker
+        worker('.pdf', count_only=True)
+        return
     if len(sys.argv) == 4 and sys.argv[1] == '--ocr-page':
         from .ocr_page import worker
         worker(int(sys.argv[2]), sys.argv[3])
