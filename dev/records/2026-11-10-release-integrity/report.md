@@ -963,3 +963,5 @@ REL-01h转REVIEW，四文件范围检查/最终精选只读一致及独立草稿
 最后补入#81的完整payload指纹与所有已读元数据/许可/两ZIP末尾重读hash，仍保留非原子快照限制；Q/P用tmp-q02/tmp-p02及q02.xml/p02.xml再跑同20惰性reader边界，各实际退出0（1.03/1.19秒）。Q最终verify_select.py --read-only重新核969/三DLL/两许可/三组件和两精选原bytes，退出0；raw输入未变，不将中间精选hash冒充最后版本。最终provenance8,774字节，两个原许可字节例外以固定全SHA256验证，OpenSSL原CRLF保持；其余自写文件执行UTF8/LF和diff检查。
 
 工具解释器-m ruff check backend tools及Q tools/export_question_schema.py --check实际退出0。artifacts/rel01i/check_changes.py退出0：7文件白名单、503原blob保持/最终510文件、95本地引用/被引标题、67唯一调度行、旧报告完整前缀及所有业务/工具/锁/工作流保持。许可例外不是放宽来源校验，两原文均与官方归档及Git blob精确相同；未提交原归档、完整响应、DLL或测试库。独立PR/当前head CI继续，有限项仍REVIEW。
+
+独立草稿[PR #88](https://github.com/surface-user/StudyWorkbench/pull/88)已创建并附任务，codex/cpython-native-source-licenses基于#81最终aba16ba；首次提交b4d5a7f0dad07fd9452290c5a8125ab53de47d9d/tree069170ed1f383332f932a638694450246cbe1369。补实际链接后保持7文件及510最终blob，原许可CRLF/hash不变；最终head/tree/当前CI在PR正文记录，不循环改自引hash。REL-01i保持REVIEW待本head CI及主Agent有限核验，未合并或发行。
