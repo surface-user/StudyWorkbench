@@ -35,6 +35,23 @@ class DesktopState(Base):
     active_workspace_id: Mapped[str] = mapped_column(ForeignKey("workspaces.id"))
 
 
+class KnowledgeSubjectRevision(Base):
+    __tablename__ = 'knowledge_subject_revisions'
+    workspace_id: Mapped[str] = mapped_column(ForeignKey('workspaces.id'), primary_key=True)
+    subject_id: Mapped[str] = mapped_column(String, primary_key=True)
+    revision: Mapped[int] = mapped_column(primary_key=True)
+    previous_revision: Mapped[int | None] = mapped_column(Integer)
+    request_id: Mapped[str] = mapped_column(String)
+    action: Mapped[str] = mapped_column(String)
+    name: Mapped[str] = mapped_column(String)
+    __table_args__ = (
+        UniqueConstraint('workspace_id', 'request_id'),
+        ForeignKeyConstraint(['workspace_id', 'subject_id', 'previous_revision'],
+                             ['knowledge_subject_revisions.workspace_id', 'knowledge_subject_revisions.subject_id',
+                              'knowledge_subject_revisions.revision']),
+    )
+
+
 class Question(Base):
     __tablename__ = "questions"
     id: Mapped[str] = mapped_column(String, primary_key=True)

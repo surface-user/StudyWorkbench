@@ -42,6 +42,10 @@
 - 旧JSON和提取MD的ID保留，显式转换建立文件映射；冲突拒绝，不能按标题合并或迁移补造旧快照。
 - 只有新版本确认才更新题目缓存；新旧request_id、答案和版本的幂等语义不因后续编辑改变。
 
+### 当前已实现的知识科目
+
+迁移 0019 创建 `knowledge_subject_revisions`，升级后初始为空。主键由空间 ID、科目 ID 和修订号组成；前一修订的同空间外键保留完整链。创建、改名、移除分别追加 `create`、`rename`、`remove`。请求键在空间内唯一，历史禁止更新和删除。活动名称和移除状态取最后一条修订，备份和恢复校验外键、已移除状态及活动名称冲突。题目原有科目文字和学习事件保持原值。
+
 ### 当前事件投影
 
 learning_events.content存kind=annotation/reviewed、note及可选error_type/self_rating/note_id/knowledge_points。省略/null知识点不修订，[]明确清除；最多100项独立非空知识点，每项500字符。最后明确声明形成latest-explicit-annotation-v1；遍历完整事件流，不受当前分页影响。当时knowledge_points独立保留，旧无版本不拿当前题目补造。

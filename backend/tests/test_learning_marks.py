@@ -274,10 +274,10 @@ def test_0013_upgrade_failure_rollback_and_success_preserve_old_data(tmp_path, m
         assert len(c.get(URL + '/' + identifier + '/revisions').json()) == 1
         assert snapshot(path)['notes'] == before['notes']
     assert (root / 'original.bin').read_bytes() == raw
-    backups = list((root / 'backups').glob('study-before-0018-*.db'))
+    backups = list((root / 'backups').glob('study-before-0019-*.db'))
     assert backups and all(snapshot(p) == before for p in backups)
     with sqlite3.connect(path) as db:
-        assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0018',)
+        assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0019',)
         assert db.execute('PRAGMA integrity_check').fetchone() == ('ok',)
         assert db.execute('PRAGMA foreign_key_check').fetchall() == []
 
