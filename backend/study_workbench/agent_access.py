@@ -4,14 +4,15 @@ import json
 import secrets
 from threading import Lock
 from time import monotonic
-from typing import Literal
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Body, HTTPException
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy.orm import Session
 
 from .learning_records import scoped_attempt
 from .question_files import version_read, version_view
+from .resource_grants import CONTEXT_BYTES, ResourceGrantInput, read_resources
 from .workspaces import require_workspace
 
 
@@ -50,31 +51,40 @@ class AgentAccess:
             if self.grants[identifier][2] <= monotonic():
                 del self.grants[identifier]
 
-    def grant(self, session, workspace, identifier):
+    def grant(self, session, workspace, identifier, *, purpose='analyze_attempts'):
         require_workspace(session, workspace)
         self.purge()
         grant = self.grants.get(identifier)
-        if grant is None or grant[0] != workspace:
+        if grant is None or grant[0] != workspace or purpose is not None and grant[4] != purpose:
             raise HTTPException(404, '授权不存在或已过期')
         return grant
 
-    def create(self, workspace_id: str, body: GrantInput):
-        with Session(self.engine) as session:
+    def create(self, workspace_id: str,
+               body: Annotated[GrantInput | ResourceGrantInput, Body(discriminator='purpose')]):
+        with self.lock, Session(self.engine) as session:
             require_workspace(session, workspace_id)
-            for attempt_id in body.attempt_ids:
-                scoped_attempt(session, workspace_id, attempt_id)
-        with self.lock:
             self.purge()
             if len(self.grants) >= 100:
                 raise HTTPException(429, '授权数量已达上限，请撤销或等待过期')
+            if isinstance(body, ResourceGrantInput):
+                selection = tuple(body.selections)
+                detail = self.resource_context(session, workspace_id, selection)['context_sha256']
+                public = dict(selections=[s.model_dump(exclude_none=True) for s in selection])
+            else:
+                for attempt_id in body.attempt_ids:
+                    scoped_attempt(session, workspace_id, attempt_id)
+                selection, detail = tuple(body.attempt_ids), body.include_content
+                public = dict(attempt_ids=body.attempt_ids, include_content=body.include_content)
             identifier = secrets.token_hex(16)
-            self.grants[identifier] = (workspace_id, tuple(body.attempt_ids), monotonic() + body.expires_in_seconds, body.include_content)
-        return dict(id=identifier, purpose=body.purpose, attempt_ids=body.attempt_ids,
-                    expires_in_seconds=body.expires_in_seconds, transport='local_only', include_content=body.include_content)
+            if identifier in self.grants:
+                raise HTTPException(503, '授权编号生成冲突，请重试')
+            self.grants[identifier] = (workspace_id, selection, monotonic() + body.expires_in_seconds, detail, body.purpose)
+        return dict(id=identifier, purpose=body.purpose, expires_in_seconds=body.expires_in_seconds,
+                    transport='local_only', **public)
 
     def revoke(self, workspace_id: str, grant_id: str):
         with self.lock, Session(self.engine) as session:
-            self.grant(session, workspace_id, grant_id)
+            self.grant(session, workspace_id, grant_id, purpose=None)
             del self.grants[grant_id]
         return {'revoked': True}
 
@@ -96,6 +106,25 @@ class AgentAccess:
             return json.dumps(value, ensure_ascii=False, sort_keys=True, allow_nan=False).encode('utf-8')
         except (ValueError, UnicodeError, TypeError):
             raise HTTPException(409, '授权内容无法表示为受控UTF-8数据；原记录保留') from None
+
+    def resource_context(self, session, workspace, selections):
+        try:
+            result = read_resources(session, self.root, workspace, selections, self.encoded)
+            result['context_sha256'] = hashlib.sha256(self.encoded(result)).hexdigest()
+            if len(self.encoded(result)) > CONTEXT_BYTES:
+                raise HTTPException(413, '含引用校验的授权上下文超过1MiB')
+            return result
+        except (ValueError, TypeError, UnicodeError, RecursionError):
+            raise HTTPException(409, '所选资料结构或版本无效；原记录保留') from None
+
+    def resources(self, workspace_id: str, grant_id: str):
+        with self.lock, Session(self.engine) as session:
+            grant = self.grant(session, workspace_id, grant_id, purpose='read_resources')
+            result = self.resource_context(session, workspace_id, grant[1])
+            if result['context_sha256'] != grant[3]:
+                raise HTTPException(409, '所选资料已变化，请重新确认授权')
+            self.grant(session, workspace_id, grant_id, purpose='read_resources')
+        return result
 
     def context(self, workspace_id: str, grant_id: str):
         with self.lock, Session(self.engine) as session:
@@ -145,6 +174,7 @@ class AgentAccess:
         router.delete('/{grant_id}')(self.revoke)
         router.post('/{grant_id}/read-attempts')(self.read)
         router.post('/{grant_id}/read-analysis-context')(self.context)
+        router.post('/{grant_id}/read-resources')(self.resources)
         return router
 
 

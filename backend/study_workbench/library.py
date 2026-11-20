@@ -13,7 +13,16 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .db import ImportJob, MarkdownQuestion, Note, PassageRecord, Question, Resource, write_transaction
+from .db import (
+    ImportJob,
+    MarkdownQuestion,
+    Note,
+    PassageRecord,
+    PdfChunkJob,
+    Question,
+    Resource,
+    write_transaction,
+)
 from .imports import (
     PARSER_VERSION,
     describe,
@@ -92,6 +101,8 @@ def library_router(engine, root, question_files):
             job = session.get(ImportJob, job_id)
             if job is None or job.workspace_id != workspace_id:
                 raise HTTPException(404, "导入记录不存在")
+            if session.get(PdfChunkJob, job_id) is not None:
+                raise HTTPException(409, '分块候选使用原分块任务恢复，不能整篇重解析')
             if job.status in {"confirmed", "parsing"}:
                 raise HTTPException(409, "已确认或正在解析的内容不能重新解析或覆盖")
             resource = session.get(Resource, job.resource_id)

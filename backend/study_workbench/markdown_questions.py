@@ -10,8 +10,9 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .db import ImportJob, MarkdownQuestion, Resource, write_transaction
+from .db import ImportJob, MarkdownQuestion, PdfChunkJob, Resource, write_transaction
 from .imports import read_resource, resource_path, validate_attachments
+from .pdf_chunks import source as chunk_source
 from .question_splitting import all_blocks, draft_revision, markdown
 from .workspaces import require_workspace
 
@@ -53,7 +54,13 @@ def markdown_router(engine, root):
                     raise HTTPException(409, '本批题目已入库，不能用另一组选题重复确认')
                 return [describe(item) for item in existing]
             original = session.get(Resource, job.resource_id)
-            read_resource(root, original)
+            chunk_job = session.get(PdfChunkJob, job_id)
+            if chunk_job is None:
+                read_resource(root, original)
+            else:
+                if chunk_job.workspace_id != workspace_id or chunk_job.resource_id != job.resource_id:
+                    raise HTTPException(409, '分块候选与原件关联不符')
+                chunk_source(session, root, workspace_id, original.id, chunk_job.source_sha256)
             for ordinal in body.selected:
                 validate_attachments(session, workspace_id, all_blocks(drafts[ordinal]), root)
             results = []
@@ -76,6 +83,8 @@ def markdown_router(engine, root):
                               'original_resource_id': original.id, 'pages': draft['source_pages'],
                               'regions': draft['regions'], 'parser_version': job.parser_version,
                               'verification': 'unverified', 'answer_status': 'not_inferred'}
+                if chunk_job is not None:
+                    provenance['selected_page_range'] = [chunk_job.first_page, chunk_job.last_page]
                 provenance['shared_material_ids'] = [m['id'] for m in draft.get('shared_materials', [])]
                 provenance['shared_materials'] = [
                     {key: value for key, value in material.items() if key != 'blocks'}

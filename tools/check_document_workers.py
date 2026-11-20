@@ -49,3 +49,13 @@ for suffix in ('docx', 'pdf'):
     else:
         assert any(b['type'] == 'latex' for b in drafts[0]['blocks'])
     print(f'{suffix}: two numbered question candidates, image/math and cross-page boundaries passed')
+
+raw = (root / 'contracts/samples/numbered-questions.pdf').read_bytes()
+response = subprocess.run([*command, '--parse-pdf-pages', '2', '2'], input=raw, capture_output=True,
+                          check=True, timeout=25, env=environment, cwd=root)
+chunk = json.loads(response.stdout)
+assert (chunk['first_page'], chunk['last_page'], chunk['page_count']) == (2, 2, 2)
+assert chunk['fragments'][0]['marker'] is None and any(part['marker'] for part in chunk['fragments'])
+assert all(part['source_pages'] == [2] and not part['ambiguous'] for part in chunk['fragments'])
+assert len(chunk['warnings']) == 1 and chunk['_assets']
+print('pdf: absolute page range, continuation and question marker passed')

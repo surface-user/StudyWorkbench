@@ -321,7 +321,7 @@ def java_registry(native, uno_registry, tmp_path, monkeypatch):
              'bin/vcruntime140.dll': b'Self-authored Java CRT fixture',
              'bin/server/jvm.dll': b'Self-authored VM fixture',
              'bin/java.exe': b'Self-authored Java launcher fixture',
-             'bin/other.exe': b'Self-authored unsupported launcher fixture'}
+             'bin/other.exe': b'Self-authored auxiliary launcher fixture'}
     nodes = {}
     for name, data in files.items():
         path = tmp_path / 'java' / name
@@ -341,7 +341,7 @@ def java_registry(native, uno_registry, tmp_path, monkeypatch):
     return office, payload, nodes, lock, inventory
 
 
-def test_fixed_java_dll_roots_use_both_original_domains_without_claiming_extra_exes(
+def test_fixed_java_images_keep_launchers_out_of_the_office_dll_domain(
         native, java_registry, tmp_path, monkeypatch):
     office, payload, nodes, _, _ = java_registry
     program = office + 'program/'
@@ -369,8 +369,11 @@ def test_fixed_java_dll_roots_use_both_original_domains_without_claiming_extra_e
                             resolution='private-crt', target=crt + '/vcruntime140.dll')
     assert report['domains']['java']['directories'] == [office + 'java/bin', office + 'java/bin/server']
     assert report['domains']['office']['directories'] == [office + 'program', office + 'java/bin', office + 'java/bin/server']
-    assert {row['path'] for row in report['unproven_runtime_candidates']} == {
-        office + 'java/bin/other.exe', program + 'twain32shim.exe'}
+    launchers = {office + 'java/bin/java.exe', office + 'java/bin/other.exe'}
+    assert set(report['pinned_java_libraries']['executables']) == launchers
+    assert launchers <= set(report['domains']['java']['roots'])
+    assert launchers.isdisjoint(report['domains']['office']['roots'])
+    assert {row['path'] for row in report['unproven_runtime_candidates']} == {program + 'twain32shim.exe'}
     assert report['pe_coverage'] == 'partial'
     assert {name: path.read_bytes() for name, path in payload.items()} == before
     del nodes[program + 'vcruntime140.dll']
@@ -420,4 +423,49 @@ def test_fixed_java_dll_roots_do_not_add_new_search_directories(native, java_reg
     lock.write_bytes(raw)
     monkeypatch.setattr(native, 'OFFICE_JAVA_LOCK_SHA256', hashlib.sha256(raw).hexdigest())
     with pytest.raises(ValueError, match='Java DLL path'):
+        native.office_java_libraries(payload, nodes, office)
+
+
+@pytest.mark.parametrize('damage', ['missing', 'extra', 'moved', 'changed', 'architecture', 'header'])
+def test_fixed_java_launcher_policy_rejects_unproven_images(native, java_registry, damage):
+    office, payload, nodes, _, _ = java_registry
+    name = office + 'java/bin/other.exe'
+    if damage == 'missing':
+        del nodes[name]
+    elif damage == 'extra':
+        nodes[office + 'java/bin/unproven.exe'] = node(office + 'java/bin/unproven.exe')
+    elif damage == 'moved':
+        nodes[office + 'java/bin/server/other.exe'] = nodes.pop(name)
+    elif damage == 'changed':
+        nodes[name]['sha256'] = 'changed'
+    elif damage == 'architecture':
+        nodes[name]['machine'] = 0x14c
+    else:
+        nodes[name]['magic'] = 0x10B
+    before = {name: path.read_bytes() for name, path in payload.items()}
+    with pytest.raises(ValueError, match='Java EXE'):
+        native.office_java_libraries(payload, nodes, office)
+    assert {name: path.read_bytes() for name, path in payload.items()} == before
+
+
+def test_fixed_java_launcher_never_adds_a_search_directory(native, java_registry, monkeypatch):
+    office, payload, nodes, lock, inventory = java_registry
+    moved = 'bin/server/other.exe'
+    inventory['files'][moved] = inventory['files'].pop('bin/other.exe')
+    nodes[office + 'java/' + moved] = nodes.pop(office + 'java/bin/other.exe')
+    raw = json.dumps(inventory).encode()
+    lock.write_bytes(raw)
+    monkeypatch.setattr(native, 'OFFICE_JAVA_LOCK_SHA256', hashlib.sha256(raw).hexdigest())
+    with pytest.raises(ValueError, match='Java EXE path'):
+        native.office_java_libraries(payload, nodes, office)
+
+
+def test_fixed_java_policy_requires_its_primary_launcher(native, java_registry, monkeypatch):
+    office, payload, nodes, lock, inventory = java_registry
+    del inventory['files']['bin/java.exe']
+    del nodes[office + 'java/bin/java.exe']
+    raw = json.dumps(inventory).encode()
+    lock.write_bytes(raw)
+    monkeypatch.setattr(native, 'OFFICE_JAVA_LOCK_SHA256', hashlib.sha256(raw).hexdigest())
+    with pytest.raises(ValueError, match='primary Java launcher'):
         native.office_java_libraries(payload, nodes, office)

@@ -17,7 +17,16 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
 
-from .db import ImportJob, Note, PassageRecord, Question, QuestionFileRecord, Resource, write_transaction
+from .db import (
+    ImportJob,
+    Note,
+    PassageRecord,
+    PdfChunkJob,
+    Question,
+    QuestionFileRecord,
+    Resource,
+    write_transaction,
+)
 from .question_protocol import Content, QuestionBundle
 from .workspaces import require_workspace
 
@@ -255,7 +264,8 @@ def import_router(engine, root):
             existing = session.scalar(select(Resource).where(
                 Resource.workspace_id == workspace_id, Resource.sha256 == checksum))
             if existing:
-                job = session.scalar(select(ImportJob).where(ImportJob.resource_id == existing.id))
+                job = session.scalar(select(ImportJob).where(ImportJob.resource_id == existing.id,
+                    ~select(PdfChunkJob.id).where(PdfChunkJob.id == ImportJob.id).exists()))
                 if job:
                     return {**describe(job, existing, preview=True), "duplicate": True}
                 # Extracted images also have resource rows, but may not have an import job yet.
@@ -367,6 +377,8 @@ def import_router(engine, root):
         with write_transaction(engine) as session:
             job = scoped_job(session, workspace_id, job_id)
             resource = session.get(Resource, job.resource_id)
+            if session.get(PdfChunkJob, job.id) is not None:
+                raise HTTPException(409, '分块候选须使用逐题选择和确认入口')
             if job.status == "confirmed":
                 return describe(job, resource, preview=True)
             if job.status != "preview":

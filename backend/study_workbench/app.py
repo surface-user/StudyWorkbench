@@ -21,6 +21,7 @@ from .db import (
     Attempt,
     ImportJob,
     MediaEntry,
+    PdfChunkJob,
     Question,
     QuestionFileRecord,
     Workspace,
@@ -42,6 +43,7 @@ from .markdown_questions import markdown_router
 from .media_downloads import MediaDownloads
 from .media_library import media_routers
 from .migrate import migrate
+from .pdf_chunks import pdf_chunk_router
 from .question_files import QuestionFiles, current_question_view, verify_version_assets, version_read
 from .question_files_format import FileQuestion
 from .question_protocol import QuestionDocument
@@ -77,6 +79,9 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
             item.status = 'failed'
         for job in session.scalars(select(ImportJob).where(ImportJob.status == "parsing")):
             job.status, job.error = "failed", "上次解析被中断；原件保留，可重新解析"
+        for job in session.scalars(select(PdfChunkJob).where(PdfChunkJob.status == 'running')):
+            job.status = 'interrupted'
+            job.generation += 1
         for content in (DEMO, SUBJECTIVE):
             QuestionDocument.model_validate(content)
             if not session.get(Question, (content["id"], "default")):
@@ -228,6 +233,7 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
         return FileResponse(media)
 
     app.include_router(import_router(engine, data_dir), dependencies=auth)
+    app.include_router(pdf_chunk_router(engine, data_dir), dependencies=auth)
     app.include_router(markdown_notes.router(), dependencies=auth)
     app.include_router(learning_marks.router(), dependencies=auth)
     app.include_router(internal_links_router(learning_marks), dependencies=auth)

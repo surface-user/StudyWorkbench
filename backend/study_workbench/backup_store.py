@@ -123,6 +123,30 @@ def check_references(root, files):
             for row in connection.execute(f'SELECT * FROM {table}'):
                 if table == 'resources' or row['status'] == 'ready':
                     require(row['relative_path'], row['sha256'], row['size'])
+        if 'pdf_chunk_jobs' in tables:
+            for job in connection.execute('SELECT * FROM pdf_chunk_jobs'):
+                original = connection.execute('SELECT workspace_id, sha256 FROM resources WHERE id=?',
+                                              (job['resource_id'],)).fetchone()
+                if original is None or tuple(original) != (job['workspace_id'], job['source_sha256']):
+                    raise ValueError('PDF 分块任务的原件不属于记录的空间或版本')
+                next_page = job['first_page']
+                for chunk in connection.execute('SELECT * FROM pdf_chunks WHERE job_id=? ORDER BY first_page',
+                                                (job['id'],)):
+                    result = json.loads(chunk['result'])
+                    if (chunk['first_page'] != next_page or chunk['last_page'] > job['last_page']
+                            or (result['first_page'], result['last_page'], result['page_count']) !=
+                               (chunk['first_page'], chunk['last_page'], job['page_count'])):
+                        raise ValueError('PDF 分块任务的已提交页不连续')
+                    next_page = chunk['last_page'] + 1
+                    refs = {b['attachment_id'] for blocks in [result['blocks'], *(f['blocks'] for f in result['fragments'])]
+                            for b in blocks if b.get('type') == 'image'}
+                    for identifier in refs:
+                        image = connection.execute('SELECT workspace_id FROM resources WHERE id=?',
+                                                   (identifier,)).fetchone()
+                        if image is None or image[0] != job['workspace_id']:
+                            raise ValueError('PDF 分块图片关联缺失或跨空间')
+                if next_page != job['next_page'] or (job['status'] == 'parsed') != (next_page > job['last_page']):
+                    raise ValueError('PDF 分块任务进度不符')
         if 'document_workfiles' in tables:
             for row in connection.execute('SELECT relative_path FROM document_workfiles'):
                 require(row[0])  # An external conflict must remain a conflict, not be overwritten with the indexed hash.
