@@ -43,12 +43,12 @@
       "sha256": "40f7f284f676dd6c027c0bd7185940b71f5f9ffbd1ae28f9aeb2c5d03e0e1e21"
     },
     "backend/tests/test_media_probes.py": {
-      "bytes": 14909,
-      "sha256": "e3537c7b2cd25285bcc7f35be173ca5d905f42a98eef1f263cab04c7caa186dc"
+      "bytes": 14990,
+      "sha256": "cffbfb333a052382f46a6a3aea693bb0e8ceb48037fb5fea1395e83dea797990"
     },
     "tools/check_media_probes.py": {
-      "bytes": 7486,
-      "sha256": "ddd4892d64615dfd77db85c752fa9541839f05c29799786565f3e9c5cccea9a2"
+      "bytes": 7630,
+      "sha256": "38a5f7f4719534589f4570373de96b409bb41e2f04c876b24586a3e8b9c53e7f"
     },
     "tools/check_api_errors.py": {
       "bytes": 9663,
@@ -89,9 +89,31 @@
       "sha256": "ad666cca6bf88d8a6ebb896d0d1d263f8838c16d6a82af3fc4bb57cba85407ba"
     },
     "artifacts/dl03c2/native-log-index.json": {
-      "bytes": 7169,
-      "sha256": "6ec9d32ea3d25ac151e918360cc17bec019f1a1042115c3cd5ce12c9c38e3512"
+      "bytes": 11497,
+      "sha256": "da024b4f7b268540d8367bfd6b09ff81f1cab9713b5e3a5b0d4f0629a52cb27a"
+    },
+    "artifacts/dl03c2/q05.xml": {
+      "bytes": 9742,
+      "sha256": "cfa4f073c8b7141549afac9696f86347eaf3ca0a55701c8aa0ceba968155f903"
+    },
+    "artifacts/dl03c2/p03.xml": {
+      "bytes": 9742,
+      "sha256": "722a7264bbe63ccef133511b8eb378257abb2edd3edeee4672cc90e8eed39e9b"
+    },
+    "artifacts/dl03c2/source04.txt": {
+      "bytes": 192,
+      "sha256": "ad666cca6bf88d8a6ebb896d0d1d263f8838c16d6a82af3fc4bb57cba85407ba"
+    },
+    "artifacts/dl03c2/frozen02.txt": {
+      "bytes": 191,
+      "sha256": "19a24f0a4d48373ff86a0d4f4aa7299a5db1ea42b7d77e88425c025e0fa782bf"
     }
   },
-  "selection_reason": "Exact component with local generated inputs; bounded source/frozen metadata and cancellation only. No CI native component, site evidence, full decode or release claim."
+  "selection_reason": "Exact component with local generated inputs; bounded source/frozen metadata and cancellation only. No CI native component, site evidence, full decode or release claim.",
+  "publication_fixture_followup": {
+    "new_backend_changes": false,
+    "native_tests_each": 50,
+    "real_source_frozen_checks_each": 10,
+    "assertions_preserved": true
+  }
 }

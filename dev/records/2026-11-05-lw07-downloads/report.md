@@ -387,3 +387,6 @@ IQ为相邻starlette-q-isolated CPython3.13.17，IP为starlette-p-isolated CPyth
 失败保留：首real-api01内native已写正确metadata，但API两次409；首helper只打印未assert，命令退出0不能当成功，具体旧子进程错误码未记录，不编造退出原因。明确发现正常结果/控制stdin退出握手不完整，增加结果→EOF确认/raw read/join，real-api02才加断言得到两200。真实source01后又发现关闭HTTP连接仍得到native成功（取消断言失败/exit1），不能被单元监听模拟掩盖；改成等待真实ASGI断开并将同一取消Event断言迁到新监听后，source02/source03及冻结原断言全部通过，原source01目录/输出仍留。首次Ruff import与22个同一行分支错误修正，不改业务断言；q02为81通过、加父端白名单后q03/p01各91，最后加真实不响应helper兜底与429后q04/p02各92。原始JSON按运行分别保存，旧失败不被新的计数替代。
 
 全backend/tools Ruff、Question Schema --check、最终47模块source/frozen再核均退出0。精选[原生探测证据](evidence/media-native-probe.json)仅固定实现/原日志hash、有限计数与来源，原始日志/JUnit和自建库不入Git。c2实现/相关自动化完成，等待独立草稿PR/current head CI与主Agent核验；审查按用户要求暂缓、人工/CUA取消，不擅自合并/发行。c3仍须复用MediaDownloadJob的本地来源/attempt/轨道模型、共享预算/取消重启/旧字节保护、合流输出/崩溃收据和最终原子入库；迁移先协调主Agent实际集成head（PDF已有0017），三站确认/下载、分片/轨道扩展仍未完成，不以本轮probe替代真实下载目标。
+
+
+11-20发布自查补充：#79初始head11f064dc335dc7a0718d5253ad78f334f290a5fb的CI44677751688仍跑时，识别两处仅测试发布竞态（尚未观测该竞态导致失败）：Job fixture看到marker存在时其JSON可能尚未完成；checker看到result.json存在也可能尚未flush。生产父端等helper退出后才解析，不受这两处fixture读取影响。只改自有marker完整写后原子rename、checker等待完整JSON，原cancelled/EOF/后续成功断言不变；不是放宽产品失败。IQ q05/IP p03各50原生专项退出0/0skip，原42兼容已过；源checker source04/冻结frozen02均同10项退出0，当前47模块再核不变，未重建FFmpeg或改后端实现。旧初始CI/失败记录完整保留，同PR追加小提交并核新head当前CI，不能用旧head绿灯替代。

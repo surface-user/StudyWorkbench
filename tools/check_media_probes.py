@@ -112,9 +112,14 @@ def main():
         operation = started(previous, '.m4a', item['size'])
         connection.close()
         until = time.monotonic() + 5
-        while not (operation / 'result.json').exists() and time.monotonic() < until:
-            time.sleep(.01)
-        assert json.loads((operation / 'result.json').read_text('utf-8')) == {'error_code': 'cancelled'}
+        cancelled_result = None
+        while time.monotonic() < until:
+            try:
+                cancelled_result = json.loads((operation / 'result.json').read_text('utf-8'))
+                break
+            except (FileNotFoundError, json.JSONDecodeError):
+                time.sleep(.01)
+        assert cancelled_result == {'error_code': 'cancelled'}
         # A subsequent real probe proves the cancelled request released its shared view slot.
         assert request(route, body)[0] == 200
         item, route, body = upload('av.mp4')

@@ -261,7 +261,9 @@ def test_windows_job_limits_and_kills_only_its_owned_tree(tmp_path):
     helper.write_text('import json,os,pathlib,subprocess,sys,time\n'
         'if len(sys.argv)>1:\n'
         ' child=subprocess.Popen([sys.executable,__file__])\n'
-        ' pathlib.Path(sys.argv[1]).write_text(json.dumps({"child":child.pid}))\n'
+        ' pending=pathlib.Path(sys.argv[1]+".pending")\n'
+        ' pending.write_text(json.dumps({"child":child.pid}))\n'
+        ' pending.rename(sys.argv[1])\n'
         'time.sleep(60)\n', 'utf-8')
     outside = subprocess.Popen([sys.executable, str(helper)], creationflags=subprocess.CREATE_NO_WINDOW)
     job, process, child_handle = WindowsProcessJob(), None, None
