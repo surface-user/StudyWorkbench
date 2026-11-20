@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 from native_dependencies import inspect_dependencies
-from release_inventory import check_backend_install_metadata, stage_files
+from release_inventory import check_backend_install_metadata, stage_files, verify_native_license_texts
 
 
 def main():
@@ -27,6 +27,7 @@ def main():
         path = payload[relative]
         with path.open("rb") as handle:
             assert hashlib.file_digest(handle, "sha256").hexdigest() == expected, relative
+    verify_native_license_texts(stage, payload, inventory.get("native_license_texts"))
     files = {path.name.lower() for path in payload.values()}
     assert "python313.dll" in files and "python312.dll" not in files
     report = inspect_dependencies(payload, Path(os.environ['SystemRoot']) / 'System32')
