@@ -45,13 +45,24 @@ def code_fingerprint(code):
     return hashlib.sha256(json.dumps(value(code), ensure_ascii=True, separators=(',', ':')).encode()).hexdigest()
 
 
+def check_migrations(files, source):
+    prefix = '_internal/migrations/'
+    staged = {name[len(prefix):]: path for name, path in files.items() if name.startswith(prefix)}
+    scripts = [source / 'env.py', *source.glob('versions/*.py')]
+    expected = {path.relative_to(source).as_posix(): path for path in scripts}
+    if staged.keys() != expected.keys() or any(staged[k].read_bytes() != v.read_bytes() for k, v in expected.items()):
+        raise ValueError('Frozen database migration files differ from source')
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--exe', type=Path, required=True)
     args = parser.parse_args()
     if sys.version_info[:3] != (3, 13, 17):
         raise RuntimeError('Run with the pinned CPython 3.13.17 release interpreter, not a different bytecode version')
-    check_backend_install_metadata(stage_files(args.exe.parent), '_internal/')
+    files = stage_files(args.exe.parent)
+    check_backend_install_metadata(files, '_internal/')
+    check_migrations(files, Path(__file__).resolve().parents[1] / 'backend/migrations')
     archive = CArchiveReader(str(args.exe))
     name = next(n for n, item in archive.toc.items() if item[-1] == 'z')
     pyz = archive.open_embedded_archive(name)
