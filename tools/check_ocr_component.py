@@ -9,11 +9,11 @@ import tempfile
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
-from prepare_ocr_runtime import verify
+from prepare_ocr_runtime import ocr_component
 
 
 def check(root):
-    verify(root)
+    ocr_component.verify(root)
     fonts = Path(os.environ['SystemRoot']) / 'Fonts'
     cases = [('eng', 'arial.ttf', 'Study page 123'), ('chi_sim', 'msyh.ttc', '中文学习'), ('eng', 'arial.ttf', '')]
     with tempfile.TemporaryDirectory() as temp:
@@ -38,7 +38,7 @@ def check(root):
                 if not (0 <= x < x + width <= 390 and 0 <= y < y + height <= 84 and 0 <= float(row['conf']) <= 100):
                     raise ValueError('OCR bounds or confidence outside the fixed image')
             print(f'{lang}: {len(words)} expected words/regions verified')
-    verify(root)
+    ocr_component.verify(root)
 
 
 if __name__ == '__main__':
