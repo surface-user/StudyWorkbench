@@ -1000,3 +1000,5 @@ build-inventory新增native_license_texts，记录profile摘要、三DLL路径/�
 工具解释器-m ruff check backend tools及Q tools/export_question_schema.py --check实际退出0。Q select_evidence.py --read-only及probe_real.py --read-only均退出0；精选与实际清单/原文/源包保持吻合。artifacts/rel02c/check_changes.py退出0：八文件、503原blob保持/最终511文件、105本地引用及标题、68唯一调度行、UTF8/LF/逐文件diff --check、旧报告完整前缀及46后端业务源码/所有原provenance和许可/依赖锁/工作流保持。没有把raw stage或整份环境包表作为evidence提交。
 
 最后补明确DLL→提供者归属约束，防止profile把OpenSSL与libffi成员互换而冒用许可来源。最终Q/P把临时目录和XML改为q06/p06，相关三文件各实际208通过（Q10.50/P9.56秒），包含33新增和175原项；q05/p05的207是该补强前记录，原XML保持。最新工具Ruff仍退出0；Q probe_real.py --repeat-complete用当前守卫真正再调用collector.main，仍相同manifest878a54…、全部stage字节及两许可mtime不变。随后只读核证与精选一致退出0，当前摘要6,947字节/939bd8ba741b7309fea66f921feadb02d201d13c865386fdbcba872b1951427a，纳入本次重复调用结果hash，不把中间工具hash当最终版本。
+
+独立草稿[PR #99](https://github.com/surface-user/StudyWorkbench/pull/99)已创建并附任务，codex/stage-cpython-native-licenses基于#88最终481d93a；首次提交b145cb25ea4febc57cb2bedac0ad3e5a95f9fdc2/treeb654e94847848c78b951fca7afce89353f0c0ad9。补实际链接后仍八文件/511最终blob；最终head/tree及本头CI在PR正文维护，不循环改自引hash。生产消费者只验证三DLL及两原文，未把旧整包指纹当作其他候选的整包证明。REL-02c待当前CI/主Agent有限验收，未合并或发行。
