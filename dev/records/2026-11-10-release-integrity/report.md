@@ -1014,3 +1014,5 @@ Q tools/office_template_evidence.py --office 新组件 --python-source 固定Pyt
 旧失败完整保留：q01的8个旧局部测试stub缺新metadata接口及1个Java CRT反例夹具缺失，已改用真实已核清单hash判新布局并独立构造不同Java来源，未弱化旧测试；初次Ruff导入顺序/fixture名称修正记录保留。fixtures01因既有环境无pptx模块退出1，改为复用已有自编样本，不安装依赖；interrupt01因采集器误认Job终止码必须非0退出1，改正后新目录4次实测。初次误用不存在check_schemas.py的命令退出2，实际export_question_schema.py --check退出0；这些不是产品门禁通过记录。source01为中间源码证据，最终交付使用source02/本次新冻结，不冒用中间版本。
 
 精选[off02l-selfcontained-python-summary.json](evidence/off02l-selfcontained-python-summary.json)只保存具体版本/hash/域差异/有限观察/反例与原始证据hash。所有原始全表/日志/JUnit/新旧组件/数据目录留ignored artifacts/.local，未打包进evidence。artifacts/off02l/select_evidence.py可--read-only复算精选；verify_native.py --read-only只断言既有三输出及原件，不写成功文件。当前实现/相关自动化/文档完成，task转REVIEW；独立草稿PR/当前head CI和主Agent核验另记交付，审查暂缓/人工取消，无合并发行。79未知/三个转发目标/托管与x86等仍阻断完整Office，不把这个有限切片记为OFF-02整体完成。
+
+已创建并附加[独立草稿PR #82](https://github.com/surface-user/StudyWorkbench/pull/82)，分支codex/office-python-selfcontained基于#69精确d4ac6e5；同一14文件，491个base blob不变、505远端文件，101本地引用/60唯一调度行/UTF-8-LF/空白检查通过。当前head/当前CI及主Agent有限核验在PR正文维护，不为自身最终SHA循环追改文档。原组件/#69头保持，完整Office/发行未完成。
