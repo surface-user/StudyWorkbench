@@ -86,7 +86,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | API-01 | DONE | 主Agent按原退出条件核API-01a兼容结构/脱敏/关联ID及调用方与冻结实证；[草稿PR #34](https://github.com/surface-user/StudyWorkbench/pull/34)最终8b29a27的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43091834219)三组45步通过，API-01/a有限开发交付完成，已纳本组合；历史Office偶发失败保留 |
 | M2-05i | IN_PROGRESS | 05g/h 巡检与完整备份已交付，按 i1 来源及确认契约、i2 只读候选核对、i3 新位置恢复与幂等收据分别跟踪。 |
 | M2-05i1 派生题目恢复契约 | REVIEW | 已定义候选目录、来源与附件逐项核对及新位置确认的[契约](question-markdown-spec.md#derived-question-recovery)。既有中断和完整备份回归见[报告](../dev/records/2026-11-06-library-integrity/report.md#m2-05i1-派生题目恢复契约)。 |
-| M2-05i2 旧提取题目恢复预览 | READY | 依 i1 契约实现用户点选单个候选目录的只读核对；未登记、附件不全、同批歧义及预算情况分别验证。 |
+| M2-05i2 旧提取题目恢复预览 | REVIEW | 已实现选定目录与同空间批次、原件、共享材料及附件的只读匹配。两版 Python 各 48 项相关回归通过，源码和冻结包各 10 项 HTTP 核对通过。[报告](../dev/records/2026-11-20-derived-question-recovery/report.md) |
 | M2-05i3 新位置恢复与收据 | BLOCKED | 依赖 i2 可复验的来源与候选摘要；另行实现显式确认、事务收据、并发重试和重启恢复。 |
 | M2-05j | BLOCKED | 依赖05i的关系设计；容量报告已实现，实际清理另需具体授权 |
 | M3-03a、M3-03b、M3-03c | READY | 富内容、知识关系、复习评价分别先明确契约；M3-03d已单列REVIEW，不把规模回归当作算法效果通过 |

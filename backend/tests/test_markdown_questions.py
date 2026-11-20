@@ -1,5 +1,6 @@
 import hashlib
 import io
+import json
 import re
 import sqlite3
 from pathlib import Path
@@ -7,7 +8,7 @@ from zipfile import ZipFile
 
 import pytest
 from study_workbench import library_integrity, markdown_questions
-from study_workbench.question_splitting import split_blocks
+from study_workbench.question_splitting import draft_revision, split_blocks
 from test_imports import SCOPE, client, upload
 from test_library_integrity import snapshot
 
@@ -76,6 +77,60 @@ def test_real_document_becomes_independent_portable_markdown_questions(tmp_path,
     assert snapshot(tmp_path) == before
 
 
+def test_recovery_preview_matches_only_complete_unregistered_files(tmp_path, monkeypatch):
+    with client(tmp_path) as c:
+        job = upload(c, (SAMPLES / 'numbered-questions.docx').read_bytes(), '恢复题目.docx').json()
+        base = f"{SCOPE}/imports/{job['id']}/question-markdown"
+        with monkeypatch.context() as patch:
+            def interrupted(*args, **kwargs):
+                raise OSError('fixture after all question bytes are written')
+            patch.setattr(markdown_questions.Resource, '__init__', interrupted)
+            assert c.post(base, json={'expected_revision': job['draft_revision'],
+                                      'selected': [0], 'confirm': True}).status_code == 500
+        directory, = (tmp_path / 'workspaces/default/questions').iterdir()
+        url = base + '/recovery-preview'
+        body = dict(directory_id=directory.name, ordinal=0, expected_revision=job['draft_revision'])
+        before = snapshot(tmp_path)
+        response = c.post(url, json=body)
+        assert response.status_code == 200, response.text
+        value = response.json()
+        assert value['status'] == 'matched' and value['source_resource_id'] == job['resource_id']
+        assert value['markdown_sha256'] == hashlib.sha256((directory / 'question.md').read_bytes()).hexdigest()
+        assert value['attachment_count'] == len(list((directory / 'assets').iterdir())) > 0
+        assert c.post(url, json=body).json() == value
+        assert c.post(url, json={**body, 'ordinal': 1}).status_code == 409
+        assert c.post(url, json={**body, 'ordinal': True}).status_code == 422
+        assert c.post(url, json={**body, 'expected_revision': '0'*64}).status_code == 409
+        assert c.get(f'{SCOPE}/question-markdown').json() == []
+        assert snapshot(tmp_path) == before
+        other = c.post('/api/workspaces', json={'name': '其他空间'}).json()['id']
+        assert c.post(url.replace('/default/', f'/{other}/'), json=body).status_code == 404
+
+        extra = directory / 'unregistered.txt'
+        extra.write_text('keep', encoding='utf8')
+        assert c.post(url, json=body).status_code == 409 and extra.read_bytes() == b'keep'
+        extra.unlink()
+        image = next((directory / 'assets').iterdir())
+        original = image.read_bytes()
+        image.write_bytes(bytes([original[0] ^ 1]) + original[1:])
+        assert c.post(url, json=body).status_code == 409
+        image.write_bytes(original)
+        with monkeypatch.context() as limits:
+            def oversized(row, workspace):
+                if row.id == value['attachments'][0]['id']:
+                    row.size = 64 * 1024 * 1024 + 1
+            limits.setattr(markdown_questions, 'check_recovery_resource', oversized)
+            assert c.post(url, json=body).status_code == 413
+        assert c.post(url, json=body).json() == value
+        with sqlite3.connect(tmp_path / 'study.db') as db:
+            preview = json.loads(db.execute('SELECT preview FROM import_jobs WHERE id=?', (job['id'],)).fetchone()[0])
+            drafts = preview['question_drafts']
+            drafts.append(drafts[0])
+            db.execute('UPDATE import_jobs SET preview=? WHERE id=?', (json.dumps(preview), job['id']))
+        ambiguous = c.post(url, json={**body, 'expected_revision': draft_revision(drafts)})
+        assert ambiguous.status_code == 409 and '同批多个候选' in ambiguous.text
+
+
 @pytest.mark.parametrize('stage', ['assets_only', 'markdown_written'])
 def test_interrupted_question_persistence_is_detected_without_registering_or_changing_bytes(tmp_path, monkeypatch, stage):
     with client(tmp_path) as c:
@@ -110,6 +165,11 @@ def test_interrupted_question_persistence_is_detected_without_registering_or_cha
     assert checked['issues'] == [dict(code='unreferenced_derived_candidate', severity='warning',
                                       relative_path=orphan.relative_to(tmp_path).as_posix())]
     assert snapshot(tmp_path) == before
+    with client(tmp_path) as c:
+        response = c.post(f"{SCOPE}/imports/{job['id']}/question-markdown/recovery-preview", json={
+            'directory_id': orphan.name, 'ordinal': 0, 'expected_revision': job['draft_revision']})
+        assert response.status_code == (200 if stage == 'markdown_written' else 409)
+        assert c.get(f'{SCOPE}/question-markdown').json() == []
 
 
 def test_split_confirmation_validates_selection_revision_and_auth(tmp_path):
