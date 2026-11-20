@@ -1,0 +1,183 @@
+{
+  "scope": "REL-01i fixed publication, producer-archive bytes and supplied license texts only",
+  "selection_reason": "Retain exact archive publication/recipe/member/license chains and their limits; raw archives, metadata, DLLs and logs remain ignored.",
+  "source_base": {
+    "pr": 81,
+    "head": "aba16ba5d05413dcd650686396af50f04fdae456",
+    "tree": "b8be88e932e85945a0ce4c7013d35b915f562d25",
+    "files": 505
+  },
+  "profile_path": "packaging/licenses/cpython-native-3.13.17/provenance.json",
+  "profile_sha256": "bf378e5a38ae40dc6b3961ebda842d5ee6bcec963605ce3c45436dfc991c20e3",
+  "payload_exe_sha256": "f493edc9292c85556c0b2ce5c94f29595eb5d465863990d358d5d58930f91ba0",
+  "payload_files_rechecked": 969,
+  "payload_fingerprint": "77b7e5ade7568c557b6a4b16d408641101dcd764163f702ffdeaa9beee22407e",
+  "python_publication": {
+    "purl": "pkg:nuget/python@3.13.17",
+    "url": "https://api.nuget.org/v3-flatcontainer/python/3.13.17/python.3.13.17.nupkg",
+    "bytes": 14826465,
+    "sha256": "dce409744b088f94c6e37ba41f8100c384c27e029e843237364c602d30d475e5",
+    "sha512_base64": "DmZ5KLtPGVc8bNiPZRM7LgeyQ6XHFvM1tWqma7nsb4IyglbSLDop4joCdqxcam14YhH+q1JIkK0eVmKRlsaynA==",
+    "catalog_url": "https://api.nuget.org/v3/catalog0/data/2026.10.21.16.02.39/python.3.13.17.json",
+    "catalog_decoded_json_sha256": "8afe66ce97b15e513b1017de23190aae8929ba14631bb00b882882619d38c33e",
+    "catalog_wire_sha256": "8afe66ce97b15e513b1017de23190aae8929ba14631bb00b882882619d38c33e",
+    "catalog_hash_matches_archive": true,
+    "published": "2026-10-21T15:40:39.253Z",
+    "repository_declaration": {
+      "@id": "https://api.nuget.org/v3/catalog0/data/2026.10.21.16.02.39/python.3.13.17.json#repository",
+      "commit": "64e080d",
+      "type": "git",
+      "url": "https://github.com/Python/CPython.git"
+    },
+    "nuspec_sha256": "b3dd6246a1894c26eeaf424b6b1837957811d8a8fcc5390f79c19f3030c6971d",
+    "source_commit": "64e080d38154391ff2d2caa1161c298bb7cd8f30",
+    "source_tree": "60db99c8a343a8faae596ae1682dbf88dfe0b313",
+    "source_tag": "v3.13.17",
+    "source_tag_object": "8a10ce001cde9a3f9fbb74ded5ed4e88a6048bdf",
+    "source_tag_signature_independently_verified": false,
+    "package_signature_verified": false,
+    "license_member": "tools/LICENSE.txt",
+    "license_sha256": "62bec384df47b0328307db41455ff6ea2559e5546b394ac69148561b21703120",
+    "license_bytes": 33861,
+    "license_scope": "composite Windows Python distribution text, including Microsoft conditions; not a single blanket SPDX expression",
+    "existing_stage_policy": "release_inventory.py copies base_prefix LICENSE.txt to licenses/Python-LICENSE.txt; this slice does not verify a final stage"
+  },
+  "recipes": [
+    {
+      "path": "PCbuild/get_externals.bat",
+      "git_blob_sha1": "f2539b622fa11fb98de397fdc1390854bba7c4dd",
+      "sha256": "4c2f8f42af137dd6861a96b24e4ec468a959ec2567b3ce5b63865be70026106c",
+      "bytes": 4391,
+      "url": "https://github.com/python/cpython/blob/64e080d38154391ff2d2caa1161c298bb7cd8f30/PCbuild/get_externals.bat"
+    },
+    {
+      "path": "PCbuild/get_external.py",
+      "git_blob_sha1": "a78aa6a23041adf4b3d378bc6893dab19121e749",
+      "sha256": "4387f99e1e3de7b183f2c893ba0a2c7ea406da028c6a7a4b5284f47cd1f0c26d",
+      "bytes": 3056,
+      "url": "https://github.com/python/cpython/blob/64e080d38154391ff2d2caa1161c298bb7cd8f30/PCbuild/get_external.py"
+    },
+    {
+      "path": "PCbuild/python.props",
+      "git_blob_sha1": "93af005c0f8bf4b26fb186cb1fda44005f97b406",
+      "sha256": "022e29594aa3a2cc5ebc325529eb7c520bbb1a0c3706bba504217833334a9c7b",
+      "bytes": 18513,
+      "url": "https://github.com/python/cpython/blob/64e080d38154391ff2d2caa1161c298bb7cd8f30/PCbuild/python.props"
+    },
+    {
+      "path": "PCbuild/openssl.props",
+      "git_blob_sha1": "5fd708b211e42d3373c2e8cc47cea648fcc4bdac",
+      "sha256": "31fddd41b4354300dab069726dd7a71c08580bac70ea642b490c39b18cc29f76",
+      "bytes": 1710,
+      "url": "https://github.com/python/cpython/blob/64e080d38154391ff2d2caa1161c298bb7cd8f30/PCbuild/openssl.props"
+    },
+    {
+      "path": "PCbuild/libffi.props",
+      "git_blob_sha1": "22c9550e2c09b8b6fa3e8a335fa9a5e81940c1a7",
+      "sha256": "0d0857e98b277e82d7184ac04db86f3d6f5a28b99c0223765cc8651fb071b41c",
+      "bytes": 1048,
+      "url": "https://github.com/python/cpython/blob/64e080d38154391ff2d2caa1161c298bb7cd8f30/PCbuild/libffi.props"
+    },
+    {
+      "path": "PCbuild/sqlite3.vcxproj",
+      "git_blob_sha1": "6bcc4e913c8e77ce748b5297ea0a376203454800",
+      "sha256": "4cfabcea975c40626bcab75fd9109ce9cd7701555df5d82b2e02a57e38b4af13",
+      "bytes": 5508,
+      "url": "https://github.com/python/cpython/blob/64e080d38154391ff2d2caa1161c298bb7cd8f30/PCbuild/sqlite3.vcxproj"
+    }
+  ],
+  "archives": [
+    {
+      "name": "openssl",
+      "bytes": 32808220,
+      "sha256": "0dbf56dcce0ab4054e6192ae488d7d439f678cceca858810de990be51bb80335",
+      "selected_members": 3
+    },
+    {
+      "name": "libffi",
+      "bytes": 102848,
+      "sha256": "6b0f53490e0dd958708bff32df689cf2163c214147fcb8edb76a403fa6a877ca",
+      "selected_members": 2
+    }
+  ],
+  "binary_bindings": [
+    {
+      "member": "amd64/libcrypto-3.dll",
+      "bytes": 6021880,
+      "sha256": "75495fe0e079ab00d49be740d3c710a0b94e3f74f9648cb7cc9f768fc7f52319",
+      "git_blob_sha1": "399f1cf5996d1d08fcbefd27ad62cb18dd48cfd7",
+      "payload_path": "_internal/libcrypto-3.dll",
+      "producer_archive_sha256": "0dbf56dcce0ab4054e6192ae488d7d439f678cceca858810de990be51bb80335",
+      "recipe_declared_version": "3.5.9",
+      "nuget_member": "tools/DLLs/libcrypto-3.dll"
+    },
+    {
+      "member": "amd64/libssl-3.dll",
+      "bytes": 1308920,
+      "sha256": "8957182a9c385bfd9f3f790921de2ddc614cf91f99edbed4e9e5446a46504e32",
+      "git_blob_sha1": "3bb676be4071a5dcc54b53a605760c64fec66880",
+      "payload_path": "_internal/libssl-3.dll",
+      "producer_archive_sha256": "0dbf56dcce0ab4054e6192ae488d7d439f678cceca858810de990be51bb80335",
+      "recipe_declared_version": "3.5.9",
+      "nuget_member": "tools/DLLs/libssl-3.dll"
+    },
+    {
+      "member": "amd64/libffi-8.dll",
+      "bytes": 39696,
+      "sha256": "eff52743773eb550fcc6ce3efc37c85724502233b6b002a35496d828bd7b280a",
+      "git_blob_sha1": "8ebbbe8d5f3be43c2c27a2454e76d809954185fd",
+      "payload_path": "_internal/libffi-8.dll",
+      "producer_archive_sha256": "6b0f53490e0dd958708bff32df689cf2163c214147fcb8edb76a403fa6a877ca",
+      "recipe_declared_version": "3.4.4",
+      "nuget_member": "tools/DLLs/libffi-8.dll"
+    }
+  ],
+  "license_originals": [
+    {
+      "member": "amd64/LICENSE.txt",
+      "bytes": 10352,
+      "sha256": "ed72ce2b51ee58f117e5a021e2e04af158857f40269fbc03491f0b2a99dbcc96",
+      "git_blob_sha1": "3e705150955c622ca1e9d2c71a9c3dfe2c830fcb",
+      "license_file": "OpenSSL-LICENSE.txt",
+      "declared_spdx_id": "Apache-2.0",
+      "producer_archive_sha256": "0dbf56dcce0ab4054e6192ae488d7d439f678cceca858810de990be51bb80335",
+      "recipe_declared_version": "3.5.9",
+      "original_crlf_preserved": true
+    },
+    {
+      "member": "LICENSE",
+      "bytes": 1132,
+      "sha256": "2c9c2acb9743e6b007b91350475308aee44691d96aa20eacef8e199988c8c388",
+      "git_blob_sha1": "75d1bce11f9118ccfd96b24a2e49af078da1b469",
+      "license_file": "libffi-LICENSE",
+      "declared_spdx_id": "MIT",
+      "producer_archive_sha256": "6b0f53490e0dd958708bff32df689cf2163c214147fcb8edb76a403fa6a877ca",
+      "recipe_declared_version": "3.4.4",
+      "original_crlf_preserved": false
+    }
+  ],
+  "selected_total_bytes": 7381980,
+  "components": 3,
+  "product_sbom_complete": false,
+  "product_licenses_complete": false,
+  "distribution_obligations_reviewed": false,
+  "new_license_texts_staged": false,
+  "signature_verified": false,
+  "upstream_machine_code_build_verified": false,
+  "release_ready": false,
+  "limitations": [
+    "Only these already-shipped three DLLs are bound to fixed producer assets; other native and embedded libraries remain outside this slice.",
+    "The official publication digest and producer assets do not verify a reproducible upstream machine-code build, independent signatures or all compiler options.",
+    "Recipe-declared versions and matching supplied license text do not certify all inherited Microsoft, embedded-code, notice or distribution obligations.",
+    "The 44 CRT original source paths remain unavailable as recorded in REL-01h; no replacement, system whitelist or distribution permission is inferred.",
+    "The current product stage copier is unchanged. Two new repository license originals are evidence, not proof of a completed release stage.",
+    "Before/after input hashes observe stability but are not an atomic filesystem or publisher snapshot."
+  ],
+  "official_cyclonedx_1_6_schema_valid": true,
+  "schema_sha256": {
+    "bom-1.6.schema.json": "3e92dddbc30cf7f6a02b80f0942b1a4cfd4fb1c26f1dfc4310afa9d613cafb93",
+    "spdx.schema.json": "baa9d3bd1ed57b6751b0887edead6b5063ff53ff7429cf85d476c6c94af0166e",
+    "jsf-0.82.schema.json": "8bae002c25e723db7ee1f26afde680ae1a2b1a8f6b4b4b0fd65dc3becb090aae"
+  },
+  "selected_cdx_sha256": "2d572e96fefd01a0a8901b7d66ff06501f34192fd0a70789c9951a5f9b133bcf"
+}

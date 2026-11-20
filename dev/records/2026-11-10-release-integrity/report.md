@@ -928,3 +928,40 @@ REL-01h转REVIEW，四文件范围检查/最终精选只读一致及独立草稿
 工具解释器-m ruff check backend tools、Q tools/export_question_schema.py --check均退出0。artifacts/rel01h/check_changes.py退出0：仅4文件、501原blob保持/最终505文件、90本地引用及被引标题、66唯一调度行、UTF8/LF/逐文件diff --no-index --check、原报告完整前缀和所有业务/工具/打包/锁/工作流保持。未在旧#77头补写CI或本报告，独立PR交付链接及最终头CI继续跟进。
 
 独立草稿[PR #81](https://github.com/surface-user/StudyWorkbench/pull/81)已创建并附任务，codex/current-backend-source-evidence基于#77最终12a1411；首次提交c391290f5c747af28c6bf91ab091a0f6227867e4/tree5439d74cf9c27d39e5e59d6dc9d711561ad94c6c。补实际链接后仍为四文件、505最终blob；最终head/tree/当前CI在PR正文跟进，不循环写自引hash。REL-01h保持REVIEW待本head CI与主Agent有限核验，源产物及历史CRT不可读边界不变。
+
+## 2026-11-20：REL-01i 固定NuGet及三原生资产来源许可
+
+### 输入、范围与已接受父项
+
+主Agent已核#81最终aba16ba5d05413dcd650686396af50f04fdae456/treeb8be88e932e85945a0ce4c7013d35b915f562d25的[CI44678643251](https://github.com/surface-user/StudyWorkbench/actions/runs/44678643251)三job成功，另行实际执行verify_select.py --read-only退出0，969文件/46模块/55包/44历史CRT/剩46未知/58组件与两精选hash及官方Schema相符，REL-01h可有限DONE。该CI实际双1265/4既有警告（Q540.62s/P448.05s）、desktop203/46冻结/API81次HTTP/36错误ID及原链通过；45步成功、原分支限定公网探针1跳过。原CRT来源不可再读没有被CI绿灯抹去，父完整SBOM/许可/漏洞/签名发行继续。
+
+按后端来源及许可续做授权，从#81精确505文件新建backend-native-sources；8份基础/相关规范与已读现行版逐字节相同，补读实际release_inventory许可复制策略、当前原生匹配及固定公开来源。不改#81/#74、原包/缓存/环境、数据或根工作区。本项7文件：task、本原报告、固定provenance及两份原始许可、精选summary和三组件标准CDX。范围是现存三个DLL的发布归档/提供者资产/许可原文对应，无新增产品接口、依赖、采集器、打包流程或许可自动批准。
+
+### 官方发布、配方与实际成员链
+
+官方NuGet注册及catalog响应确认python3.13.17、14,826,465字节、SHA512（Base64）DmZ5KLtPGVc8bNiPZRM7LgeyQ6XHFvM1tWqma7nsb4IyglbSLDop4joCdqxcam14YhH+q1JIkK0eVmKRlsaynA==，与固定原包逐字节摘要一致。SHA256仍dce409744b088f94c6e37ba41f8100c384c27e029e843237364c602d30d475e5。catalog原JSON446,853字节及原wire字节保留ignored，仅发布字段/原文指针/hash入[固定provenance](../../../packaging/licenses/cpython-native-3.13.17/provenance.json)；不复制全catalog或将HTTPS发布摘要说成独立包验签。
+
+原nuspec声明Git短commit64e080d；/commits/64e080d查询422不代表不存在，官方v3.13.17 annotated tag实际指向完整64e080d38154391ff2d2caa1161c298bb7cd8f30（tree60db99c8a343a8faae596ae1682dbf88dfe0b313），恰等该前缀。固定PCbuild六源码逐原Git blob/SHA256核对，默认配方选择OpenSSL3.5.9及libffi3.4.4；源码URL/原始字节hash入provenance，未执行MSBuild/批处理/外来代码。GitHub提供者报告tag验证valid另留原响应，独立签名校验及机器码源码重现仍false；配方默认值不证明所有最终编译选项。
+
+官方python/cpython-bin-deps的openssl-bin-3.5.9 tag固定ddb46a415b4995440723183e644f8d2c346567a2，完整ZIP32,808,220字节/SHA256 0dbf56dcce0ab4054e6192ae488d7d439f678cceca858810de990be51bb80335；libffi-3.4.4 tag固定94cb9a1c7feb608adf2b9f8fe2dbd6925ffbf90d，ZIP102,848字节/SHA256 6b0f53490e0dd958708bff32df689cf2163c214147fcb8edb76a403fa6a877ca。固定Git引用→commit→tree→所选blob图与两ZIP成员相互核验。实际f493后端的libcrypto-3.dll、libssl-3.dll、libffi-8.dll同时等于NuGet tools/DLLs成员及上述官方amd64资产，完整字节/SHA256/Git blob逐项相同；不是据PE资源版本、路径相似或源码配方猜测身份。NuGet分发与细粒度提供者关系同时保留，不任意挑独占所有者，不把其他架构/未随包资产投影为产品成员。
+
+两份归档原许可分别为[OpenSSL原文](../../../packaging/licenses/cpython-native-3.13.17/OpenSSL-LICENSE.txt)10,352字节/SHA256 ed72ce2b51ee58f117e5a021e2e04af158857f40269fbc03491f0b2a99dbcc96、[libffi原文](../../../packaging/licenses/cpython-native-3.13.17/libffi-LICENSE)1,132字节/SHA256 2c9c2acb9743e6b007b91350475308aee44691d96aa20eacef8e199988c8c388。分别记录提供者原文的Apache-2.0/MIT，并明确该库的许可范围不代替继承的Microsoft/其他嵌入条件或完整分发义务；OpenSSL原CRLF字节保持。现有release_inventory确会复制构建器base_prefix/LICENSE.txt到licenses/Python-LICENSE.txt，当前33,861字节原文与NuGet精确相同，SHA256 62bec384df47b0328307db41455ff6ea2559e5546b394ac69148561b21703120，含Windows额外条件，不能误报Python许可整体缺失。该合并文件没有替代本项OpenSSL独立原文，当前产品stage复制未扩；最终副本/NOTICE/义务校验仍待后续切片。
+
+### 实际自动化、预算与精选
+
+所有公共HTTP/Git响应、原ZIP/成员、源码及日志仅在backend-sbom-current/artifacts/rel01i-probe与本副本artifacts/rel01i保留ignored。只向固定公开NuGet/GitHub来源发送匿名名称/版本请求，不读凭据或个人库、不执行下载的DLL/PE/源码。官方.sha512 URL404、源码短sha422、两个head分支404及网页工具不可用均保留事实；改用官方catalog和精确tag/完整commit，未猜源码或删失败。
+
+- Q（3.13.17）artifacts/rel01i/verify_select.py退出0，完整固定NuGet SHA512/发布字段、tag/commit/tree、六源码原blob、两ZIP和三DLL/两许可逐字节贯通，969原payload前后hash稳定；读原包/源码/许可均有界，原档前后hash复核。依赖/业务/工具均原bytes保持，没有重新本机构建未变业务或以新CI包替换固定f493包。
+- 每元数据1MiB、每archive64MiB、每ZIP1000条/声明展开128MiB、单声明32MiB、单实际选取8MiB、两档案所选共享8MiB、每recipe64KiB。大PDB只计声明预算，不展开/执行。所有名字/原名/固定根、大小写重复、链接/特殊类型、加密标志、实际解压长度/hash/选取总额及采集中变更均严格核验；这些预算用于本独立证据reader，不放宽既有NuGet采集器16MiB等门禁。
+- Q/P -m pytest artifacts/rel01i/test_reader.py -q --basetemp=artifacts/rel01i/tmp-q01或tmp-p01 --junitxml=artifacts/rel01i/q01.xml或p01.xml，实际各退出0、20通过（0.75/1.16秒）、无失败/错误/跳过/警告。使用自造惰性ZIP，覆盖固定档案/成员/源/预算错误、越界、不同根、冒号、大小写重复、符号链接/FIFO、加密标志、原NUL及读后实际追加变更拒绝；不执行所含伪DLL、不改原档。这20项是ignored证据reader验证，不冒充产品新增20项或已纳CI测试数；本项生产代码未变。
+- Q artifacts/rel01i/verify_select.py --read-only实际退出0，重新检查固定输入及两精选原bytes，无原件/摘要写入。三个组件（NuGet/OpenSSL/libffi）的[标准CDX子集](evidence/cpython-native-subset.cdx.json)由固定官方CycloneDX1.6三Schema验证，原58组件不复制；名称/版本来源是固定配方默认及完全匹配的提供者资产，签名/源码机器码构建/完整义务继续false。NuGet复合许可不硬套单一SPDX，未知不写UNLICENSED。
+
+[精选summary](evidence/cpython-native-sources-summary.json)9,210字节/SHA256 a783111a21c4747ddb95aa3307acb183c6114b5ff26a84890ef4cd10b71343cc；CDX6,867字节/SHA256 2d572e96fefd01a0a8901b7d66ff06501f34192fd0a70789c9951a5f9b133bcf。七文件范围、许可原文byte例外/其余UTF8-LF/diff、链接/原报告前缀及所有生产/锁/工作流保持继续核验；独立草稿PR/当前head CI和主Agent有限验收待取得前保持REVIEW。
+
+本项只完成所选官方发布/提供者资产和许可原文对应；SQLite、静态/其他嵌入native、44原CRT来源与再分发身份、全部义务/漏洞/签名及全产品/安装器仍未认证。许可新副本只是仓库证据，new_license_texts_staged/product_licenses_complete/distribution_obligations_reviewed/release_ready均false。审查按用户要求暂缓、人工取消，不合并/发布。
+
+最后补入#81的完整payload指纹与所有已读元数据/许可/两ZIP末尾重读hash，仍保留非原子快照限制；Q/P用tmp-q02/tmp-p02及q02.xml/p02.xml再跑同20惰性reader边界，各实际退出0（1.03/1.19秒）。Q最终verify_select.py --read-only重新核969/三DLL/两许可/三组件和两精选原bytes，退出0；raw输入未变，不将中间精选hash冒充最后版本。最终provenance8,774字节，两个原许可字节例外以固定全SHA256验证，OpenSSL原CRLF保持；其余自写文件执行UTF8/LF和diff检查。
+
+工具解释器-m ruff check backend tools及Q tools/export_question_schema.py --check实际退出0。artifacts/rel01i/check_changes.py退出0：7文件白名单、503原blob保持/最终510文件、95本地引用/被引标题、67唯一调度行、旧报告完整前缀及所有业务/工具/锁/工作流保持。许可例外不是放宽来源校验，两原文均与官方归档及Git blob精确相同；未提交原归档、完整响应、DLL或测试库。独立PR/当前head CI继续，有限项仍REVIEW。
+
+独立草稿[PR #88](https://github.com/surface-user/StudyWorkbench/pull/88)已创建并附任务，codex/cpython-native-source-licenses基于#81最终aba16ba；首次提交b4d5a7f0dad07fd9452290c5a8125ab53de47d9d/tree069170ed1f383332f932a638694450246cbe1369。补实际链接后保持7文件及510最终blob，原许可CRLF/hash不变；最终head/tree/当前CI在PR正文记录，不循环改自引hash。REL-01i保持REVIEW待本head CI及主Agent有限核验，未合并或发行。
