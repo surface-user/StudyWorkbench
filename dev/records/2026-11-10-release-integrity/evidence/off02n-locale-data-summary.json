@@ -1,0 +1,760 @@
+{
+  "base_head": "abf66df7d9a2d90f6af8e95b7f4e0a786685cfeb",
+  "base_pr": 87,
+  "base_tree": "7b80d62cc63273bda6f8d3042440729b0a0deea0",
+  "business_modules_unchanged_from_base": 45,
+  "caller_constant_offsets": {
+    "localedata_en.dll": 111548224,
+    "localedata_es.dll": 111548200,
+    "localedata_euro.dll": 111548176,
+    "localedata_others.dll": 111548152
+  },
+  "changed_tool_sha256": "f63d7287352bf83d995b4190b5ee06b296e4164e3303efca91bca0dcdec71f36",
+  "current_selfcontained_unknown_count": 74,
+  "frozen_identity": {
+    "build_scope": "existing #82 build; no new local build claimed",
+    "current_business_modules_match": 45,
+    "executable_sha256": "36c68c5e1cfc9fb15401309f61492694c6159da5c757d4c46eed72ead2bd3779"
+  },
+  "limitations": [
+    "Registered merged caller, potential static roots and finite runtime observations are distinct evidence scopes.",
+    "Transient image-access/module-snapshot errors are retained; only actually sampled fixed identities are certified.",
+    "No arbitrary dynamic loading/USER_DIRS/SxS/system-source, all-process-module or clean-machine certification.",
+    "Both Python ABI forwarder copies, templates, managed/x86/TWAIN and other 74 candidates remain unclassified.",
+    "No new search directory, CRT fallback, product CSV format/interface, dependency installation, original mutation, merge or release."
+  ],
+  "locale_service_registration": [
+    {
+      "component": {
+        "environment": "mscx",
+        "loader": "com.sun.star.loader.SharedLibrary",
+        "prefix": "i18npool",
+        "uri": "vnd.sun.star.expand:$LO_LIB_DIR/mergedlo.dll"
+      },
+      "implementation": {
+        "constructor": "com_sun_star_i18n_LocaleDataImpl_get_implementation",
+        "name": "com.sun.star.i18n.LocaleDataImpl"
+      }
+    }
+  ],
+  "negative_counterfactuals": [
+    {
+      "case": "missing",
+      "image": "converters/libreoffice/program/localedata_en.dll",
+      "reason": "Office locale native image differs: localedata_en.dll",
+      "rejected": true
+    },
+    {
+      "case": "changed",
+      "image": "converters/libreoffice/program/localedata_en.dll",
+      "reason": "Office locale native image differs: localedata_en.dll",
+      "rejected": true
+    },
+    {
+      "case": "x86",
+      "image": "converters/libreoffice/program/localedata_en.dll",
+      "reason": "Office locale native image differs: localedata_en.dll",
+      "rejected": true
+    },
+    {
+      "case": "PE32",
+      "image": "converters/libreoffice/program/localedata_en.dll",
+      "reason": "Office locale native image differs: localedata_en.dll",
+      "rejected": true
+    },
+    {
+      "case": "not-DLL",
+      "image": "converters/libreoffice/program/localedata_en.dll",
+      "reason": "Office locale native image differs: localedata_en.dll",
+      "rejected": true
+    },
+    {
+      "case": "non-executable",
+      "image": "converters/libreoffice/program/localedata_en.dll",
+      "reason": "Office locale native image differs: localedata_en.dll",
+      "rejected": true
+    },
+    {
+      "case": "CLR",
+      "image": "converters/libreoffice/program/localedata_en.dll",
+      "reason": "Office locale native image differs: localedata_en.dll",
+      "rejected": true
+    },
+    {
+      "case": "missing",
+      "image": "converters/libreoffice/program/localedata_es.dll",
+      "reason": "Office locale native image differs: localedata_es.dll",
+      "rejected": true
+    },
+    {
+      "case": "changed",
+      "image": "converters/libreoffice/program/localedata_es.dll",
+      "reason": "Office locale native image differs: localedata_es.dll",
+      "rejected": true
+    },
+    {
+      "case": "x86",
+      "image": "converters/libreoffice/program/localedata_es.dll",
+      "reason": "Office locale native image differs: localedata_es.dll",
+      "rejected": true
+    },
+    {
+      "case": "PE32",
+      "image": "converters/libreoffice/program/localedata_es.dll",
+      "reason": "Office locale native image differs: localedata_es.dll",
+      "rejected": true
+    },
+    {
+      "case": "not-DLL",
+      "image": "converters/libreoffice/program/localedata_es.dll",
+      "reason": "Office locale native image differs: localedata_es.dll",
+      "rejected": true
+    },
+    {
+      "case": "non-executable",
+      "image": "converters/libreoffice/program/localedata_es.dll",
+      "reason": "Office locale native image differs: localedata_es.dll",
+      "rejected": true
+    },
+    {
+      "case": "CLR",
+      "image": "converters/libreoffice/program/localedata_es.dll",
+      "reason": "Office locale native image differs: localedata_es.dll",
+      "rejected": true
+    },
+    {
+      "case": "missing",
+      "image": "converters/libreoffice/program/localedata_euro.dll",
+      "reason": "Office locale native image differs: localedata_euro.dll",
+      "rejected": true
+    },
+    {
+      "case": "changed",
+      "image": "converters/libreoffice/program/localedata_euro.dll",
+      "reason": "Office locale native image differs: localedata_euro.dll",
+      "rejected": true
+    },
+    {
+      "case": "x86",
+      "image": "converters/libreoffice/program/localedata_euro.dll",
+      "reason": "Office locale native image differs: localedata_euro.dll",
+      "rejected": true
+    },
+    {
+      "case": "PE32",
+      "image": "converters/libreoffice/program/localedata_euro.dll",
+      "reason": "Office locale native image differs: localedata_euro.dll",
+      "rejected": true
+    },
+    {
+      "case": "not-DLL",
+      "image": "converters/libreoffice/program/localedata_euro.dll",
+      "reason": "Office locale native image differs: localedata_euro.dll",
+      "rejected": true
+    },
+    {
+      "case": "non-executable",
+      "image": "converters/libreoffice/program/localedata_euro.dll",
+      "reason": "Office locale native image differs: localedata_euro.dll",
+      "rejected": true
+    },
+    {
+      "case": "CLR",
+      "image": "converters/libreoffice/program/localedata_euro.dll",
+      "reason": "Office locale native image differs: localedata_euro.dll",
+      "rejected": true
+    },
+    {
+      "case": "missing",
+      "image": "converters/libreoffice/program/localedata_others.dll",
+      "reason": "Office locale native image differs: localedata_others.dll",
+      "rejected": true
+    },
+    {
+      "case": "changed",
+      "image": "converters/libreoffice/program/localedata_others.dll",
+      "reason": "Office locale native image differs: localedata_others.dll",
+      "rejected": true
+    },
+    {
+      "case": "x86",
+      "image": "converters/libreoffice/program/localedata_others.dll",
+      "reason": "Office locale native image differs: localedata_others.dll",
+      "rejected": true
+    },
+    {
+      "case": "PE32",
+      "image": "converters/libreoffice/program/localedata_others.dll",
+      "reason": "Office locale native image differs: localedata_others.dll",
+      "rejected": true
+    },
+    {
+      "case": "not-DLL",
+      "image": "converters/libreoffice/program/localedata_others.dll",
+      "reason": "Office locale native image differs: localedata_others.dll",
+      "rejected": true
+    },
+    {
+      "case": "non-executable",
+      "image": "converters/libreoffice/program/localedata_others.dll",
+      "reason": "Office locale native image differs: localedata_others.dll",
+      "rejected": true
+    },
+    {
+      "case": "CLR",
+      "image": "converters/libreoffice/program/localedata_others.dll",
+      "reason": "Office locale native image differs: localedata_others.dll",
+      "rejected": true
+    },
+    {
+      "case": "missing",
+      "image": "converters/libreoffice/program/mergedlo.dll",
+      "reason": "Office locale native image differs: mergedlo.dll",
+      "rejected": true
+    },
+    {
+      "case": "changed",
+      "image": "converters/libreoffice/program/mergedlo.dll",
+      "reason": "Office locale native image differs: mergedlo.dll",
+      "rejected": true
+    },
+    {
+      "case": "x86",
+      "image": "converters/libreoffice/program/mergedlo.dll",
+      "reason": "Office locale native image differs: mergedlo.dll",
+      "rejected": true
+    },
+    {
+      "case": "PE32",
+      "image": "converters/libreoffice/program/mergedlo.dll",
+      "reason": "Office locale native image differs: mergedlo.dll",
+      "rejected": true
+    },
+    {
+      "case": "not-DLL",
+      "image": "converters/libreoffice/program/mergedlo.dll",
+      "reason": "Office locale native image differs: mergedlo.dll",
+      "rejected": true
+    },
+    {
+      "case": "non-executable",
+      "image": "converters/libreoffice/program/mergedlo.dll",
+      "reason": "Office locale native image differs: mergedlo.dll",
+      "rejected": true
+    },
+    {
+      "case": "CLR",
+      "image": "converters/libreoffice/program/mergedlo.dll",
+      "reason": "Office locale native image differs: mergedlo.dll",
+      "rejected": true
+    },
+    {
+      "case": "import-cannot-borrow-Java-or-bin-CRT",
+      "image": "converters/libreoffice/program/localedata_es.dll",
+      "reason": "Unresolved import: converters/libreoffice/program/localedata_es.dll -> vcruntime140.dll; loading directories=['converters/libreoffice/program']; elsewhere=['converters/libreoffice/System/vcruntime140.dll', 'converters/libreoffice/System64/vcruntime140.dll', 'converters/libreoffice/java/bin/vcruntime140.dll', 'converters/libreoffice/program/python-core-3.13.15/bin/vcruntime140.dll']; system CRT cannot satisfy private dependencies",
+      "rejected": true
+    },
+    {
+      "case": "delay-cannot-borrow-Java-or-bin-CRT",
+      "image": "converters/libreoffice/program/localedata_es.dll",
+      "reason": "Unresolved delay: converters/libreoffice/program/localedata_es.dll -> vcruntime140.dll; loading directories=['converters/libreoffice/program']; elsewhere=['converters/libreoffice/System/vcruntime140.dll', 'converters/libreoffice/System64/vcruntime140.dll', 'converters/libreoffice/java/bin/vcruntime140.dll', 'converters/libreoffice/program/python-core-3.13.15/bin/vcruntime140.dll']; system CRT cannot satisfy private dependencies",
+      "rejected": true
+    },
+    {
+      "case": "missing-registry",
+      "reason": "Missing fixed Office locale service registration",
+      "rejected": true
+    },
+    {
+      "case": "changed-registry",
+      "reason": "Office locale service registration changed",
+      "rejected": true
+    }
+  ],
+  "only_removed_unknown_paths": [
+    "converters/libreoffice/program/localedata_en.dll",
+    "converters/libreoffice/program/localedata_es.dll",
+    "converters/libreoffice/program/localedata_euro.dll",
+    "converters/libreoffice/program/localedata_others.dll"
+  ],
+  "previous_selfcontained_unknown_count": 78,
+  "product_release_ready": false,
+  "raw_evidence": {
+    "csv-runtime-sources.json": {
+      "bytes": 89345,
+      "sha256": "247e7d046e1f2cfd7649fca411fa7b79b73fb0399e0cd6a8331f051bf6f33e15"
+    },
+    "frozen-source-match01.log": {
+      "bytes": 95,
+      "sha256": "344368e89f9d3acfe74bae3e097ac97b50fcdc69da12f6095ed1d4378083645d"
+    },
+    "new01.json": {
+      "bytes": 1082011,
+      "sha256": "3e7cccd52941da00d55f46d72beb7f453cc6724fd97b7c8f5bd45a4e9110bf90"
+    },
+    "old01.json": {
+      "bytes": 1010402,
+      "sha256": "0fe20e645993bdc5cf4a1d63789b4f1991006f563039f0a63573882fd5808f1d"
+    },
+    "p02.xml": {
+      "bytes": 70515,
+      "sha256": "ef9f38ae69f732c4c9dff896046fe920420fe697bd6f83b39dd1b97015cbb90d"
+    },
+    "probe01.json": {
+      "bytes": 466268,
+      "sha256": "c5ff6a5aedde886d1d1156bb167fb35c2ff68ae8385359eb68c73c2348c46986"
+    },
+    "q02.xml": {
+      "bytes": 70515,
+      "sha256": "8db6585af4ac9454a696de41c3f498ac5c51700f73b01aa618574b8d74add446"
+    },
+    "ruff01.log": {
+      "bytes": 20,
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    "runtime02/de-DE/output/source.xlsx": {
+      "bytes": 6177,
+      "sha256": "39f88a5ad6b37063dabe7939a1a106d309579e33eb79bb3f4e44866d4dc58671"
+    },
+    "runtime02/de-DE/report.json": {
+      "bytes": 2585,
+      "sha256": "f22d02d356b4b9679b042c9fa783c9a900a789785b67a34c9ebce10e0f8f0dc7"
+    },
+    "runtime02/de-DE/source.csv": {
+      "bytes": 819,
+      "sha256": "7d7c55472d5f76472db7062a66d670bcf004e4fdc66ec6c4463eb7df9b851388"
+    },
+    "runtime02/en-US/output/source.xlsx": {
+      "bytes": 6177,
+      "sha256": "38c06e4a1c1a4930bc62824fa6f1670f8449ba9866ed7211a58fe3f80d702c21"
+    },
+    "runtime02/en-US/report.json": {
+      "bytes": 2693,
+      "sha256": "40a5d6ca95187e5dc6a3c37d20407c7b78b6d4b541630675f2376266b04bef3e"
+    },
+    "runtime02/en-US/source.csv": {
+      "bytes": 819,
+      "sha256": "f1bd83714e7c6f87eb57b2e5abe7f1ec02be674e7f98d53a5754a62a0ac4fcf8"
+    },
+    "runtime02/es-ES/output/source.xlsx": {
+      "bytes": 6178,
+      "sha256": "948d1aca22c4cf716d6e8676ef9fc2d7a06b894d3b2d023128802a49ca727b6f"
+    },
+    "runtime02/es-ES/report.json": {
+      "bytes": 2583,
+      "sha256": "68649bcfe8be5493a99651b0657000dbcf2f91455dc2feb2e87dc88a7b10c011"
+    },
+    "runtime02/es-ES/source.csv": {
+      "bytes": 819,
+      "sha256": "94a548dd3ffef95b3890008e39f4c4d62ad5fc27d1fb14bf7cc38b2269d928c4"
+    },
+    "runtime02/ja-JP/output/source.xlsx": {
+      "bytes": 6199,
+      "sha256": "0f7f8dd2aa06bd9264d4dfb51ed9202f26d30e862f0a04362edc5ed46858e06a"
+    },
+    "runtime02/ja-JP/report.json": {
+      "bytes": 2630,
+      "sha256": "716a38f99eef437e2fcb55a1a17bb4c352030e9830d934d7f90fb02d8feed065"
+    },
+    "runtime02/ja-JP/source.csv": {
+      "bytes": 819,
+      "sha256": "6b3178477081b2e422601f0a14d1342561ae60c823d90efe28842b073d61ab73"
+    },
+    "runtime02/report.json": {
+      "bytes": 12232,
+      "sha256": "f8c89a7bdcffa1d400eaad2c85b83ac2c4f1371c3c4c429e85dd492061cfd65c"
+    },
+    "runtime_probe.py": {
+      "bytes": 10480,
+      "sha256": "2afcce4e2b5c267a5d85e2bfa13daa4fdb6fd5fcce017d4786bc16615126e70a"
+    },
+    "schemas02.log": {
+      "bytes": 30,
+      "sha256": "511f93e1fe8041c617c13bf477d01dee36d47535450f475c7aa1775cbcd7ea72"
+    },
+    "sources.json": {
+      "bytes": 101387,
+      "sha256": "c463388838f0a4cce4bd3fcc6a0ae87aa5ddd74394659469e25b75d3e9aad462"
+    },
+    "verified01.json": {
+      "bytes": 20861,
+      "sha256": "974b14d14613a35c00d6eb34f444c569b60f5d8522eb3f157c56e2b8d20a9865"
+    }
+  },
+  "runtime": {
+    "all_expected_providers_observed": true,
+    "all_process_modules_observed": false,
+    "cases": [
+      {
+        "actually_observed_providers": [
+          "localedata_en.dll",
+          "localedata_es.dll",
+          "localedata_euro.dll",
+          "localedata_others.dll"
+        ],
+        "csv_sha256": "f1bd83714e7c6f87eb57b2e5abe7f1ec02be674e7f98d53a5754a62a0ac4fcf8",
+        "expected_provider": "localedata_en.dll",
+        "fixed_language_conversion_verified": true,
+        "language_id": 1033,
+        "locale": "en-US",
+        "module_paths": {
+          "localedata_en.dll": {
+            "canonical_path": "program/localedata_en.dll",
+            "path": "program/localedata_en.dll",
+            "sha256": "17caee9f1354cc0dd9c8f82d6d452a1937e06d07293dbe48ca96cebdc1abc592"
+          },
+          "localedata_es.dll": {
+            "canonical_path": "program/localedata_es.dll",
+            "path": "program/localedata_es.dll",
+            "sha256": "2e6284058851d54d4cdb255b10bea4b1835c5fe8f02d63462b58f9af26657cea"
+          },
+          "localedata_euro.dll": {
+            "canonical_path": "program/localedata_euro.dll",
+            "path": "program/localedata_euro.dll",
+            "sha256": "0e0b70511ae9653286acf47f9f5040b057c860bb508c0b156004268d30a3f0a5"
+          },
+          "localedata_others.dll": {
+            "canonical_path": "program/localedata_others.dll",
+            "path": "program/localedata_others.dll",
+            "sha256": "af772a495d9d33b3160b5342d0d842293e3a5ad6ce636de16b454061ee38397d"
+          },
+          "mergedlo.dll": {
+            "canonical_path": "program/mergedlo.dll",
+            "path": "program/mergedlo.dll",
+            "sha256": "017d0c21b6e45e54c0194b58017853d8c653059cc643643c3eb831a4d309331f"
+          },
+          "msvcp140.dll": {
+            "canonical_path": "program/msvcp140.dll",
+            "path": "program/MSVCP140.dll",
+            "sha256": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9"
+          },
+          "vcruntime140.dll": {
+            "canonical_path": "program/vcruntime140.dll",
+            "path": "program/VCRUNTIME140.dll",
+            "sha256": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066"
+          }
+        },
+        "office_processes_exited": true,
+        "sampled_soffice_processes": 2,
+        "sampling_errors": [
+          {
+            "code": 5,
+            "stage": "image"
+          },
+          {
+            "code": 299,
+            "stage": "module-name"
+          },
+          {
+            "code": 299,
+            "stage": "modules"
+          }
+        ],
+        "workbook_bytes": 6177,
+        "workbook_sha256": "38c06e4a1c1a4930bc62824fa6f1670f8449ba9866ed7211a58fe3f80d702c21"
+      },
+      {
+        "actually_observed_providers": [
+          "localedata_en.dll",
+          "localedata_es.dll",
+          "localedata_euro.dll",
+          "localedata_others.dll"
+        ],
+        "csv_sha256": "94a548dd3ffef95b3890008e39f4c4d62ad5fc27d1fb14bf7cc38b2269d928c4",
+        "expected_provider": "localedata_es.dll",
+        "fixed_language_conversion_verified": true,
+        "language_id": 3082,
+        "locale": "es-ES",
+        "module_paths": {
+          "localedata_en.dll": {
+            "canonical_path": "program/localedata_en.dll",
+            "path": "program/localedata_en.dll",
+            "sha256": "17caee9f1354cc0dd9c8f82d6d452a1937e06d07293dbe48ca96cebdc1abc592"
+          },
+          "localedata_es.dll": {
+            "canonical_path": "program/localedata_es.dll",
+            "path": "program/localedata_es.dll",
+            "sha256": "2e6284058851d54d4cdb255b10bea4b1835c5fe8f02d63462b58f9af26657cea"
+          },
+          "localedata_euro.dll": {
+            "canonical_path": "program/localedata_euro.dll",
+            "path": "program/localedata_euro.dll",
+            "sha256": "0e0b70511ae9653286acf47f9f5040b057c860bb508c0b156004268d30a3f0a5"
+          },
+          "localedata_others.dll": {
+            "canonical_path": "program/localedata_others.dll",
+            "path": "program/localedata_others.dll",
+            "sha256": "af772a495d9d33b3160b5342d0d842293e3a5ad6ce636de16b454061ee38397d"
+          },
+          "mergedlo.dll": {
+            "canonical_path": "program/mergedlo.dll",
+            "path": "program/mergedlo.dll",
+            "sha256": "017d0c21b6e45e54c0194b58017853d8c653059cc643643c3eb831a4d309331f"
+          },
+          "msvcp140.dll": {
+            "canonical_path": "program/msvcp140.dll",
+            "path": "program/MSVCP140.dll",
+            "sha256": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9"
+          },
+          "vcruntime140.dll": {
+            "canonical_path": "program/vcruntime140.dll",
+            "path": "program/VCRUNTIME140.dll",
+            "sha256": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066"
+          }
+        },
+        "office_processes_exited": true,
+        "sampled_soffice_processes": 2,
+        "sampling_errors": [
+          {
+            "code": 299,
+            "stage": "module-name"
+          }
+        ],
+        "workbook_bytes": 6178,
+        "workbook_sha256": "948d1aca22c4cf716d6e8676ef9fc2d7a06b894d3b2d023128802a49ca727b6f"
+      },
+      {
+        "actually_observed_providers": [
+          "localedata_en.dll",
+          "localedata_es.dll",
+          "localedata_euro.dll",
+          "localedata_others.dll"
+        ],
+        "csv_sha256": "7d7c55472d5f76472db7062a66d670bcf004e4fdc66ec6c4463eb7df9b851388",
+        "expected_provider": "localedata_euro.dll",
+        "fixed_language_conversion_verified": true,
+        "language_id": 1031,
+        "locale": "de-DE",
+        "module_paths": {
+          "localedata_en.dll": {
+            "canonical_path": "program/localedata_en.dll",
+            "path": "program/localedata_en.dll",
+            "sha256": "17caee9f1354cc0dd9c8f82d6d452a1937e06d07293dbe48ca96cebdc1abc592"
+          },
+          "localedata_es.dll": {
+            "canonical_path": "program/localedata_es.dll",
+            "path": "program/localedata_es.dll",
+            "sha256": "2e6284058851d54d4cdb255b10bea4b1835c5fe8f02d63462b58f9af26657cea"
+          },
+          "localedata_euro.dll": {
+            "canonical_path": "program/localedata_euro.dll",
+            "path": "program/localedata_euro.dll",
+            "sha256": "0e0b70511ae9653286acf47f9f5040b057c860bb508c0b156004268d30a3f0a5"
+          },
+          "localedata_others.dll": {
+            "canonical_path": "program/localedata_others.dll",
+            "path": "program/localedata_others.dll",
+            "sha256": "af772a495d9d33b3160b5342d0d842293e3a5ad6ce636de16b454061ee38397d"
+          },
+          "mergedlo.dll": {
+            "canonical_path": "program/mergedlo.dll",
+            "path": "program/mergedlo.dll",
+            "sha256": "017d0c21b6e45e54c0194b58017853d8c653059cc643643c3eb831a4d309331f"
+          },
+          "msvcp140.dll": {
+            "canonical_path": "program/msvcp140.dll",
+            "path": "program/MSVCP140.dll",
+            "sha256": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9"
+          },
+          "vcruntime140.dll": {
+            "canonical_path": "program/vcruntime140.dll",
+            "path": "program/VCRUNTIME140.dll",
+            "sha256": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066"
+          }
+        },
+        "office_processes_exited": true,
+        "sampled_soffice_processes": 2,
+        "sampling_errors": [
+          {
+            "code": 299,
+            "stage": "module-name"
+          }
+        ],
+        "workbook_bytes": 6177,
+        "workbook_sha256": "39f88a5ad6b37063dabe7939a1a106d309579e33eb79bb3f4e44866d4dc58671"
+      },
+      {
+        "actually_observed_providers": [
+          "localedata_en.dll",
+          "localedata_es.dll",
+          "localedata_euro.dll",
+          "localedata_others.dll"
+        ],
+        "csv_sha256": "6b3178477081b2e422601f0a14d1342561ae60c823d90efe28842b073d61ab73",
+        "expected_provider": "localedata_others.dll",
+        "fixed_language_conversion_verified": true,
+        "language_id": 1041,
+        "locale": "ja-JP",
+        "module_paths": {
+          "localedata_en.dll": {
+            "canonical_path": "program/localedata_en.dll",
+            "path": "program/localedata_en.dll",
+            "sha256": "17caee9f1354cc0dd9c8f82d6d452a1937e06d07293dbe48ca96cebdc1abc592"
+          },
+          "localedata_es.dll": {
+            "canonical_path": "program/localedata_es.dll",
+            "path": "program/localedata_es.dll",
+            "sha256": "2e6284058851d54d4cdb255b10bea4b1835c5fe8f02d63462b58f9af26657cea"
+          },
+          "localedata_euro.dll": {
+            "canonical_path": "program/localedata_euro.dll",
+            "path": "program/localedata_euro.dll",
+            "sha256": "0e0b70511ae9653286acf47f9f5040b057c860bb508c0b156004268d30a3f0a5"
+          },
+          "localedata_others.dll": {
+            "canonical_path": "program/localedata_others.dll",
+            "path": "program/localedata_others.dll",
+            "sha256": "af772a495d9d33b3160b5342d0d842293e3a5ad6ce636de16b454061ee38397d"
+          },
+          "mergedlo.dll": {
+            "canonical_path": "program/mergedlo.dll",
+            "path": "program/mergedlo.dll",
+            "sha256": "017d0c21b6e45e54c0194b58017853d8c653059cc643643c3eb831a4d309331f"
+          },
+          "msvcp140.dll": {
+            "canonical_path": "program/msvcp140.dll",
+            "path": "program/MSVCP140.dll",
+            "sha256": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9"
+          },
+          "vcruntime140.dll": {
+            "canonical_path": "program/vcruntime140.dll",
+            "path": "program/VCRUNTIME140.dll",
+            "sha256": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066"
+          }
+        },
+        "office_processes_exited": true,
+        "sampled_soffice_processes": 2,
+        "sampling_errors": [
+          {
+            "code": 5,
+            "stage": "image"
+          },
+          {
+            "code": 299,
+            "stage": "modules"
+          }
+        ],
+        "workbook_bytes": 6199,
+        "workbook_sha256": "0f7f8dd2aa06bd9264d4dfb51ed9202f26d30e862f0a04362edc5ed46858e06a"
+      }
+    ],
+    "complete_component_verified_before_after": true,
+    "dynamic_isolation_certified": false,
+    "observed_relation": "Every representative job loaded all four providers; this is not a one-language-to-one-library claim.",
+    "product_csv_support_added": false,
+    "script_sha256": "2afcce4e2b5c267a5d85e2bfa13daa4fdb6fd5fcce017d4786bc16615126e70a"
+  },
+  "scope": "OFF-02n fixed four locale-data loading edges with representative headless Office observations",
+  "selected_sha256": {
+    "converters/libreoffice/java/bin/vcruntime140.dll": "02c6aa0e6e624411a9f19b0360a7865ab15908e26024510e5c38a9c08362c35a",
+    "converters/libreoffice/program/localedata_en.dll": "17caee9f1354cc0dd9c8f82d6d452a1937e06d07293dbe48ca96cebdc1abc592",
+    "converters/libreoffice/program/localedata_es.dll": "2e6284058851d54d4cdb255b10bea4b1835c5fe8f02d63462b58f9af26657cea",
+    "converters/libreoffice/program/localedata_euro.dll": "0e0b70511ae9653286acf47f9f5040b057c860bb508c0b156004268d30a3f0a5",
+    "converters/libreoffice/program/localedata_others.dll": "af772a495d9d33b3160b5342d0d842293e3a5ad6ce636de16b454061ee38397d",
+    "converters/libreoffice/program/mergedlo.dll": "017d0c21b6e45e54c0194b58017853d8c653059cc643643c3eb831a4d309331f",
+    "converters/libreoffice/program/python-core-3.13.15/bin/vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+    "converters/libreoffice/program/services/services.rdb": "bc996be9362ebf3a9c6be11d4c3c9fef26941182743c70d1649a6e5fe317f094",
+    "converters/libreoffice/program/vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066"
+  },
+  "selection_reason": "Only fixed source/merge/registration identity, graph differences and actually observed language jobs are promoted; full raw source and tables stay ignored.",
+  "source_association_is_reproducible_compilation": false,
+  "source_commit": "bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1",
+  "source_identities": {
+    "Library_merged.mk": {
+      "git_blob": "946b3af6285a560341d900870275c03dfe7af5b2",
+      "sha256": "39b9d854a709ccdd6a95813d5bde768a25c637b1837341581be4f9a9baae883f"
+    },
+    "i18npool/Library_localedata_en.mk": {
+      "git_blob": "5c70cdeba443894940b773470151a62da39ca570",
+      "sha256": "0cd6973f7dd9778805cd14b958916467de06218ffe5e23a3db16b3eee79a5698"
+    },
+    "i18npool/Library_localedata_es.mk": {
+      "git_blob": "1b4765b103bc1b356fe07d092a01af0c04e85432",
+      "sha256": "262c4a12c16ab3c1c2bde55641128eed7090bdf22a9534eb01b4135d0f1d5a9d"
+    },
+    "i18npool/Library_localedata_euro.mk": {
+      "git_blob": "2cb5dd0656bbb9993999f49c0499133cd3754fa9",
+      "sha256": "c47d6bc9b0318de347731828ddd600ab9546e2208317981cf07a83146955d0ce"
+    },
+    "i18npool/Library_localedata_others.mk": {
+      "git_blob": "287eda351a831bb134bbf1beaa3a731c6e70000f",
+      "sha256": "8008548c037e3b93d9ad60dc816108f36a9f5eef6dd5865e4d2f29b780e88317"
+    },
+    "i18npool/source/localedata/localedata.cxx": {
+      "git_blob": "74f0fd932751502cb6a2fd86a26437b7a9f61044",
+      "sha256": "32c602e9cebd8c7a924e773a226b140f110c42ec5066090a890b429fbb602288"
+    },
+    "include/i18nlangtag/lang.h": {
+      "git_blob": "5fbb7a65b53a31fe250ad8988cac8beabe29a0f2",
+      "sha256": "cd4fcaa239b320c72e87c00e57210a8a38d1c81ea3cf3afaa9caff73dc8f6357"
+    },
+    "include/osl/module.hxx": {
+      "git_blob": "37f7e249ee29caba7102316a1e4f2fa6e34304e6",
+      "sha256": "b1573324cadd8ccf2571e995ae3da258a3624713ae853bcfffaf22c41b258230"
+    },
+    "include/rtl/textenc.h": {
+      "git_blob": "10d69e734a4f811775271b92b2b7aa3d76e5e225",
+      "sha256": "42549f898782d2cda4f80f1818afd91a4aa8545a212378466912b6f2cc91c4c3"
+    },
+    "sal/osl/all/loadmodulerelative.cxx": {
+      "git_blob": "d2af7d01005759fe34e7715dc71a56155a80e19c",
+      "sha256": "6bb7a34bd4c8dc90a5d8f6d73b4ff115d6d7e7ed18e18bf5d21f2ac737e54c70"
+    },
+    "sal/osl/w32/module.cxx": {
+      "git_blob": "bf42b5c961d6a145a167eceec9a83c99ef0e9007",
+      "sha256": "f13bc7128fa68e3d6e3c57fc89a2b5c4612ccc20f94ca08afa80274f476b9444"
+    },
+    "sc/source/ui/dbgui/asciiopt.cxx": {
+      "git_blob": "333402af6e85f51151247b8cb2a4f69535fe722e",
+      "sha256": "8bf8e4a00230796600e6aa70b89b58dd88895ba2f702d3187648125c63f98748"
+    },
+    "solenv/gbuild/extensions/pre_MergedLibsList.mk": {
+      "git_blob": "2c4e2c68e2b7bdb2559ab9740846a6d06e2082c8",
+      "sha256": "38ba08a3dbab8777d08ba7b44976b4f7c781b3d043e9ec7a5b6f06d6d9f6d122"
+    }
+  },
+  "static_components": [
+    {
+      "component_inventory_sha256": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+      "office_directories_crt_configuration_unchanged": true,
+      "office_graph": {
+        "edges": 1877,
+        "nodes": 210,
+        "roots": 152
+      },
+      "other_domains_field_equivalent": true,
+      "pe_images": 351,
+      "physical_files": 19743,
+      "unknown_after": 75,
+      "unknown_before": 79
+    },
+    {
+      "component_inventory_sha256": "b0a040bd584bb69aeaba44f749996d2320d83707889b8f8ad85d93d44893c9ee",
+      "office_directories_crt_configuration_unchanged": true,
+      "office_graph": {
+        "edges": 1877,
+        "nodes": 210,
+        "roots": 152
+      },
+      "other_domains_field_equivalent": true,
+      "pe_images": 354,
+      "physical_files": 19746,
+      "unknown_after": 74,
+      "unknown_before": 78
+    }
+  ],
+  "tests": {
+    "p02": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 437
+    },
+    "q02": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 437
+    }
+  }
+}

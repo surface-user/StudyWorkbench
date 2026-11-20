@@ -1050,3 +1050,33 @@ artifacts/off02m/verify_real.py现已退出0：原组合156b4421...完整19743�
 现有#82冻结exe SHA36c68c5e...并非本项重建；M的45份业务源码逐SHA256/Git blob等于#82原business-sources，check_frozen_sources.py对该既有exe再次退出0、45模块匹配，明确工具静态改动与业务构建身份边界。完整实际Windows/后端/Flutter/新冻结的当前head CI仍在本项PR执行，不借#82 CI替代。精选[off02m-textencoding-summary.json](evidence/off02m-textencoding-summary.json)为13316字节、SHA256=7f0a6b83afe197b19512a7fba128ea9eccc6f8ca01b74950c4f453160d13b712，筛选9源码blob/实际有限转换/静态差异/反例和15份raw来源hash；原文/全表/失败/JUnit不进Git。verify_all.py --read-only保护精选及15raw，只复算/断言既有输出；首次只读已退出0，完整复算两组件图及精选、16个既有输出字节保持。实现/相关自动化/文档完成转REVIEW，独立草稿PR/current CI与主Agent有限核验随后交付，不将整包或发行记为完成。
 
 已创建并附加[独立草稿PR #87](https://github.com/surface-user/StudyWorkbench/pull/87)，分支codex/office-textencoding基于#82精确24d137d；同一六文件、500个base blob保持/506远端文件，103本地引用/61唯一调度行/UTF-8-LF/空白检查通过。当前head/当前CI和主Agent有限核验在PR正文维护，不为记录自身SHA循环更新交付头；原#82/组件保持，无合并发行。
+
+## 2026-11-20：OFF-02n 固定四locale数据模块与代表语言诊断
+
+主Agent授权独立后继四库切片，并要求实际西/德/一种others验证，无法证实者明确静态/待核。office-locale-data副本506 blob逐项等于#87精确abf66df7d9a2d90f6af8e95b7f4e0a786685cfeb/tree7b80d62cc63273bda6f8d3042440729b0a0deea0，L/M头不动。主Agent已有限接受L的#82当前CI/完整只读核证，故只在此后继task登记DONE；M当前CI44682889216亦已完整成功，1363×2/Flutter203/45新冻结模块/API34及既定链，但其有限接受另由主Agent确认，不把M自动写DONE。本项仍六文件：native/test、task/packaging、原报告/精选，无业务模块/公开接口/依赖/数据库变化、无合并发行。
+
+### 源码、合并与注册身份
+
+固定LO提交bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1的i18npool/source/localedata/localedata.cxx用有限DataLocaleLibrary枚举选择en/es/euro/others四个完整库名，从thisModule地址loadRelative，再取该locale函数符号。四份Library_localedata_*.mk声明这些是i18npool数据插件，公共module.hxx/相对加载/Windows实现沿已核绝对路径加载链。初猜i18npoollo.dll实际不存在，失败保留；本构建的pre_MergedLibsList.mk/Library_merged.mk将i18npool对象合入merged，真实services/services.rdb将com.sun.star.i18n.LocaleDataImpl（对应固定constructor）注册到$LO_LIB_DIR/mergedlo.dll。以上10源码blob逐项重算Git身份相等；不是凭源库名或目录猜caller，也不声称可重现编译。
+
+实际caller program/mergedlo.dll为151766872字节，SHA256=017d0c21b6e45e54c0194b58017853d8c653059cc643643c3eb831a4d309331f，已在旧Office域中；只读mmap限256MiB，四ASCII库名偏移en111548224/es111548200/euro111548176/others111548152均存在。四目标实际固定AMD64/PE32+、原生可执行DLL、CLR RVA0，各完整hash见精选及raw；原注册259313字节/SHA沿既定UNO固定策略。源/实际注册/编译合并关联/固定二进制常量共同限定此版本加载边。
+
+native最小规则只接受既定原组合156b4421...或自包含b0a040bd...；另核既定services/services.rdb真实hash，以及caller/四目标各自固定原字节和原生头，然后将四目标纳入原Office潜在静态根。源注册读取限1MiB、锁限4MiB；缺失/篡改/移位或错误CLR/架构/头拒绝。原[program,java/bin,java/bin/server]与program私有CRT、原UNO/SAL元数据及其他域不变，不新增目录/通用动态加载框架/执行授权，check_release保持partial即拒绝。
+
+### 真实代表语言与实际进程模块
+
+运行前已写artifacts/off02n/runtime_design.md：复用同一#82派生组件，不复制另一份1.62GiB。固定CSV parser源码确认token5为language、token7为detect special numbers，语言头固定EN1033/ES3082/DE1031/JA1041，UTF8枚举76；这3份辅助源/API头加前述10份共13blob均重新核验。四新任务为私有UTF8、分号CSV，固定数字1234.56及各地区日期写法，32条数据，不含公式/外链/宏。沿现有OfficeRuntime v4 profile/配置层/类型服务/Java环境，以固定Calc CSV infilter和XLSX exporter运行headless；这是诊断输入，不新增产品CSV/Calc格式支持或公共任意命令。
+
+每任务60秒、Job1GiB/4并发进程，完整诊断540秒、结果/ZIP/XML有界；组件运行前后逐文件核验。仅从该Job查询PID，Opened handle必须仍属该Job，确认实际soffice.bin samefile及原锁hash后才采样模块，不能读取外部进程当本次转换。模块需实际handle路径samefile/原清单hash；保留Windows返回大小写并明确canonical_path。原输出与所持进程句柄退出均核验，输入CSV字节保持。图形/人工测试没有执行。
+
+最终runtime02（带脚本前后hash及模块→真实soffice PID关联）退出0：EN/ES/DE/JA四个数字/日期结果均由生成XLSX的B2/C2独立验证为1234.56及2026-12-31的日期序号；四次每次都实际观察到en/es/euro/others全部四库，不能声称某语言仅对应一库或根据语言推断未采样模块。实际caller/四库/VCRT/MSVCP均来自program且hash相符，这次是soffice.bin上下文，与M派生Python中的bin VCRT证据分别记。实际抽样仍保留image访问码5及模块读取299等瞬态错误，只对成功采样的固定身份下结论，不认证全部模块/任意动态路径/SxS/系统来源。首runtime01也成功但未记录完整producer/每模块PID关联，保留为先期证据，最终使用runtime02，不冒用版本。
+
+### 静态与自动化结果
+
+Q/P同一六测试文件命令：-B -X utf8 -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py backend/tests/test_office_java_bundle.py backend/tests/test_java_runtime_preparation.py backend/tests/test_office_python_probe.py backend/tests/test_office_template_evidence.py -q --basetemp=.local/off02n-{q,p}02 --junitxml=artifacts/off02n/{q,p}02.xml；均退出0，各437通过、无失败/错误/跳过、两条既有重复ZIP警告。新58实例覆盖两个布局/注册源、各固定caller/provider缺失与hash、原生头、锁/注册预算、外目录同名不能替代、普通及延迟边不能借CRT、原图/其他域/旧未知保持。原局部fixture只显式隔离新增规则，原断言不删不降。初轮native258、Ruff/Schema及既有#82冻结45模块再核源均退出0；45业务源仍逐hash/blob同基线，不为静态工具改动冒称本次本地重建。
+
+verify_real.py退出0：默认原19743文件/351PE未知79→75，自包含19746/354PE未知78→74；Office均152根/210节点/1877边，仅新增四根/四节点和它们的27条边。原边逐项多重集合、原目录/CRT/UNO/SAL字段及其他域每字段保持。原78与新74完整路径数组保留verified01.json，差集精确四库；模板/两ABI转发副本/托管/x86/TWAIN及其余候选继续未知。39实物元数据/图/注册替换反例全部拒绝，9关键caller/四库/三处CRT/注册源末hash保持；注册反例只用自有坏文件替换输入映射，从未修改原注册。新图SHA256=3e7cccd52941da00d55f46d72beb7f453cc6724fd97b7c8f5bd45a4e9110bf90，verified SHA256=974b14d14613a35c00d6eb34f444c569b60f5d8522eb3f157c56e2b8d20a9865。
+
+精选[off02n-locale-data-summary.json](evidence/off02n-locale-data-summary.json)为30215字节，SHA256=add2da804090d38ad89b654691e1f6f1e3dc352648d7319a848bb6cb3c3f0ba2；仅13来源身份、有限图差异/反例、4实际语言结果/模块和25份raw hash，完整源码/表/日志/JUnit/样本/生成XLSX都留ignored artifacts/.local，不直接塞evidence。verify_all.py --read-only保护精选+25raw只断言复算；当前首次只读已退出0，完整两组件图/精选及25raw共26个既有输出字节保持。实现/相关自动化/文档完成，独立草稿PR/当前head CI/主Agent有限核验继续，审查暂缓/人工取消、无合并发行；整包和74未知未记为完成。
+
+主Agent随后已独立核M的#87当前CI及verify_all --read-only退出0、379×2/79→78及16原输出保持，同意有限DONE；仅在本后继task登记M完成，不追改L/M发布头。

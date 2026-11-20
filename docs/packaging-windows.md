@@ -89,6 +89,8 @@ program直属的固定30个AMD64原生EXE/COM/BIN另作office_program保守静�
 
 固定SAL文本编码库另有显式相对加载边：[该版源码](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/sal/textenc/textenc.cxx)从sal3模块地址加载同目录sal_textenclo，并取得sal_getFullTextEncodingData。仅在已核原/自包含组合中验证caller与目标的固定hash、AMD64/PE32+、原生可执行DLL头及无CLR后，将目标作为潜在静态入口加入现有Office域；搜索和私有CRT目录不变。此规则不新增目录、通用动态加载解释器或执行授权，其他域/原件不改。源加载路径、静态闭包和派生Office Python诊断中CP932转换的实际模块观察分别记录于原报告；诊断的已加载bin CRT与Office宿主program CRT即使同字节，也不混用静态域或冒充普通业务执行。未证明的动态分支/系统来源/导出转发继续保留。
 
+固定LocaleData服务也有四个显式相对加载目标：[该版源码](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/i18npool/source/localedata/localedata.cxx)的有限枚举选择localedata_en/es/euro/others。该构建把i18npool对象合并进program/mergedlo.dll，固定services注册中的LocaleDataImpl也绑定此caller，不能按源库名猜一个不存在的DLL。检查精确组合锁、既定services注册hash、caller与四目标原字节及AMD64原生DLL头后，仅把四目标加入原Office静态根，原搜索/CRT及其他域保持。原报告分别记录源码/合并/注册证据、静态图和固定语言的实际soffice.bin模块观察；诊断CSV仅为自动验证输入，没有新增产品格式接口。有限模块观察保留采样错误，不认证任意动态加载、全部模块或系统来源。
+
 ## Office Python模板来源证据
 
 使用已有构建Python环境离线运行；输入必须是固定Office-Java组合及已下载的[CPython 3.13.15官方源码归档](https://www.python.org/ftp/python/3.13.15/Python-3.13.15.tar.xz)，命令不会下载、安装或执行归档内容：

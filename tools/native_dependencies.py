@@ -46,6 +46,47 @@ OFFICE_TEXTENC_IMAGES = {
     'sal3.dll': '0a7299f648b6ed320b9ac7a161ac790173ece5022c56a338ed30b8c5c2db02dd',
     'sal_textenclo.dll': '230865a4f1e2cc0c1d534069c3172a04fb6faa5e8e57289b9694cdc51f45c0d3',
 }
+OFFICE_LOCALE_LOCK_SHA256 = '156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9'
+OFFICE_LOCALE_IMAGES = {
+    'mergedlo.dll': '017d0c21b6e45e54c0194b58017853d8c653059cc643643c3eb831a4d309331f',
+    'localedata_en.dll': '17caee9f1354cc0dd9c8f82d6d452a1937e06d07293dbe48ca96cebdc1abc592',
+    'localedata_es.dll': '2e6284058851d54d4cdb255b10bea4b1835c5fe8f02d63462b58f9af26657cea',
+    'localedata_euro.dll': '0e0b70511ae9653286acf47f9f5040b057c860bb508c0b156004268d30a3f0a5',
+    'localedata_others.dll': 'af772a495d9d33b3160b5342d0d842293e3a5ad6ce636de16b454061ee38397d',
+}
+
+
+def office_locale_entries(payload, nodes, office):
+    """Four fixed LocaleData providers loaded relative to the registered merged caller."""
+    lock = payload.get(office + 'runtime-lock.json')
+    if lock is None:
+        raise ValueError('Missing fixed Office locale component inventory')
+    with lock.open('rb') as stream:
+        raw = stream.read(4 * 1024 * 1024 + 1)
+    if (len(raw) > 4 * 1024 * 1024 or hashlib.sha256(raw).hexdigest()
+            not in {OFFICE_LOCALE_LOCK_SHA256, OFFICE_SELFCONTAINED_LOCK_SHA256}):
+        raise ValueError('Office locale component changed; renew loading evidence')
+    registry_name = 'program/services/services.rdb'
+    registry = payload.get(office + registry_name)
+    if registry is None:
+        raise ValueError('Missing fixed Office locale service registration')
+    with registry.open('rb') as stream:
+        registered = stream.read(1024 * 1024 + 1)
+    if (len(registered) > 1024 * 1024
+            or hashlib.sha256(registered).hexdigest() != OFFICE_UNO_FILES[registry_name]):
+        raise ValueError('Office locale service registration changed')
+    files, selected = json.loads(raw)['files'], {}
+    for name, expected in OFFICE_LOCALE_IMAGES.items():
+        relative = 'program/' + name
+        key, node = office + relative, nodes.get(office + relative)
+        if (files.get(relative) != expected or node is None or node['sha256'] != expected
+                or node['machine'] != 0x8664 or node['magic'] != 0x20B
+                or node['characteristics'] & 0x2002 != 0x2002 or node['clr_rva'] != 0):
+            raise ValueError('Office locale native image differs: ' + name)
+        selected[key] = expected
+    return dict(roots=sorted(name for name in selected if name != office + 'program/mergedlo.dll'),
+        caller=office + 'program/mergedlo.dll', image_sha256=selected,
+        service_registration_sha256={office + registry_name: OFFICE_UNO_FILES[registry_name]})
 
 
 def office_textencoding_entries(payload, nodes, office):
@@ -431,10 +472,13 @@ def inspect_dependencies(payload, system):
                                       [java, server], [java], system)
         uno_entries = office_uno_entries(payload, office)
         text_entries = office_textencoding_entries(payload, nodes, office)
-        domains['office'] = closure(nodes, sorted(set(roots) | uno_entries.keys() | set(text_entries['roots'])),
+        locale_entries = office_locale_entries(payload, nodes, office)
+        domains['office'] = closure(nodes, sorted(set(roots) | uno_entries.keys()
+            | set(text_entries['roots']) | set(locale_entries['roots'])),
                                     [program, java, server], [program], system)
         domains['office']['uno_entries'] = uno_entries
         domains['office']['text_encoding_entries'] = text_entries
+        domains['office']['locale_data_entries'] = locale_entries
         domains['office']['uno_configuration_sha256'] = {
             office + name: digest for name, digest in OFFICE_UNO_FILES.items()}
         python_libraries = office_python_libraries(payload, nodes, office)
