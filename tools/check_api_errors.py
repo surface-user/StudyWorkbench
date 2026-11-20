@@ -1,5 +1,6 @@
 """Check additive API errors through real source/frozen HTTP with fresh generated data."""
 import argparse
+import hashlib
 import io
 import json
 import os
@@ -12,12 +13,62 @@ import threading
 import time
 import urllib.error
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+
+
+def check_scan(request, prefix, root):
+    from PIL import Image, ImageDraw, ImageFont
+
+    cases = [('eng', 'Study page 123', 'arial.ttf'), ('chi_sim', '中文学习', 'msyh.ttc'), ('eng', '', 'arial.ttf')]
+    pages = []
+    for _, line, font in cases:
+        picture = Image.new('RGB', (390, 84), 'white')
+        face = ImageFont.truetype(str(Path(os.environ['SystemRoot']) / 'Fonts' / font), 48)
+        ImageDraw.Draw(picture).text((10, 3), line, font=face, fill='black')
+        pages.append(picture)
+    source = root / 'scan.pdf'
+    pages[0].save(source, 'PDF', save_all=True, append_images=pages[1:], resolution=144)
+    digest = hashlib.sha256(source.read_bytes()).hexdigest()
+    job, _ = request(prefix + '/resource-add-jobs', {'source_path': str(source), 'parent_id': None})
+    for _ in range(100):
+        job, _ = request(prefix + '/resource-add-jobs/' + job['id'])
+        if job['status'] not in {'queued', 'running'}:
+            break
+        time.sleep(.1)
+    node = job['results'][0]['resource_item_id']
+    url = prefix + '/nodes/' + node + '/document-ocr'
+    options = {'expected_sha256': digest, 'request_id': '7' * 32}
+    resource = None
+    for page, (language, expected_text, _) in enumerate(cases, 1):
+        value, _ = request(url, {**options, 'page': page, 'language': language})
+        assert value['text'] == expected_text and not value['confirmed'] and value['source'] == 'ocr'
+        assert (value['page'], value['page_count'], value['language'], value['source_sha256']) == (page, 3, language, digest)
+        assert value['engine_version'] == '5.5.4' and value['model_version'] == 'tessdata_fast-4.1.0'
+        assert re.fullmatch('[a-f0-9]{64}', value['model_sha256'])
+        assert bool(value['regions']) == bool(expected_text) and ('no_text' in value['warnings']) == (not expected_text)
+        for word in value['regions']:
+            x, y, right, bottom = word['box']
+            assert 0 <= x < right <= 1 and 0 <= y < bottom <= 1 and 0 <= word['confidence'] <= 100
+        resource = value['resource_id']
+    cancel = url + '/' + options['request_id'] + '/cancel'
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        running = pool.submit(request, url, {**options, 'page': 1, 'language': 'eng'}, expected=409)
+        for _ in range(100):
+            status, _ = request(cancel, {}, expected=(200, 404))
+            if status.get('cancelled'):
+                break
+            time.sleep(.02)
+        assert status.get('cancelled') and running.result(timeout=30)[0]['error']['code'] == 'conflict'
+    preserved, _ = request(prefix + '/resources/' + resource, raw=True)
+    assert preserved == source.read_bytes()
+    return cancel
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--exe', type=Path)
+    parser.add_argument('--ocr-component', type=Path)
     parser.add_argument('--test-root', type=Path, required=True)
     args = parser.parse_args()
     root = args.test_root.resolve()
@@ -26,6 +77,8 @@ def main():
     media.write_bytes(bytes(range(256)) * 8)
     command = [str(args.exe.resolve())] if args.exe else [sys.executable, '-m', 'study_workbench']
     environment = {**os.environ, 'PYTHONUTF8': '1', 'PYTHONIOENCODING': 'utf-8'}
+    if args.ocr_component:
+        environment['STUDY_OCR_RUNTIME'] = str(args.ocr_component.resolve(strict=True))
     if args.exe:
         environment['PATH'] = str(Path(os.environ['SystemRoot']) / 'System32')
         environment.pop('PYTHONPATH', None)
@@ -46,6 +99,7 @@ def main():
         document.save(output)
     pdf_bytes = output.getvalue()
     chunk_url = source_resource = None
+    previous_scan = None
     for restart in (False, True):
         token = secrets.token_urlsafe(32)
         process = subprocess.Popen(command + ['--data-dir', str(root / 'data'), '--media', str(media)],
@@ -72,7 +126,8 @@ def main():
                     response = error
                 with response:
                     payload = response.read()
-                    assert response.status == expected, f'Unexpected HTTP status {response.status}; expected {expected}'
+                    allowed = expected if isinstance(expected, tuple) else (expected,)
+                    assert response.status in allowed, f'Unexpected HTTP status {response.status}; expected {expected}'
                     checks += 1
                     return payload if raw else json.loads(payload), response.headers
 
@@ -106,6 +161,11 @@ def main():
             assert isinstance(validation['detail'], list) and validation['detail']
             error('/api/workspaces', 413, 'payload_too_large', (b'x' * 4096 for _ in range(17)))
             prefix = '/api/workspaces/default'
+            if args.ocr_component:
+                if restart:
+                    request(previous_scan, {}, expected=404)
+                else:
+                    previous_scan = check_scan(request, prefix, root)
             body = {'name': 'kept.md', 'request_id': 'api-error-fixture-note'}
             note, _ = request(prefix + '/markdown-notes', body)
             assert node is None or note['resource_item_id'] == node
@@ -193,7 +253,8 @@ def main():
             assert not process.stderr.read().strip(), 'Backend emitted unexpected stderr'
     print(json.dumps(dict(checks=checks, unique_error_ids=len(identifiers), restarted=True,
                          resource_grants_checked=True, resource_grants_not_restored=True,
-                         pdf_chunk_confirmation_checked=True, receipts_preserved=True, media_range_preserved=True, frozen=bool(args.exe))))
+                         pdf_chunk_confirmation_checked=True, receipts_preserved=True, media_range_preserved=True,
+                         scan_checked=bool(previous_scan), frozen=bool(args.exe))))
 
 
 if __name__ == '__main__':

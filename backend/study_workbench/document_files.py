@@ -7,7 +7,7 @@ import subprocess
 import sys
 from functools import wraps
 from pathlib import Path, PurePosixPath
-from threading import BoundedSemaphore, RLock
+from threading import BoundedSemaphore, Event, RLock
 from typing import Literal
 from uuid import uuid4
 
@@ -16,7 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_valida
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from . import office_runtime
+from . import ocr_page, office_runtime
 from .backup_archive import archive_path
 from .db import DocumentSave, DocumentWorkfile, Resource, write_transaction
 from .documents import convert_document
@@ -105,6 +105,11 @@ class ColumnPage(BaseModel):
     page: int = Field(ge=1, le=2000)
 
 
+class ScanPage(ColumnPage):
+    language: Literal['eng', 'chi_sim']
+    request_id: str = Field(pattern=r'^[0-9a-f]{32}$')
+
+
 class CreateCopy(BaseModel):
     model_config = ConfigDict(extra='forbid')
     expected_sha256: str = Field(pattern=r'^[a-f0-9]{64}$')
@@ -138,10 +143,16 @@ class DocumentFiles:
     def __init__(self, engine, root):
         self.engine, self.root = engine, root
         self.lock = RLock()
+        self.active_scans = {}
+        self.scans_closed = False
         self.recover()
         self.previews = OfficePreviews(engine, root)
 
     def close(self):
+        with self.lock:
+            self.scans_closed = True
+            for event in self.active_scans.values():
+                event.set()
         self.previews.close()
 
     def recover(self):
@@ -379,6 +390,47 @@ class DocumentFiles:
                 data = read_pdf_source(session, self.root, workspace_id, resource_id, body.expected_sha256)
             return {**raster(data, 'pdf-columns', body.page), 'source_sha256': body.expected_sha256,
                     'resource_id': resource_id}
+
+        @router.post('/document-ocr')
+        @limited_view
+        def scan(workspace_id: str, node_id: str, body: ScanPage):
+            def source():
+                with Session(self.engine) as session:
+                    node = node_in(session, workspace_id, node_id)
+                    if node.removed_at is not None or not node.resource_id:
+                        raise HTTPException(404, '扫描页原件不存在')
+                    return node.resource_id, read_pdf_source(session, self.root, workspace_id,
+                                                            node.resource_id, body.expected_sha256)
+
+            key = (workspace_id, node_id, body.request_id)
+            cancelled = Event()
+            with self.lock:
+                if self.scans_closed or key in self.active_scans:
+                    raise HTTPException(409, '此请求正在处理或服务正在关闭')
+                self.active_scans[key] = cancelled
+            try:
+                identifier, data = source()
+                result = ocr_page.recognize(data, body.page, body.language, cancelled)
+                if source()[0] != identifier:
+                    raise HTTPException(409, '扫描页绑定的原件已变化')
+                with self.lock:
+                    if cancelled.is_set():
+                        raise HTTPException(409, '扫描页识别已取消')
+                    del self.active_scans[key]
+                    return {**result, 'resource_id': identifier, 'source_sha256': body.expected_sha256}
+            finally:
+                with self.lock:
+                    if self.active_scans.get(key) is cancelled:
+                        del self.active_scans[key]
+
+        @router.post('/document-ocr/{request_id}/cancel')
+        def cancel_scan(workspace_id: str, node_id: str, request_id: str):
+            with self.lock:
+                active = self.active_scans.get((workspace_id, node_id, request_id))
+                if active is None:
+                    raise HTTPException(404, '此扫描页识别请求未在运行')
+                active.set()
+            return {'cancelled': True}
 
         @router.get('/document-page')
         @limited_view

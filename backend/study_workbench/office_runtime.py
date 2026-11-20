@@ -8,6 +8,7 @@ import stat
 import subprocess
 import sys
 import time
+from contextlib import ExitStack
 from pathlib import Path, PurePosixPath
 
 from fastapi import HTTPException
@@ -139,15 +140,28 @@ class WindowsProcessJob:
             self.close()
             raise OSError('无法限制转换进程资源')
 
-    def start(self, command, directory, environment):
+    def start(self, command, directory, environment, *, streams=None):
         import _winapi
+        import msvcrt
         startup = subprocess.STARTUPINFO()
         startup.dwFlags = subprocess.STARTF_USESHOWWINDOW
         startup.wShowWindow = 0
-        # Attach while suspended: soffice.com must not spawn an unowned child first.
-        handle, thread, pid, _ = _winapi.CreateProcess(
-            command[0], subprocess.list2cmdline(command), None, None, False,
-            subprocess.CREATE_NO_WINDOW | 0x4, environment, str(directory), startup)
+        with ExitStack() as copies:
+            if streams is not None:
+                handles = []
+                current = _winapi.GetCurrentProcess()
+                for stream in streams:
+                    copy = _winapi.DuplicateHandle(current, msvcrt.get_osfhandle(stream.fileno()),
+                                                   current, 0, True, _winapi.DUPLICATE_SAME_ACCESS)
+                    copies.callback(_winapi.CloseHandle, copy)
+                    handles.append(copy)
+                startup.dwFlags |= subprocess.STARTF_USESTDHANDLES
+                startup.hStdInput, startup.hStdOutput, startup.hStdError = handles
+                startup.lpAttributeList = {'handle_list': handles}
+            # Assign while suspended so every descendant belongs to this job.
+            handle, thread, pid, _ = _winapi.CreateProcess(
+                command[0], subprocess.list2cmdline(command), None, None, streams is not None,
+                subprocess.CREATE_NO_WINDOW | 0x4, environment, str(directory), startup)
         try:
             if not self.kernel.AssignProcessToJobObject(self.handle, handle):
                 raise OSError('无法隔离本次转换进程')

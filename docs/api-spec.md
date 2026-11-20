@@ -117,6 +117,8 @@ creation_status为prepared/ready/interrupted/conflict；status在未完成时同
 | GET N/document：通用文本 | TXT/JSON/CSV/LOG/VTT/SRT返回type=text、source_format和position_kind；TXT为text_line，其余resource。≤1MiB严格UTF-8，非法编码422、超限413；原文字面显示，不自动解析题库、不执行公式/脚本，工作副本编辑仍仅MD |
 | GET N/document：XLSX | type=spreadsheet、source_format=xlsx、position_kind=resource、renderer_version=xlsx-values-v1；sheets含name/state/cells（address/value/formula/cache_missing），另有cell_count。公式仅取现有缓存、无缓存提示，字符串字面显示，无编辑/计算/网络读取；源超16MiB为413，损坏/不支持/预算/20秒超时422 |
 | POST N/document-columns | 传原件 expected_sha256 及 1 起算的 page。读取已选单页的等宽双栏。结果含 resource_id、source_sha256、page、page_count、renderer_version，available=true 时按左、右返回有序文字及归一化包围框，布局不可判定时返回 available=false 和原因。 |
+| POST N/document-ocr | 传 expected_sha256、从 1 起算的 page、language（eng 或 chi_sim）和客户端生成的 32 位小写十六进制 request_id。返回同空间原件的 resource_id、source_sha256、page、page_count，以及 source=ocr、confirmed=false、文本、词区、置信度、语言和组件版本。组件缺失或校验不符返回 503，超时返回 408。 |
+| POST N/document-ocr/{request_id}/cancel | 取消此节点上正在运行的同一请求。成功返回 cancelled=true，正在识别的请求返回 409。结束或服务重启后该请求 ID 返回 404。 |
 | GET N/document-page?page=1 | PDF页图PNG base64、来源hash及渲染器版本 |
 | GET N/relative-image?path=... | 同空间逻辑树相对PNG/JPEG，拒绝网络/绝对/越根；允许树内父导航，目标缺失404 |
 | POST N/working-copy | expected_sha256，仅MD显式创建，原件不变 |
