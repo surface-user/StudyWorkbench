@@ -923,6 +923,8 @@ OFF-02h实现及相关自动化完成转REVIEW，等待本项独立草稿PR/当�
 
 REL-01h转REVIEW，四文件范围检查/最终精选只读一致及独立草稿PR/当前head CI继续登记；未取得前不记开发交付完成。正式REL-01/02/03/04/05仍未闭合：44CRT官方归档/身份/许可、全部其他native内嵌来源、完整边/义务/漏洞、真实签名和组件/安装器全产品对应须继续，审查暂缓、人工取消，不合并或发布。新CI将构建自身head的另一个exe，不能反向认证本次固定#74 f493包的构建签名或把它改称最新全产品发行包。
 
-最终精选summary为35,894字节/SHA256 159e21b1e25b63a9cc05741710c65a715c167f98c540680ec5488bb4e9e758bb；CDX为70,331字节/SHA256 758ae5a4f5bf73fa1ecb311c5bb206848cb13ee7bd6c4ce03291311d29544db9，58组件及各角色位置样本Schema有效。summary另精确记录当时caller runtime目录标签，明确它不是CRT身份/版本。最后Q artifacts/rel01h/verify_select.py --read-only将重新核并仅比较两份精选原bytes；主Agent可用同入口独立只读复核，不写原件、报告、摘要或产物。
+最终精选summary为35,894字节/SHA256 159e21b1e25b63a9cc05741710c65a715c167f98c540680ec5488bb4e9e758bb；CDX为70,331字节/SHA256 758ae5a4f5bf73fa1ecb311c5bb206848cb13ee7bd6c4ce03291311d29544db9，58组件及各角色位置样本Schema有效。summary另精确记录当时caller runtime目录标签，明确它不是CRT身份/版本。最后Q artifacts/rel01h/verify_select.py --read-only实际退出0，重新核并仅比较两份精选原bytes；主Agent可用同入口独立只读复核，不写原件、报告、摘要或产物。
 
 工具解释器-m ruff check backend tools、Q tools/export_question_schema.py --check均退出0。artifacts/rel01h/check_changes.py退出0：仅4文件、501原blob保持/最终505文件、90本地引用及被引标题、66唯一调度行、UTF8/LF/逐文件diff --no-index --check、原报告完整前缀和所有业务/工具/打包/锁/工作流保持。未在旧#77头补写CI或本报告，独立PR交付链接及最终头CI继续跟进。
+
+独立草稿[PR #81](https://github.com/surface-user/StudyWorkbench/pull/81)已创建并附任务，codex/current-backend-source-evidence基于#77最终12a1411；首次提交c391290f5c747af28c6bf91ab091a0f6227867e4/tree5439d74cf9c27d39e5e59d6dc9d711561ad94c6c。补实际链接后仍为四文件、505最终blob；最终head/tree/当前CI在PR正文跟进，不循环写自引hash。REL-01h保持REVIEW待本head CI与主Agent有限核验，源产物及历史CRT不可读边界不变。
