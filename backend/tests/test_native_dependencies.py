@@ -805,3 +805,93 @@ def test_venv_domain_never_borrows_program_crt_or_python(native, venv_registry, 
     nodes[directory + 'venvlauncher.exe']['edges'] = [(dependency, kind)]
     with pytest.raises(ValueError, match=f'Unresolved {kind}.*{dependency}'):
         native.closure(nodes, domain['roots'], domain['directories'], domain['crt_directories'], tmp_path)
+
+
+@pytest.fixture
+def selfcontained_registry(native, venv_registry, tmp_path, monkeypatch):
+    office, payload, nodes, lock = venv_registry
+    manifest = json.loads(lock.read_bytes())
+    program, directory = office + 'program/', office + 'program/python-core-3.13.15/bin/'
+    data = b'distinct self-authored ABI library fixture'
+    path = tmp_path / 'program/python3.dll'
+    path.write_bytes(data)
+    digest = hashlib.sha256(data).hexdigest()
+    payload[program + 'python3.dll'] = path
+    manifest['files']['program/python3.dll'] = digest
+    nodes[program + 'python3.dll'] = node(program + 'python3.dll', digest=digest)
+    nodes[program + 'python3.dll']['characteristics'] = 0x2002
+    for name in ('python313.dll', 'python3.dll', 'vcruntime140.dll'):
+        source_path = payload[program + name]
+        target = tmp_path / 'program/python-core-3.13.15/bin' / name
+        target.write_bytes(source_path.read_bytes())
+        payload[directory + name] = target
+        manifest['files']['program/python-core-3.13.15/bin/' + name] = manifest['files']['program/' + name]
+        nodes[directory + name] = node(directory + name, digest=manifest['files']['program/' + name])
+        nodes[directory + name]['characteristics'] = 0x2002
+    manifest['python_launchers'] = dict(layout='bin-local-v1', version='3.13.15',
+                                      directory='program/python-core-3.13.15/bin')
+    raw = json.dumps(manifest).encode()
+    lock.write_bytes(raw)
+    monkeypatch.setattr(native, 'OFFICE_SELFCONTAINED_LOCK_SHA256', hashlib.sha256(raw).hexdigest())
+    return office, payload, nodes, lock
+
+
+def test_child_python_and_extensions_use_bin_crt_while_office_host_keeps_program(
+        native, selfcontained_registry, tmp_path, monkeypatch):
+    office, payload, nodes, _ = selfcontained_registry
+    program = office + 'program'
+    bin_dir, library = program + '/python-core-3.13.15/bin', program + '/python-core-3.13.15/lib'
+    monkeypatch.setattr(native, 'pe_nodes', lambda _: nodes)
+    result = native.inspect_dependencies(payload, tmp_path)
+    entries = result['domains']['office_python_launchers']
+    assert entries['roots'] == [bin_dir + '/python.exe', bin_dir + '/pythonw.exe']
+    assert entries['directories'] == entries['crt_directories'] == [bin_dir]
+    assert set(entries['nodes']) == {bin_dir + '/' + name for name in
+                                    ('python.exe', 'pythonw.exe', 'python313.dll', 'vcruntime140.dll')}
+    child = result['domains']['office_python_child_extensions']
+    host = result['domains']['office_python']
+    assert len(child['roots']) == 19 and child['directories'] == [library, bin_dir]
+    assert child['crt_directories'] == [bin_dir]
+    assert host['directories'] == [library, program] and host['crt_directories'] == [program]
+    for domain, expected in [(child, bin_dir), (host, program)]:
+        assert {edge['target'] for edge in domain['edges'] if edge['name'] == 'vcruntime140.dll'} == {
+            expected + '/vcruntime140.dll'}
+    assert {row['path'] for row in result['unproven_runtime_candidates']} == {
+        program + '/twain32shim.exe', program + '/python3.dll', bin_dir + '/python3.dll'}
+    assert result['pe_coverage'] == 'partial'
+
+
+@pytest.mark.parametrize('damage', ['unknown-lock', 'missing-python', 'missing-abi', 'missing-crt', 'extra-dll',
+    'moved-crt', 'changed-copy', 'x86-copy', 'not-dll-copy', 'clr-copy'])
+def test_selfcontained_bin_policy_requires_exact_native_companion_set(native, selfcontained_registry, damage):
+    office, payload, nodes, lock = selfcontained_registry
+    directory = office + 'program/python-core-3.13.15/bin/'
+    if damage == 'unknown-lock':
+        lock.write_bytes(lock.read_bytes() + b' ')
+    elif damage.startswith('missing-'):
+        del nodes[directory + {'missing-python': 'python313.dll', 'missing-abi': 'python3.dll',
+                               'missing-crt': 'vcruntime140.dll'}[damage]]
+    elif damage == 'extra-dll':
+        nodes[directory + 'extra.dll'] = node(directory + 'extra.dll')
+    elif damage == 'moved-crt':
+        nodes[office + 'elsewhere/vcruntime140.dll'] = nodes.pop(directory + 'vcruntime140.dll')
+    else:
+        field, value = {'changed-copy': ('sha256', 'changed'), 'x86-copy': ('machine', 0x14c),
+                        'not-dll-copy': ('characteristics', 0x0002), 'clr-copy': ('clr_rva', 4096)}[damage]
+        nodes[directory + 'vcruntime140.dll'][field] = value
+    with pytest.raises(ValueError, match='Office venv'):
+        native.office_venv_entries(payload, nodes, office)
+
+
+@pytest.mark.parametrize('kind', ['import', 'delay'])
+def test_child_context_does_not_fall_back_to_host_crt(native, selfcontained_registry, tmp_path, monkeypatch, kind):
+    office, payload, nodes, _ = selfcontained_registry
+    monkeypatch.setattr(native, 'pe_nodes', lambda _: nodes)
+    domain = native.inspect_dependencies(payload, tmp_path)['domains']['office_python_launchers']
+    directory = office + 'program/python-core-3.13.15/bin/'
+    for name in ('python.exe', 'pythonw.exe'):
+        nodes[directory + name]['edges'] = [('vcruntime140.dll', kind)]
+    del nodes[directory + 'vcruntime140.dll']
+    (tmp_path / 'vcruntime140.dll').write_bytes(b'host CRT cannot replace child private CRT')
+    with pytest.raises(ValueError, match=f'Unresolved {kind}.*system CRT'):
+        native.closure(nodes, domain['roots'], domain['directories'], domain['crt_directories'], tmp_path)

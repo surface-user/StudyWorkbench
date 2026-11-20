@@ -40,6 +40,7 @@ OFFICE_PROGRAM_ENTRIES = ('gengal.exe gpgme-w32spawn.exe mar.exe minidump_upload
     'sweb.exe swriter.exe uno.exe unoinfo.exe unopkg.bin unopkg.com unopkg.exe update_service.exe '
     'updater.exe xpdfimport.exe').split()
 OFFICE_VENV_LOCK_SHA256 = '156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9'
+OFFICE_SELFCONTAINED_LOCK_SHA256 = 'b0a040bd584bb69aeaba44f749996d2320d83707889b8f8ad85d93d44893c9ee'
 
 
 def office_venv_entries(payload, nodes, office):
@@ -49,11 +50,14 @@ def office_venv_entries(payload, nodes, office):
         raise ValueError('Missing fixed Office venv component inventory')
     with lock.open('rb') as stream:
         raw = stream.read(4 * 1024 * 1024 + 1)
-    if len(raw) > 4 * 1024 * 1024 or hashlib.sha256(raw).hexdigest() != OFFICE_VENV_LOCK_SHA256:
+    fingerprint = hashlib.sha256(raw).hexdigest()
+    if len(raw) > 4 * 1024 * 1024 or fingerprint not in {OFFICE_VENV_LOCK_SHA256, OFFICE_SELFCONTAINED_LOCK_SHA256}:
         raise ValueError('Office venv component inventory changed; renew loading evidence')
     files = json.loads(raw)['files']
     directory = office + 'program/python-core-3.13.15/bin/'
     expected = {directory + name for name in ('python.exe', 'pythonw.exe', 'venvlauncher.exe')}
+    if fingerprint == OFFICE_SELFCONTAINED_LOCK_SHA256:
+        expected |= {directory + name for name in ('python313.dll', 'python3.dll', 'vcruntime140.dll')}
     if {name for name in nodes if name.startswith(directory)} != expected:
         raise ValueError('Office venv/Python bin PE set changed; renew loading evidence')
     for name in sorted(expected):
@@ -63,12 +67,18 @@ def office_venv_entries(payload, nodes, office):
         if image['machine'] != 0x8664 or image['magic'] != 0x20B:
             raise ValueError('Office venv/Python bin architecture changed: ' + image['path'])
         flags = image.get('characteristics')
-        if flags is None or not flags & 0x0002 or flags & 0x2000 or image.get('clr_rva') != 0:
+        if (flags is None or not flags & 0x0002 or bool(flags & 0x2000) != name.endswith('.dll')
+                or image.get('clr_rva') != 0):
             raise ValueError('Office venv/Python bin requires fixed native executable headers: ' + image['path'])
     root = directory + 'venvlauncher.exe'
-    return dict(component_inventory_sha256=OFFICE_VENV_LOCK_SHA256,
-                roots={root: files[root.removeprefix(office)]},
-                unclassified_images={name: files[name.removeprefix(office)] for name in sorted(expected - {root})})
+    result = dict(component_inventory_sha256=fingerprint,
+                  roots={root: files[root.removeprefix(office)]},
+                  unclassified_images={name: files[name.removeprefix(office)] for name in sorted(expected - {root})})
+    if fingerprint == OFFICE_SELFCONTAINED_LOCK_SHA256:
+        abi = directory + 'python3.dll'
+        result['unclassified_images'] = {abi: files[abi.removeprefix(office)]}
+        result['companion_images'] = {name: files[name.removeprefix(office)] for name in sorted(expected - {root, abi})}
+    return result
 
 
 def office_program_entries(payload, nodes, office):
@@ -78,7 +88,8 @@ def office_program_entries(payload, nodes, office):
         raise ValueError('Missing fixed Office program component inventory')
     with lock.open('rb') as stream:
         raw = stream.read(4 * 1024 * 1024 + 1)
-    if len(raw) > 4 * 1024 * 1024 or hashlib.sha256(raw).hexdigest() != OFFICE_PROGRAM_LOCK_SHA256:
+    fingerprint = hashlib.sha256(raw).hexdigest()
+    if len(raw) > 4 * 1024 * 1024 or fingerprint not in {OFFICE_PROGRAM_LOCK_SHA256, OFFICE_SELFCONTAINED_LOCK_SHA256}:
         raise ValueError('Office program component inventory changed; renew loading evidence')
     files = json.loads(raw)['files']
     roots = {office + 'program/' + name for name in OFFICE_PROGRAM_ENTRIES}
@@ -98,7 +109,7 @@ def office_program_entries(payload, nodes, office):
         flags = image.get('characteristics')
         if flags is None or not flags & 0x0002 or flags & 0x2000 or image.get('clr_rva') != 0:
             raise ValueError('Office program requires fixed native executable headers: ' + image['path'])
-    return dict(component_inventory_sha256=OFFICE_PROGRAM_LOCK_SHA256,
+    return dict(component_inventory_sha256=fingerprint,
                 roots={name: files[name.removeprefix(office)] for name in sorted(roots)},
                 excluded_images={excluded: files[excluded.removeprefix(office)]})
 
@@ -110,7 +121,8 @@ def office_python_libraries(payload, nodes, office):
         raise ValueError('Missing fixed Office Python component inventory')
     with lock.open('rb') as stream:
         raw = stream.read(4 * 1024 * 1024 + 1)
-    if len(raw) > 4 * 1024 * 1024 or hashlib.sha256(raw).hexdigest() != OFFICE_PYTHON_LOCK_SHA256:
+    fingerprint = hashlib.sha256(raw).hexdigest()
+    if len(raw) > 4 * 1024 * 1024 or fingerprint not in {OFFICE_PYTHON_LOCK_SHA256, OFFICE_SELFCONTAINED_LOCK_SHA256}:
         raise ValueError('Office Python component inventory changed; renew loading evidence')
     files = json.loads(raw)['files']
     directory = 'program/python-core-3.13.15/lib/'
@@ -142,7 +154,7 @@ def office_python_libraries(payload, nodes, office):
         data = stream.read(65536 + 1)
     if len(data) > 65536 or hashlib.sha256(data).hexdigest() != files.get(configuration):
         raise ValueError('Office Python loader configuration changed')
-    return dict(component_inventory_sha256=OFFICE_PYTHON_LOCK_SHA256,
+    return dict(component_inventory_sha256=fingerprint,
                 extensions={office + name: files[name] for name in sorted(extensions)},
                 libraries={office + name: files[name] for name in sorted(libraries)},
                 unclassified_images={office + name: files[name] for name in sorted(inventory_images - expected)},
@@ -406,6 +418,16 @@ def inspect_dependencies(payload, system):
         venv_bin = program + '/python-core-3.13.15/bin'
         domains['office_venv'] = closure(nodes, list(venv_entries['roots']), [venv_bin], [venv_bin], system)
         domains['office_venv']['pinned_inputs'] = venv_entries
+        if hashlib.sha256(raw).hexdigest() == OFFICE_SELFCONTAINED_LOCK_SHA256:
+            entries = [venv_bin + '/' + name for name in ('python.exe', 'pythonw.exe')]
+            domains['office_python_launchers'] = closure(nodes, entries, [venv_bin], [venv_bin], system)
+            domains['office_python_launchers']['pinned_inputs'] = venv_entries['companion_images']
+            # The child application directory/loaded Python DLL is bin, distinct from the Office host context.
+            domains['office_python_child_extensions'] = closure(nodes, list(python_libraries['extensions']),
+                [program + '/python-core-3.13.15/lib', venv_bin], [venv_bin], system)
+            domains['office_python_child_extensions']['pinned_inputs'] = {
+                key: python_libraries[key] for key in ('extensions', 'libraries')}
+            # python3.dll stays unclassified: observed consumers do not certify every forwarded export.
     covered = {name for domain in domains.values() for name in domain['nodes']}
     return dict(scope='documented-entry-and-plugin-domains-v1', pe_images=len(nodes),
                 pe_coverage='partial' if len(covered) < len(nodes) else 'all-images-in-declared-static-domains',

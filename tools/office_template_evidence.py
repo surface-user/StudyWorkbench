@@ -16,6 +16,7 @@ from prepare_java_runtime import no_links
 from release_inventory import stage_files
 
 COMPONENT_SHA256 = '156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9'
+SELFCONTAINED_COMPONENT_SHA256 = 'b0a040bd584bb69aeaba44f749996d2320d83707889b8f8ad85d93d44893c9ee'
 PYTHON_SIZE = 23160540
 PYTHON_SHA256 = '1e66a7945a48390ee4c2a4268a0e4185884059a13c4aab6d148aa208deea4a76'
 TAR_ROOT = 'Python-3.13.15/'
@@ -129,7 +130,7 @@ def generate(office, python_source, output):
     if output.exists() or output.is_symlink() or output.is_relative_to(office):
         raise ValueError('Output must be a new directory outside the component')
     lock_raw = read_file(office / 'runtime-lock.json', MAX_MEMBER)
-    if digest(lock_raw) != COMPONENT_SHA256:
+    if digest(lock_raw) not in {COMPONENT_SHA256, SELFCONTAINED_COMPONENT_SHA256}:
         raise ValueError('Fixed Office component inventory differs')
     with python_source.open('rb') as stream:
         info = os.fstat(stream.fileno())
@@ -138,7 +139,7 @@ def generate(office, python_source, output):
             raise ValueError('Fixed Python source size/hash differs')
         stream.seek(0)
         paths, component_hash = component_payload(office)
-        if len(paths) > 20000 or component_hash != COMPONENT_SHA256:
+        if len(paths) > 20000 or component_hash not in {COMPONENT_SHA256, SELFCONTAINED_COMPONENT_SHA256}:
             raise ValueError('Component budget or inventory changed')
         expected = json.loads(lock_raw)['files']
         wanted = {TAR_ROOT + item['path']: name for name, item in WHEELS.items()}

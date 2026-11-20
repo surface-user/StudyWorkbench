@@ -129,3 +129,97 @@ def test_changed_payload_still_fails_full_runtime_verification(components):
     (target / 'java/bin/jawt.dll').write_bytes(b'changed after composition')
     with pytest.raises(ValueError, match='变化'):
         runtime.verify(lambda: None)
+
+
+@pytest.fixture
+def python_components(components, monkeypatch):
+    compose, original, java, target = components
+    java_lock = java / 'java-runtime-lock.json'
+    java_manifest = json.loads(java_lock.read_text())
+    foreign_crt = b'distinct self-authored Java CRT; never an Office copy source'
+    (java / 'bin/vcruntime140.dll').write_bytes(foreign_crt)
+    java_manifest['files']['bin/vcruntime140.dll'] = hashlib.sha256(foreign_crt).hexdigest()
+    java_lock.write_text(json.dumps(java_manifest), encoding='utf-8')
+    for module in (office_runtime, compose):
+        monkeypatch.setattr(module, 'JAVA_LOCK_SHA256', hashlib.sha256(java_lock.read_bytes()).hexdigest())
+    lock = original / 'runtime-lock.json'
+    manifest = json.loads(lock.read_text())
+    for name in ['program/python313.dll', 'program/python3.dll',
+                 'program/python-core-3.13.15/bin/python.exe', 'program/python-core-3.13.15/bin/pythonw.exe',
+                 'program/python-core-3.13.15/bin/venvlauncher.exe', 'program/python-core-3.13.15/lib/os.py']:
+        data = ('distinct self-authored original Python fixture: ' + name).encode()
+        path = original / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        manifest['files'][name] = hashlib.sha256(data).hexdigest()
+    lock.write_text(json.dumps(manifest), encoding='utf-8')
+    fingerprint = hashlib.sha256(lock.read_bytes()).hexdigest()
+    for module in (office_runtime, compose):
+        monkeypatch.setattr(module, 'OFFICE_LOCK_SHA256', fingerprint)
+    return compose, original, java, target
+
+
+def test_python_layout_copies_only_fixed_office_sources_and_keeps_old_mode(python_components):
+    compose, original, java, target = python_components
+    before = {path.relative_to(original): path.read_bytes() for path in original.rglob('*') if path.is_file()}
+    old = compose.compose(original, java, target)
+    old_manifest = json.loads((target / 'runtime-lock.json').read_bytes())
+    assert old.python_launchers is False and 'python_launchers' not in old_manifest
+    assert not (target / 'program/python-core-3.13.15/bin/python313.dll').exists()
+    fresh = target.with_name('self-contained')
+    new = compose.compose(original, java, fresh, python_launchers=True)
+    assert new.python_launchers is True
+    assert json.loads((fresh / 'runtime-lock.json').read_bytes())['python_launchers'] == {
+        'layout': 'bin-local-v1', 'version': '3.13.15', 'directory': 'program/python-core-3.13.15/bin'}
+    for name, origin in [('python313.dll', 'program/python313.dll'), ('python3.dll', 'program/python3.dll'),
+                         ('vcruntime140.dll', 'System64/vcruntime140.dll')]:
+        path = fresh / 'program/python-core-3.13.15/bin' / name
+        assert path.read_bytes() == before[Path(origin)]
+        assert not path.samefile(original / origin)
+    assert {path.relative_to(original): path.read_bytes() for path in original.rglob('*') if path.is_file()} == before
+    new.verify(lambda: None)
+
+
+@pytest.mark.parametrize('damage', ['unknown-layout', 'missing-marker', 'null-marker', 'missing-python',
+    'missing-abi', 'missing-crt', 'java-crt-hash', 'extra-bin', 'undeclared-marker'])
+def test_python_layout_cannot_relabel_or_omit_companion_images(python_components, damage):
+    compose, original, java, target = python_components
+    compose.compose(original, java, target, python_launchers=True)
+    lock = target / 'runtime-lock.json'
+    manifest = json.loads(lock.read_text())
+    prefix = 'program/python-core-3.13.15/bin/'
+    if damage == 'unknown-layout':
+        manifest['python_launchers']['layout'] = 'ambient-path'
+    elif damage == 'missing-marker':
+        del manifest['python_launchers']
+    elif damage == 'null-marker':
+        manifest['python_launchers'] = None
+    elif damage.startswith('missing-'):
+        name = {'missing-python': 'python313.dll', 'missing-abi': 'python3.dll', 'missing-crt': 'vcruntime140.dll'}[damage]
+        del manifest['files'][prefix + name]
+    elif damage == 'java-crt-hash':
+        manifest['files'][prefix + 'vcruntime140.dll'] = manifest['files']['java/bin/vcruntime140.dll']
+    elif damage == 'extra-bin':
+        manifest['files'][prefix + 'extra.dll'] = '0' * 64
+    else:
+        del manifest['java']
+    lock.write_text(json.dumps(manifest))
+    with pytest.raises(ValueError):
+        office_runtime.OfficeRuntime(target)
+
+
+@pytest.mark.parametrize('damage', ['python313.dll', 'python3.dll', 'vcruntime140.dll', 'unlisted.msi'])
+def test_python_layout_checks_actual_bytes_and_extra_installers(python_components, damage):
+    compose, original, java, target = python_components
+    runtime = compose.compose(original, java, target, python_launchers=True)
+    path = target / ('unlisted.msi' if damage.endswith('.msi') else 'program/python-core-3.13.15/bin/' + damage)
+    path.write_bytes(b'changed or unlisted payload')
+    with pytest.raises(ValueError):
+        runtime.verify(lambda: None)
+
+
+def test_python_layout_requires_sources_before_any_destination_creation(components):
+    compose, original, java, target = components
+    with pytest.raises(ValueError, match='Python launcher sources'):
+        compose.compose(original, java, target, python_launchers=True)
+    assert not target.exists()

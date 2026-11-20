@@ -23,6 +23,10 @@ JAVA = {'version': '21.0.13+9', 'directory': 'java',
         'package_sha256': '2332c0b4cff6bed722da3567c91d5e47568bcba863fa4945d0a8d6fc76158628'}
 APP_LOCAL_CRT = ('msvcp140.dll', 'msvcp140_1.dll', 'msvcp140_2.dll', 'msvcp140_atomic_wait.dll',
                  'msvcp140_codecvt_ids.dll', 'vcruntime140.dll', 'vcruntime140_1.dll', 'vcruntime140_threads.dll')
+PYTHON_CORE = 'program/python-core-3.13.15/'
+PYTHON_LAUNCHERS = {'layout': 'bin-local-v1', 'version': '3.13.15', 'directory': PYTHON_CORE + 'bin'}
+APP_LOCAL_PYTHON = {'python313.dll': 'program/python313.dll', 'python3.dll': 'program/python3.dll',
+                    'vcruntime140.dll': 'System64/vcruntime140.dll'}
 OPTIONS = 'pdf-static-v4-fixed-config-no-macros-no-external-links-internal-charts-math'
 PROFILE = '''<?xml version="1.0" encoding="UTF-8"?>
 <oor:items xmlns:oor="http://openoffice.org/2001/registry">
@@ -197,6 +201,9 @@ class OfficeRuntime:
         if not {'program/soffice.com', 'program/soffice.bin', 'license.txt', 'NOTICE'} <= self.files.keys():
             raise ValueError('转换器或许可文件缺失')
         self.java_home = None
+        self.python_launchers = 'python_launchers' in manifest
+        if self.python_launchers and (manifest['python_launchers'] != PYTHON_LAUNCHERS or 'java' not in manifest):
+            raise ValueError('Python入口布局未锁定或缺少固定组合来源')
         if 'java' not in manifest and ('office-runtime-lock.json' in self.files or
                                        any(name.startswith('java/') for name in self.files)):
             raise ValueError('Office配套Java缺少组合清单声明')
@@ -217,6 +224,11 @@ class OfficeRuntime:
             expected.update({'office-runtime-lock.json': OFFICE_LOCK_SHA256,
                              'java/java-runtime-lock.json': JAVA_LOCK_SHA256})
             expected.update({'program/' + name: original['files']['System64/' + name] for name in APP_LOCAL_CRT})
+            if self.python_launchers:
+                if any(name not in original['files'] for name in APP_LOCAL_PYTHON.values()):
+                    raise ValueError('原Office组件缺少固定Python来源')
+                expected.update({PYTHON_CORE + 'bin/' + name: original['files'][origin]
+                                 for name, origin in APP_LOCAL_PYTHON.items()})
             if self.files != expected:
                 raise ValueError('Office组合清单未完整保留固定组件或CRT')
             self.java_home = resource_path(self.root, 'java')
@@ -242,7 +254,7 @@ class OfficeRuntime:
                         directories.append(path)
                         continue
                     relative = path.relative_to(self.root).as_posix()
-                    if relative == 'runtime-lock.json' or path.suffix.lower() == '.msi':
+                    if relative == 'runtime-lock.json' or path.suffix.lower() == '.msi' and not self.python_launchers:
                         continue
                     expected = self.files.get(relative)
                     if expected is None:

@@ -974,3 +974,43 @@ IQ artifacts/off02k/select_evidence.py退出0，晋升[共享摘要](evidence/of
 OFF-02k本项实现/相关自动化/文档完成转REVIEW，独立草稿PR/当前head CI及主Agent核验仍须完成。80未知和另两实际Python缺口保留，OFF-02l作为优先后续而非混进本PR；审查暂缓、人工取消、未合并/发行。
 
 IQ artifacts/off02k/check_docs.py退出0：6文件范围、495个未变base blob、旧报告完整前缀、UTF-8/LF/逐文件git diff --check、99本地引用及60唯一调度行通过。已创建并附加[独立草稿PR #69](https://github.com/surface-user/StudyWorkbench/pull/69)，基于#65，分支codex/office-venv-static，首实现提交131e984e7f089906522706496053a1ecbe552954/tree8175ef39d59372fbd612e22e2381d71e3c3e147d。补入交付链接后仍同一6文件；最终head/完整CI及有限核验维护于PR实时正文，不为记录自身最终SHA循环追加文档。未改#65、原组件、产品或check_release，未合并/发行。
+
+## 2026-11-19：OFF-02l 两Python入口自包含组合与受控运行
+
+主Agent已有限接受#69最终d4ac6e575a9cd7c9841c13dd682a0398f8fbcab6/tree5e76266b3dac6716a9b84035148b60eb9340e098及当前CI44494090983（1262×2、Flutter203/44新冻结模块/API34/既定链，45成功/原分支探针1跳过），独立--read-only核19743/351PE/80未知/16反例/2真实入口失败、原四域和证据字节保持。新office-python-selfcontained副本501 blob逐项等于该基线；继续固定技术栈、原组件/失败证据不删、审查暂缓/人工取消，不改#69头。
+
+实施前先估算：完整旧组件1734896659字节约1.62GiB；core1232文件32004914字节，三DLL合计7396144字节，最小布局39401058字节约37.6MiB。磁盘读数会随并行任务改变，不能把一次空闲读数当长期预算；先以64MiB复制上限、至少1GiB保留空间做最小验证，完整组合只生成一份并在开始前额外保留冻结构建/临时及安全余量，不使用硬链接或删除其他任务证据。源Office锁147d21f3...和Java锁159433e3...均重新核对可用。
+
+实际最小探针在artifacts/off02l/minimal_probe.py及probe_script.py：先核组合锁156b4421...，逐1235源文件hash，再写全新.local/off02l-minimal01/runtime，三DLL为当前原锁program Python313/Python3/VCRT的独立原字节副本。源/目标不是同一文件，前后hash及路径集保持。两个原生入口各在WindowsProcessJob（1GiB/4进程）下以20秒限制、隐藏窗口、空CWD、最小环境和-I -S -B运行，输出各≤64KiB；隔离空OpenSSL配置、无继承Python/Java路径，无个人库或网络操作。python.exe与pythonw.exe均exit0、实际3.13.15；标准库/ssl/hashlib/ctypes/sqlite通过，固定7个DLL实际handle路径为该副本bin/lib并hash匹配。实际ABI消费者仅Py_IsInitialized返回1，不认证其余符号或所有进程模块/动态隔离。结果minimal01.json/.log保留，尚不是完整Office组合，也非冻结父进程证据。
+
+固定python3.dll的902导出均转发到python313，其中PyOS_CheckStack、_Py_NegativeRefcount、_Py_RefTotal在该目标导出表不存在。三项保留，不加白名单或把复制DLL当全ABI认证；只对后续实际消费者及运行结果下结论。新ABI副本的完整转发角色继续未知，不能因探针加载和一个函数调用成功而清除发行阻断。
+
+确定布局为可选python_launchers标记，精确值layout=bin-local-v1、version=3.13.15、directory=program/python-core-3.13.15/bin；只在固定Office+Java组合中支持。新composer选项逐源复制原Office program/python313.dll、program/python3.dll和System64/vcruntime140.dll到bin，CRT与旧组合program副本同字节，不借Java或主机。默认旧生成必须保留原156b4421...字节；OfficeRuntime按原始两个组件锁和精确派生集合分辨旧/新布局，不由额外文件猜布局，不提高原文件数量预算。计算新规范清单/hash后才绑定工具的两个精确布局，保留旧组合验证兼容。
+
+实施范围预期14文件：OfficeRuntime/内部CLI及固定probe模块；composer/native/template证据工具及probe检查器；组合/原生/probe信任边界测试；packaging/task、本报告和精选JSON。probe只接受固定两入口及固定脚本文本，不接受任意命令；源码和新匹配冻结均使用一次性内部helper，复用Job并仅在helper清理继承DLL目录，不修改线程化服务。子进程按bin应用/CRT域及lib+bin扩展域建模，不借Office宿主域；原组件下原五域逐字段保持。新bin/python3.dll仍保留未证转发，不以减少未知数量为目标。
+
+后续自动出口沿前节六项：原/新布局与元数据/来源拒绝、缺失/篡改/外来环境且主机CRT不能补齐，两个入口实际DLL身份/模块/ABI有限消费者，源码和新冻结同源及取消/超时/输出预算/原件保持，完整物理新组合和原组件兼容，独立草稿PR与当前head CI。最小布局成功不替代这些出口；完整Office/剩余未知/签名发行继续保留。
+
+### 11-20 实施结果与有限自动化交付
+
+本项实际修改14文件，无新增依赖、数据库/公开HTTP接口/前端变化；不改check_release或旧头。composer新增可选--python-launchers，默认关闭，render_manifest与已接受旧组件156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9逐字比较相同。新marker与精确三副本仅从固定Office来源派生，OfficeRuntime联合核原Office/Java清单及完整集合；缺标记/错误布局/无Java、缺失/改动/额外文件均拒绝。旧组件保留原行为，新布局也拒绝未登记MSI。原正常Office profile/OPTIONS/命令及Java环境不改。
+
+实际只生成一份完整.local/Office Python 自包含 01：19745 payload、含根锁19746文件、1739875028逻辑payload字节，规范锁2418275字节，SHA256=b0a040bd584bb69aeaba44f749996d2320d83707889b8f8ad85d93d44893c9ee。compose_full.py先核盘35820642304字节可用，所需含2GiB构建/余量3889776951字节，结束可用33937969152；三副本合计7396144字节。输入原Office147d21f3.../Java159433e3...在复制前后逐文件核验，未硬链接/修改原件/删除其他证据。compose01退出0，实际锁字节等于预先计划；磁盘余量仅是当时读数，不代表长期可用保证。
+
+artifacts/off02l/verify_native.py退出0：旧19743/351PE完整实际图精确等于#69的real01（SHA cfe562e7df5688ba5bc46cc4fc25bf92e813b14f641bfbc9a17362399f47fe73），新19746/354PE。原Office/Java图每字段不变；宿主Python/program仅固定组合digest不同，其图不变；venv原根/搜索/CRT/节点/边保持。新增office_python_launchers为2根/4节点/41边，仅bin应用/CRT域；office_python_child_extensions为19根/25节点/183边，仅lib+bin、CRT仅bin。两旧EXE获静态覆盖，新bin/python3.dll仍未知，80变79，pe_coverage仍partial。12关键hash保持；10实物PE元数据/图反例全部拒绝，含三复制缺失、CRT hash/CPU/DLL/CLR/Java来源错误、子进程缺CRT不能借宿主及扩展缺Python不能借program。没有给模板/托管/x86或转发符号豁免。
+
+Q/P为既有starlette-q-isolated（CPython3.13.17）/starlette-p-isolated（3.12.7），仅使用不安装。最终共同命令：Q/P -X utf8 -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py backend/tests/test_office_java_bundle.py backend/tests/test_java_runtime_preparation.py backend/tests/test_office_python_probe.py backend/tests/test_office_template_evidence.py -q --basetemp=.local/off02l-{q,p}05 --junitxml=artifacts/off02l/{q,p}05.xml；均退出0，各335通过/无失败错误跳过、两条既有重复ZIP警告。新增测试使用独立来源/路径/hash/集合oracle，验证新布局信任边界、PID/DLL/证据范围及真正TimeoutExpired/KeyboardInterrupt发生后的Job先关闭、等待和失败保留，不执行伪造PE。Ruff全backend/tools退出0；export_question_schema.py --check退出0。
+
+source02：Q -B -X utf8 tools/check_office_python_runtime.py --office '.local/Office Python 自包含 01' --output artifacts/off02l/source02，退出0。build01使用packaging/windows/build-backend.ps1 -Python Q及本副本独立PYINSTALLER_CONFIG_DIR/临时目录，退出0；新exe SHA256=36c68c5e1cfc9fb15401309f61492694c6159da5c757d4c46eed72ead2bd3779，45个业务模块含嵌套代码/常量与本次源码完全相等，非复用旧包。frozen01使用同一检查器另加--exe dist/study_backend/study_backend.exe，退出0且再次核源/前后exe hash。两个模式均实际运行python.exe及pythonw.exe、各exit0/3.13.15，前后完整组件校验，固定7 DLL实际handle路径在本派生副本bin/lib且hash相符；源码venv stub仅记launcher_pid，不冒充实际Python子进程PID。冻结业务源完整hash/blob清单留business-sources.json，由最终远端全树再绑定交付头。
+
+probe固定脚本文本SHA256=59611be57cfbb7291fb27c02b9496121a48ae2d82ec1e292eb62886dd022d7e9；只读取有限标准库/ssl/hashlib/ctypes/sqlite，内存SQL返回42，稳定ABI仅实际调用Py_IsInitialized。外部PYTHONPATH/PYTHONHOME/Java/OpenSSL/PATH不会继承给子进程。Job每入口20秒/64KiB，外层600秒；仅一次性helper清理继承DLL目录，不改主服务。902个ABI转发中的3个不匹配继续保留，两个python3.dll角色均未知；不声称完整ABI、所有模块观察、系统来源或动态隔离。
+
+实际中断artifacts/off02l/interrupt_real.py退出0，interrupt02/report.json：两个派生入口各一次受控休眠超时及主动关闭Job，4次均以进程句柄确认已退出，固定入口/DLL及清单字节保持。Windows Job关闭后的退出码实际均为0，这只表示受控终止结果，不能据非零码判断是否被终止；首轮错误断言已保留。该实测验证进程清理，unit另验证helper异常finally顺序，不冒充完整HTTP后端取消认证。
+
+正常业务兼容复用既有自编formats/.local/fmt-samples01的3份样本，只读复制到fixtures02并保存源hash/长度，未装authoring依赖。Q tools/check_office_previews.py --runtime 新组件 --test-root 全新目录 --docx fixtures02/复杂分节.docx --pptx fixtures02/复杂图表.pptx --complex-xlsx fixtures02/复杂工作簿.xlsx，源码及另加--exe新冻结各退出0（conversion-source01/frozen01.log）。均DOCX/PPTX各3页、PDF108085/77986字节，页界/非空/分节/图表公式有限断言、XLSX两表15单元格、取消重试/缓存/重启/XML预算及数据库完整性通过；原文件字节保持。这是有限自动化兼容，未增加新格式或认证保真/干净机。
+
+Q tools/office_template_evidence.py --office 新组件 --python-source 固定Python-3.13.15.tar.xz --output artifacts/off02l/templates01退出0：全19746组件核验，实际667文件/14模板/2 producer及源归档身份与#51原real02逐项相等；只增加准确新组合锁支持，仍runtime_classification=unclassified、runtime_exclusion_verified=false。没有执行模板/producer或排除其未知。
+
+旧失败完整保留：q01的8个旧局部测试stub缺新metadata接口及1个Java CRT反例夹具缺失，已改用真实已核清单hash判新布局并独立构造不同Java来源，未弱化旧测试；初次Ruff导入顺序/fixture名称修正记录保留。fixtures01因既有环境无pptx模块退出1，改为复用已有自编样本，不安装依赖；interrupt01因采集器误认Job终止码必须非0退出1，改正后新目录4次实测。初次误用不存在check_schemas.py的命令退出2，实际export_question_schema.py --check退出0；这些不是产品门禁通过记录。source01为中间源码证据，最终交付使用source02/本次新冻结，不冒用中间版本。
+
+精选[off02l-selfcontained-python-summary.json](evidence/off02l-selfcontained-python-summary.json)只保存具体版本/hash/域差异/有限观察/反例与原始证据hash。所有原始全表/日志/JUnit/新旧组件/数据目录留ignored artifacts/.local，未打包进evidence。artifacts/off02l/select_evidence.py可--read-only复算精选；verify_native.py --read-only只断言既有三输出及原件，不写成功文件。当前实现/相关自动化/文档完成，task转REVIEW；独立草稿PR/当前head CI和主Agent核验另记交付，审查暂缓/人工取消，无合并发行。79未知/三个转发目标/托管与x86等仍阻断完整Office，不把这个有限切片记为OFF-02整体完成。
