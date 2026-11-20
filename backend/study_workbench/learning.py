@@ -39,6 +39,8 @@ def grade(document, response):
             normalize = str.strip if blank.normalization == "trim" else lambda s: s
             correct += normalize(value) in [normalize(s) for s in blank.accepted]
         return "graded", correct / len(document.answer.blanks)
+    if set(response) == {"blocks"}:
+        return "pending_review", None
     if (set(response) != {"text"} or not isinstance(response.get("text"), str)
             or not response["text"].strip() or len(response["text"]) > 20000):
         raise HTTPException(422, "请填写非空解题过程，最多两万字符")
