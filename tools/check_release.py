@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 from native_dependencies import inspect_dependencies
-from release_inventory import stage_files
+from release_inventory import stage_files, verify_native_license_texts
 
 
 def main():
@@ -28,6 +28,7 @@ def main():
             assert hashlib.file_digest(handle, "sha256").hexdigest() == expected, relative
     files = {path.name.lower() for path in payload.values()}
     assert "python313.dll" in files and "python312.dll" not in files
+    verify_native_license_texts(stage, payload, inventory.get('native_license_texts'))
     report = inspect_dependencies(payload, Path(os.environ['SystemRoot']) / 'System32')
     print(json.dumps({key: value for key, value in report.items() if key != 'domains'}, ensure_ascii=False))
     if report['unproven_runtime_candidates']:

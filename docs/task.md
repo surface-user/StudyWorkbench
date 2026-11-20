@@ -52,12 +52,13 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | REL-01d 固定CPython及项目来源映射 | DONE | 主Agent核[PR #50](https://github.com/surface-user/StudyWorkbench/pull/50)最终0e295a7的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43575980520)三组44步成功、957×2及最终专项39×2；新增311 PYZ/154 ZIP代码/62实体/11启动代码来源与独立探针相符，58组件Schema通过；44 CRT/外层bootloader等仍未闭合，本批纳工具 |
 | REL-01e 原生CRT与bootloader来源 | DONE | 主Agent核[PR #54](https://github.com/surface-user/StudyWorkbench/pull/54)最终24405f0的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43581479380)三组44步成功/双1000及43模块旧冻结；只读重核969实体/44本地CRT/5节与精确DEBUG差异/58组件Schema。工具未纳本候选，官方CRT/完整PE认证仍未知 |
 | REL-01h 当前后端包来源证据重绑定 | DONE | 主Agent核[PR #81](https://github.com/surface-user/StudyWorkbench/pull/81)最终aba16ba/[CI44678643251](https://github.com/surface-user/StudyWorkbench/actions/runs/44678643251)成功及独立只读helper退出0：969文件/46模块/55包/44历史CRT/剩46未知/58组件、两精选hash和Schema吻合。44原源路径11-20全缺失逐项保留，不冒充今天重读通过；完整身份/许可/漏洞/签名和发行仍未闭合，原43模块旧报告保持 |
-| REL-01i 固定NuGet及三原生资产来源许可 | REVIEW | 基于#81核官方NuGet发布SHA512及固定CPython配方/官方归档、三实际DLL/两许可原文；3组件标准子集/969文件保持、证据reader反例20×2及只读复核通过，见[PR #88](https://github.com/surface-user/StudyWorkbench/pull/88)及原报告，当前head CI/主Agent核验待交付。产品stage复制未扩、源码重编译未证，其他native/CRT及完整义务/漏洞/签名继续 |
+| REL-01i 固定NuGet及三原生资产来源许可 | DONE | 主Agent核[PR #88](https://github.com/surface-user/StudyWorkbench/pull/88)最终481d93a/[CI44683111794](https://github.com/surface-user/StudyWorkbench/actions/runs/44683111794)成功及独立只读复核0：969文件/3DLL/2原文/3组件和两精选hash一致；仅有限来源/许可原文交付。stage复制另由02c落实，OpenSSL3.5.9八条上游版本命中由漏洞专项处理；完整义务/其他native/CRT/签名发行继续 |
 | REL-01 完整源码与发行包SBOM | IN_PROGRESS | 先交付01a；最终覆盖仍依赖OFF-02及所有实际组件/安装器payload，不能据源锁文件或环境包表销项 |
 | REL-02 | BLOCKED | 完整发行传递许可依赖REL-01实际组件清单；源锁与固定Office/Java就绪，已有范围可单独先核，整体不记完成 |
 | REL-02a 锁定源码许可证据映射 | DONE | 主Agent核双Python各57、136包/246原文引用/182文本及缺文退出2；[草稿PR #41](https://github.com/surface-user/StudyWorkbench/pull/41)最终218cfc2的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43359882156)三组44步通过，工具已纳本组合。归档/内嵌声明/最终义务仍未闭合，不是完整REL-02通过 |
 | REL-02b 源包许可补全 | IN_PROGRESS | latex2mathml3.81.1官方wheel/sdist缺项目LICENSE，固定tag另有MIT原文，内嵌unimathsymbols.txt声明LPPL且有vendor修改；需分别核来源/原文/通知及修改条件，不将全包标为单一MIT，完整REL-02继续 |
 | REL-02b1 固定上游许可原文及内嵌声明 | DONE | 主Agent核72×2/136包248原文引用184文本及九文件来源，[草稿PR #46](https://github.com/surface-user/StudyWorkbench/pull/46)最终8bebad8的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43569063314)三组45步成功，当前已纳本组合。原分发缺文/LPPL原Work和vendor修改条件仍保留，CLI退出2，父REL-02b/02未完成 |
+| REL-02c 固定原生许可打包及清单校验 | REVIEW | 基于#88将两原文按三DLL实际hash复制并入清单，check_release独立只读复核；双版本208（新增33）、真实三DLL组件stage复制/重复及缺件/改件/冲突保留、只读复核通过，见[PR #99](https://github.com/surface-user/StudyWorkbench/pull/99)及原报告，当前head CI/主Agent核验待交付。旧无三件stage兼容，OpenSSL八条上游版本命中另行处理，不认证完整义务/漏洞/签名或发行 |
 | REL-03 | IN_PROGRESS | 03a查询与03b/c两项修复已交付；已修复源锁135包无返回公告仅代表本次在线查询，数据库覆盖/最终组件和完整复扫仍依赖REL-01 |
 | REL-04 | BLOCKED | 依赖REL-01至03；真实签名另缺发行身份，配置/篡改拒绝自动化不代表已签 |
 | REL-05 | BLOCKED | 依赖OFF-02与REL-01至04；候选组装完成后仍需REV-01，发布/合并未授权 |

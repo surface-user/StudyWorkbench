@@ -1,0 +1,154 @@
+{
+  "scope": "REL-02c fixed three-DLL license delivery and inventory validation only",
+  "selection_reason": "Retain actual selected-component copy, repeat, refusal and source-preservation evidence; full stage, logs and environment table stay ignored.",
+  "source_base": {
+    "pr": 88,
+    "head": "481d93aacb5f3468c7e54d5989b0f365721b0081",
+    "tree": "df02e594d7d633119146e5621cab076c8aed2d42",
+    "files": 510
+  },
+  "tools_sha256": {
+    "tools/release_inventory.py": "ba0126ed9f47623c6e52be9a24d151669019aa7b3935eef57d036b6790dd83b6",
+    "tools/check_release.py": "c8dd4de97ad5ccd007228b5bfda5126d23f107d4de98499b1906a643c7846ba4"
+  },
+  "source_payload_files": 969,
+  "source_payload_fingerprint": "77b7e5ade7568c557b6a4b16d408641101dcd764163f702ffdeaa9beee22407e",
+  "source_exe_sha256": "f493edc9292c85556c0b2ce5c94f29595eb5d465863990d358d5d58930f91ba0",
+  "original_inputs": {
+    "packaging/licenses/cpython-native-3.13.17/libffi-LICENSE": "2c9c2acb9743e6b007b91350475308aee44691d96aa20eacef8e199988c8c388",
+    "packaging/licenses/cpython-native-3.13.17/OpenSSL-LICENSE.txt": "ed72ce2b51ee58f117e5a021e2e04af158857f40269fbc03491f0b2a99dbcc96",
+    "packaging/licenses/cpython-native-3.13.17/provenance.json": "bf378e5a38ae40dc6b3961ebda842d5ee6bcec963605ce3c45436dfc991c20e3"
+  },
+  "real_component_stage_context": "Actual fixed DLLs; self-authored inert renderer metadata and no renderer payload. This is not a complete application stage or installer.",
+  "actual_collector_main_ran": true,
+  "stage_files": 201,
+  "license_record": {
+    "scope": "fixed-cpython-native-license-texts",
+    "applied": true,
+    "product_licenses_complete": false,
+    "distribution_obligations_reviewed": false,
+    "vulnerabilities_verified": false,
+    "release_ready": false,
+    "profile": "cpython-native-3.13.17",
+    "profile_sha256": "bf378e5a38ae40dc6b3961ebda842d5ee6bcec963605ce3c45436dfc991c20e3",
+    "dlls": [
+      {
+        "path": "backend/_internal/libcrypto-3.dll",
+        "bytes": 6021880,
+        "sha256": "75495fe0e079ab00d49be740d3c710a0b94e3f74f9648cb7cc9f768fc7f52319",
+        "producer": "openssl",
+        "recipe_declared_version": "3.5.9"
+      },
+      {
+        "path": "backend/_internal/libffi-8.dll",
+        "bytes": 39696,
+        "sha256": "eff52743773eb550fcc6ce3efc37c85724502233b6b002a35496d828bd7b280a",
+        "producer": "libffi",
+        "recipe_declared_version": "3.4.4"
+      },
+      {
+        "path": "backend/_internal/libssl-3.dll",
+        "bytes": 1308920,
+        "sha256": "8957182a9c385bfd9f3f790921de2ddc614cf91f99edbed4e9e5446a46504e32",
+        "producer": "openssl",
+        "recipe_declared_version": "3.5.9"
+      }
+    ],
+    "license_files": [
+      {
+        "path": "licenses/_native/cpython-native-3.13.17/OpenSSL-LICENSE.txt",
+        "source": "packaging/licenses/cpython-native-3.13.17/OpenSSL-LICENSE.txt",
+        "bytes": 10352,
+        "sha256": "ed72ce2b51ee58f117e5a021e2e04af158857f40269fbc03491f0b2a99dbcc96",
+        "producer": "openssl",
+        "license_id": "Apache-2.0"
+      },
+      {
+        "path": "licenses/_native/cpython-native-3.13.17/libffi-LICENSE",
+        "source": "packaging/licenses/cpython-native-3.13.17/libffi-LICENSE",
+        "bytes": 1132,
+        "sha256": "2c9c2acb9743e6b007b91350475308aee44691d96aa20eacef8e199988c8c388",
+        "producer": "libffi",
+        "license_id": "MIT"
+      }
+    ],
+    "providers": [
+      {
+        "name": "libffi",
+        "recipe_declared_version": "3.4.4",
+        "repository": "https://github.com/python/cpython-bin-deps",
+        "commit": "94cb9a1c7feb608adf2b9f8fe2dbd6925ffbf90d",
+        "archive_url": "https://codeload.github.com/python/cpython-bin-deps/zip/94cb9a1c7feb608adf2b9f8fe2dbd6925ffbf90d",
+        "archive_sha256": "6b0f53490e0dd958708bff32df689cf2163c214147fcb8edb76a403fa6a877ca"
+      },
+      {
+        "name": "openssl",
+        "recipe_declared_version": "3.5.9",
+        "repository": "https://github.com/python/cpython-bin-deps",
+        "commit": "ddb46a415b4995440723183e644f8d2c346567a2",
+        "archive_url": "https://codeload.github.com/python/cpython-bin-deps/zip/ddb46a415b4995440723183e644f8d2c346567a2",
+        "archive_sha256": "0dbf56dcce0ab4054e6192ae488d7d439f678cceca858810de990be51bb80335"
+      }
+    ]
+  },
+  "manifest_sha256": "878a54c14f4b1a0bb0cd47f8032d6759a2282f6c6508da0c1e4e882afa02823f",
+  "stage_fingerprint": "1f3ef8f888157b8bdbae26a05ef14fe4018358a8d560059a0ea5cd99a28687fc",
+  "repeat_bytes_unchanged": true,
+  "license_mtimes_unchanged_on_repeat": true,
+  "current_guard_collector_repeat_log_sha256": "a7482805938a0439c80996d474857bcef29690863b13c6d4c8631761629f2c51",
+  "preflight_rejections": [
+    {
+      "name": "partial-real",
+      "before": "f1b01285b2cd2c263099c0b113b2b2ee4c093768bb5b842a6e6e765a337bb527",
+      "after": "f1b01285b2cd2c263099c0b113b2b2ee4c093768bb5b842a6e6e765a337bb527",
+      "error": "Partial fixed native license component set",
+      "existing_bytes_preserved": true
+    },
+    {
+      "name": "changed-real",
+      "before": "31fbab65bb301994c18389a8483ef5eee303b39c65a3686eb1e7da05abe5e452",
+      "after": "31fbab65bb301994c18389a8483ef5eee303b39c65a3686eb1e7da05abe5e452",
+      "error": "Staged native DLL differs from fixed license source",
+      "existing_bytes_preserved": true
+    },
+    {
+      "name": "conflict-real",
+      "before": "f35011598a52edec2b42fc187a01e6a438666557fd7cafcca63fe4efc3f29a70",
+      "after": "f35011598a52edec2b42fc187a01e6a438666557fd7cafcca63fe4efc3f29a70",
+      "error": "Native license destination conflicts with existing bytes",
+      "existing_bytes_preserved": true
+    }
+  ],
+  "raw_report_sha256": "dd06b0d6de4023336f8367ffadf7056bfdb3031dad0ec7074869fdcaa4df5cfe",
+  "junit": {
+    "q06": {
+      "tests": 208,
+      "new": 33,
+      "existing": 175,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xml_sha256": "130ab68528018e887ede7f253c7e66b4b93e82869c07557003a90605ee9edca6"
+    },
+    "p06": {
+      "tests": 208,
+      "new": 33,
+      "existing": 175,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xml_sha256": "9047da70cc1b98bdb97334599c2a843a9dc0e1b8f38e844ca68761bcb1779786"
+    }
+  },
+  "ordinary_target_absent_stages_compatible": true,
+  "product_licenses_complete": false,
+  "distribution_obligations_reviewed": false,
+  "vulnerabilities_verified": false,
+  "release_ready": false,
+  "limitations": [
+    "Selected license text delivery does not clear the separately tracked eight upstream OpenSSL 3.5.9 version matches.",
+    "Other components, inherited conditions, notices and distribution obligations remain outside this fixed subset.",
+    "No full application/Office/installer build, signature or release approval is established by this component-stage fixture.",
+    "Observed before/after checks require a stable staging directory and are not an atomic or adversarial filesystem sandbox."
+  ]
+}
