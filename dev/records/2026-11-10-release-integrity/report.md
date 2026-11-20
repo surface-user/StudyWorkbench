@@ -1080,3 +1080,5 @@ verify_real.py退出0：默认原19743文件/351PE未知79→75，自包含19746
 精选[off02n-locale-data-summary.json](evidence/off02n-locale-data-summary.json)为30215字节，SHA256=add2da804090d38ad89b654691e1f6f1e3dc352648d7319a848bb6cb3c3f0ba2；仅13来源身份、有限图差异/反例、4实际语言结果/模块和25份raw hash，完整源码/表/日志/JUnit/样本/生成XLSX都留ignored artifacts/.local，不直接塞evidence。verify_all.py --read-only保护精选+25raw只断言复算；当前首次只读已退出0，完整两组件图/精选及25raw共26个既有输出字节保持。实现/相关自动化/文档完成，独立草稿PR/当前head CI/主Agent有限核验继续，审查暂缓/人工取消、无合并发行；整包和74未知未记为完成。
 
 主Agent随后已独立核M的#87当前CI及verify_all --read-only退出0、379×2/79→78及16原输出保持，同意有限DONE；仅在本后继task登记M完成，不追改L/M发布头。
+
+已创建并附加[独立草稿PR #93](https://github.com/surface-user/StudyWorkbench/pull/93)，分支codex/office-locale-data基于#87精确abf66df；同一六文件，501个base blob保持/507远端文件，105本地引用/62唯一调度行及UTF-8-LF/空白检查通过。补充只读check_exports.py退出0：四固定DLL分别433/396/1710/2595个导出、转发均0，前后hash保持，export01.json SHA256=fe9f0906e022d29dcda37a0a36afcda9d5d36a71c7355dccedc2357d557d08a6；不据此认证全部函数。当前head/当前CI及主Agent有限核验在PR正文维护，不为自身SHA循环改头，旧L/M头和组件保持，无合并发行。
