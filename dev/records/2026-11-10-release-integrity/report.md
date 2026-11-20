@@ -1016,3 +1016,37 @@ Q tools/office_template_evidence.py --office 新组件 --python-source 固定Pyt
 精选[off02l-selfcontained-python-summary.json](evidence/off02l-selfcontained-python-summary.json)只保存具体版本/hash/域差异/有限观察/反例与原始证据hash。所有原始全表/日志/JUnit/新旧组件/数据目录留ignored artifacts/.local，未打包进evidence。artifacts/off02l/select_evidence.py可--read-only复算精选；verify_native.py --read-only只断言既有三输出及原件，不写成功文件。当前实现/相关自动化/文档完成，task转REVIEW；独立草稿PR/当前head CI和主Agent核验另记交付，审查暂缓/人工取消，无合并发行。79未知/三个转发目标/托管与x86等仍阻断完整Office，不把这个有限切片记为OFF-02整体完成。
 
 已创建并附加[独立草稿PR #82](https://github.com/surface-user/StudyWorkbench/pull/82)，分支codex/office-python-selfcontained基于#69精确d4ac6e5；同一14文件，491个base blob不变、505远端文件，101本地引用/60唯一调度行/UTF-8-LF/空白检查通过。当前head/当前CI及主Agent有限核验在PR正文维护，不为自身最终SHA循环追改文档。原组件/#69头保持，完整Office/发行未完成。
+
+## 2026-11-20：OFF-02m 固定SAL文本编码库加载边
+
+主Agent授权沿已核来源/文件继续，要求分列源码路径、静态图、实际运行证据并保留旧79项追溯。office-textencoding副本505 blob逐项等于#82精确24d137d86783c67006f3837ff442070262a485f8/tree49619121ac88450eb50ee0969443832a029182c1，原#82/组件不动。固定源/PE只读试探后实施六文件：native工具/其测试、packaging/task、原报告和精选；无新增依赖/产品业务代码/接口/数据库/GUI变化，不安装组件、不删DLL、不放宽check_release。
+
+### 源码证明与固定字节身份
+
+上游固定LO提交仍bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1。sal/textenc/textenc.cxx的FullTextEncodingData在非内建编码分支以thisModule地址、SAL_MODULENAME("sal_textenclo")调用loadRelative，随后查询sal_getFullTextEncodingData；Module头转至osl_loadModuleRelative[Ascii]，公共实现从地址取得模块URL并将相对路径转为绝对，Windows实现先LoadLibraryW、失败再LOAD_WITH_ALTERED_SEARCH_PATH。Library_sal.mk包含textenc并按构建条件选择独立textenc库；Library_sal_textenc.mk声明其为sal插件，Module_sal.mk有对应目标。原始7份源码JSON保留于artifacts/off02m/sources.json，逐Git blob重算相等，未将上游全文复制进Git。另两份API头固定CP932枚举60、转换函数签名及错误/flush标记，逐blob同样核验，留runtime-api-sources.json。
+
+固定program/sal3.dll SHA256=0a7299f648b6ed320b9ac7a161ac790173ece5022c56a338ed30b8c5c2db02dd，已在旧Office图中；PE含完整ASCII库名偏移705112/函数名705224。目标program/sal_textenclo.dll SHA256=230865a4f1e2cc0c1d534069c3172a04fb6faa5e8e57289b9694cdc51f45c0d3，实际AMD64/PE32+、EXECUTABLE_IMAGE+DLL、CLR RVA0，导出所需函数。源码、构建关联及固定二进制常量共同限定本规则，不宣称可重现编译或仅凭库名判执行。首次只读探针的大小写字典key错误、误假设UTF16常量均保留失败；实际ASCII常量与char* loadRelative重载一致，第三次probe退出0，没有改产品以掩盖试探。
+
+native新增精确Office原/自包含两清单hash约束、caller/目标两原字节hash及原生头校验，只把目标加入原Office根；不扩大原[program,java/bin,java/bin/server]或program私有CRT目录、不改其他域。新增caller定位元数据不会成为新执行接口；未知转发/模板/托管/x86继续保留。原局部UNO/Java/Python等单元fixture只显式隔离本新增规则；新独立fixture为旧/自包含两布局构造不同源字节与hash，再验证完整inspect链仅新增目标及其他域每字段保持，不改原断言。
+
+### 实际运行证据与边界
+
+artifacts/off02m/encoding_real.py在既有#82派生组件上完整逐文件核前后身份，固定Office Python3.13.15为Job内一次性诊断子进程，20秒/64KiB结果/总体540秒；空CWD、仅私有bin和System32 PATH、无继承Python/Java配置。仅固定ctypes代码以绝对program/sal3.dll和DLL_LOAD_DIR|DEFAULT_DIRS加载caller，调用固定API把CP932输入82a082a2转换为U+3042/U+3044（あい），消费4字节/输出2字符/info0，再销毁converter/context。目标加载前及加载caller后均不存在，转换后实际handle路径program/sal_textenclo.dll且hash相符，caller亦program固定hash。
+
+最终runtime03退出0，脚本SHA256=0165b4d49d7d968b58e892b2a39346037f6b7ea60a4e486d999c4982f8e6efc9，原组件前后完整身份与脚本保持。实际MSVCP来自program/MSVCP140.dll，VCRT来自Python bin/VCRUNTIME140.dll；保留加载器返回的原大小写，父校验只允许manifest中唯一casefold关联、samefile及精确hash，绝不接受外目录同名文件。bin VCRT与program副本同字节，但这是派生Python诊断上下文，不是soffice.bin/普通Office业务/主线程DLL策略证明；静态Office CRT域继续仅program，不把两个上下文互相借用，也不认证任意动态路径/SxS/系统来源。
+
+首轮runtime01的子进程因路径大小写精确比较失败，第二轮改samefile后子进程exit0但父元数据查找仍大小写敏感而失败，结果与日志全部保留；第三轮才完成完整校验，未更改DLL路径或hash要求，不用失败现场冒充最终成功。原有源码/冻结文档转换证据属于#82；本项未改45个业务模块，故不为静态规则重建或把旧包改称本次构建，当前head CI另执行其既定Windows/新冻结流程。
+
+### 自动化与待交付项
+
+双既有Q3.13.17/P3.12.7最终相关命令：Q/P -B -X utf8 -m pytest backend/tests/test_native_dependencies.py backend/tests/test_release_inventory.py backend/tests/test_office_java_bundle.py backend/tests/test_java_runtime_preparation.py backend/tests/test_office_python_probe.py backend/tests/test_office_template_evidence.py -q --basetemp=.local/off02m-{q,p}03 --junitxml=artifacts/off02m/{q,p}03.xml，均退出0，各379通过/2条既有重复ZIP警告。新增44实例覆盖两个组合、两固定DLL缺失/篡改/架构/头/CLR/移位、精确锁/来源hash、完整域保持及普通/延迟导入不能借Java/系统CRT；原335项保持。首q01漏建caller既有CRT边导致2失败，补独立fixture原边；q02两个delay异常顺序期望错误及两个未提权junction权限失败保留，修为目标自身根隔离验证该边并在权限齐全环境复验，不放宽错误组件校验。Ruff/Schema退出0。
+
+完整旧/新组件hash与图差异、原79未知路径和现剩余项、实物反例、精选/只读复算、独立草稿PR/当前head CI继续核证后补本节，尚未以源码或局部测试记为整包通过。审查暂缓/人工取消，无合并发行。
+
+artifacts/off02m/verify_real.py现已退出0：原组合156b4421...完整19743文件/351PE，未知80→79；自包含b0a040bd...完整19746文件/354PE，原#82的79→78。两组件Office域均148根/206节点/1850边；根和节点只新增sal_textenclo，原有边的逐项多重集合不变，新增边只来自该目标，原搜索/CRT/UNO配置字段不变。其他全部静态域逐字段等于#82各自原报告；other_domains_byte_equivalent表示这些JSON结构可按相同排序规范序列化为相同字节，不指整份已变化报告相同。旧79条与新78条完整路径数组保留verified01.json，差集精确为本目标，其余全部继续未知/partial，未改check_release。
+
+16实物反例均拒绝：caller/目标各缺失、hash/架构/PE32/DLL可执行头/CLR错误共14，普通及延迟边缺program CRT不得借现存Java/bin CRT各1；5关键caller/目标/三处CRT末hash保持。new01.json SHA256=522757512bc545562a2422c6d3a4dd8031e264c11923f6b57d8bfab3a5df221b，verified01.json SHA256=09052e68ed13b906da3f09675df5c1efe2c4eacfe5cf676fe6d9a5d8ce15779a。运行只读全量输入，不修改原组件或生成另一份1.62GiB组件。
+
+现有#82冻结exe SHA36c68c5e...并非本项重建；M的45份业务源码逐SHA256/Git blob等于#82原business-sources，check_frozen_sources.py对该既有exe再次退出0、45模块匹配，明确工具静态改动与业务构建身份边界。完整实际Windows/后端/Flutter/新冻结的当前head CI仍在本项PR执行，不借#82 CI替代。精选[off02m-textencoding-summary.json](evidence/off02m-textencoding-summary.json)为13316字节、SHA256=7f0a6b83afe197b19512a7fba128ea9eccc6f8ca01b74950c4f453160d13b712，筛选9源码blob/实际有限转换/静态差异/反例和15份raw来源hash；原文/全表/失败/JUnit不进Git。verify_all.py --read-only保护精选及15raw，只复算/断言既有输出；首次只读已退出0，完整复算两组件图及精选、16个既有输出字节保持。实现/相关自动化/文档完成转REVIEW，独立草稿PR/current CI与主Agent有限核验随后交付，不将整包或发行记为完成。
+
+已创建并附加[独立草稿PR #87](https://github.com/surface-user/StudyWorkbench/pull/87)，分支codex/office-textencoding基于#82精确24d137d；同一六文件、500个base blob保持/506远端文件，103本地引用/61唯一调度行/UTF-8-LF/空白检查通过。当前head/当前CI和主Agent有限核验在PR正文维护，不为记录自身SHA循环更新交付头；原#82/组件保持，无合并发行。

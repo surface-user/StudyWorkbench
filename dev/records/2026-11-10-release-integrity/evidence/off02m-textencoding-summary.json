@@ -1,0 +1,332 @@
+{
+  "base_head": "24d137d86783c67006f3837ff442070262a485f8",
+  "base_pr": 82,
+  "base_tree": "49619121ac88450eb50ee0969443832a029182c1",
+  "business_modules_unchanged_from_base": 45,
+  "caller_constant_offsets": {
+    "sal_getFullTextEncodingData": {
+      "ascii": 705224,
+      "utf-16-le": -1
+    },
+    "sal_textenclo.dll": {
+      "ascii": 705112,
+      "utf-16-le": -1
+    }
+  },
+  "changed_tool_sha256": "6d9186bc0f956b17618f746f012d24035713342d4450adaa59145a97a5819e73",
+  "current_selfcontained_unknown_count": 78,
+  "frozen_identity": {
+    "build_scope": "existing #82 build; no new build claimed",
+    "current_business_modules_match": 45,
+    "executable_sha256": "36c68c5e1cfc9fb15401309f61492694c6159da5c757d4c46eed72ead2bd3779"
+  },
+  "limitations": [
+    "Source path, potential static roots and diagnostic runtime are separate evidence scopes.",
+    "The CP932 run happened in fixed derived Office Python, not soffice.bin or ordinary product conversion.",
+    "Loaded-module state/USER_DIRS/SxS/system leaves and arbitrary dynamic paths are not certified.",
+    "Both Python ABI forwarder copies, templates, managed/x86/TWAIN and other 78 candidates remain unclassified.",
+    "No added search directory, cross-domain CRT fallback, product execution interface, dependency installation, original component mutation, merge or release."
+  ],
+  "negative_counterfactuals": [
+    {
+      "case": "missing",
+      "image": "converters/libreoffice/program/sal3.dll",
+      "reason": "Office text encoding native image differs: sal3.dll",
+      "rejected": true
+    },
+    {
+      "case": "changed",
+      "image": "converters/libreoffice/program/sal3.dll",
+      "reason": "Office text encoding native image differs: sal3.dll",
+      "rejected": true
+    },
+    {
+      "case": "x86",
+      "image": "converters/libreoffice/program/sal3.dll",
+      "reason": "Office text encoding native image differs: sal3.dll",
+      "rejected": true
+    },
+    {
+      "case": "PE32",
+      "image": "converters/libreoffice/program/sal3.dll",
+      "reason": "Office text encoding native image differs: sal3.dll",
+      "rejected": true
+    },
+    {
+      "case": "not-DLL",
+      "image": "converters/libreoffice/program/sal3.dll",
+      "reason": "Office text encoding native image differs: sal3.dll",
+      "rejected": true
+    },
+    {
+      "case": "non-executable",
+      "image": "converters/libreoffice/program/sal3.dll",
+      "reason": "Office text encoding native image differs: sal3.dll",
+      "rejected": true
+    },
+    {
+      "case": "CLR",
+      "image": "converters/libreoffice/program/sal3.dll",
+      "reason": "Office text encoding native image differs: sal3.dll",
+      "rejected": true
+    },
+    {
+      "case": "missing",
+      "image": "converters/libreoffice/program/sal_textenclo.dll",
+      "reason": "Office text encoding native image differs: sal_textenclo.dll",
+      "rejected": true
+    },
+    {
+      "case": "changed",
+      "image": "converters/libreoffice/program/sal_textenclo.dll",
+      "reason": "Office text encoding native image differs: sal_textenclo.dll",
+      "rejected": true
+    },
+    {
+      "case": "x86",
+      "image": "converters/libreoffice/program/sal_textenclo.dll",
+      "reason": "Office text encoding native image differs: sal_textenclo.dll",
+      "rejected": true
+    },
+    {
+      "case": "PE32",
+      "image": "converters/libreoffice/program/sal_textenclo.dll",
+      "reason": "Office text encoding native image differs: sal_textenclo.dll",
+      "rejected": true
+    },
+    {
+      "case": "not-DLL",
+      "image": "converters/libreoffice/program/sal_textenclo.dll",
+      "reason": "Office text encoding native image differs: sal_textenclo.dll",
+      "rejected": true
+    },
+    {
+      "case": "non-executable",
+      "image": "converters/libreoffice/program/sal_textenclo.dll",
+      "reason": "Office text encoding native image differs: sal_textenclo.dll",
+      "rejected": true
+    },
+    {
+      "case": "CLR",
+      "image": "converters/libreoffice/program/sal_textenclo.dll",
+      "reason": "Office text encoding native image differs: sal_textenclo.dll",
+      "rejected": true
+    },
+    {
+      "case": "import-cannot-borrow-Java-or-bin-CRT",
+      "image": "converters/libreoffice/program/sal_textenclo.dll",
+      "reason": "Unresolved import: converters/libreoffice/program/sal_textenclo.dll -> vcruntime140.dll; loading directories=['converters/libreoffice/program']; elsewhere=['converters/libreoffice/System/vcruntime140.dll', 'converters/libreoffice/System64/vcruntime140.dll', 'converters/libreoffice/java/bin/vcruntime140.dll', 'converters/libreoffice/program/python-core-3.13.15/bin/vcruntime140.dll']; system CRT cannot satisfy private dependencies",
+      "rejected": true
+    },
+    {
+      "case": "delay-cannot-borrow-Java-or-bin-CRT",
+      "image": "converters/libreoffice/program/sal_textenclo.dll",
+      "reason": "Unresolved delay: converters/libreoffice/program/sal_textenclo.dll -> vcruntime140.dll; loading directories=['converters/libreoffice/program']; elsewhere=['converters/libreoffice/System/vcruntime140.dll', 'converters/libreoffice/System64/vcruntime140.dll', 'converters/libreoffice/java/bin/vcruntime140.dll', 'converters/libreoffice/program/python-core-3.13.15/bin/vcruntime140.dll']; system CRT cannot satisfy private dependencies",
+      "rejected": true
+    }
+  ],
+  "only_removed_unknown": "converters/libreoffice/program/sal_textenclo.dll",
+  "previous_79_unknown_list_sha256": "0b057ef3e20b32c3a9826849623704f631fd5c97a30f01cd4d0ce89655044f20",
+  "previous_selfcontained_unknown_count": 79,
+  "product_release_ready": false,
+  "raw_evidence": {
+    "encoding_child.py": {
+      "bytes": 3923,
+      "sha256": "0165b4d49d7d968b58e892b2a39346037f6b7ea60a4e486d999c4982f8e6efc9"
+    },
+    "encoding_real.py": {
+      "bytes": 3076,
+      "sha256": "24087d2243825cfeaef69e8baa2a61dad2c9744e9bb5b6378aabc9b40465ec13"
+    },
+    "frozen-source-match01.log": {
+      "bytes": 95,
+      "sha256": "344368e89f9d3acfe74bae3e097ac97b50fcdc69da12f6095ed1d4378083645d"
+    },
+    "new01.json": {
+      "bytes": 1073568,
+      "sha256": "522757512bc545562a2422c6d3a4dd8031e264c11923f6b57d8bfab3a5df221b"
+    },
+    "old01.json": {
+      "bytes": 1001959,
+      "sha256": "478b3d740c2c907b8b6837dce0d1eb6160127a4fc9edee79c910e4fb9cc12973"
+    },
+    "p03.xml": {
+      "bytes": 60224,
+      "sha256": "780cdd4bb56204e71ec495699c47c444b34b34049135887afa3233e686afeb0f"
+    },
+    "probe01.json": {
+      "bytes": 453000,
+      "sha256": "4c878a02264688b768cfdf4937947f337900dbc5c786789a306426b75fde08fe"
+    },
+    "q03.xml": {
+      "bytes": 60224,
+      "sha256": "d4ac9dbe2c4a16dfa1d6515c584464559f07bb7a9039b7a405298357716ada15"
+    },
+    "ruff03.log": {
+      "bytes": 20,
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    "runtime-api-sources.json": {
+      "bytes": 27534,
+      "sha256": "df941b84f435c18170ce3de347ee5304f2dda1a70aa3c3e41d6681be724dacd7"
+    },
+    "runtime03/report.json": {
+      "bytes": 2332,
+      "sha256": "c1bccddcad06aca2504fe2e695e6ad976037187afcd8b69447c1a37f8f3ddead"
+    },
+    "runtime03/result.json": {
+      "bytes": 1806,
+      "sha256": "6f1b50556d72cbe981312f605d0e75487680f04b97a08d2c990f226ed5edb3f0"
+    },
+    "schemas03.log": {
+      "bytes": 30,
+      "sha256": "511f93e1fe8041c617c13bf477d01dee36d47535450f475c7aa1775cbcd7ea72"
+    },
+    "sources.json": {
+      "bytes": 40749,
+      "sha256": "93df3ca85c48fb6cc82d96d3dc797d2c98af3a7813195028abfc800bef4d9197"
+    },
+    "verified01.json": {
+      "bytes": 15979,
+      "sha256": "09052e68ed13b906da3f09675df5c1efe2c4eacfe5cf676fe6d9a5d8ce15779a"
+    }
+  },
+  "runtime": {
+    "actual_crt_context": "Python bin VCRT; program MSVCP. Bin/program VCRT bytes equal, static domains remain separate.",
+    "actual_python_version": [
+      3,
+      13,
+      15
+    ],
+    "complete_component_verified_before_after": true,
+    "complete_dynamic_isolation_verified": false,
+    "consumed": 4,
+    "encoding": 60,
+    "exit_code": 0,
+    "info": 0,
+    "input_hex": "82a082a2",
+    "module_paths": {
+      "msvcp140.dll": {
+        "path": "program/MSVCP140.dll",
+        "sha256": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9"
+      },
+      "sal3.dll": {
+        "path": "program/sal3.dll",
+        "sha256": "0a7299f648b6ed320b9ac7a161ac790173ece5022c56a338ed30b8c5c2db02dd"
+      },
+      "sal_textenclo.dll": {
+        "path": "program/sal_textenclo.dll",
+        "sha256": "230865a4f1e2cc0c1d534069c3172a04fb6faa5e8e57289b9694cdc51f45c0d3"
+      },
+      "vcruntime140.dll": {
+        "path": "program/python-core-3.13.15/bin/VCRUNTIME140.dll",
+        "sha256": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066"
+      }
+    },
+    "office_host_execution_verified": false,
+    "output_codepoints": [
+      12354,
+      12356
+    ],
+    "produced": 2,
+    "scope": "Actual SAL encoding in fixed derived Office Python diagnostic, not soffice.bin execution",
+    "script_sha256": "0165b4d49d7d968b58e892b2a39346037f6b7ea60a4e486d999c4982f8e6efc9",
+    "target_loaded_after_conversion": true,
+    "target_loaded_after_sal": false,
+    "target_loaded_before_sal": false
+  },
+  "scope": "OFF-02m fixed SAL text-encoding source edge and bounded diagnostic runtime observation",
+  "selected_sha256": {
+    "converters/libreoffice/java/bin/vcruntime140.dll": "02c6aa0e6e624411a9f19b0360a7865ab15908e26024510e5c38a9c08362c35a",
+    "converters/libreoffice/program/python-core-3.13.15/bin/vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+    "converters/libreoffice/program/sal3.dll": "0a7299f648b6ed320b9ac7a161ac790173ece5022c56a338ed30b8c5c2db02dd",
+    "converters/libreoffice/program/sal_textenclo.dll": "230865a4f1e2cc0c1d534069c3172a04fb6faa5e8e57289b9694cdc51f45c0d3",
+    "converters/libreoffice/program/vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066"
+  },
+  "selection_reason": "Promote fixed source identities, actual caller/target bytes, finite graph difference and observed CP932 conversion only; full source/raw tables remain ignored.",
+  "source_association_is_reproducible_compilation": false,
+  "source_commit": "bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1",
+  "source_identities": {
+    "include/osl/module.hxx": {
+      "git_blob": "37f7e249ee29caba7102316a1e4f2fa6e34304e6",
+      "sha256": "b1573324cadd8ccf2571e995ae3da258a3624713ae853bcfffaf22c41b258230"
+    },
+    "include/rtl/textcvt.h": {
+      "git_blob": "14d374c16f6da3c0bf675124349574962b154373",
+      "sha256": "ac7b22baf902ce068fcd4ee18e0ac7a6820bcea48f61a774d0f72fb6ff5e07d1"
+    },
+    "include/rtl/textenc.h": {
+      "git_blob": "10d69e734a4f811775271b92b2b7aa3d76e5e225",
+      "sha256": "42549f898782d2cda4f80f1818afd91a4aa8545a212378466912b6f2cc91c4c3"
+    },
+    "sal/Library_sal.mk": {
+      "git_blob": "eef90ebf497c68a5efeb008ecdcc834c26fe3d5b",
+      "sha256": "de4e9f2a49dc0d8128b7bf83ccaa1a7b67120c8c987250700c7ef01c9ba17922"
+    },
+    "sal/Library_sal_textenc.mk": {
+      "git_blob": "52ed33701ee1b8f0c5ad4adc1055185054e308c5",
+      "sha256": "07fd2dad3ac57b1b36064e7980ae0f2cb1e0618e3faf53845537efdd01500368"
+    },
+    "sal/Module_sal.mk": {
+      "git_blob": "242dc3297c31610bf26ba9e53be206419207a56b",
+      "sha256": "23fac8c064f4fad093db94a55bedafaee9d98dd34ce9b16abde8fe700fb7ba9f"
+    },
+    "sal/osl/all/loadmodulerelative.cxx": {
+      "git_blob": "d2af7d01005759fe34e7715dc71a56155a80e19c",
+      "sha256": "6bb7a34bd4c8dc90a5d8f6d73b4ff115d6d7e7ed18e18bf5d21f2ac737e54c70"
+    },
+    "sal/osl/w32/module.cxx": {
+      "git_blob": "bf42b5c961d6a145a167eceec9a83c99ef0e9007",
+      "sha256": "f13bc7128fa68e3d6e3c57fc89a2b5c4612ccc20f94ca08afa80274f476b9444"
+    },
+    "sal/textenc/textenc.cxx": {
+      "git_blob": "23b5a85faa4aebc6db8c7dd969922ade1bae5ae9",
+      "sha256": "c332c8c0a94eaa5829d6e0623adf64315d3fde74c307fd06fefb4bd31ac3b492"
+    }
+  },
+  "source_loading_rule": "sal3 uses its own function address to load relative sal_textenclo and resolve sal_getFullTextEncodingData; Windows resolves the resulting absolute URL/path.",
+  "static_components": [
+    {
+      "component_inventory_sha256": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+      "office_directories_crt_configuration_unchanged": true,
+      "office_graph": {
+        "edges": 1850,
+        "nodes": 206,
+        "roots": 148
+      },
+      "other_domains_byte_equivalent": true,
+      "pe_images": 351,
+      "physical_files": 19743,
+      "unknown_after": 79,
+      "unknown_before": 80
+    },
+    {
+      "component_inventory_sha256": "b0a040bd584bb69aeaba44f749996d2320d83707889b8f8ad85d93d44893c9ee",
+      "office_directories_crt_configuration_unchanged": true,
+      "office_graph": {
+        "edges": 1850,
+        "nodes": 206,
+        "roots": 148
+      },
+      "other_domains_byte_equivalent": true,
+      "pe_images": 354,
+      "physical_files": 19746,
+      "unknown_after": 78,
+      "unknown_before": 79
+    }
+  ],
+  "tests": {
+    "p03": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 379
+    },
+    "q03": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 379
+    }
+  }
+}
