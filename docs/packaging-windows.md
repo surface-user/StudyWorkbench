@@ -154,6 +154,18 @@ report.json记录查询器1.0及两份工具源码hash、锁hash、Python版本�
 
 退出1表示查询、结构、映射批次或源一致性失败；已有原始现场/失败报告保留。退出2表示返回公告（含需进一步判定的撤回/变更/映射未知），退出3表示当前查询完成但没有返回公告；两者均不是发行通过码，工具不返回安全认证的0。空结果只能称“无公告返回”，不能称“安全包”。Git和SDK排除项、开发/构建/跨平台成员、最终产品未覆盖始终保留；不依据空结果自动批准发行、不自动升级或改变既有check_release门禁。网络查询仅显式运行；CI用离线自编响应验证信任边界，不依赖在线数据库稳定性。
 
+## 冻结后端的 OpenSSL 和 libffi 漏洞核对
+
+对含 `_internal` 子目录的冻结后端执行以下命令。输出须为包外的新目录。
+
+```powershell
+python tools/check_backend_native_advisories.py --backend dist/study_backend --output artifacts/native-advisories
+```
+
+工具在查询前后按固定来源文件核对三个 DLL 的长度和 SHA256，分别按上游提交与 Git 标签查询 OSV，独立比较 OpenSSL 官方 3.5 分支公告的版本区间。退出 1 表示输入或检查失败，2 表示有匹配，3 表示本次有限范围没有返回匹配。看到 2 时应保留阻断，核对受支持的修复版本及实际打包字节，更新来源、许可和清单后复扫。上游版本匹配与产品调用路径的判断分开记录。
+
+加入 `--snapshot <目录>` 可离线复核其中的 `0000-request.json`、`0000-response.json` 和 `openssl-3.5.html`。先从可信采集记录取得原件并核对摘要；报告标注为调用者提供的历史快照。离线执行不刷新数据库。工具遇到不支持的公告结构或分页返回失败。查看[OSV 查询约定](https://google.github.io/osv.dev/post-v1-query/)和[OpenSSL 官方公告索引](https://openssl-library.org/news/vulnerabilities-3.5/)。
+
 ## 锁定源码依赖的本地许可证据
 
 `tools/source_licenses.py`复用源码SBOM的精确锁身份，只读当前Python环境及明确指定的Dart package_config。使用与待检查锁一致的独立环境执行；不会安装依赖、联网查询、读取个人学习库或修改现有发行stage：
