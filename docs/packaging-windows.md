@@ -85,7 +85,9 @@ program直属的固定30个AMD64原生EXE/COM/BIN另作office_program保守静�
 .local/release-venv/Scripts/python.exe tools/check_office_python_runtime.py --office .local/office-python-runtime --output artifacts/office-python-frozen-01 --exe dist/study_backend/study_backend.exe
 ```
 
-检查器调用一次性内部helper，两个固定入口只运行内置探针，不接收任意脚本或命令。完整组件运行前后校验，固定环境/空CWD/Job限制；每入口20秒、结果64KiB，外层600秒。只在该helper清理继承DLL目录，不改变线程化服务。核实际PID、3.13.15版本与7个已观察DLL的组件内路径/hash，有限模块为stdlib/ssl/hashlib/ctypes/sqlite，ABI实际消费者仅Py_IsInitialized。失败和中断输出保留，不覆盖已有结果；源码及匹配冻结的本地结果见[原报告](../dev/records/2026-11-10-release-integrity/report.md)。退出0不证明所有动态加载/系统来源、完整ABI或产品实际调用这些入口；其余79个未知及发行门禁继续保留，正常Office转换配置不变。
+检查器调用一次性内部helper，两个固定入口只运行内置探针，不接收任意脚本或命令。完整组件运行前后校验，固定环境/空CWD/Job限制；每入口20秒、结果64KiB，外层600秒。只在该helper清理继承DLL目录，不改变线程化服务。核实际PID、3.13.15版本与7个已观察DLL的组件内路径/hash，有限模块为stdlib/ssl/hashlib/ctypes/sqlite，ABI实际消费者仅Py_IsInitialized。失败和中断输出保留，不覆盖已有结果；源码及匹配冻结的本地结果见[原报告](../dev/records/2026-11-10-release-integrity/report.md)。退出0不证明所有动态加载/系统来源、完整ABI或产品实际调用这些入口；其余未分类项及发行门禁继续保留，正常Office转换配置不变。
+
+固定SAL文本编码库另有显式相对加载边：[该版源码](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/sal/textenc/textenc.cxx)从sal3模块地址加载同目录sal_textenclo，并取得sal_getFullTextEncodingData。仅在已核原/自包含组合中验证caller与目标的固定hash、AMD64/PE32+、原生可执行DLL头及无CLR后，将目标作为潜在静态入口加入现有Office域；搜索和私有CRT目录不变。此规则不新增目录、通用动态加载解释器或执行授权，其他域/原件不改。源加载路径、静态闭包和派生Office Python诊断中CP932转换的实际模块观察分别记录于原报告；诊断的已加载bin CRT与Office宿主program CRT即使同字节，也不混用静态域或冒充普通业务执行。未证明的动态分支/系统来源/导出转发继续保留。
 
 ## Office Python模板来源证据
 

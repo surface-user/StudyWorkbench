@@ -41,6 +41,36 @@ OFFICE_PROGRAM_ENTRIES = ('gengal.exe gpgme-w32spawn.exe mar.exe minidump_upload
     'updater.exe xpdfimport.exe').split()
 OFFICE_VENV_LOCK_SHA256 = '156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9'
 OFFICE_SELFCONTAINED_LOCK_SHA256 = 'b0a040bd584bb69aeaba44f749996d2320d83707889b8f8ad85d93d44893c9ee'
+OFFICE_TEXTENC_LOCK_SHA256 = '156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9'
+OFFICE_TEXTENC_IMAGES = {
+    'sal3.dll': '0a7299f648b6ed320b9ac7a161ac790173ece5022c56a338ed30b8c5c2db02dd',
+    'sal_textenclo.dll': '230865a4f1e2cc0c1d534069c3172a04fb6faa5e8e57289b9694cdc51f45c0d3',
+}
+
+
+def office_textencoding_entries(payload, nodes, office):
+    """Fixed sal3 relative-module source edge; potential static root, not execution certification."""
+    lock = payload.get(office + 'runtime-lock.json')
+    if lock is None:
+        raise ValueError('Missing fixed Office text encoding inventory')
+    with lock.open('rb') as stream:
+        raw = stream.read(4 * 1024 * 1024 + 1)
+    if (len(raw) > 4 * 1024 * 1024 or hashlib.sha256(raw).hexdigest()
+            not in {OFFICE_TEXTENC_LOCK_SHA256, OFFICE_SELFCONTAINED_LOCK_SHA256}):
+        raise ValueError('Office text encoding component changed; renew loading evidence')
+    files = json.loads(raw)['files']
+    selected = {}
+    for name, expected in OFFICE_TEXTENC_IMAGES.items():
+        relative = 'program/' + name
+        key = office + relative
+        node = nodes.get(key)
+        if (files.get(relative) != expected or node is None or node['sha256'] != expected
+                or node['machine'] != 0x8664 or node['magic'] != 0x20B
+                or node['characteristics'] & 0x2002 != 0x2002 or node['clr_rva'] != 0):
+            raise ValueError('Office text encoding native image differs: ' + name)
+        selected[key] = expected
+    return dict(roots=[office + 'program/sal_textenclo.dll'], caller=office + 'program/sal3.dll',
+                image_sha256=selected)
 
 
 def office_venv_entries(payload, nodes, office):
@@ -400,9 +430,11 @@ def inspect_dependencies(payload, system):
             domains['java'] = closure(nodes, sorted(java_libraries['executables']) + list(java_libraries['dlls']),
                                       [java, server], [java], system)
         uno_entries = office_uno_entries(payload, office)
-        domains['office'] = closure(nodes, sorted(set(roots) | uno_entries.keys()),
+        text_entries = office_textencoding_entries(payload, nodes, office)
+        domains['office'] = closure(nodes, sorted(set(roots) | uno_entries.keys() | set(text_entries['roots'])),
                                     [program, java, server], [program], system)
         domains['office']['uno_entries'] = uno_entries
+        domains['office']['text_encoding_entries'] = text_entries
         domains['office']['uno_configuration_sha256'] = {
             office + name: digest for name, digest in OFFICE_UNO_FILES.items()}
         python_libraries = office_python_libraries(payload, nodes, office)
