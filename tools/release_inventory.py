@@ -30,6 +30,24 @@ def stage_files(stage):
     return dict(sorted(files.items()))
 
 
+def check_backend_install_metadata(files, prefix):
+    for relative, path in files.items():
+        if (not relative.casefold().startswith(prefix) or path.name.casefold() != 'direct_url.json'
+                or not path.parent.name.casefold().endswith('.dist-info')):
+            continue
+        with path.open('rb') as stream:
+            raw = stream.read(65537)
+        if len(raw) > 65536:
+            raise ValueError('Oversized Python installation metadata')
+        try:
+            url = json.loads(raw)['url']
+            scheme = urlsplit(url).scheme if isinstance(url, str) else ''
+        except (ValueError, TypeError, KeyError):
+            raise ValueError('Invalid Python installation metadata') from None
+        if len(scheme) < 2 or scheme.rsplit('+', 1)[-1] == 'file':
+            raise ValueError('Frozen backend contains a local installation path; install the wheel by package name')
+
+
 def license_destination(root, name, file):
     if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?', name):
         raise ValueError('Invalid license package directory')

@@ -7,6 +7,7 @@ from pathlib import Path
 from types import CodeType
 
 from PyInstaller.archive.readers import CArchiveReader
+from release_inventory import check_backend_install_metadata, stage_files
 
 CODE_FIELDS = ('co_code', 'co_names', 'co_varnames', 'co_freevars', 'co_cellvars', 'co_nlocals',
                'co_argcount', 'co_posonlyargcount', 'co_kwonlyargcount', 'co_flags',
@@ -50,6 +51,7 @@ def main():
     args = parser.parse_args()
     if sys.version_info[:3] != (3, 13, 17):
         raise RuntimeError('Run with the pinned CPython 3.13.17 release interpreter, not a different bytecode version')
+    check_backend_install_metadata(stage_files(args.exe.parent), '_internal/')
     archive = CArchiveReader(str(args.exe))
     name = next(n for n, item in archive.toc.items() if item[-1] == 'z')
     pyz = archive.open_embedded_archive(name)
