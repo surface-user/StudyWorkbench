@@ -4,3 +4,4 @@
 dev/archive/evidence/** -whitespace
 dev/records/**/evidence/** -whitespace
 contracts/samples/question-files-v1/*.md whitespace=-blank-at-eof
+/tools/office_java_pipe/PipeDiagnostic.java text eol=lf

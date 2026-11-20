@@ -2,7 +2,7 @@
 
 在开发环境中提供可复跑的有限诊断：使用项目自有 Java 类、固定 Office jar 和既有 Temurin JRE，验证 `PipeConnection` 能加载 JNI 包装库并到达“管道不存在”的原生 OPEN 分支。该结果尚不能证明成功管道通信或普通 Office 宿主执行。
 
-基于已核 #104 精确 `b6b29e87766b1659a6cf1a302b9c37954c5b195b`。仅新增检查器、Java 源、可信边界测试和本报告四个文件；基线 508 个文件保持。完整任务表、完整依赖清单、上游源码、系统工具路径及原始输出留本机；不重写历史任务表或整份打包指南。Office 原有背景与阻断见[原发行报告](../2026-11-10-release-integrity/report.md)。
+基于已核 #104 精确 `b6b29e87766b1659a6cf1a302b9c37954c5b195b`。新增检查器、Java 源、可信边界测试和本报告四个文件，既有 `.gitattributes` 仅追加针对 Java 的换行规则；其余 507 个基线文件保持。完整任务表、完整依赖清单、上游源码、系统工具路径及原始输出留本机；不重写历史任务表或整份打包指南。Office 原有背景与阻断见[原发行报告](../2026-11-10-release-integrity/report.md)。
 
 ## 使用与边界
 
@@ -46,5 +46,7 @@ python -B -X utf8 tools/check_frozen_sources.py --exe <既有匹配冻结程序>
 旧失败全留本机：首个原型真实 JNI 诊断成功；工具最初相对组件路径未归一化而失败，修正为绝对路径且保留原有重解析拒绝；随后读到 Java 尚未写完的空结果，改 staging 原子提交后在新目录通过。专项初次超长参数默认名称触及 Windows 环境变量长度限制，改短标签后保留原断言，未删失败或调低测试。准备脚本一次文本替换断言与一次 Ruff lambda 检查失败也保留；最终只发布实际通过的源版本。
 
 当前实现/本机自动化已完成，独立草稿 PR/current-head CI交付中；人工依用户指令取消，审查按用户安排延后，均不记为通过。无合并或发行。
+
+首个已推送提交 `da556267` 的 CI44704022017失败：公开注解定位Python3.12的pytest退出1，3.13因矩阵策略取消；登录后才能取得原始日志，未伪造具体CI堆栈。真实Git `core.autocrlf=true` 检出过滤可独立复现：Java源3068B/LF变3120B/CRLF，精确固定SHA校验拒绝。仅增加定向此Java原件的 `.gitattributes` `eol=lf`，保留工具、Java、测试源码与逐字节硬SHA不变；真实Git过滤修正后恢复原3068B/SHA。必要Git元数据使本项为五个项目文件，原失败提交/日志和四文件补丁都保留；干净CRLF检出回归和新提交CI继续核证，不把首个失败记为通过。
 
 本项不改 native/check_release、运行时搜索域、组件、依赖锁或产品接口；原71个未分类项全部保持。普通 Office 的实际 Java classloader/管道使用与 NativeLibraryLoader 的 fallback 尚未证明，任意动态加载/USER_DIRS/SxS/系统来源、成功IPC、完整Java桥及完整Office发行均不因此完成。
