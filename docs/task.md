@@ -51,7 +51,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | REL-01c 冻结Python本地来源映射 | DONE | 主Agent核[PR #47](https://github.com/surface-user/StudyWorkbench/pull/47)最终d6bef38的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43570337629)成功、918×2/专项38×2；55包2358模块861实体，本批纳工具，与REL-01d共同追溯，不等于官方归档认证 |
 | REL-01d 固定CPython及项目来源映射 | DONE | 主Agent核[PR #50](https://github.com/surface-user/StudyWorkbench/pull/50)最终0e295a7的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43575980520)三组44步成功、957×2及最终专项39×2；新增311 PYZ/154 ZIP代码/62实体/11启动代码来源与独立探针相符，58组件Schema通过；44 CRT/外层bootloader等仍未闭合，本批纳工具 |
 | REL-01e 原生CRT与bootloader来源 | DONE | 主Agent核[PR #54](https://github.com/surface-user/StudyWorkbench/pull/54)最终24405f0的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43581479380)三组44步成功/双1000及43模块旧冻结；只读重核969实体/44本地CRT/5节与精确DEBUG差异/58组件Schema。工具未纳本候选，官方CRT/完整PE认证仍未知 |
-| REL-01h 当前后端包来源证据重绑定 | REVIEW | 从#77复用现有采集器及#54原工具，重绑#74实际46业务模块/969文件/58组件标准子集；双版本172、原件/hash/官方Schema复核通过。44CRT保留11-19采集，11-20原源路径全缺失逐项列明，不冒充今天重读通过；见[PR #81](https://github.com/surface-user/StudyWorkbench/pull/81)及原报告，当前head CI/主Agent核验待交付。完整身份/许可/漏洞/签名和发行仍未闭合，原43模块旧报告保持 |
+| REL-01h 当前后端包来源证据重绑定 | DONE | [PR #81](https://github.com/surface-user/StudyWorkbench/pull/81) 的 [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44678643251) 通过。主 Agent 对最终 aba16ba 只读复验 969 文件、46 业务模块、55 包与 58 组件清单，Schema 和两份摘要哈希一致。44 个 CRT 条目仅有历史来源记录，仍有 46 个文件来源待核。完整身份、许可、漏洞和签名继续跟踪 |
 | REL-01 完整源码与发行包SBOM | IN_PROGRESS | 先交付01a；最终覆盖仍依赖OFF-02及所有实际组件/安装器payload，不能据源锁文件或环境包表销项 |
 | REL-02 | BLOCKED | 完整发行传递许可依赖REL-01实际组件清单；源锁与固定Office/Java就绪，已有范围可单独先核，整体不记完成 |
 | REL-02a 锁定源码许可证据映射 | DONE | 主Agent核双Python各57、136包/246原文引用/182文本及缺文退出2；[草稿PR #41](https://github.com/surface-user/StudyWorkbench/pull/41)最终218cfc2的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43359882156)三组44步通过，工具已纳本组合。归档/内嵌声明/最终义务仍未闭合，不是完整REL-02通过 |
@@ -59,6 +59,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | REL-02b1 固定上游许可原文及内嵌声明 | DONE | 主Agent核72×2/136包248原文引用184文本及九文件来源，[草稿PR #46](https://github.com/surface-user/StudyWorkbench/pull/46)最终8bebad8的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43569063314)三组45步成功，当前已纳本组合。原分发缺文/LPPL原Work和vendor修改条件仍保留，CLI退出2，父REL-02b/02未完成 |
 | REL-03 | IN_PROGRESS | 03a查询与03b/c两项修复已交付；已修复源锁135包无返回公告仅代表本次在线查询，数据库覆盖/最终组件和完整复扫仍依赖REL-01 |
 | REL-04 | BLOCKED | 依赖REL-01至03；真实签名另缺发行身份，配置/篡改拒绝自动化不代表已签 |
+| REL-04a Windows 冻结后端验签 | REVIEW | 文件及签名者证书双 SHA256、Windows 内嵌签名信任结果和时间戳证书已核。Python 3.12/3.13 各 56 项相关自动化通过，实际未签名后端被拒。当前提交 CI 见本项草稿 PR；项目正式签名及安装器仍待办。见[发行报告](../dev/records/2026-11-10-release-integrity/report.md#rel-04a-windows-冻结后端验签) |
 | REL-05 | BLOCKED | 依赖OFF-02与REL-01至04；候选组装完成后仍需REV-01，发布/合并未授权 |
 | FMT-01 | DONE | 主Agent已核复杂矩阵76×2、源码/新冻结DOCX/PPTX各3页及XLSX2表15格、有限无短名目录；[草稿PR #30](https://github.com/surface-user/StudyWorkbench/pull/30)最终c352424的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43067590610)成功；不代表任意文档保真/整卷禁用8.3，见[原报告](../dev/records/2026-11-04-lw06-formats/report.md) |
 | PAR-01 | DONE | 主Agent已核双Python专项各30及12项环境失败的原生复验，原失败保留；[草稿PR #26](https://github.com/surface-user/StudyWorkbench/pull/26)最终1d103f3的[CI #149](https://github.com/surface-user/StudyWorkbench/actions/runs/43061041645)成功；限定显式题号/共享材料候选范围，见[报告](../dev/records/2026-11-12-complex-question-splitting/report.md) |
