@@ -1,6 +1,6 @@
 # 当前任务与交付状态
 
-更新日期：2026-11-14。本表分开实现、自动化、审查、人工及交付；自动化数字属于各报告的当时版本，不代表本轮重跑或当前全产品通过。历史完整清单见[迁移前快照](../dev/archive/baseline-20261030/docs/task.md)，默认无需读取。
+更新日期：2026-11-20。本表分开实现、自动化、审查、人工及交付；自动化数字属于各报告的当时版本，不代表本轮重跑或当前全产品通过。历史完整清单见[迁移前快照](../dev/archive/baseline-20261030/docs/task.md)，默认无需读取。
 
 ## 当前安排
 
@@ -51,6 +51,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | REL-01c 冻结Python本地来源映射 | DONE | 主Agent核[PR #47](https://github.com/surface-user/StudyWorkbench/pull/47)最终d6bef38的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43570337629)成功、918×2/专项38×2；55包2358模块861实体，本批纳工具，与REL-01d共同追溯，不等于官方归档认证 |
 | REL-01d 固定CPython及项目来源映射 | DONE | 主Agent核[PR #50](https://github.com/surface-user/StudyWorkbench/pull/50)最终0e295a7的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43575980520)三组44步成功、957×2及最终专项39×2；新增311 PYZ/154 ZIP代码/62实体/11启动代码来源与独立探针相符，58组件Schema通过；44 CRT/外层bootloader等仍未闭合，本批纳工具 |
 | REL-01e 原生CRT与bootloader来源 | DONE | 主Agent核[PR #54](https://github.com/surface-user/StudyWorkbench/pull/54)最终24405f0的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43581479380)三组44步成功/双1000及43模块旧冻结；只读重核969实体/44本地CRT/5节与精确DEBUG差异/58组件Schema。工具未纳本候选，官方CRT/完整PE认证仍未知 |
+| REL-01h 当前后端包来源证据重绑定 | REVIEW | 从#77复用现有采集器及#54原工具，重绑#74实际46业务模块/969文件/58组件标准子集；双版本172、原件/hash/官方Schema复核通过。44CRT保留11-19采集，11-20原源路径全缺失逐项列明，不冒充今天重读通过；见[PR #81](https://github.com/surface-user/StudyWorkbench/pull/81)及原报告，当前head CI/主Agent核验待交付。完整身份/许可/漏洞/签名和发行仍未闭合，原43模块旧报告保持 |
 | REL-01 完整源码与发行包SBOM | IN_PROGRESS | 先交付01a；最终覆盖仍依赖OFF-02及所有实际组件/安装器payload，不能据源锁文件或环境包表销项 |
 | REL-02 | BLOCKED | 完整发行传递许可依赖REL-01实际组件清单；源锁与固定Office/Java就绪，已有范围可单独先核，整体不记完成 |
 | REL-02a 锁定源码许可证据映射 | DONE | 主Agent核双Python各57、136包/246原文引用/182文本及缺文退出2；[草稿PR #41](https://github.com/surface-user/StudyWorkbench/pull/41)最终218cfc2的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43359882156)三组44步通过，工具已纳本组合。归档/内嵌声明/最终义务仍未闭合，不是完整REL-02通过 |
