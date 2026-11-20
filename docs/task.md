@@ -59,6 +59,8 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | REL-02b 源包许可补全 | IN_PROGRESS | latex2mathml3.81.1官方wheel/sdist缺项目LICENSE，固定tag另有MIT原文，内嵌unimathsymbols.txt声明LPPL且有vendor修改；需分别核来源/原文/通知及修改条件，不将全包标为单一MIT，完整REL-02继续 |
 | REL-02b1 固定上游许可原文及内嵌声明 | DONE | 主Agent核72×2/136包248原文引用184文本及九文件来源，[草稿PR #46](https://github.com/surface-user/StudyWorkbench/pull/46)最终8bebad8的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43569063314)三组45步成功，当前已纳本组合。原分发缺文/LPPL原Work和vendor修改条件仍保留，CLI退出2，父REL-02b/02未完成 |
 | REL-03 | IN_PROGRESS | 03a查询与03b/c两项修复已交付；已修复源锁135包无返回公告仅代表本次在线查询，数据库覆盖/最终组件和完整复扫仍依赖REL-01 |
+| REL-03d 后端原生组件漏洞核对 | REVIEW | 已比对 REL-01i 的三个 DLL 及两份冻结包。OpenSSL 3.5.9 在官方 69 条分支公告中命中 8 条，OSV 命中其中 6 条；libffi 3.4.4 的两种 OSV 查询均未返回匹配。双 Python 相关回归各 46 项。见[原生漏洞报告](../dev/records/2026-11-20-backend-native-advisories/report.md)。 |
+| REL-03e 后端 OpenSSL 修复与复扫 | BLOCKED | 等待适合当前 Windows CPython 发行方案、来源/配置可验证且包含修复的二进制。上游公告计划 2026-12-01 发布包含修复的版本。换包后须回测 SSL/哈希、冻结启动和业务兼容，重建来源/许可清单并对实际 DLL 再扫；8 条版本命中未关闭。 |
 | REL-04 | BLOCKED | 依赖REL-01至03；真实签名另缺发行身份，配置/篡改拒绝自动化不代表已签 |
 | REL-05 | BLOCKED | 依赖OFF-02与REL-01至04；候选组装完成后仍需REV-01，发布/合并未授权 |
 | FMT-01 | DONE | 主Agent已核复杂矩阵76×2、源码/新冻结DOCX/PPTX各3页及XLSX2表15格、有限无短名目录；[草稿PR #30](https://github.com/surface-user/StudyWorkbench/pull/30)最终c352424的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43067590610)成功；不代表任意文档保真/整卷禁用8.3，见[原报告](../dev/records/2026-11-04-lw06-formats/report.md) |

@@ -1,0 +1,136 @@
+{
+  "database_snapshot_pinned": false,
+  "exit_code": 2,
+  "files": {
+    "_internal/libcrypto-3.dll": "75495fe0e079ab00d49be740d3c710a0b94e3f74f9648cb7cc9f768fc7f52319",
+    "_internal/libffi-8.dll": "eff52743773eb550fcc6ce3efc37c85724502233b6b002a35496d828bd7b280a",
+    "_internal/libssl-3.dll": "8957182a9c385bfd9f3f790921de2ddc614cf91f99edbed4e9e5446a46504e32"
+  },
+  "nuget": {
+    "http_date": "Fri, 20 Nov 2026 06:16:38 GMT",
+    "latest_stable_3_13": "3.13.17",
+    "sha256": "aeec5cd78662154be2b351c419cb6b0a5e08a1e35d3ad20d41dac20088c39dfb",
+    "url": "https://api.nuget.org/v3-flatcontainer/python/index.json"
+  },
+  "observed_utc_date": "2026-11-20",
+  "osv": {
+    "libffi": {
+      "commit": {},
+      "tag": {}
+    },
+    "openssl": {
+      "commit": {
+        "CVE-2026-124709": "2026-11-19T01:03:05.413237Z",
+        "CVE-2026-35190": "2026-11-19T01:05:54.228322Z",
+        "CVE-2026-88822": "2026-11-17T21:01:10.523561Z",
+        "CVE-2026-88823": "2026-11-17T21:01:10.410954Z",
+        "CVE-2026-95691": "2026-11-18T19:33:24.618050Z",
+        "CVE-2026-95692": "2026-11-18T19:33:25.056871Z"
+      },
+      "tag": {
+        "CVE-2026-124709": "2026-11-19T01:03:05.413237Z",
+        "CVE-2026-35190": "2026-11-19T01:05:54.228322Z",
+        "CVE-2026-88822": "2026-11-17T21:01:10.523561Z",
+        "CVE-2026-88823": "2026-11-17T21:01:10.410954Z",
+        "CVE-2026-95691": "2026-11-18T19:33:24.618050Z",
+        "CVE-2026-95692": "2026-11-18T19:33:25.056871Z"
+      }
+    }
+  },
+  "osv_http": {
+    "endpoint": "querybatch",
+    "finished_at": "2026-11-20T06:10:14.625443+00:00",
+    "http_date": "Fri, 20 Nov 2026 06:10:14 GMT",
+    "http_status": 200,
+    "request_sha256": "68a7ffcf0bccec4b6595f5829fe42f6d0d9c851f887f26a897432a27560815de",
+    "response_bytes": 825,
+    "response_freshness": "current",
+    "response_sha256": "775419997ce625a4d8873808d8744f16b49423e02d57f829d853be129dbff0fa",
+    "started_at": "2026-11-20T06:10:11.208167+00:00"
+  },
+  "product_check_complete": false,
+  "product_reachability_verified": false,
+  "profile_sha256": "bf378e5a38ae40dc6b3961ebda842d5ee6bcec963605ce3c45436dfc991c20e3",
+  "raw_sources": "Separate successful OSV and OpenSSL observations replayed locally; combined live request did not complete.",
+  "selection_reason": "Only public component identities, hashes, dates, advisory IDs and range judgments are shared.",
+  "upstream": {
+    "libffi": {
+      "commit": "f24180be1367f942824365b131ae894b9c769c7d",
+      "repository": "libffi/libffi",
+      "tag": "v3.4.4",
+      "version": "3.4.4"
+    },
+    "openssl": {
+      "commit": "45e844fa2a14ec92d146bd8f5778ac130b6625fb",
+      "repository": "openssl/openssl",
+      "tag": "openssl-3.5.9",
+      "version": "3.5.9"
+    }
+  },
+  "upstream_version_findings": [
+    "CVE-2026-107493",
+    "CVE-2026-107496",
+    "CVE-2026-124709",
+    "CVE-2026-35190",
+    "CVE-2026-88822",
+    "CVE-2026-88823",
+    "CVE-2026-95691",
+    "CVE-2026-95692"
+  ],
+  "validated_frozen_builds": [
+    "PR #74",
+    "PR #90"
+  ],
+  "vendor": {
+    "entries": 69,
+    "matching": {
+      "CVE-2026-107493": {
+        "affected_before": "3.5.10",
+        "affected_from": "3.5.0",
+        "severity": "Low"
+      },
+      "CVE-2026-107496": {
+        "affected_before": "3.5.10",
+        "affected_from": "3.5.0",
+        "severity": "Low"
+      },
+      "CVE-2026-124709": {
+        "affected_before": "3.5.10",
+        "affected_from": "3.5.0",
+        "severity": "Low"
+      },
+      "CVE-2026-35190": {
+        "affected_before": "3.5.10",
+        "affected_from": "3.5.0",
+        "severity": "Low"
+      },
+      "CVE-2026-88822": {
+        "affected_before": "3.5.10",
+        "affected_from": "3.5.0",
+        "severity": "Low"
+      },
+      "CVE-2026-88823": {
+        "affected_before": "3.5.10",
+        "affected_from": "3.5.0",
+        "severity": "Low"
+      },
+      "CVE-2026-95691": {
+        "affected_before": "3.5.10",
+        "affected_from": "3.5.0",
+        "severity": "Low"
+      },
+      "CVE-2026-95692": {
+        "affected_before": "3.5.10",
+        "affected_from": "3.5.0",
+        "severity": "Low"
+      }
+    },
+    "sha256": "e248f21dd76ff65a3e623ae6c570b98346f0bfe6843fbb61eeebf436f7116b82",
+    "url": "https://openssl-library.org/news/vulnerabilities-3.5/"
+  },
+  "vendor_only": [
+    "CVE-2026-107493",
+    "CVE-2026-107496"
+  ],
+  "version_source": "CPython distribution recipe matched to three actual files; upstream machine-code equivalence not certified"
+}
