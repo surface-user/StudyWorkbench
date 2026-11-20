@@ -17,6 +17,29 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 
+def check_column_questions(request, prefix):
+    raw = (Path(__file__).resolve().parents[1] / 'contracts/samples/two-column-questions.pdf').read_bytes()
+    source, _ = request(prefix + '/imports?filename=columns.pdf', raw, headers={'Content-Type': 'application/pdf'})
+    options = {'resource_id': source['resource_id'], 'expected_sha256': source['sha256'], 'first_page': 1, 'last_page': 1}
+    classic, _ = request(prefix + '/pdf-chunk-jobs', options)
+    job, _ = request(prefix + '/pdf-chunk-jobs', {**options, 'layout': 'two_columns'})
+    assert job['id'] != classic['id'] and job['parser_version'] == 'pdf-column-chunks-v1'
+    url = prefix + '/pdf-chunk-jobs/' + job['id']
+    parsed, _ = request(url + '/advance', {'first_page': 1})
+    assert parsed['status'] == 'parsed'
+    batch, _ = request(url + '/preview', {})
+    first, second = batch['preview']['question_drafts']
+    assert first['shared_materials'] == second['shared_materials'] and first['source_pages'] == [1]
+    assert [r['box'][::2] for r in first['regions']] == [[0, .5], [.5, 1]]
+    assert 'First question continues here.' in batch['question_markdown'][0]
+    assert 'First question continues here.' not in batch['question_markdown'][1]
+    choice = {'expected_revision': batch['draft_revision'], 'selected': [0], 'confirm': True}
+    confirm = prefix + '/imports/' + job['id'] + '/question-markdown'
+    saved, _ = request(confirm, choice)
+    assert request(confirm, choice)[0] == saved
+    assert request(prefix + '/resources/' + source['resource_id'], raw=True)[0] == raw
+
+
 def check_scan(request, prefix, root):
     from PIL import Image, ImageDraw, ImageFont
 
@@ -177,6 +200,7 @@ def main():
             document, _ = request(prefix + '/nodes/' + node + '/document')
             assert 'kept' in document['text']
             if not restart:
+                check_column_questions(request, prefix)
                 original, _ = request(prefix + '/imports?filename=chunk.pdf', pdf_bytes,
                                       headers={'Content-Type': 'application/pdf'})
                 assert original['status'] == 'failed'
@@ -254,7 +278,7 @@ def main():
     print(json.dumps(dict(checks=checks, unique_error_ids=len(identifiers), restarted=True,
                          resource_grants_checked=True, resource_grants_not_restored=True,
                          pdf_chunk_confirmation_checked=True, receipts_preserved=True, media_range_preserved=True,
-                         scan_checked=bool(previous_scan), frozen=bool(args.exe))))
+                         scan_checked=bool(previous_scan), two_column_confirmation_checked=True, frozen=bool(args.exe))))
 
 
 if __name__ == '__main__':

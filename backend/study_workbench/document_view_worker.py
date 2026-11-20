@@ -9,7 +9,7 @@ from contextlib import closing
 VERSION = 'pdfium-pillow-view-v1'
 
 
-def column_text(page):
+def column_text(page, *, include_geometry=False):
     import pypdfium2.raw as pdfium
 
     if page.get_rotation() != 0:
@@ -20,6 +20,7 @@ def column_text(page):
         return {'available': False, 'reason': 'invalid_page_bounds'}
     mid = x0 + width / 2
     columns = [[], []]
+    graphics = [[], []]
     characters = 0
     with closing(page.get_textpage()) as textpage:
         if textpage.count_chars() > 20000:
@@ -30,6 +31,11 @@ def column_text(page):
             if obj.type == pdfium.FPDF_PAGEOBJ_FORM:
                 return {'available': False, 'reason': 'nested_layout'}
             if obj.type != pdfium.FPDF_PAGEOBJ_TEXT:
+                if include_geometry:
+                    left, bottom, right, top = obj.get_bounds()
+                    if not (x0 <= left <= right <= x1 and y0 <= bottom <= top <= y1) or left < mid < right:
+                        return {'available': False, 'reason': 'ambiguous_graphic'}
+                    graphics[int(left >= mid)].append(((y1 - top) / height, (y1 - bottom) / height))
                 continue
             value = obj.extract().strip()
             if not value:
@@ -51,13 +57,16 @@ def column_text(page):
     if not all(columns):
         return {'available': False, 'reason': 'empty_column'}
     result = []
-    for lines in columns:
+    for side, lines in enumerate(columns):
         lines.sort(key=lambda item: (-item[0], item[2]))
         if any(lower[0] > upper[1] for upper, lower in zip(lines, lines[1:])):
             return {'available': False, 'reason': 'overlapping_lines'}
         result.append({'text': '\n'.join(line[4] for line in lines),
                        'box': [(min(line[2] for line in lines) - x0) / width, (y1 - lines[0][0]) / height,
                                (max(line[3] for line in lines) - x0) / width, (y1 - lines[-1][1]) / height]})
+        if include_geometry:
+            result[-1]['lines'] = [((y1 - line[0]) / height, line[4]) for line in lines]
+            result[-1]['graphics'] = graphics[side]
     return {'available': True, 'columns': result}
 
 

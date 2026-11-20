@@ -8,6 +8,7 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from threading import Timer
+from typing import Literal
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Query
@@ -23,11 +24,14 @@ from .question_splitting import START, DraftSplitter, all_blocks
 from .workspaces import require_workspace
 
 VERSION = 'pdf-chunks-v1'
+COLUMN_VERSION = 'pdf-column-chunks-v1'
+VERSIONS = {VERSION, COLUMN_VERSION}
 OUTPUT_LIMIT = 96 * 1024 * 1024
 
 
 class CreateJob(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
+    layout: Literal['single_column', 'two_columns'] = 'single_column'
     resource_id: str = Field(min_length=1, max_length=128)
     expected_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
     first_page: int = Field(ge=1, le=2000)
@@ -53,11 +57,11 @@ def scoped_job(session, workspace, job_id):
     return job
 
 
-def parse_pages(data, first, last):
+def parse_pages(data, first, last, version=VERSION):
     cmd = [sys.executable]
     if not getattr(sys, 'frozen', False):
         cmd.extend(['-m', 'study_workbench'])
-    cmd.extend(['--parse-pdf-pages', str(first), str(last)])
+    cmd.extend(['--parse-pdf-columns' if version == COLUMN_VERSION else '--parse-pdf-pages', str(first), str(last)])
     env = {**os.environ, 'PYTHONPATH': str(Path(__file__).resolve().parents[1]), 'PYTHONUTF8': '1'}
     # With stdin staged separately, a full input pipe cannot block draining bounded stdout.
     with tempfile.TemporaryFile() as input_file:
@@ -107,8 +111,11 @@ def assemble(session, job, title):
                 splitter.begin(match)
             current = splitter.current
             if current is not None:
-                for field in ('blocks', 'source_pages', 'regions'):
+                for field in ('blocks', 'regions'):
                     current[field].extend(fragment[field])
+                for page in fragment['source_pages']:
+                    if current['source_pages'][-1:] != [page]:
+                        current['source_pages'].append(page)
     if expected != job.last_page + 1:
         raise HTTPException(409, '所选区间尚未提交完整')
     drafts = splitter.finish()
@@ -150,7 +157,8 @@ def pdf_chunk_router(engine, root):
         if body.last_page > page_count:
             raise HTTPException(422, '选择超出原件页数')
         key = dict(workspace_id=workspace_id, resource_id=body.resource_id, source_sha256=body.expected_sha256,
-                   parser_version=VERSION, first_page=body.first_page, last_page=body.last_page)
+                   parser_version=COLUMN_VERSION if body.layout == 'two_columns' else VERSION,
+                   first_page=body.first_page, last_page=body.last_page)
         with write_transaction(engine) as session:
             read_pdf_source(session, root, workspace_id, body.resource_id, body.expected_sha256)
             job = session.scalar(select(PdfChunkJob).filter_by(**key))
@@ -186,7 +194,7 @@ def pdf_chunk_router(engine, root):
     def resume(workspace_id: str, job_id: str):
         with write_transaction(engine) as session:
             job = scoped_job(session, workspace_id, job_id)
-            if job.status == 'running' or job.parser_version != VERSION:
+            if job.status == 'running' or job.parser_version not in VERSIONS:
                 raise HTTPException(409, '任务正在解析或解析器版本已变')
             read_pdf_source(session, root, workspace_id, job.resource_id, job.source_sha256)
             if job.status != 'parsed':
@@ -201,14 +209,15 @@ def pdf_chunk_router(engine, root):
             job = scoped_job(session, workspace_id, job_id)
             if session.get(PdfChunk, (job_id, first)) is not None:
                 return details(job)
-            if job.next_page != first or job.status != 'ready' or job.parser_version != VERSION:
+            if job.next_page != first or job.status != 'ready' or job.parser_version not in VERSIONS:
                 raise HTTPException(409, '任务进度或状态已变，请重新查看')
             data = read_pdf_source(session, root, workspace_id, job.resource_id, job.source_sha256)
             last = min(first + 19, job.last_page)
             job.generation += 1
+            version = job.parser_version
             generation, job.status = job.generation, 'running'
         try:
-            result = parse_pages(data, first, last)
+            result = parse_pages(data, first, last, version)
             asset_bytes = sum(len(base64.b64decode(asset['data'], validate=True)) for asset in result['_assets'])
             markers = [START.fullmatch(f['marker']) for f in result['fragments'] if f['marker'] is not None]
             if any(m is None for m in markers):
@@ -244,7 +253,7 @@ def pdf_chunk_router(engine, root):
     def preview(workspace_id: str, job_id: str):
         with write_transaction(engine) as session:
             job = scoped_job(session, workspace_id, job_id)
-            if job.status != 'parsed' or job.parser_version != VERSION:
+            if job.status != 'parsed' or job.parser_version not in VERSIONS:
                 raise HTTPException(409, '需要先完成当前版本的全部所选页')
             read_pdf_source(session, root, workspace_id, job.resource_id, job.source_sha256)
             original = session.get(Resource, job.resource_id)

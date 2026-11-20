@@ -2,6 +2,7 @@
 import base64
 import io
 import json
+import math
 import os
 import subprocess
 import sys
@@ -9,6 +10,7 @@ from pathlib import Path
 from uuid import uuid4
 from zipfile import BadZipFile, ZipFile
 
+from .document_view_worker import column_text
 from .question_splitting import START, DraftSplitter, all_blocks, split_blocks
 
 MAX_ASSETS = 64 * 1024 * 1024
@@ -35,12 +37,60 @@ def convert_document(data, name):
     return value
 
 
-def extract(data, suffix, *, page_range=None):
+def column_segments(page):
+    layout = column_text(page, include_geometry=True)
+    if not layout['available']:
+        return None
+    segments = []
+    for side, column in enumerate(layout['columns']):
+        sections = [(None, 0.0, [])]
+        for top, value in column['lines']:
+            marker = START.fullmatch(value)
+            if marker is not None:
+                if any(y1 < top < y2 for y1, y2 in column['graphics']):
+                    return None
+                sections.append((value, top, []))
+            sections[-1][2].append(value)
+        for i, (marker, top, lines) in enumerate(sections):
+            bottom = sections[i + 1][1] if i + 1 < len(sections) else 1.0
+            if bottom <= top or (not lines and not any(top <= y1 <= y2 <= bottom for y1, y2 in column['graphics'])):
+                continue
+            segments.append((marker, [side / 2, top, (side + 1) / 2, bottom], '\n'.join(lines)))
+    return segments
+
+
+def column_page(page, index, width, segments, image, text):
+    bitmap = page.render(scale=min(2.0, 1600 / width))
+    try:
+        with bitmap.to_pil() as picture:
+            image(picture, f"PDF 第 {index} 页原貌")
+            if segments is None:
+                return [{'marker': None, 'ambiguous': True, 'blocks': [], 'source_pages': [index], 'regions': []}]
+            fragments = []
+            for marker, box, value in segments:
+                left, top, right, bottom = box
+                pixels = (int(left * picture.width), int(top * picture.height),
+                          math.ceil(right * picture.width), math.ceil(bottom * picture.height))
+                with picture.crop(pixels) as crop:
+                    blocks = [image(crop, f'第{index}页栏内区域', append=False)]
+                if value:
+                    blocks.append({'type': 'text', 'text': value})
+                    text(value)
+                fragments.append({'marker': marker, 'ambiguous': False, 'blocks': blocks,
+                                  'source_pages': [index], 'regions': [{'page': index, 'box': box}]})
+            return fragments
+    finally:
+        bitmap.close()
+
+
+def extract(data, suffix, *, page_range=None, two_columns=False):
     from PIL import Image
     from pydantic import TypeAdapter
 
     from .question_protocol import Content
 
+    if two_columns and page_range is None:
+        raise ValueError('PDF 双栏拆题需要显式页区间')
     if page_range is not None and suffix != '.pdf':
         raise ValueError('PDF 页区间只适用于 PDF 原件')
     blocks, assets = [], []
@@ -145,6 +195,18 @@ def extract(data, suffix, *, page_range=None):
                     if width <= 0 or height <= 0 or height / width > 5 or width / height > 5:
                         raise ValueError("PDF 页面尺寸异常")
                     text(f"第 {index + 1} 页")
+                    if two_columns:
+                        segments = column_segments(page)
+                        for marker, _, _ in segments or ():
+                            if marker is not None:
+                                if START.fullmatch(marker)['first'] is None:
+                                    question_count += 1
+                                else:
+                                    material_count += 1
+                        if max(question_count, material_count) > 200:
+                            raise ValueError('PDF 双栏超过 200 道题目或 200 组材料')
+                        fragments.extend(column_page(page, index + 1, width, segments, image, text))
+                        continue
                     textpage = page.get_textpage()
                     try:
                         if page_range is not None and textpage.count_chars() > 200000:
@@ -258,7 +320,7 @@ def extract(data, suffix, *, page_range=None):
     return {"kind": "note", "blocks": blocks, "question_drafts": drafts, "warnings": warnings, "_assets": assets}
 
 
-def worker(suffix, *, page_range=None):
+def worker(suffix, *, page_range=None, two_columns=False):
     data = sys.stdin.buffer.read(8 * 1024 * 1024 + 1)
     try:
         if len(data) > 8 * 1024 * 1024:
@@ -267,7 +329,7 @@ def worker(suffix, *, page_range=None):
             if any(not value.isascii() or not value.isdecimal() or len(value) > 4 for value in page_range):
                 raise ValueError('PDF 页码必须为 1 至 2000 的十进制整数')
             page_range = tuple(map(int, page_range))
-        value = extract(data, suffix, page_range=page_range)
+        value = extract(data, suffix, page_range=page_range, two_columns=two_columns)
         if page_range is not None:
             raw = json.dumps(value, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
             if len(raw) > 96 * 1024 * 1024:

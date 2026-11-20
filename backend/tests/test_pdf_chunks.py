@@ -61,10 +61,10 @@ def test_chunk_job_stale_worker_cannot_overwrite_cancel_or_recovery(tmp_path, mo
     entered, proceed = threading.Event(), threading.Event()
     original = pdf_chunks.parse_pages
 
-    def pause(data, first, last):
+    def pause(data, first, last, version):
         entered.set()
         assert proceed.wait(20)
-        return original(data, first, last)
+        return original(data, first, last, version)
 
     monkeypatch.setattr(pdf_chunks, 'parse_pages', pause)
     with client(tmp_path) as c:
@@ -189,3 +189,62 @@ def test_editing_selected_second_page_crops_the_original_page(tmp_path):
         assert updated.status_code == 200, updated.text
         assert all(d['source_pages'] == [2] for d in updated.json()['preview']['question_drafts'])
         assert c.post(url + '/preview').json()['draft_revision'] == updated.json()['draft_revision']
+
+
+def test_selected_column_layout_preserves_continuation_material_and_exact_crops(tmp_path):
+    from pathlib import Path
+
+    from PIL import Image
+
+    raw = (Path(__file__).parents[2] / 'contracts/samples/two-column-questions.pdf').read_bytes()
+    with client(tmp_path) as c:
+        body = request_job(c, raw, 1)
+        one = c.post(API, json=body).json()
+        assert c.post(API, json={**body, 'layout': 'automatic'}).status_code == 422
+        two = c.post(API, json={**body, 'layout': 'two_columns'}).json()
+        assert two['id'] != one['id'] and two['parser_version'] == 'pdf-column-chunks-v1'
+        url = API + '/' + two['id']
+        advanced = c.post(url + '/advance', json={'first_page': 1})
+        assert advanced.json()['status'] == 'parsed', advanced.text
+    with client(tmp_path) as c:
+        response = c.post(url + '/preview')
+        assert response.status_code == 200, response.text
+        batch = response.json()
+        first, second = batch['preview']['question_drafts']
+        shared = first['shared_materials'][0]
+        assert shared == second['shared_materials'][0] and shared['source_pages'] == [1]
+        assert 'Shared facts from the left column.' in shared['blocks'][1]['text']
+        assert 'First question continues here.' in first['blocks'][-1]['text']
+        assert 'First question continues here.' not in str(second['blocks'])
+        assert [first['title'], second['title']] == ['1. First question', '2. Second question']
+        assert first['source_pages'] == second['source_pages'] == [1]
+        assert [b['box'][::2] for b in first['regions']] == [[0, .5], [.5, 1]]
+        assert second['regions'][0]['box'][::2] == [.5, 1]
+        picture = c.get(SCOPE + '/resources/' + first['blocks'][0]['attachment_id'])
+        with Image.open(io.BytesIO(picture.content)) as crop:
+            # The filled blue figure belongs only to the lower left region.
+            assert crop.width == 600 and crop.getpixel((100, 120)) == (51, 102, 204)
+        confirm = f"{SCOPE}/imports/{two['id']}/question-markdown"
+        choice = dict(expected_revision=batch['draft_revision'], selected=[0], confirm=True)
+        created = c.post(confirm, json=choice)
+        assert created.status_code == 200 and c.post(confirm, json=choice).json() == created.json()
+        assert c.post(confirm, json={**choice, 'selected': [1]}).status_code == 409
+        assert c.get(f"{SCOPE}/resources/{body['resource_id']}").content == raw
+        assert c.get(API + '/' + one['id']).json()['status'] == 'ready'
+
+
+@pytest.mark.parametrize('drawing', [b'295 110 8 15', b'35 160 28 50'])
+def test_ambiguous_figure_preserves_full_page_and_yields_no_guessed_draft(drawing):
+    from pathlib import Path
+
+    from study_workbench.documents import extract
+
+    raw = (Path(__file__).parents[2] / 'contracts/samples/two-column-questions.pdf').read_bytes()
+    # Preserve stream lengths and xref offsets with a fixed-size replacement.
+    source = b'35 110 28 15 re f 0 g'
+    replacement = drawing + b' re f 0 g'
+    assert len(replacement) == len(source)
+    result = extract(raw.replace(source, replacement), '.pdf', page_range=(1, 1), two_columns=True)
+    assert len(result['_assets']) == 1 and result['blocks'][-1]['type'] == 'image'
+    assert len(result['fragments']) == 1 and result['fragments'][0]['ambiguous']
+    assert not result['fragments'][0]['blocks']
