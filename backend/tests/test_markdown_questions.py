@@ -3,11 +3,12 @@ import io
 import json
 import re
 import sqlite3
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from zipfile import ZipFile
 
 import pytest
-from study_workbench import library_integrity, markdown_questions
+from study_workbench import backup_store, library_integrity, markdown_questions
 from study_workbench.question_splitting import draft_revision, split_blocks
 from test_imports import SCOPE, client, upload
 from test_library_integrity import snapshot
@@ -129,6 +130,67 @@ def test_recovery_preview_matches_only_complete_unregistered_files(tmp_path, mon
             db.execute('UPDATE import_jobs SET preview=? WHERE id=?', (json.dumps(preview), job['id']))
         ambiguous = c.post(url, json={**body, 'expected_revision': draft_revision(drafts)})
         assert ambiguous.status_code == 409 and '同批多个候选' in ambiguous.text
+
+
+def test_recovery_writes_new_question_once_and_restores_its_receipt(tmp_path, monkeypatch):
+    root = tmp_path / 'library'
+    with client(root) as c:
+        job = upload(c, (SAMPLES / 'numbered-questions.docx').read_bytes(), '恢复题目.docx').json()
+        base = f"{SCOPE}/imports/{job['id']}/question-markdown"
+        first = dict(expected_revision=job['draft_revision'], selected=[0], confirm=True)
+
+        def interrupted(*args, **kwargs):
+            raise OSError('test interruption before registration')
+
+        with monkeypatch.context() as patch:
+            patch.setattr(markdown_questions.Resource, '__init__', interrupted)
+            assert c.post(base, json=first).status_code == 500
+        folder = root / 'workspaces/default/questions'
+        source, = folder.iterdir()
+        before = snapshot(source)
+        selection = dict(directory_id=source.name, ordinal=0, expected_revision=job['draft_revision'])
+        match = c.post(base + '/recovery-preview', json=selection).json()
+        assert match['confirmation'] == dict(selected=[0], finalizes_batch=True)
+        request = dict(**selection, request_id='recovery-test-001', candidate_sha256=match['candidate_sha256'],
+                       confirm_single_question=True)
+        url = base + '/recover'
+        for false_value in (False, 1):
+            assert c.post(url, json={**request, 'confirm_single_question': false_value}).status_code == 422
+        assert c.post(url, json={**request, 'candidate_sha256': '0'*64}).status_code == 409
+        assert c.post(url.replace('/default/', '/missing/'), json=request).status_code == 404
+        md = source / 'question.md'
+        md.write_bytes(before['question.md'] + b'changed')
+        assert c.post(url, json=request).status_code == 409
+        md.write_bytes(before['question.md'])
+        with monkeypatch.context() as patch:
+            patch.setattr(markdown_questions.Resource, '__init__', interrupted)
+            assert c.post(url, json=request).status_code == 500
+        assert c.get(f'{SCOPE}/question-markdown').json() == []
+        failed, = set(folder.iterdir()) - {source}
+        assert snapshot(failed) == before
+    with client(root) as c, ThreadPoolExecutor(2) as pool:
+        calls = [pool.submit(c.post, url, json=request) for _ in range(2)]
+        responses = [call.result(timeout=30) for call in calls]
+        assert [r.status_code for r in responses] == [200, 200]
+        receipt = responses[0].json()
+        target = receipt['target']
+        assert receipt == responses[1].json() and receipt['request'] == request
+        assert receipt['markdown_sha256'] == hashlib.sha256(before['question.md']).hexdigest()
+        assert (target['source_resource_id'], receipt['import_job_id']) == (job['resource_id'], job['id'])
+        assert source.name != target['id'] and set(folder.iterdir()) == {source, failed, folder / target['id']}
+        assert all(snapshot(path) == before for path in folder.iterdir())
+        assert c.post(base, json=first).json() == [target]
+        assert c.post(base, json={**first, 'selected': [1]}).status_code == 409
+        assert c.post(url, json={**request, 'request_id': 'changed-request-01'}).status_code == 409
+        assert c.post(url, json={**request, 'ordinal': 1}).status_code == 409
+    archive, restored = tmp_path / 'backup.zip', tmp_path / 'restored'
+    backup_store.create_backup(root, archive)
+    backup_store.restore_backup(archive, restored, tmp_path / 'settings.json')
+    with client(restored) as c:
+        assert c.post(url, json=request).json() == receipt
+        assert c.get(f'{SCOPE}/question-markdown').json() == [target]
+        assert c.get(f"{SCOPE}/resources/{target['markdown_resource_id']}").content == before['question.md']
+    assert snapshot(restored / 'workspaces/default/questions') == snapshot(folder)
 
 
 @pytest.mark.parametrize('stage', ['assets_only', 'markdown_written'])

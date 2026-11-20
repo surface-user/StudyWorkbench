@@ -34,6 +34,8 @@
 | analysis_review_revisions | (draft_id,revision)旧候选/审核状态快照；改写同事务追加，触发器拒绝更新/删除；重启中断采用追加历史后标失败，不自动重放文件写入 |
 | study_tasks | 题目ID集合、标题及时间，进度由作答推导 |
 
+旧提取题目经显式恢复成功后，`import_jobs.preview.markdown_recovery_receipt`（版本 1）记录空间、批次、请求绑定、目标题目及 MD 摘要，与 `markdown_questions`、对应 MD 资源和批次确认状态在一个事务中提交。普通导入和历史批次可无此字段。重放按本批次的收据和实际登记核对，原未登记目录继续保留。
+
 ### 身份与权威
 
 - workspace_id是隔离边界；resource_item_id是树节点ID，区别resource_id原件blob。
