@@ -57,6 +57,43 @@ def staged(tmp_path, monkeypatch):
     return stage, checker, collector, calls
 
 
+@pytest.mark.parametrize('raw', [
+    b'{"url":"file:///private/build/wheel"}', b'{"url":"git+file:///private/repo"}',
+    b'{"url":"C:/private/build/wheel"}', b'{"url":"/private/build/wheel"}',
+    b'{"url":42}', b'{}', b'!', b'x' * 65537,
+], ids=['file-url', 'git-file', 'drive', 'absolute', 'wrong-type', 'missing', 'invalid-json', 'oversized'])
+def test_backend_local_install_metadata_rejected_without_writing(staged, raw):
+    stage, checker, _, calls = staged
+    relative = 'backend/_internal/pkg.dist-info/direct_url.json'
+    path = stage / relative
+    path.parent.mkdir(parents=True)
+    path.write_bytes(raw)
+    data = manifest(stage)
+    data['files'][relative] = hashlib.sha256(raw).hexdigest()
+    save_manifest(stage, data)
+    before = snapshot(stage)
+    with pytest.raises(ValueError) as exc:
+        checker.main()
+    assert 'private' not in str(exc.value)
+    assert not calls['opened'] and snapshot(stage) == before
+
+
+def test_backend_remote_provenance_and_other_payloads_are_preserved(staged):
+    stage, checker, _, _ = staged
+    data = manifest(stage)
+    for relative, url in [('backend/_internal/pkg.dist-info/direct_url.json', 'https://example.test/wheel'),
+                          ('component/pkg.dist-info/direct_url.json', 'file:///example')]:
+        path = stage / relative
+        path.parent.mkdir(parents=True)
+        raw = json.dumps({'url': url}).encode()
+        path.write_bytes(raw)
+        data['files'][relative] = hashlib.sha256(raw).hexdigest()
+    save_manifest(stage, data)
+    before = snapshot(stage)
+    checker.main()
+    assert snapshot(stage) == before
+
+
 def test_complete_stage_retains_hash_and_pe_checks_without_writes(staged):
     stage, checker, _, calls = staged
     before = snapshot(stage)

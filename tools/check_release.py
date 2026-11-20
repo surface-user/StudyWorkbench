@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 from native_dependencies import inspect_dependencies
-from release_inventory import stage_files
+from release_inventory import check_backend_install_metadata, stage_files
 
 
 def main():
@@ -15,6 +15,7 @@ def main():
     args = parser.parse_args()
     stage = args.stage.resolve()
     payload = stage_files(stage)
+    check_backend_install_metadata(payload, 'backend/_internal/')
     inventory = json.loads((stage / "build-inventory.json").read_text(encoding="utf-8"))
     assert inventory["python"] == "3.13.17"
     expected = set(inventory["files"])
