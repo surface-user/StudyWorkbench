@@ -28,7 +28,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 |---|---|---|
 | PLAN-06 并行调度登记 | DONE | 主Agent已核[草稿PR #23](https://github.com/surface-user/StudyWorkbench/pull/23)最终2645366的[CI #133](https://github.com/surface-user/StudyWorkbench/actions/runs/43057985634)成功；本轮继续维护原表和独立PR，不代表功能全部完成 |
 | OFF-01 | DONE | #22诊断开发交付已完成；本轮另核该head CI，OFF-02缺口仍保留 |
-| OFF-02 | IN_PROGRESS | Java/CRT固定组合、配置隔离及保守加载域已交付；本批纳#48后剩145未知，完整Python/托管/x86加载及最终发行继续，不安装系统Java、不绕过门禁 |
+| OFF-02 | IN_PROGRESS | 当前代码组合与 Office 专项分支的覆盖分别记录。独立交付 [#82](https://github.com/surface-user/StudyWorkbench/pull/82)、[#87](https://github.com/surface-user/StudyWorkbench/pull/87) 已验证内置 Python 和文本编码库，Office 专项完整组件仍有 78 个原生文件的加载关系待核；保留 Java/CRT 隔离约束。 |
 | OFF-02a 固定Java组件准备 | DONE | 主Agent已核37×2专项、315文件及关键PE/hash；[草稿PR #28](https://github.com/surface-user/StudyWorkbench/pull/28)最终2187fec的[CI #153](https://github.com/surface-user/StudyWorkbench/actions/runs/43065303373)成功；固定准备工具已纳本轮候选，整包OFF-02继续 |
 | REL-03a 源锁文件漏洞查询 | DONE | 主Agent已核42×2专项/实际135包查询和原始证据hash；[草稿PR #32](https://github.com/surface-user/StudyWorkbench/pull/32)最终89f0d77的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43071363779)成功；原2包12公告/6CVE由REL-03b/c分别修复复验，Git/SDK/数据库快照/最终包仍不完整，父REL-03不销项 |
 | INT-01 首批组合回归 | DONE | 主Agent已核[草稿PR #31](https://github.com/surface-user/StudyWorkbench/pull/31)最终b8d534a的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43069606085)三组成功；本地760及77子测试通过，已交付有限首批组合；报告继续[批次记录](../dev/records/2026-11-12-parallel-batch/report.md) |
@@ -45,7 +45,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | INT-03 第三批组合回归 | DONE | 主Agent已核[草稿PR #43](https://github.com/surface-user/StudyWorkbench/pull/43)最终c666db9的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43365961531)三组45步成功、双Python各971及全部冻结链；本地971及77子测试/Flutter203，见[批次报告](../dev/records/2026-11-12-parallel-batch/report.md)。当前有限组合开发交付完成，正式发行父项保留 |
 | INT-04 第四批组合回归 | DONE | 主Agent核[PR #49](https://github.com/surface-user/StudyWorkbench/pull/49)最终68eaabd的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43574318173)三组46步全部成功，含源码/冻结公网续传重定向；本地1063及77子测试/Flutter203、新冻结44模块及Office链通过。原报告保留全部边界，完整发行父项继续 |
 | INT-05 第五批来源与加载域组合 | DONE | 主Agent核[PR #53](https://github.com/surface-user/StudyWorkbench/pull/53)最终b09da16的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43580584516)成功：双后端完整1180×2、Flutter203、44模块新冻结及既定链通过；46步45成功、原分支限定公网探针1跳过且不补记公网通过。497文件/真实来源与145未知有限验收，见[批次报告](../dev/records/2026-11-12-parallel-batch/report.md) |
-| M3-03d 学习记录规模回归 | REVIEW | [PR #56](https://github.com/surface-user/StudyWorkbench/pull/56)已交付源码/既有#49冻结两端1k/10k/100k六档自动化，修正测试TEMP后均通过，保留旧stub/权限/溢写失败；当前head CI/主Agent核证待完成，独立工具未纳本候选 |
+| M3-03d 学习记录规模回归 | DONE | [#56](https://github.com/surface-user/StudyWorkbench/pull/56) 的 [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43584654303) 通过。已核对 1 千、1 万、10 万三档各两种启动方式及原始百分位结果。冻结样本使用 #49 版本，独立工具尚未纳本候选。 |
 | REL-01a 源码锁文件标准SBOM | DONE | 主Agent已核双Python专项各35、136源码包/8个SDK未知、官方Schema；[草稿PR #25](https://github.com/surface-user/StudyWorkbench/pull/25)最终1b52eb3的[CI #141](https://github.com/surface-user/StudyWorkbench/actions/runs/43060243273)成功；仅源码范围，父REL-01仍未完成 |
 | REL-01b 冻结后端SBOM | DONE | 主Agent核969实体hash/15metadata/2721PYZ与140×2专项，[草稿PR #42](https://github.com/surface-user/StudyWorkbench/pull/42)最终fb5b7a2的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43366003202)三组44步成功。工具已纳本组合；剩余2678模块/103PYD/非PE数据归属等由REL-01c映射，不据物理覆盖宣称完整身份 |
 | REL-01c 冻结Python本地来源映射 | DONE | 主Agent核[PR #47](https://github.com/surface-user/StudyWorkbench/pull/47)最终d6bef38的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43570337629)成功、918×2/专项38×2；55包2358模块861实体，本批纳工具，与REL-01d共同追溯，不等于官方归档认证 |
@@ -56,8 +56,8 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | REL-02a 锁定源码许可证据映射 | DONE | 主Agent核双Python各57、136包/246原文引用/182文本及缺文退出2；[草稿PR #41](https://github.com/surface-user/StudyWorkbench/pull/41)最终218cfc2的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43359882156)三组44步通过，工具已纳本组合。归档/内嵌声明/最终义务仍未闭合，不是完整REL-02通过 |
 | REL-02b 源包许可补全 | IN_PROGRESS | latex2mathml3.81.1官方wheel/sdist缺项目LICENSE，固定tag另有MIT原文，内嵌unimathsymbols.txt声明LPPL且有vendor修改；需分别核来源/原文/通知及修改条件，不将全包标为单一MIT，完整REL-02继续 |
 | REL-02b1 固定上游许可原文及内嵌声明 | DONE | 主Agent核72×2/136包248原文引用184文本及九文件来源，[草稿PR #46](https://github.com/surface-user/StudyWorkbench/pull/46)最终8bebad8的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43569063314)三组45步成功，当前已纳本组合。原分发缺文/LPPL原Work和vendor修改条件仍保留，CLI退出2，父REL-02b/02未完成 |
-| REL-03 | IN_PROGRESS | 03a查询与03b/c两项修复已交付；已修复源锁135包无返回公告仅代表本次在线查询，数据库覆盖/最终组件和完整复扫仍依赖REL-01 |
-| REL-04 | BLOCKED | 依赖REL-01至03；真实签名另缺发行身份，配置/篡改拒绝自动化不代表已签 |
+| REL-03 | IN_PROGRESS | 源码锁修复保留；独立 [#91](https://github.com/surface-user/StudyWorkbench/pull/91) 将已识别的三个原生 DLL 与上游公告对照，OpenSSL 3.5.9 命中 8 条。REL-03e 须在可信修复版本就绪后重建、复扫，发行阻断保留。 |
+| REL-04 | BLOCKED | 冻结后端的 SHA256、签名者及时间戳核验已独立交付 [#85](https://github.com/surface-user/StudyWorkbench/pull/85)。真实签署仍缺发行身份和可信签署环境，完整候选依赖 REL-01 至 03。 |
 | REL-05 | BLOCKED | 依赖OFF-02与REL-01至04；候选组装完成后仍需REV-01，发布/合并未授权 |
 | FMT-01 | DONE | 主Agent已核复杂矩阵76×2、源码/新冻结DOCX/PPTX各3页及XLSX2表15格、有限无短名目录；[草稿PR #30](https://github.com/surface-user/StudyWorkbench/pull/30)最终c352424的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43067590610)成功；不代表任意文档保真/整卷禁用8.3，见[原报告](../dev/records/2026-11-04-lw06-formats/report.md) |
 | PAR-01 | DONE | 主Agent已核双Python专项各30及12项环境失败的原生复验，原失败保留；[草稿PR #26](https://github.com/surface-user/StudyWorkbench/pull/26)最终1d103f3的[CI #149](https://github.com/surface-user/StudyWorkbench/actions/runs/43061041645)成功；限定显式题号/共享材料候选范围，见[报告](../dev/records/2026-11-12-complex-question-splitting/report.md) |
@@ -79,15 +79,15 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | DL-02 | IN_PROGRESS | 用户已选B站、抖音、爱奇艺，B站先行；#45共同设计已交付，DL-02b有限元数据/质量预览先实施，真实传输与DL-03格式交接后续继续，不以预览代替整个下载目标 |
 | DL-02a 站点提取共同设计 | DONE | 主Agent核[草稿PR #45](https://github.com/surface-user/StudyWorkbench/pull/45)最终517bcd4的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43367244690)三组成功及4文档/82引用/6锚点；规划契约已纳本组合，三站真实提取与组件采用仍未完成 |
 | DL-02b1 B站受控格式预览 | BLOCKED | [PR #52](https://github.com/surface-user/StudyWorkbench/pull/52) v2/b293449的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43581781896)源码与冻结均公开page/HTTP412，前两次失败保留；离线通过不代替公网正向，尚未纳本候选，三站与真实下载继续 |
-| DL-03 | BLOCKED | 依赖明确的格式/轨道交接及FFmpeg实际二进制/许可选择，不要求整个DL-02完成，避免与DASH/HLS支持循环等待 |
+| DL-03 | IN_PROGRESS | 固定 FFmpeg 组件来源、轨道元数据与本地真实探测已有独立交付（[#67](https://github.com/surface-user/StudyWorkbench/pull/67)、[#73](https://github.com/surface-user/StudyWorkbench/pull/73)、[#79](https://github.com/surface-user/StudyWorkbench/pull/79)）。双轨合流、持久队列交接和站点端到端下载另行实施。 |
 | LW-04a | DONE | 主Agent已核58×2专项、Flutter19/全量200及失败保留；[草稿PR #29](https://github.com/surface-user/StudyWorkbench/pull/29)最终9027508的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43066543568)成功；有界TXT全文/原文行回跳已纳本轮候选 |
 | LW-07a | DONE | 主Agent已核双Python专项各11、Flutter专项6/全量196及静态检查；[草稿PR #27](https://github.com/surface-user/StudyWorkbench/pull/27)最终6af0360的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43060817695)成功；50条历史分页/刷新/迟到响应开发交付完成，审查暂缓，见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md) |
 | UPD-01 | BLOCKED | 完整升级回滚流程依赖稳定发行产物和签名方案；保留旧库保护，未授权发布更新 |
 | API-01 | DONE | 主Agent按原退出条件核API-01a兼容结构/脱敏/关联ID及调用方与冻结实证；[草稿PR #34](https://github.com/surface-user/StudyWorkbench/pull/34)最终8b29a27的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43091834219)三组45步通过，API-01/a有限开发交付完成，已纳本组合；历史Office偶发失败保留 |
-| M2-05i | IN_PROGRESS | 05g/h 巡检与完整备份已交付，按 i1 来源及确认契约、i2 只读候选核对、i3 新位置恢复与幂等收据分别跟踪。 |
+| M2-05i | IN_PROGRESS | 旧提取题目的只读匹配、新位置恢复与收据已交付 i1–i3。其他派生目录按其权威记录区分，尚无统一重新登记能力。 |
 | M2-05i1 派生题目恢复契约 | DONE | [PR #86](https://github.com/surface-user/StudyWorkbench/pull/86) 的[当前提交 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44682511146)通过，既有中断及备份回归各 22 项。见[契约](question-markdown-spec.md#derived-question-recovery)和[报告](../dev/records/2026-11-06-library-integrity/report.md#m2-05i1-派生题目恢复契约)。 |
-| M2-05i2 旧提取题目恢复预览 | REVIEW | 已实现选定目录与同空间批次、原件、共享材料及附件的只读匹配。两版 Python 各 48 项相关回归通过，源码和冻结包各 10 项 HTTP 核对通过。[报告](../dev/records/2026-11-20-derived-question-recovery/report.md) |
-| M2-05i3 新位置恢复与收据 | REVIEW | 基于 [i2 只读核对 #89](https://github.com/surface-user/StudyWorkbench/pull/89)实现。两版 Python 各 50 项，源码和冻结包各 12 项 HTTP 核对；并发确认、重启和完整备份还原后复用同一收据。见[恢复报告](../dev/records/2026-11-20-derived-question-recovery/report.md#m2-05i3-显式确认与新位置恢复)。 |
+| M2-05i2 旧提取题目恢复预览 | DONE | [#89](https://github.com/surface-user/StudyWorkbench/pull/89) 的 [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44683976323) 通过，两个 Python 版本各 48 项，源码和冻结包各 10 项 HTTP 检查。参见[恢复报告](../dev/records/2026-11-20-derived-question-recovery/report.md)。 |
+| M2-05i3 新位置恢复与收据 | DONE | [#90](https://github.com/surface-user/StudyWorkbench/pull/90) 的 [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44684769079) 通过，两个 Python 版本各 50 项，源码和冻结包各 12 项 HTTP 检查。并发重试、重启及整库还原后返回同一收据。参见[恢复报告](../dev/records/2026-11-20-derived-question-recovery/report.md)。 |
 | M2-05j | READY | i1 关系设计和原容量报告均已交付，可细化留存、保护清单与中断恢复规则。实际清理需另行取得具体授权。 |
 | M3-03a、M3-03b、M3-03c | READY | 富内容、知识关系、复习评价分别先明确契约；M3-03d已单列REVIEW，不把规模回归当作算法效果通过 |
 | WEB-01、MED-01 | READY | 既有隔离WebView/媒体服务可用于自动化矩阵；模拟/HTTP不冒充实际解码或硬件证据 |
@@ -104,6 +104,18 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | M0/M1硬件交互、人工安装/干净机、真实站点/硬件人工项 | 暂停 | 依用户取消/暂停人工测试安排，不调度Computer Use；暂停不记DONE或测试通过 |
 
 M2-03由已交付LW-05承接；M2-04由PAR/FMT、M2-05由既有a–h及后续i/j、M3-03由a–d、M4由DL/WEB/MED、R6由R6-01/02承接，父条目继续保留。LW-06/07/08整体及正式发行仍未完成。PLAN-03/05和已交付学习功能不重复实施。
+
+### 后端独立 PR 交付索引（2026-11-20）
+
+本任务表基于 [#90](https://github.com/surface-user/StudyWorkbench/pull/90)；下列横向分支的已交付状态只对应各自固定提交，不代表已经合入此分支。版本、检查和仍待办理的事项见[后端批次报告](../dev/records/2026-11-20-backend-delivery/report.md)。
+
+| 小项 | 状态 | 独立交付 |
+|---|---|---|
+| DL-03c2 本地双轨探测 | DONE | [#79](https://github.com/surface-user/StudyWorkbench/pull/79) · [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44680208170)，仅 MP4/M4A。本地双轨合流与三站下载继续。 |
+| REL-01h、REL-01i 后端原生来源 | DONE | [#81](https://github.com/surface-user/StudyWorkbench/pull/81) · [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44678643251)；[#88](https://github.com/surface-user/StudyWorkbench/pull/88) · [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44683111794)。969 文件清点与三个 DLL 来源/许可分项核对，完整 SBOM 仍在进行。 |
+| OFF-02l、OFF-02m Office 内置 Python 与文本编码 | DONE | [#82](https://github.com/surface-user/StudyWorkbench/pull/82) · [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44679690453)；[#87](https://github.com/surface-user/StudyWorkbench/pull/87) · [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44682889216)。专项组件剩 78 个未知加载关系。 |
+| REL-04a 冻结后端验签 | DONE | [#85](https://github.com/surface-user/StudyWorkbench/pull/85) · [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44681767359)。真实已签样本通过，项目当前未签名后端被拒。 |
+| REL-03d 原生漏洞核对、REL-03e 修复 | REVIEW / BLOCKED | [#91](https://github.com/surface-user/StudyWorkbench/pull/91) 保留两个来源的查询差异。补丁包、关联清单、兼容回归和复扫另行追踪。 |
 
 ## 当前任务
 
