@@ -1,0 +1,526 @@
+{
+  "abi": {
+    "actual_consumer_functions": [
+      "Py_IsInitialized"
+    ],
+    "forwarded_exports": 902,
+    "full_interface_certified": false,
+    "target_names_found": 899,
+    "unmatched_targets": [
+      "PyOS_CheckStack",
+      "_Py_NegativeRefcount",
+      "_Py_RefTotal"
+    ]
+  },
+  "base_head": "d4ac6e575a9cd7c9841c13dd682a0398f8fbcab6",
+  "base_pr": 69,
+  "base_tree": "5e76266b3dac6716a9b84035148b60eb9340e098",
+  "complete_dynamic_isolation_verified": false,
+  "complete_export_interface_verified": false,
+  "component": {
+    "component_inventory_sha256": "b0a040bd584bb69aeaba44f749996d2320d83707889b8f8ad85d93d44893c9ee",
+    "domains": {
+      "office_python_child_extensions": {
+        "edges": 183,
+        "nodes": 25,
+        "roots": 19
+      },
+      "office_python_launchers": {
+        "edges": 41,
+        "nodes": 4,
+        "roots": 2
+      }
+    },
+    "legacy_default_render_byte_identical": true,
+    "legacy_report_exactly_equals_base": true,
+    "new_abi_copy_remains_unknown": "converters/libreoffice/program/python-core-3.13.15/bin/python3.dll",
+    "newly_classified_old_images": [
+      "converters/libreoffice/program/python-core-3.13.15/bin/python.exe",
+      "converters/libreoffice/program/python-core-3.13.15/bin/pythonw.exe"
+    ],
+    "old_component_sha256": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+    "pe_images": 354,
+    "physical_files": 19746,
+    "selected_sha256": {
+      "converters/libreoffice/System64/vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+      "converters/libreoffice/java/bin/vcruntime140.dll": "02c6aa0e6e624411a9f19b0360a7865ab15908e26024510e5c38a9c08362c35a",
+      "converters/libreoffice/program/python-core-3.13.15/bin/python.exe": "c8443dd73561ef6c6badee158c5b3725d99c8680e966c486dce75c2cef7287f5",
+      "converters/libreoffice/program/python-core-3.13.15/bin/python3.dll": "2e27b898de15ab5ffd1c8fa4445786c8d048cf1afddc3087a4d08f418e338e6d",
+      "converters/libreoffice/program/python-core-3.13.15/bin/python313.dll": "3541781d0f86ad409c6ee43689e4fc9e77ade77e267f0fed2a40f6206c156d78",
+      "converters/libreoffice/program/python-core-3.13.15/bin/pythonw.exe": "5e4fc492b974eeb9364cbb05d1528beb6f0a228de0f8e4a1bddc1f632d3c77ad",
+      "converters/libreoffice/program/python-core-3.13.15/bin/vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+      "converters/libreoffice/program/python-core-3.13.15/bin/venvlauncher.exe": "d74e6696ab20f2934a02017e8571891c5a5234daaa9f846f41101d7dfda331e3",
+      "converters/libreoffice/program/python3.dll": "2e27b898de15ab5ffd1c8fa4445786c8d048cf1afddc3087a4d08f418e338e6d",
+      "converters/libreoffice/program/python313.dll": "3541781d0f86ad409c6ee43689e4fc9e77ade77e267f0fed2a40f6206c156d78",
+      "converters/libreoffice/program/vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+      "converters/libreoffice/runtime-lock.json": "b0a040bd584bb69aeaba44f749996d2320d83707889b8f8ad85d93d44893c9ee"
+    },
+    "unknown_after": 79,
+    "unknown_before": 80
+  },
+  "conversion_regressions": {
+    "frozen": {
+      "frozen": true,
+      "restart_cache": true,
+      "results": [
+        {
+          "cache_reused": true,
+          "cancelled_retry": true,
+          "format": ".docx",
+          "layout": [
+            {
+              "height": 792.0,
+              "nonblank": true,
+              "page": 1,
+              "text_inside_page": true,
+              "width": 612.0
+            },
+            {
+              "height": 792.0,
+              "nonblank": true,
+              "page": 2,
+              "text_inside_page": true,
+              "width": 612.0
+            },
+            {
+              "height": 597.5999755859375,
+              "nonblank": true,
+              "page": 3,
+              "text_inside_page": true,
+              "width": 841.8897705078125
+            }
+          ],
+          "math_or_chart_checked": true,
+          "pages": 3,
+          "pdf_bytes": 108085,
+          "source_preserved": true
+        },
+        {
+          "cache_reused": true,
+          "cancelled_retry": true,
+          "format": ".pptx",
+          "layout": [
+            {
+              "height": 486.0,
+              "nonblank": true,
+              "page": 1,
+              "text_inside_page": true,
+              "width": 864.0
+            },
+            {
+              "height": 486.0,
+              "nonblank": true,
+              "page": 2,
+              "text_inside_page": true,
+              "width": 864.0
+            },
+            {
+              "height": 486.0,
+              "nonblank": true,
+              "page": 3,
+              "text_inside_page": true,
+              "width": 864.0
+            }
+          ],
+          "math_or_chart_checked": true,
+          "pages": 3,
+          "pdf_bytes": 77986,
+          "source_preserved": true
+        },
+        {
+          "cells": 15,
+          "format": ".xlsx",
+          "sheets": 2,
+          "source_preserved": true,
+          "values_only": true
+        }
+      ],
+      "xml_budget_rejected": true
+    },
+    "source": {
+      "frozen": false,
+      "restart_cache": true,
+      "results": [
+        {
+          "cache_reused": true,
+          "cancelled_retry": true,
+          "format": ".docx",
+          "layout": [
+            {
+              "height": 792.0,
+              "nonblank": true,
+              "page": 1,
+              "text_inside_page": true,
+              "width": 612.0
+            },
+            {
+              "height": 792.0,
+              "nonblank": true,
+              "page": 2,
+              "text_inside_page": true,
+              "width": 612.0
+            },
+            {
+              "height": 597.5999755859375,
+              "nonblank": true,
+              "page": 3,
+              "text_inside_page": true,
+              "width": 841.8897705078125
+            }
+          ],
+          "math_or_chart_checked": true,
+          "pages": 3,
+          "pdf_bytes": 108085,
+          "source_preserved": true
+        },
+        {
+          "cache_reused": true,
+          "cancelled_retry": true,
+          "format": ".pptx",
+          "layout": [
+            {
+              "height": 486.0,
+              "nonblank": true,
+              "page": 1,
+              "text_inside_page": true,
+              "width": 864.0
+            },
+            {
+              "height": 486.0,
+              "nonblank": true,
+              "page": 2,
+              "text_inside_page": true,
+              "width": 864.0
+            },
+            {
+              "height": 486.0,
+              "nonblank": true,
+              "page": 3,
+              "text_inside_page": true,
+              "width": 864.0
+            }
+          ],
+          "math_or_chart_checked": true,
+          "pages": 3,
+          "pdf_bytes": 77986,
+          "source_preserved": true
+        },
+        {
+          "cells": 15,
+          "format": ".xlsx",
+          "sheets": 2,
+          "source_preserved": true,
+          "values_only": true
+        }
+      ],
+      "xml_budget_rejected": true
+    }
+  },
+  "frozen": {
+    "business_modules": 45,
+    "business_source_manifest_sha256": "1c1b9a5d3ecd876ca40370fa8ed21ec93fcbddb068602363e9095ac6a542b2d6",
+    "bytes": 22586917,
+    "executable_sha256": "36c68c5e1cfc9fb15401309f61492694c6159da5c757d4c46eed72ead2bd3779",
+    "source_match": "PASS: 45 frozen application modules match current source, including nested code and constants"
+  },
+  "job_interruptions": {
+    "cases": [
+      {
+        "exit_code": 0,
+        "image": "python.exe",
+        "mode": "timeout",
+        "process_exited": true
+      },
+      {
+        "exit_code": 0,
+        "image": "python.exe",
+        "mode": "cancel",
+        "process_exited": true
+      },
+      {
+        "exit_code": 0,
+        "image": "pythonw.exe",
+        "mode": "timeout",
+        "process_exited": true
+      },
+      {
+        "exit_code": 0,
+        "image": "pythonw.exe",
+        "mode": "cancel",
+        "process_exited": true
+      }
+    ],
+    "fixed_entry_bytes_preserved": true,
+    "scope": "real process Job interruption only; controlled sleep code, not full backend cancellation"
+  },
+  "limitations": [
+    "Only the two copied Python entries and fixed modules were actually run; potential static roots are not execution authorization.",
+    "Both python3.dll copies remain unclassified; the three unmatched forwarders are not waived.",
+    "Normal Office conversion keeps configuration v4 and does not establish actual product use of the standalone Python entries.",
+    "Managed/x86/TWAIN/templates, other native candidates, loaded-module/SxS/system-source and arbitrary dynamic behavior remain unproven.",
+    "Controlled sleep tests prove real Job termination, while unit tests cover helper timeout/interrupt finally ordering; neither is whole-backend cancellation certification.",
+    "No dependency installed, original component modified, personal data used, manual/CUA test performed, merge or release executed."
+  ],
+  "negative_counterfactuals": [
+    {
+      "case": "missing-python",
+      "reason": "Office venv/Python bin PE set changed; renew loading evidence",
+      "rejected": true
+    },
+    {
+      "case": "missing-abi",
+      "reason": "Office venv/Python bin PE set changed; renew loading evidence",
+      "rejected": true
+    },
+    {
+      "case": "missing-crt",
+      "reason": "Office venv/Python bin PE set changed; renew loading evidence",
+      "rejected": true
+    },
+    {
+      "case": "changed-crt",
+      "reason": "Office venv/Python bin path or bytes changed: converters/libreoffice/program/python-core-3.13.15/bin/vcruntime140.dll",
+      "rejected": true
+    },
+    {
+      "case": "wrong-cpu",
+      "reason": "Office venv/Python bin architecture changed: converters/libreoffice/program/python-core-3.13.15/bin/vcruntime140.dll",
+      "rejected": true
+    },
+    {
+      "case": "not-DLL",
+      "reason": "Office venv/Python bin requires fixed native executable headers: converters/libreoffice/program/python-core-3.13.15/bin/vcruntime140.dll",
+      "rejected": true
+    },
+    {
+      "case": "CLR-copy",
+      "reason": "Office venv/Python bin requires fixed native executable headers: converters/libreoffice/program/python-core-3.13.15/bin/vcruntime140.dll",
+      "rejected": true
+    },
+    {
+      "case": "Java-CRT-copy",
+      "reason": "Office venv/Python bin path or bytes changed: converters/libreoffice/program/python-core-3.13.15/bin/vcruntime140.dll",
+      "rejected": true
+    },
+    {
+      "case": "child-cannot-borrow-host-crt",
+      "reason": "Unresolved import: converters/libreoffice/program/python-core-3.13.15/bin/pythonw.exe -> vcruntime140.dll; loading directories=['converters/libreoffice/program/python-core-3.13.15/bin']; elsewhere=['converters/libreoffice/System/vcruntime140.dll', 'converters/libreoffice/System64/vcruntime140.dll', 'converters/libreoffice/java/bin/vcruntime140.dll', 'converters/libreoffice/program/vcruntime140.dll']; system CRT cannot satisfy private dependencies",
+      "rejected": true
+    },
+    {
+      "case": "extension-cannot-borrow-host-Python",
+      "reason": "Unresolved import: converters/libreoffice/program/python-core-3.13.15/lib/winsound.pyd -> python313.dll; loading directories=['converters/libreoffice/program/python-core-3.13.15/lib', 'converters/libreoffice/program/python-core-3.13.15/bin']; elsewhere=['converters/libreoffice/program/python313.dll']; system CRT cannot satisfy private dependencies",
+      "rejected": true
+    }
+  ],
+  "product_release_ready": false,
+  "raw_evidence": {
+    "build01.log": {
+      "bytes": 18593,
+      "sha256": "376af528d2886a23e3cde86c1699b7de7da7971a05553778735594bc98c64e90"
+    },
+    "business-sources.json": {
+      "bytes": 8732,
+      "sha256": "1c1b9a5d3ecd876ca40370fa8ed21ec93fcbddb068602363e9095ac6a542b2d6"
+    },
+    "composed01.json": {
+      "bytes": 320,
+      "sha256": "9e2172569878d4268bc51f52b84b0d6d069dd8a476b5d156ce50a5f29ca830c6"
+    },
+    "conversion-frozen01.log": {
+      "bytes": 2267,
+      "sha256": "b07bc8753b980f6618d14dc973f152a20e860a0c0c3b20b1eb734155b47f9b9a"
+    },
+    "conversion-source01.log": {
+      "bytes": 2246,
+      "sha256": "0bcea0a114685439c4c10e24207118b0c452b27abdc67c92de1a1be48c4448a3"
+    },
+    "fixtures02.json": {
+      "bytes": 674,
+      "sha256": "ddf51d8e4af1d3337110fd2ae5d0b09dd722a3dfa37892b4f458378a90782ea6"
+    },
+    "frozen01/report.json": {
+      "bytes": 4738,
+      "sha256": "4eae53f3f7a1948f6d21b3ba532508e38926999912d17e5287b60f48488d0f86"
+    },
+    "interrupt02/report.json": {
+      "bytes": 855,
+      "sha256": "34cd4bf32539cf6f806ea6deddd95a280b09583e05610fa52ae4712cae0fd62c"
+    },
+    "minimal01.json": {
+      "bytes": 4267,
+      "sha256": "b892d7a0901f2f37ab86ec657fada973f31233eaa70ebf96bd0fb77dc3eaa021"
+    },
+    "native-new01.json": {
+      "bytes": 1071514,
+      "sha256": "90af8db6478a8fb566854a54f5c5c61acc950213e842cbd37a1bc887e4f1a842"
+    },
+    "native-old01.json": {
+      "bytes": 999905,
+      "sha256": "cfe562e7df5688ba5bc46cc4fc25bf92e813b14f641bfbc9a17362399f47fe73"
+    },
+    "native-verified01.json": {
+      "bytes": 5428,
+      "sha256": "ff4a3ec933cfb5ca2dbf6686e514d4551f33d8a671770591e3885ac58f50ca4a"
+    },
+    "p05.xml": {
+      "bytes": 52314,
+      "sha256": "ec174da9a888302ea67264a730748210cf1caf4f50df6b68249d8a43ac2889fa"
+    },
+    "q05.xml": {
+      "bytes": 52314,
+      "sha256": "1e3b493c2591838d54ff6d2bb64f0f974d670f92c75a63552410a5f18d03e9be"
+    },
+    "ruff05.log": {
+      "bytes": 20,
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    "schemas06.log": {
+      "bytes": 30,
+      "sha256": "511f93e1fe8041c617c13bf477d01dee36d47535450f475c7aa1775cbcd7ea72"
+    },
+    "source02/report.json": {
+      "bytes": 4585,
+      "sha256": "4463ab976c3a4dc5db1972a8446300bc8567f616b89f6820769dbe97f3b0ef04"
+    },
+    "templates01/report.json": {
+      "bytes": 280945,
+      "sha256": "7f9a45efc286ca29b0c30c196b5a1c739e99ad274444f98e7a4ac3852999ac53"
+    }
+  },
+  "runtime": {
+    "frozen": {
+      "component_bytes_preserved": true,
+      "entries": [
+        {
+          "exit_code": 0,
+          "image": "python.exe",
+          "version": [
+            3,
+            13,
+            15
+          ]
+        },
+        {
+          "exit_code": 0,
+          "image": "pythonw.exe",
+          "version": [
+            3,
+            13,
+            15
+          ]
+        }
+      ],
+      "module_paths": {
+        "libcrypto-3.dll": {
+          "path": "lib/libcrypto-3.dll",
+          "sha256": "e879af9940edd370c50c09f5ce1c78ee766c81ae3ae64f4cd3691af9ceee1f47"
+        },
+        "libffi-8.dll": {
+          "path": "lib/libffi-8.dll",
+          "sha256": "170f2d6e70fc23e141e457ecf7ac2c95fff9e0abbf97cbd3b154963ee1fc848c"
+        },
+        "libssl-3.dll": {
+          "path": "lib/libssl-3.dll",
+          "sha256": "5e4d03ce3adfd26133a81a365a24290b0f74d061037bd546198445b303979407"
+        },
+        "python3.dll": {
+          "path": "bin/python3.dll",
+          "sha256": "2e27b898de15ab5ffd1c8fa4445786c8d048cf1afddc3087a4d08f418e338e6d"
+        },
+        "python313.dll": {
+          "path": "bin/python313.dll",
+          "sha256": "3541781d0f86ad409c6ee43689e4fc9e77ade77e267f0fed2a40f6206c156d78"
+        },
+        "sqlite3.dll": {
+          "path": "lib/sqlite3.dll",
+          "sha256": "6e5abc758e3a1eedeeec02321edace14290a20af0cdb7a7bfa0e4c842acd0a57"
+        },
+        "vcruntime140.dll": {
+          "path": "bin/vcruntime140.dll",
+          "sha256": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066"
+        }
+      },
+      "probe_script_sha256": "59611be57cfbb7291fb27c02b9496121a48ae2d82ec1e292eb62886dd022d7e9"
+    },
+    "source": {
+      "component_bytes_preserved": true,
+      "entries": [
+        {
+          "exit_code": 0,
+          "image": "python.exe",
+          "version": [
+            3,
+            13,
+            15
+          ]
+        },
+        {
+          "exit_code": 0,
+          "image": "pythonw.exe",
+          "version": [
+            3,
+            13,
+            15
+          ]
+        }
+      ],
+      "module_paths": {
+        "libcrypto-3.dll": {
+          "path": "lib/libcrypto-3.dll",
+          "sha256": "e879af9940edd370c50c09f5ce1c78ee766c81ae3ae64f4cd3691af9ceee1f47"
+        },
+        "libffi-8.dll": {
+          "path": "lib/libffi-8.dll",
+          "sha256": "170f2d6e70fc23e141e457ecf7ac2c95fff9e0abbf97cbd3b154963ee1fc848c"
+        },
+        "libssl-3.dll": {
+          "path": "lib/libssl-3.dll",
+          "sha256": "5e4d03ce3adfd26133a81a365a24290b0f74d061037bd546198445b303979407"
+        },
+        "python3.dll": {
+          "path": "bin/python3.dll",
+          "sha256": "2e27b898de15ab5ffd1c8fa4445786c8d048cf1afddc3087a4d08f418e338e6d"
+        },
+        "python313.dll": {
+          "path": "bin/python313.dll",
+          "sha256": "3541781d0f86ad409c6ee43689e4fc9e77ade77e267f0fed2a40f6206c156d78"
+        },
+        "sqlite3.dll": {
+          "path": "lib/sqlite3.dll",
+          "sha256": "6e5abc758e3a1eedeeec02321edace14290a20af0cdb7a7bfa0e4c842acd0a57"
+        },
+        "vcruntime140.dll": {
+          "path": "bin/vcruntime140.dll",
+          "sha256": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066"
+        }
+      },
+      "probe_script_sha256": "59611be57cfbb7291fb27c02b9496121a48ae2d82ec1e292eb62886dd022d7e9"
+    }
+  },
+  "scope": "OFF-02l fixed optional Office Python bin-local-v1 composition and bounded runtime regression",
+  "selection_reason": "Only fixed component identities, finite graph differences and actually observed consumers/results are promoted; full raw tables/logs stay ignored.",
+  "template_evidence": {
+    "files": 667,
+    "original_source_identity_unchanged": true,
+    "producers": 2,
+    "runtime_classification": "unclassified",
+    "runtime_exclusion_verified": false,
+    "source_archive_sha256": "1e66a7945a48390ee4c2a4268a0e4185884059a13c4aab6d148aa208deea4a76",
+    "templates": 14
+  },
+  "tests": {
+    "p05": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 335
+    },
+    "q05": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 335
+    }
+  }
+}

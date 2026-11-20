@@ -10,14 +10,25 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'backend'))
 from prepare_java_runtime import LOCK_NAME, no_links, verify_runtime  # noqa: E402
 from study_workbench.office_runtime import (  # noqa: E402
     APP_LOCAL_CRT,
+    APP_LOCAL_PYTHON,
     JAVA,
     JAVA_LOCK_SHA256,
     OFFICE_LOCK_SHA256,
+    PYTHON_CORE,
+    PYTHON_LAUNCHERS,
     OfficeRuntime,
 )
 
 
-def compose(office, java, destination):
+def render_manifest(original_raw, files, total_bytes, *, python_launchers=False):
+    manifest = json.loads(original_raw)
+    manifest.update(java=JAVA, files=dict(sorted(files.items())), bytes=total_bytes)
+    if python_launchers:
+        manifest['python_launchers'] = PYTHON_LAUNCHERS
+    return (json.dumps(manifest, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
+
+
+def compose(office, java, destination, *, python_launchers=False):
     office, java, destination = office.absolute(), java.absolute(), destination.absolute()
     no_links(office)
     no_links(destination.parent)
@@ -32,6 +43,8 @@ def compose(office, java, destination):
     if original.java_home is not None or original.fingerprint != OFFICE_LOCK_SHA256:
         raise ValueError('Use the original pinned Office component')
     original.verify(lambda: None)
+    if python_launchers and any(name not in original.files for name in APP_LOCAL_PYTHON.values()):
+        raise ValueError('Original Office component lacks fixed Python launcher sources')
     raw_office = (office / 'runtime-lock.json').read_bytes()
     if hashlib.sha256(raw_office).hexdigest() != OFFICE_LOCK_SHA256:
         raise ValueError('Office component inventory changed')
@@ -61,17 +74,23 @@ def compose(office, java, destination):
             raise ValueError('Refuse to overwrite an original Office CRT')
         shutil.copyfile(office / 'System64' / name, target)
         files['program/' + name] = original.files['System64/' + name]
+    if python_launchers:
+        for name, origin in APP_LOCAL_PYTHON.items():
+            relative = PYTHON_CORE + 'bin/' + name
+            target = destination / relative
+            if target.exists():
+                raise ValueError('Refuse to overwrite an original Python bin image')
+            shutil.copyfile(office / origin, target)
+            files[relative] = original.files[origin]
     original.verify(lambda: None)
     verify_runtime(java, java_manifest['files'])
     if ((office / 'runtime-lock.json').read_bytes() != raw_office
             or (java / LOCK_NAME).read_bytes() != raw_java):
         raise ValueError('Source component inventory changed during composition')
-    manifest = json.loads(raw_office)
-    manifest.update(java=JAVA, files=dict(sorted(files.items())),
-                    bytes=sum((destination / name).stat().st_size for name in files))
     lock = destination / 'runtime-lock.json'
-    with lock.open('x', encoding='utf-8', newline='\n') as output:
-        output.write(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
+    with lock.open('xb') as output:
+        output.write(render_manifest(raw_office, files, sum((destination / name).stat().st_size for name in files),
+                                     python_launchers=python_launchers))
     prepared = OfficeRuntime(destination)
     prepared.verify(lambda: None)
     return prepared
@@ -82,8 +101,9 @@ def main():
     parser.add_argument('--office', type=Path, required=True)
     parser.add_argument('--java', type=Path, required=True)
     parser.add_argument('--destination', type=Path, required=True)
+    parser.add_argument('--python-launchers', action='store_true', help='Add exact application-local Python DLL copies')
     args = parser.parse_args()
-    prepared = compose(args.office, args.java, args.destination)
+    prepared = compose(args.office, args.java, args.destination, python_launchers=args.python_launchers)
     print(f'Composed {len(prepared.files)} files; fingerprint {prepared.fingerprint}')
 
 

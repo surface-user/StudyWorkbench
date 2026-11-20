@@ -66,6 +66,27 @@ program直属的固定30个AMD64原生EXE/COM/BIN另作office_program保守静�
 
 固定bin目录的三个PE另受精确组合锁/完整集合/hash、架构和原生主程序头约束；仅venvlauncher.exe加入office_venv潜在静态入口，搜索及私有CRT目录都仅为自身bin。其固定实际导入只有kernel32和API-set，不借program或其他域；这是venv重定向器/生成环境资产的静态原生图，不证明产品调用或其子进程已闭合。相邻及上级pyvenv.cfg当前缺失，缺配置与producer复制角色不能用来排除未知或推断产品不可达。python.exe/pythonw.exe仍缺自身目录内的Python313及CRT；LO代理仅前置program到原PATH，Windows系统/CWD及父DLL搜索状态等在前，不能把静态代数加入program当包内运行证明。
 
+## Office Python入口自包含组合与自动检查
+
+上述Python bin缺DLL限制仍适用于默认旧组合。固定Office/Java原件另可生成一个全新、可选的自包含布局；不改变默认产品包或原组件：
+
+```powershell
+.local/release-venv/Scripts/python.exe tools/compose_office_runtime.py --office .local/release-tools/libreoffice-26.8.1 --java .local/java-runtime-21.0.13-9 --destination .local/office-python-runtime --python-launchers
+```
+
+新清单必须精确声明python_launchers={layout:bin-local-v1,version:3.13.15,directory:program/python-core-3.13.15/bin}，在原组合之外只增加三份原Office字节副本：program/python313.dll、program/python3.dll及System64/vcruntime140.dll复制到core/bin。源原清单、精确派生文件集合与全部hash共同校验；不借Java或System32的CRT，错误标记、缺失/改动/多余文件拒绝。默认composer输出保留原规范清单字节，新布局固定清单SHA256为b0a040bd584bb69aeaba44f749996d2320d83707889b8f8ad85d93d44893c9ee。
+
+该布局的两个Python主程序静态域仅搜索bin、CRT仅bin；独立子进程扩展域使用lib+bin、CRT仍仅bin，Office宿主的lib+program域保持。两份python3.dll仍未分类：固定902个转发中3个目标不匹配，不能因实际消费者成功就认证全部ABI。
+
+使用已有构建环境运行固定探针；output须全新且位于组件之外，冻结版须先由现有模块核源检查通过：
+
+```powershell
+.local/release-venv/Scripts/python.exe tools/check_office_python_runtime.py --office .local/office-python-runtime --output artifacts/office-python-source-01
+.local/release-venv/Scripts/python.exe tools/check_office_python_runtime.py --office .local/office-python-runtime --output artifacts/office-python-frozen-01 --exe dist/study_backend/study_backend.exe
+```
+
+检查器调用一次性内部helper，两个固定入口只运行内置探针，不接收任意脚本或命令。完整组件运行前后校验，固定环境/空CWD/Job限制；每入口20秒、结果64KiB，外层600秒。只在该helper清理继承DLL目录，不改变线程化服务。核实际PID、3.13.15版本与7个已观察DLL的组件内路径/hash，有限模块为stdlib/ssl/hashlib/ctypes/sqlite，ABI实际消费者仅Py_IsInitialized。失败和中断输出保留，不覆盖已有结果；源码及匹配冻结的本地结果见[原报告](../dev/records/2026-11-10-release-integrity/report.md)。退出0不证明所有动态加载/系统来源、完整ABI或产品实际调用这些入口；其余79个未知及发行门禁继续保留，正常Office转换配置不变。
+
 ## Office Python模板来源证据
 
 使用已有构建Python环境离线运行；输入必须是固定Office-Java组合及已下载的[CPython 3.13.15官方源码归档](https://www.python.org/ftp/python/3.13.15/Python-3.13.15.tar.xz)，命令不会下载、安装或执行归档内容：
