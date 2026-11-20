@@ -60,6 +60,7 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | REL-02b1 固定上游许可原文及内嵌声明 | DONE | 主Agent核72×2/136包248原文引用184文本及九文件来源，[草稿PR #46](https://github.com/surface-user/StudyWorkbench/pull/46)最终8bebad8的[CI](https://github.com/surface-user/StudyWorkbench/actions/runs/43569063314)三组45步成功，当前已纳本组合。原分发缺文/LPPL原Work和vendor修改条件仍保留，CLI退出2，父REL-02b/02未完成 |
 | REL-03 | IN_PROGRESS | 03a查询与03b/c两项修复已交付；已修复源锁135包无返回公告仅代表本次在线查询，数据库覆盖/最终组件和完整复扫仍依赖REL-01 |
 | REL-03d 后端原生组件漏洞核对 | REVIEW | 已比对 REL-01i 的三个 DLL 及两份冻结包。OpenSSL 3.5.9 在官方 69 条分支公告中命中 8 条，OSV 命中其中 6 条；libffi 3.4.4 的两种 OSV 查询均未返回匹配。双 Python 相关回归各 46 项。见[原生漏洞报告](../dev/records/2026-11-20-backend-native-advisories/report.md)。 |
+| REL-03f 冻结后端 Python 软件包漏洞核对 | REVIEW | 逐文件核对 REL-01h 冻结包后，向 OSV 查询 55 个已有归属证据的 PyPI 软件包。OpenTelemetry API 1.45.1 命中 CVE-2026-126360，详见[冻结包核查报告](../dev/records/2026-11-20-frozen-pypi-advisories/report.md)。REL-03g 单独更新依赖、重建与复扫。 |
 | REL-03e 后端 OpenSSL 修复与复扫 | BLOCKED | 等待适合当前 Windows CPython 发行方案、来源/配置可验证且包含修复的二进制。上游公告计划 2026-12-01 发布包含修复的版本。换包后须回测 SSL/哈希、冻结启动和业务兼容，重建来源/许可清单并对实际 DLL 再扫；8 条版本命中未关闭。 |
 | REL-04 | BLOCKED | 依赖REL-01至03；真实签名另缺发行身份，配置/篡改拒绝自动化不代表已签 |
 | REL-05 | BLOCKED | 依赖OFF-02与REL-01至04；候选组装完成后仍需REV-01，发布/合并未授权 |
