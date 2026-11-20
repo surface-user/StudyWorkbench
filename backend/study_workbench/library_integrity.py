@@ -12,6 +12,7 @@ from pathlib import Path, PurePosixPath
 from .backup_archive import SUPPORTED_SCHEMA, archive_path
 from .backup_store import connect, no_links, runtime_file
 from .data_root import DataLock, validate_root
+from .media_sources import retained_files, stored_attempt, stored_source
 from .question_splitting import all_blocks
 
 ENTRY_LIMIT = 20000
@@ -141,14 +142,54 @@ def check_library(directory, *, install=None):
                     issue('unsupported_schema')
                     result['complete'] = False
                     return result
-                resources = {}
+                resources, media = {}, {}
                 for table in ['resources', 'media_entries']:
                     for row in rows(db, table):
                         if table == 'resources':
                             resources[row['id']] = row
+                        else:
+                            media[row['id']] = row
                         verify(row['relative_path'], row['sha256'], row['size'],
                                workspace=row['workspace_id'],
                                optional=table == 'media_entries' and row['status'] != 'ready')
+                local_jobs, current_attempts = {}, set()
+                for row in rows(db, 'media_download_jobs'):
+                    if row['source_kind'] != 'local_pair':
+                        continue
+                    try:
+                        source = stored_source(row)
+                        for track in source.tracks:
+                            original = media.get(track.media_id)
+                            if (original is None or original['workspace_id'] != row['workspace_id'] or original['status'] != 'ready' or
+                                    (original['sha256'], original['size'], original['mime']) != (track.sha256, track.size, track.mime)):
+                                raise ValueError('Source identity differs')
+                        local_jobs[row['id']] = row, source
+                    except (ValueError, TypeError, KeyError):
+                        issue('invalid_local_media_source')
+                for row in rows(db, 'media_download_attempts'):
+                    try:
+                        job, source = local_jobs[row['job_id']]
+                        record = stored_attempt(job, row, source)
+                        for paths, sha, size, optional in retained_files(source, record):
+                            # A prepared move can have reached its final name before the SQL commit.
+                            existing = [p for p in paths if (root / p).exists()]
+                            for relative in existing or paths[:1]:
+                                verify(relative, sha, size, optional=optional, workspace=row['workspace_id'])
+                        if row['generation'] == job['run_generation']:
+                            current_attempts.add(job['id'])
+                            if job['status'] == 'ready':
+                                if row['status'] != 'ready' or row['attempt'] != job['attempt']:
+                                    raise ValueError('Ready job and attempt disagree')
+                                result_media = media.get(json.loads(job['result']).get('media_id'))
+                                if (result_media is None or result_media['workspace_id'] != job['workspace_id'] or
+                                        result_media['status'] != 'ready' or
+                                        (result_media['sha256'], result_media['size']) != (record.output.sha256, record.output.size)):
+                                    raise ValueError('Ready result differs from output')
+                    except (ValueError, TypeError, KeyError):
+                        issue('invalid_local_media_attempt')
+                for job, _ in local_jobs.values():
+                    if (job['run_generation'] or job['status'] == 'ready') and job['id'] not in current_attempts:
+                        issue('missing_local_media_attempt')
                 for row in rows(db, 'markdown_questions'):
                     directory = f"workspaces/{row['workspace_id']}/questions/{row['id']}"
                     markdown = resources.get(row['markdown_resource_id'])

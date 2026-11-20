@@ -190,12 +190,12 @@ def test_upgrade_0012_preserves_rows_files_and_backup(tmp_path):
         assert c.get(PREFIX + '/notes').json()[0]['id'] == 'old-note'
         assert create(c).status_code == 200
     assert (root / 'old.txt').read_bytes() == b'old'
-    backups = list((root / 'backups').glob('study-before-0017-*.db'))
+    backups = list((root / 'backups').glob('study-before-0018-*.db'))
     assert len(backups) == 1 and snapshot(backups[0]) == before
     with sqlite3.connect(db_path) as db:
         assert db.execute('PRAGMA integrity_check').fetchone() == ('ok',)
         assert db.execute('PRAGMA foreign_key_check').fetchall() == []
-        assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0017',)
+        assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0018',)
 
 
 def test_prepared_receipt_startup_does_not_blindly_replay(tmp_path):

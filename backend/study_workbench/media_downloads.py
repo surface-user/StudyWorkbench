@@ -19,7 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from .db import MediaDownloadJob, MediaEntry, write_transaction
+from .db import MediaDownloadAttempt, MediaDownloadJob, MediaEntry, write_transaction
 from .explorer import insert_node, normalized_name, parent_in
 from .imports import resource_path
 from .media_download_http import LIMIT, DownloadError, parse_url, strong_etag
@@ -67,9 +67,11 @@ class RetryDownload(BaseModel):
 def describe(job):
     received = job.progress.get('received', 0)
     resumable = (0 < received < LIMIT or received == LIMIT == job.progress.get('total'))
-    return dict(id=job.id, name=job.name, source_host=parse_url(job.source_url)[1], parent_id=job.parent_id,
+    local = job.source_kind == 'local_pair'
+    return dict(id=job.id, name=job.name, source_kind=job.source_kind,
+                source_host='本地所选媒体' if local else parse_url(job.source_url)[1], parent_id=job.parent_id,
                 status=job.status, attempt=job.attempt, progress={k: job.progress.get(k) for k in ('received', 'total')},
-                can_resume=job.status in {'paused', 'interrupted', 'failed'} and strong_etag(job.progress.get('etag')) and resumable,
+                can_resume=not local and job.status in {'paused', 'interrupted', 'failed'} and strong_etag(job.progress.get('etag')) and resumable,
                 result=job.result, error=job.error, created_at=job.created_at)
 
 
@@ -81,6 +83,10 @@ class MediaDownloads:
         with write_transaction(engine) as session:
             for job in session.scalars(select(MediaDownloadJob).where(MediaDownloadJob.status.in_(['queued', 'running']))):
                 job.status, job.error = 'interrupted', '上次下载被中断；请显式选择断点恢复或保留旧部分重新开始'
+                if job.source_kind == 'local_pair':
+                    attempt = session.get(MediaDownloadAttempt, (job.id, job.run_generation))
+                    if attempt is not None and attempt.status == 'running':
+                        attempt.status = 'interrupted'
 
     def close(self):
         self.stopping.set()
@@ -180,6 +186,8 @@ class MediaDownloads:
                 job = session.get(MediaDownloadJob, identifier)
                 if job.status != 'queued':
                     return
+                if job.source_kind != 'direct_https':
+                    raise DownloadError('本地合流执行尚未接入，原件与执行记录保留')
                 job.status = 'running'
                 session.flush()
                 session.expunge(job)
@@ -307,6 +315,8 @@ class MediaDownloads:
                 job = job_in(session, workspace_id, identifier)
                 if job.status in {'queued', 'running', 'ready'}:
                     raise HTTPException(409, '此任务当前不能重试')
+                if job.source_kind != 'direct_https':
+                    raise HTTPException(409, '本地合流执行尚未接入，原件与执行记录保留')
                 parent_in(session, workspace_id, job.parent_id)
                 capacity(session)
                 if body.mode == 'restart':

@@ -193,7 +193,7 @@ def test_drafts_and_adoption_receipts_roundtrip_in_full_backup_without_restoring
     before = rows(source)
     package, target = tmp_path / 'all.zip', tmp_path / 'restored'
     create_backup(source, package)
-    assert restore_backup(package, target, tmp_path / 'settings.json')['schema_revision'] == '0017'
+    assert restore_backup(package, target, tmp_path / 'settings.json')['schema_revision'] == '0018'
     assert rows(target) == before == rows(source)
     with client(target) as c:
         assert c.get(f'{PREFIX}/analysis-drafts/{pending["id"]}').json()['status'] == 'pending'
