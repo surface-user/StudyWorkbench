@@ -1,0 +1,220 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "properties": [
+      {
+        "name": "studyworkbench:scope",
+        "value": "fixed NuGet publication and three directly matched CPython producer binary assets"
+      },
+      {
+        "name": "studyworkbench:product-sbom-complete",
+        "value": "false"
+      },
+      {
+        "name": "studyworkbench:payload-exe-sha256",
+        "value": "f493edc9292c85556c0b2ce5c94f29595eb5d465863990d358d5d58930f91ba0"
+      },
+      {
+        "name": "studyworkbench:profile-sha256",
+        "value": "bf378e5a38ae40dc6b3961ebda842d5ee6bcec963605ce3c45436dfc991c20e3"
+      },
+      {
+        "name": "studyworkbench:signature-and-upstream-machine-code-build-verified",
+        "value": "false"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/python@3.13.17",
+      "purl": "pkg:nuget/python@3.13.17",
+      "name": "python",
+      "version": "3.13.17",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "dce409744b088f94c6e37ba41f8100c384c27e029e843237364c602d30d475e5"
+        },
+        {
+          "alg": "SHA-512",
+          "content": "0e667928bb4f19573c6cd88f65133b2e07b243a5c716f335b56aa66bb9ec6f82328256d22c3a29e23a0276ac5c6a6d786211feab524890ad1e56629196c6b29c"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://api.nuget.org/v3-flatcontainer/python/3.13.17/python.3.13.17.nupkg"
+        },
+        {
+          "type": "other",
+          "url": "https://api.nuget.org/v3/catalog0/data/2026.10.21.16.02.39/python.3.13.17.json"
+        }
+      ],
+      "properties": [
+        {
+          "name": "studyworkbench:official-catalog-digest-match",
+          "value": "true"
+        },
+        {
+          "name": "studyworkbench:license-file",
+          "value": "tools/LICENSE.txt"
+        },
+        {
+          "name": "studyworkbench:license-file-sha256",
+          "value": "62bec384df47b0328307db41455ff6ea2559e5546b394ac69148561b21703120"
+        },
+        {
+          "name": "studyworkbench:whole-distribution-shipped",
+          "value": "false"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/libcrypto-3.dll"
+          },
+          {
+            "location": "_internal/libssl-3.dll"
+          },
+          {
+            "location": "_internal/libffi-8.dll"
+          }
+        ]
+      }
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/openssl@3.5.9",
+      "purl": "pkg:generic/openssl@3.5.9",
+      "name": "openssl",
+      "version": "3.5.9",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "url": "https://github.com/python/cpython-bin-deps/blob/ddb46a415b4995440723183e644f8d2c346567a2/amd64/LICENSE.txt"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://codeload.github.com/python/cpython-bin-deps/zip/ddb46a415b4995440723183e644f8d2c346567a2"
+        }
+      ],
+      "properties": [
+        {
+          "name": "studyworkbench:version-source",
+          "value": "fixed CPython recipe default and matching producer assets"
+        },
+        {
+          "name": "studyworkbench:producer-archive-sha256",
+          "value": "0dbf56dcce0ab4054e6192ae488d7d439f678cceca858810de990be51bb80335"
+        },
+        {
+          "name": "studyworkbench:producer-git-commit",
+          "value": "ddb46a415b4995440723183e644f8d2c346567a2"
+        },
+        {
+          "name": "studyworkbench:license-text-sha256",
+          "value": "ed72ce2b51ee58f117e5a021e2e04af158857f40269fbc03491f0b2a99dbcc96"
+        },
+        {
+          "name": "studyworkbench:distribution-obligations-reviewed",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:license-scope",
+          "value": "matching producer-supplied library license text; inherited Microsoft and other embedded conditions remain unreviewed"
+        },
+        {
+          "name": "studyworkbench:upstream-machine-code-build-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:payload-member-sha256:_internal/libcrypto-3.dll",
+          "value": "75495fe0e079ab00d49be740d3c710a0b94e3f74f9648cb7cc9f768fc7f52319"
+        },
+        {
+          "name": "studyworkbench:payload-member-sha256:_internal/libssl-3.dll",
+          "value": "8957182a9c385bfd9f3f790921de2ddc614cf91f99edbed4e9e5446a46504e32"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/libcrypto-3.dll"
+          },
+          {
+            "location": "_internal/libssl-3.dll"
+          }
+        ]
+      }
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:generic/libffi@3.4.4",
+      "purl": "pkg:generic/libffi@3.4.4",
+      "name": "libffi",
+      "version": "3.4.4",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "url": "https://github.com/python/cpython-bin-deps/blob/94cb9a1c7feb608adf2b9f8fe2dbd6925ffbf90d/LICENSE"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://codeload.github.com/python/cpython-bin-deps/zip/94cb9a1c7feb608adf2b9f8fe2dbd6925ffbf90d"
+        }
+      ],
+      "properties": [
+        {
+          "name": "studyworkbench:version-source",
+          "value": "fixed CPython recipe default and matching producer assets"
+        },
+        {
+          "name": "studyworkbench:producer-archive-sha256",
+          "value": "6b0f53490e0dd958708bff32df689cf2163c214147fcb8edb76a403fa6a877ca"
+        },
+        {
+          "name": "studyworkbench:producer-git-commit",
+          "value": "94cb9a1c7feb608adf2b9f8fe2dbd6925ffbf90d"
+        },
+        {
+          "name": "studyworkbench:license-text-sha256",
+          "value": "2c9c2acb9743e6b007b91350475308aee44691d96aa20eacef8e199988c8c388"
+        },
+        {
+          "name": "studyworkbench:distribution-obligations-reviewed",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:license-scope",
+          "value": "matching producer-supplied library license text; inherited Microsoft and other embedded conditions remain unreviewed"
+        },
+        {
+          "name": "studyworkbench:upstream-machine-code-build-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:payload-member-sha256:_internal/libffi-8.dll",
+          "value": "eff52743773eb550fcc6ce3efc37c85724502233b6b002a35496d828bd7b280a"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/libffi-8.dll"
+          }
+        ]
+      }
+    }
+  ]
+}
