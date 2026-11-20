@@ -53,6 +53,10 @@
     "tools/check_api_errors.py": {
       "bytes": 9663,
       "sha256": "58a555003d19c5e7b594129583ad71806240f5684ddda5821a0af70a680d9bd9"
+    },
+    "backend/tests/test_startup_settings.py": {
+      "bytes": 3733,
+      "sha256": "6c3ffdf0c59b3a8404867e54a1c682ee707d4fa0b08943ae8557cfff02117521"
     }
   },
   "retained_logs": {
@@ -107,6 +111,18 @@
     "artifacts/dl03c2/frozen02.txt": {
       "bytes": 191,
       "sha256": "19a24f0a4d48373ff86a0d4f4aa7299a5db1ea42b7d77e88425c025e0fa782bf"
+    },
+    "artifacts/dl03c2/ci-9d-q.log": {
+      "bytes": 57231,
+      "sha256": "fbf1410f7a4e23b75a4eab88a5d509185b4c937ff64a5cda816a0e8177b0d6a5"
+    },
+    "artifacts/dl03c2/startup-q01.xml": {
+      "bytes": 2190,
+      "sha256": "9d8fb64e959a26db2227d0689410d3eee5ec89aa38b0871e9e0632afac7a5df7"
+    },
+    "artifacts/dl03c2/startup-p01.xml": {
+      "bytes": 2190,
+      "sha256": "126c6414609cdd27f702280a571dbe4a84ce4895b718664631f2e40e7ec54c82"
     }
   },
   "selection_reason": "Exact component with local generated inputs; bounded source/frozen metadata and cancellation only. No CI native component, site evidence, full decode or release claim.",
@@ -115,5 +131,11 @@
     "native_tests_each": 50,
     "real_source_frozen_checks_each": 10,
     "assertions_preserved": true
+  },
+  "startup_fixture_followup": {
+    "backend_unchanged": true,
+    "tests_each": 15,
+    "unhandled_thread_warnings_are_errors": true,
+    "old_ci_warning_retained": true
   }
 }

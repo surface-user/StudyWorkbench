@@ -390,3 +390,6 @@ IQ为相邻starlette-q-isolated CPython3.13.17，IP为starlette-p-isolated CPyth
 
 
 11-20发布自查补充：#79初始head11f064dc335dc7a0718d5253ad78f334f290a5fb的CI44677751688仍跑时，识别两处仅测试发布竞态（尚未观测该竞态导致失败）：Job fixture看到marker存在时其JSON可能尚未完成；checker看到result.json存在也可能尚未flush。生产父端等helper退出后才解析，不受这两处fixture读取影响。只改自有marker完整写后原子rename、checker等待完整JSON，原cancelled/EOF/后续成功断言不变；不是放宽产品失败。IQ q05/IP p03各50原生专项退出0/0skip，原42兼容已过；源checker source04/冻结frozen02均同10项退出0，当前47模块再核不变，未重建FFmpeg或改后端实现。旧初始CI/失败记录完整保留，同PR追加小提交并核新head当前CI，不能用旧head绿灯替代。
+
+
+11-20当前9d241626/CI44678327506的完整Q日志虽报1309 passed，却多出PytestUnhandledThreadExceptionWarning：旧test_startup_settings把create_app替身设成None，新parent_lifetime读取app.state.media_probe_stopping抛AttributeError，线程警告延迟归到test_workspaces。真实app/已过的源冻EOF路径有该Event；此处不能用计数绿灯当无异常通过。修正仅旧替身补真实state/Event，并在fake server协程等待should_exit且断言Event已置位，保留配置旧值/警告全部原断言，不在生产代码加getattr绕过契约。Q/P分别对test_startup_settings.py及test_workspaces.py加-W error::pytest.PytestUnhandledThreadExceptionWarning，各15通过/退出0；只余原FastAPI/anyio两类弃用提示，当前47冻结源码仍一致，不重建组件。完整旧Q日志另存artifacts/dl03c2/ci-9d-q.log；同PR新提交/新headCI继续，9d绿灯保留但不作为本项终态。

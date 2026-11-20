@@ -56,12 +56,20 @@ def test_busy_profile_is_not_treated_as_unwritable(tmp_path, monkeypatch):
 
 
 def test_failed_settings_write_retains_old_config_and_returns_warning(tmp_path, monkeypatch, capsys):
+    import asyncio
     import json
+    import time
+    from threading import Event
     from types import SimpleNamespace
 
     config = tmp_path / 'settings.json'
     config.write_text('old config', encoding='utf-8')
     disposed = []
+    application = SimpleNamespace(state=SimpleNamespace(media_probe_stopping=Event()))
+
+    def app(*args):
+        disposed.append(args)
+        return application
 
     def denied(*args):
         raise PermissionError('readonly settings')
@@ -73,10 +81,13 @@ def test_failed_settings_write_retains_old_config_and_returns_warning(tmp_path, 
             pass
 
         async def serve(self, **kwargs):
-            pass
+            until = time.monotonic() + 2
+            while not self.should_exit and time.monotonic() < until:
+                await asyncio.sleep(.001)
+            assert self.should_exit and application.state.media_probe_stopping.is_set()
 
     monkeypatch.setattr(entry, 'write_settings', denied)
-    monkeypatch.setattr(entry, 'create_app', lambda *args: disposed.append(args))
+    monkeypatch.setattr(entry, 'create_app', app)
     monkeypatch.setattr(entry.uvicorn, 'Server', Server)
     monkeypatch.setattr(entry.uvicorn, 'Config', lambda *args, **kwargs: None)
     monkeypatch.setattr(entry.sys, 'stdin', io.StringIO('{"token":"test-startup-settings-token-000000000"}\n'))
