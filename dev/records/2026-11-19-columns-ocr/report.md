@@ -77,3 +77,22 @@ python tools/check_api_errors.py --ocr-component '../ocr-runtime/.local/OCR 组�
 ```
 
 自编三页 PDF 走正常资料添加、节点选页、英文和中文模型、空白、运行中取消、后端重启与取回原件。每页精确比对预期文本，核对页码、结果来源、引擎与模型版本、原页包围框、分值、未确认状态。错误预算、过期摘要、跨空间请求、被替换的原件、格式或语言不符、低置信和文本截断另有专项回归。原始输出保存在 artifacts。该路径依赖另行准备的固定 Windows 组件。本项仅交付后端预览，桌面按钮、安装包分发、双栏题目归组和题库确认各由对应任务跟踪。独立审查暂缓，人工测试取消。
+
+## PAR-02e 显式双栏拆题与材料归组
+
+页段任务增加可选布局，默认沿用既有单栏解析器。双栏任务以单独解析器版本加入任务绑定，复用原数据库、取消恢复、候选修订与选择确认。同一原件的两种任务可以并存。每页依据 PDFium 已验证的栏序生成半页宽裁图，保留绝对页号、原图与区域。右栏首段可接续左栏末题。分组仍须显式材料标题和完整有序的题号范围。图片或矢量图形越过中线或切题边界时停止自动归属并保留整页。
+
+用新自编的单页 PDF 在对象流中打乱材料、两道题和续题的顺序，左栏中另画蓝色矩形。正常业务入口断言半页裁图的实际像素、跨栏续题的两段区域、同页页号去重、共享材料归属、所选题的幂等入库、变更选择拒绝和原件字节。另用两个等长 PDF 图形坐标替换验证越界图形保留整页。首次临时探针在 PowerShell 管道中设置模块路径太晚，退出 1；先设置 PYTHONPATH 后重新取出四个实际分片。首轮专项 3 项通过，随后将跨中线反例改为严格等长的合法 PDF 内容，正例改为断言指定位置的像素值，专项仍为 3 项通过。
+
+Python 3.12.7、3.13.17 各执行下列 pytest 集合，均 60 项通过、2 项已有警告，退出 0。Ruff 和题目协议检查退出 0。源码服务通过 76 次实际 HTTP 请求，最终冻结包通过 87 次（包含可选 OCR 回归），分别有 31 个不同的错误 ID；两者均验证双栏候选选择确认与取回原件，冻结包 48 模块逐一核源通过。所有样本均为自编内容，原始日志保存在 pdf-column-questions/artifacts。
+
+```powershell
+python -X utf8 -m pytest -q backend/tests/test_pdf_chunks.py backend/tests/test_documents.py backend/tests/test_document_files.py backend/tests/test_markdown_questions.py backend/tests/test_complex_question_splitting.py
+ruff check backend tools
+python tools/export_question_schema.py --check
+python tools/check_api_errors.py --test-root artifacts/http01
+./packaging/windows/build-backend.ps1 -Python (Resolve-Path '../starlette-fix/.local/starlette-q-isolated/Scripts/python.exe').Path
+python tools/check_api_errors.py --exe dist/study_backend/study_backend.exe --test-root artifacts/frozen01 --ocr-component '../ocr-runtime/.local/OCR 组件'
+```
+
+首批限于可明确排序的两栏水平原生文字。整页扫描转多栏题目、跨栏插图的语义归属和桌面交互仍待另项。独立审查暂缓，人工测试取消。
