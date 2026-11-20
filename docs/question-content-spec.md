@@ -33,7 +33,11 @@ source：`kind: manual | imported | official | ai_generated`、`title`、`origin
 
 机器校验要求 AI 来源带模型与有时区的生成时间，默认 unverified；其他来源不能夹带 AI 字段，official 必须 human_verified。Schema 不证明操作者确有验证权限；导入/未来生成业务必须把不可信验证声明降为 unverified，仅由用户确认接口修改状态，不得直接相信模型或文件自报 human_verified。
 
-作答请求：question_id、response（选项 ID 列表/填空映射/富文本与附件）、支持question_revision与request_id幂等键。服务器读取标准答案，客户端不得提交分数。响应：id、status graded/pending_review、score nullable。多选按精确集合匹配，填空按每空exact/trim归一化并按正确空数比例计分，阅读按response_kind；不宣称支持未实现的多选部分分策略。历史作答只追加；更正评分另建修订。
+作答请求使用 question_id、response，可携带 question_revision、question_version_id 和 request_id。选项以稳定 ID 提交，填空以 blank_id 映射提交。多选按精确集合匹配，填空按每空 exact/trim 归一化后按正确空数比例计分，阅读题按 response_kind 选择规则。
+
+计算、证明、主观题和主观阅读题沿用 `{"text":"解题过程"}`，后端也接受 `{"blocks":[{"type":"text","text":"所以"},{"type":"latex","tex":"x=2","display":true}]}`。两种形式单独使用。blocks 按序保存 1 至 200 个文本或公式块，每块须有非空白内容。各块合计最多 20000 个 Unicode 码点，公式另受既有单块 8000 字符及命令限制。display 可省略，传入时须为布尔值。文件、图片、附件 ID 和外部 URL 引用均没有作答附件读取或导入语义。
+
+服务器追加保存提交时的原始结构和题目版本，返回 id、status、可空 score。书面作答始终先进入 pending_review，评分修订单独追加。历史接口原样返回作答块；现有桌面端可继续提交纯文本，块编辑、展示和作答附件归属另行交付。题目附件仍归题目确认版。
 
 示例见 contracts/question-v1.json。旧default演示接口保留；真实题目导入和学习入口见[API](api-spec.md)。
 

@@ -7,7 +7,7 @@ from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, field_validator
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 from starlette.concurrency import run_in_threadpool
@@ -45,9 +45,12 @@ from .migrate import migrate
 from .pdf_chunks import pdf_chunk_router
 from .question_files import QuestionFiles, current_question_view, verify_version_assets, version_read
 from .question_files_format import FileQuestion
-from .question_protocol import QuestionDocument
+from .question_protocol import LatexBlock, QuestionDocument, TextBlock
 from .request_limits import RequestLimits
 from .workspaces import initial_layout, require_workspace, workspace_router
+
+WrittenBlock = Annotated[TextBlock | LatexBlock, Field(discriminator="type")]
+written_blocks = TypeAdapter(Annotated[list[WrittenBlock], Field(min_length=1, max_length=200)])
 
 
 class Submission(BaseModel):
@@ -57,6 +60,18 @@ class Submission(BaseModel):
     question_revision: int | None = Field(default=None, ge=1, strict=True)
     request_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_-]{16,80}$")
     question_version_id: str | None = Field(default=None, pattern=r'^[a-f0-9]{32}$')
+
+    @field_validator("response")
+    @classmethod
+    def validate_written_blocks(cls, response):
+        if "blocks" in response:
+            if set(response) != {"blocks"}:
+                raise ValueError("解题过程只能使用一种作答格式")
+            blocks = written_blocks.validate_python(response["blocks"], strict=True)
+            parts = [block.text if isinstance(block, TextBlock) else block.tex for block in blocks]
+            if any(not part.strip() for part in parts) or sum(map(len, parts)) > 20000:
+                raise ValueError("作答块须有内容，全文最多两万字符")
+        return response
 
 
 def create_app(data_dir: Path, token: str, media: Path | None = None):
