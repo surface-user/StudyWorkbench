@@ -55,12 +55,13 @@ def _report_storage(directory, *, install, kind):
                   categories={role: dict(file_count=0, logical_bytes=0) for role in roles},
                   issues=[])
     if download:
-        result.update(missing_optional_download_files=0, media_reference_rows=0, media_referenced_paths=0, attempt_history_checked=False)
+        result.update(missing_optional_download_files=0, media_reference_rows=0, media_referenced_paths=0,
+                      attempt_history_checked=False, execution_receipt_rows=0)
     else:
         result['missing_nonready_pdf' if office else 'missing_committed_pending'] = 0
     deadline = time.monotonic() + SECONDS
     references, works, seen, preview_directories = {}, {}, set(), {}
-    download_jobs, media_paths = {}, {}
+    download_jobs, media_paths, executions = {}, {}, {}
 
     def checkpoint():
         if time.monotonic() >= deadline:
@@ -100,6 +101,12 @@ def _report_storage(directory, *, install, kind):
             if matched:
                 number = int(matched[1])
                 relation = 'current' if number == job['attempt'] else 'lower_numbered' if number < job['attempt'] else 'other'
+        if (job and len(parts) >= 7 and re.fullmatch('[1-9][0-9]{0,18}', parts[4]) and
+                re.fullmatch('[1-9][0-9]{0,18}', parts[5])):
+            execution = executions.get((parts[3], int(parts[5])))
+            if execution is not None and int(parts[4]) == execution['attempt']:
+                relation = ('current' if (int(parts[4]), int(parts[5])) == (job['attempt'], job['generation']) else
+                            'lower_numbered' if int(parts[4]) <= job['attempt'] and int(parts[5]) <= job['generation'] else 'other')
         count = media_paths.get(relative, 0)
         role = ('media_referenced_file' if count else 'current_attempt_file' if relation == 'current' else
                 'lower_numbered_attempt_file' if relation == 'lower_numbered' else 'other_download_file')
@@ -116,7 +123,7 @@ def _report_storage(directory, *, install, kind):
                     issue('unsupported_schema')
                     return result
                 if download:
-                    for row in rows(db, 'SELECT d.id,d.workspace_id,d.attempt,d.relative_path,d.status,s.id AS existing_workspace '
+                    for row in rows(db, 'SELECT d.id,d.workspace_id,d.attempt,d.run_generation,d.relative_path,d.status,s.id AS existing_workspace '
                                         'FROM media_download_jobs d LEFT JOIN workspaces s ON s.id=d.workspace_id ORDER BY d.id'):
                         status = row['status'] if row['status'] in statuses else 'unknown'
                         result['records_by_status'][status] = result['records_by_status'].get(status, 0) + 1
@@ -135,8 +142,19 @@ def _report_storage(directory, *, install, kind):
                         except (TypeError, ValueError):
                             issue('unsafe_download_reference')
                             continue
-                        download_jobs['/'.join(parts[:4])] = dict(status=status, attempt=row['attempt'], suffix=suffix)
+                        download_jobs['/'.join(parts[:4])] = dict(status=status, attempt=row['attempt'], suffix=suffix,
+                                                                 generation=row['run_generation'])
                         references[relative] = dict(required=status == 'ready')
+                    # Ownership only: do not read source JSON, hashes, URLs, titles or the receipt contents.
+                    for row in rows(db, 'SELECT job_id,workspace_id,generation,attempt,status FROM media_download_attempts'):
+                        owner = download_jobs.get(f"workspaces/{row['workspace_id']}/downloads/{row['job_id']}")
+                        if (owner is None or type(row['generation']) is not int or not 1 <= row['generation'] <= owner['generation'] or
+                                type(row['attempt']) is not int or not 1 <= row['attempt'] <= owner['attempt'] or
+                                row['status'] not in DOWNLOAD_STATUSES - {'queued'}):
+                            issue('unsafe_download_execution')
+                            continue
+                        executions[row['job_id'], row['generation']] = dict(attempt=row['attempt'])
+                        result['execution_receipt_rows'] += 1
                     for row in rows(db, 'SELECT m.workspace_id,m.relative_path,m.status,s.id AS existing_workspace '
                                         'FROM media_entries m LEFT JOIN workspaces s ON s.id=m.workspace_id ORDER BY m.id'):
                         try:

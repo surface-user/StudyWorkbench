@@ -3,11 +3,13 @@ from contextlib import contextmanager
 from sqlalchemy import (
     JSON,
     Boolean,
+    CheckConstraint,
     Float,
     ForeignKey,
     ForeignKeyConstraint,
     Integer,
     String,
+    UniqueConstraint,
     create_engine,
     event,
 )
@@ -201,11 +203,16 @@ class ResourceAddJob(Base):
 
 class MediaDownloadJob(Base):
     __tablename__ = 'media_download_jobs'
+    __table_args__ = (UniqueConstraint('id', 'workspace_id', name='uq_download_job_workspace'),)
     id: Mapped[str] = mapped_column(String, primary_key=True)
     workspace_id: Mapped[str] = mapped_column(ForeignKey('workspaces.id'))
     parent_id: Mapped[str | None] = mapped_column(String, nullable=True)
     request_id: Mapped[str] = mapped_column(String)
-    source_url: Mapped[str] = mapped_column(String)
+    source_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_kind: Mapped[str] = mapped_column(String, default='direct_https', server_default='direct_https')
+    source_snapshot: Mapped[dict | None] = mapped_column(JSON(none_as_null=True), nullable=True)
+    source_snapshot_sha256: Mapped[str | None] = mapped_column(String, nullable=True)
+    run_generation: Mapped[int] = mapped_column(Integer, default=0, server_default='0')
     name: Mapped[str] = mapped_column(String)
     status: Mapped[str] = mapped_column(String)
     cancel_requested: Mapped[bool] = mapped_column(Boolean)
@@ -214,6 +221,23 @@ class MediaDownloadJob(Base):
     progress: Mapped[dict] = mapped_column(JSON)
     result: Mapped[dict] = mapped_column(JSON)
     error: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[str] = mapped_column(String)
+
+
+class MediaDownloadAttempt(Base):
+    __tablename__ = 'media_download_attempts'
+    __table_args__ = (
+        ForeignKeyConstraint(['job_id', 'workspace_id'], ['media_download_jobs.id', 'media_download_jobs.workspace_id']),
+        CheckConstraint('attempt >= 1 AND generation >= 1'),
+    )
+    job_id: Mapped[str] = mapped_column(String, primary_key=True)
+    generation: Mapped[int] = mapped_column(Integer, primary_key=True)
+    workspace_id: Mapped[str] = mapped_column(String)
+    attempt: Mapped[int] = mapped_column(Integer)
+    source_snapshot_sha256: Mapped[str] = mapped_column(String)
+    status: Mapped[str] = mapped_column(String)
+    phase: Mapped[str] = mapped_column(String)
+    record: Mapped[dict] = mapped_column(JSON)
     created_at: Mapped[str] = mapped_column(String)
 
 

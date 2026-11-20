@@ -15,6 +15,7 @@ from uuid import uuid4
 
 from . import backup_archive as envelope
 from .data_root import DataLock, digest, validate_root, write_settings
+from .media_sources import retained_files, stored_attempt, stored_source
 
 CHUNK = 1024 * 1024
 VALUE_LIMIT = 64 * CHUNK
@@ -151,9 +152,43 @@ def check_references(root, files):
             for row in connection.execute('SELECT relative_path FROM document_workfiles'):
                 require(row[0])  # An external conflict must remain a conflict, not be overwritten with the indexed hash.
         if 'media_download_jobs' in tables:
-            for row in connection.execute("SELECT * FROM media_download_jobs WHERE status='ready'"):
-                progress, result = json.loads(row['progress']), json.loads(row['result'])
-                require(row['relative_path'], progress['partial_sha256'], progress['received'])
+            for row in connection.execute('SELECT * FROM media_download_jobs'):
+                local = 'source_kind' in row.keys() and row['source_kind'] == 'local_pair'
+                current = None
+                if local:
+                    source = stored_source(row)
+                    for track in source.tracks:
+                        original = connection.execute('SELECT * FROM media_entries WHERE id=?', (track.media_id,)).fetchone()
+                        if (original is None or original['workspace_id'] != row['workspace_id'] or original['status'] != 'ready' or
+                                (original['sha256'], original['size'], original['mime']) != (track.sha256, track.size, track.mime)):
+                            raise ValueError('本地合流来源缺失、跨空间或版本不符')
+                    for attempt in connection.execute('SELECT * FROM media_download_attempts WHERE job_id=?', (row['id'],)):
+                        record = stored_attempt(row, attempt, source)
+                        for paths, sha, size, optional in retained_files(source, record):
+                            found = [path for path in paths if path in files]
+                            if not found and not optional:
+                                raise ValueError('本地合流收据缺失受管文件')
+                            for path in found:
+                                require(path, sha, size)
+                        if attempt['generation'] == row['run_generation']:
+                            current = (attempt, record)
+                    if row['run_generation'] and current is None:
+                        raise ValueError('本地合流当前执行收据缺失')
+                if row['status'] != 'ready':
+                    continue
+                result = json.loads(row['result'])
+                if local:
+                    if current is None or current[0]['status'] != 'ready' or current[0]['attempt'] != row['attempt']:
+                        raise ValueError('本地合流完成状态与执行收据不符')
+                    output = current[1].output
+                    require(row['relative_path'], output.sha256, output.size)
+                    media = connection.execute('SELECT * FROM media_entries WHERE id=?', (result.get('media_id'),)).fetchone()
+                    if (media is None or media['workspace_id'] != row['workspace_id'] or media['status'] != 'ready' or
+                            (media['sha256'], media['size']) != (output.sha256, output.size)):
+                        raise ValueError('本地合流入库结果与输出收据不符')
+                else:
+                    progress = json.loads(row['progress'])
+                    require(row['relative_path'], progress['partial_sha256'], progress['received'])
                 node = connection.execute('SELECT workspace_id,media_id FROM workspace_nodes WHERE id=?',
                                           (result.get('resource_item_id'),)).fetchone()
                 if node is None or node[0] != row['workspace_id'] or node[1] != result.get('media_id'):
