@@ -1082,3 +1082,22 @@ verify_real.py退出0：默认原19743文件/351PE未知79→75，自包含19746
 主Agent随后已独立核M的#87当前CI及verify_all --read-only退出0、379×2/79→78及16原输出保持，同意有限DONE；仅在本后继task登记M完成，不追改L/M发布头。
 
 已创建并附加[独立草稿PR #93](https://github.com/surface-user/StudyWorkbench/pull/93)，分支codex/office-locale-data基于#87精确abf66df；同一六文件，501个base blob保持/507远端文件，105本地引用/62唯一调度行及UTF-8-LF/空白检查通过。补充只读check_exports.py退出0：四固定DLL分别433/396/1710/2595个导出、转发均0，前后hash保持，export01.json SHA256=fe9f0906e022d29dcda37a0a36afcda9d5d36a71c7355dccedc2357d557d08a6；不据此认证全部函数。当前head/当前CI及主Agent有限核验在PR正文维护，不为自身SHA循环改头，旧L/M头和组件保持，无合并发行。
+
+
+## OFF-02o 固定UNO环境绑定：来源、静态图与两种实际观察
+
+基于已验收#93精确9cdcb57d1791b928541e03ed157d0a1c75e355c2/tree98c0f5435e177e0a8cc4803097cfded1384c6e43（507文件）创建独立副本；N的有限DONE在本后继任务登记，旧头不改。根已批准六文件范围，无产品接口、业务源、依赖安装、组件原件、搜索目录或check_release改动。人工依ADR0013取消，审查依用户安排延后，不记为通过；PR/current-head CI交付后独立核验。
+
+固定LO commit bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1的13加载/构建/描述符源及4 public ABI/helper头源逐Git blob和SHA256复读。7份固定native注册累计183个mscx、2个mscx:affine、1个缺environment；两affine项实际为JDBCDriver（jdbclo）和ADO（mergedlo），未据注册推断新数据库功能。EnvDcp分离type/purpose，cascade映射到uno:affine，lbenv由cppu loadModule取得自身地址的目录构造mscx_uno/affine_uno_uno绝对URL；affine普通导入purpenvhelper3MSC。构建源证明cppu3 caller归属，源码关联不是可重现编译证明。log/unsafe及缺environment不纳本项。
+
+工具只在原156b4421…或自包含b0a040bd…精确组合锁下、固定services/services.rdb hash和cppu3/mscx/affine/purpenv四原件hash及AMD64/PE32+/可执行DLL/CLR0均匹配时，加入两个固定潜在根，后者传递覆盖helper；不解释任意环境、不扩全局目录、不借Java/Python CRT。完整原19743文件/351PE与派生19746文件/354PE重新逐hash和图核：原75→72、自包含74→71未知；Office154根/213节点/1903边。原Office边、目录、CRT、注册/UNO/SAL/locale字段及其他域逐字段保持。旧74路径全表和仅移除3项留raw；8关键hash末核、32实物反事实拒绝（四PE缺失/改hash/x86/PE32/非DLL/非执行/CLR共28，普通/延迟CRT不可借域2，注册缺失/改字节2）。其余71仍未分类、整包门禁继续失败。
+
+实际观察一：独立Job中的派生Office Python3.13.15，以固定public uno_createEnvironment创建mscx及uno:affine/null context，核返回描述符并调用public release；Windows pack8的11指针/88字节结构只用公开pTypeName及release偏移40，rtl_uString只读长度与UTF16 buffer偏移8，不调用私有environmentDisposing或读refcount。固定脚本SHA a1171e83212a344e3975bdcfcc7316f74a31947503c02492df5c371cf55991e0；完整组件前后保持，20秒/1GiB/4进程/64KiB结果边界，空cwd/最小环境，仅一次性子进程清DLL目录。三绑定库创建前未加载，创建释放后7个实际DLL handle路径/hash均通过；VCRT实际在Python bin，MSVCP在program，分域记录，不冒充普通Office CRT。未创建服务管理器、JDBC/ADO驱动、数据库连接或传入数据库参数，mergedlo/jdbclo未加载。两个环境释放不证明全部堆内存或DLL卸载。
+
+实际观察二：复用N受控EN CSV→XLSX诊断（没有新产品CSV接口），相同Office配置v4与Job/owned-soffice image/PID/module PID关联。输入原件hash保持，数值1234.56及2026-12-31日期独立核，所有进程退出；普通Office实际观察cppu3和mscx及program CRT。affine/purpenv未观察，仍只记录来源/静态与上述内存诊断证据；没有为强制加载而启动数据库驱动。module-name/modules错误299如实保留，未宣称全部模块、动态隔离、USER_DIRS/SxS/系统来源受控或干净机器通过。两个观察器脚本、结果、CSV/XLSX及全量raw留ignored artifacts/off02o，精选仅保留支持结论的身份、路径、分层结果和hash。
+
+本地命令（工作目录office-uno-environments，输出artifacts/off02o）：Q3.13.17/P3.12.7分别 `-B -X utf8 -m pytest` 六专项文件native_dependencies/release_inventory/office_java_bundle/java_runtime_preparation/office_python_probe/office_template_evidence，`--basetemp=.local/off02o-{q,p}02 --junitxml=artifacts/off02o/{q,p}02.xml`，各退出0/491通过/2既有ZIP重复项warning。native-only先行312通过；`ruff check backend tools`、`tools/export_question_schema.py --check`、Q `tools/check_frozen_sources.py --exe ../office-python-selfcontained/dist/study_backend/study_backend.exe`均0；45业务模块逐SHA/Git blob保持，冻结exe是既有#82构建（36c68c5e…），未称本项新本地build。`environment_real.py`、`host_probe.py`、`verify_real.py`均退出0，分别写新目录环境/宿主/静态结果，未覆盖既有证据。生成宿主脚本的一次PowerShell内联转义ParserError及随后只读进程查询的一次错误brace语法保留工具历史；前者改用独立builder，后者使用明确路径，只是采集准备失败，没有产品变更或降低断言。
+
+精选[off02o-uno-environments-summary.json](evidence/off02o-uno-environments-summary.json)列17源身份、8原件hash、32拒绝、491×2、20份raw摘要及两个实际观察的不同边界。`artifacts/off02o/verify_all.py --read-only`只重核现存组件/输出，不重跑Office，不写原summary/raw，供主Agent独立复核。旧L/M/N/历史失败、两Python ABI转发、模板、托管/x86/TWAIN、未观察环境和SBOM/许可/漏洞/签名/发行阻断保留；无合并或发行。
+
+交付入口：[独立草稿PR #104](https://github.com/surface-user/StudyWorkbench/pull/104)，基于#93，六文件/508总blob；当前head CI、逐blob与只读核证结果继续在本PR正文维护，不为追写最终SHA反复改头。源码/自动化已具备，交付核证与整包状态分开。

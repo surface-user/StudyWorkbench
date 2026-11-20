@@ -91,6 +91,8 @@ program直属的固定30个AMD64原生EXE/COM/BIN另作office_program保守静�
 
 固定LocaleData服务也有四个显式相对加载目标：[该版源码](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/i18npool/source/localedata/localedata.cxx)的有限枚举选择localedata_en/es/euro/others。该构建把i18npool对象合并进program/mergedlo.dll，固定services注册中的LocaleDataImpl也绑定此caller，不能按源库名猜一个不存在的DLL。检查精确组合锁、既定services注册hash、caller与四目标原字节及AMD64原生DLL头后，仅把四目标加入原Office静态根，原搜索/CRT及其他域保持。原报告分别记录源码/合并/注册证据、静态图和固定语言的实际soffice.bin模块观察；诊断CSV仅为自动验证输入，没有新增产品格式接口。有限模块观察保留采样错误，不认证任意动态加载、全部模块或系统来源。
 
+固定UNO环境绑定沿[该版cppu加载器](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/cppu/source/uno/loadmodule.cxx)相对实际cppu3.dll解析。固定服务注册的mscx及mscx:affine分别关联mscx_uno.dll、affine_uno_uno.dll，后者普通导入purpenvhelper3MSC.dll。仅在既定原/自包含组合锁、services注册与caller/三库精确hash及AMD64原生DLL头都吻合时，加入原Office潜在静态根；搜索和私有CRT目录不变。源码、静态图、public UNO内存诊断与普通soffice实际观察分别记录。内存诊断不创建服务管理器或数据库驱动；普通宿主未观察的affine/helper不标成已执行。JDBC/ADO注册不构成数据库功能支持；其他环境目的、缺环境注册、动态加载和系统来源继续待核。
+
 ## Office Python模板来源证据
 
 使用已有构建Python环境离线运行；输入必须是固定Office-Java组合及已下载的[CPython 3.13.15官方源码归档](https://www.python.org/ftp/python/3.13.15/Python-3.13.15.tar.xz)，命令不会下载、安装或执行归档内容：

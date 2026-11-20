@@ -1,0 +1,600 @@
+{
+  "base_head": "9cdcb57d1791b928541e03ed157d0a1c75e355c2",
+  "base_pr": 93,
+  "base_tree": "98c0f5435e177e0a8cc4803097cfded1384c6e43",
+  "business_modules_unchanged_from_base": 45,
+  "changed_tool_sha256": "bd2ae3ae38d5048f6dc7dc9a39d2883490e478b5eb6edf6e8897066e151547cf",
+  "current_selfcontained_unknown_count": 71,
+  "fixed_environment_roles": {
+    "affine": "JDBC and ADO registered purposes, not database support authorization",
+    "mscx": "registered C++ binding"
+  },
+  "frozen_identity": {
+    "build_scope": "existing #82 build, not a new local build",
+    "current_business_modules_match": 45,
+    "executable_sha256": "36c68c5e1cfc9fb15401309f61492694c6159da5c757d4c46eed72ead2bd3779"
+  },
+  "limitations": [
+    "Potential static roots, public-memory diagnostic contexts and ordinary Office execution are different scopes.",
+    "Affine/helper not observed in ordinary Office. No JDBC/ADO service creation, database connection or product feature claim.",
+    "Log/unsafe/missing environments, other 71 candidates and arbitrary dynamic/USER_DIRS/SxS/system provenance remain unclassified.",
+    "Transient snapshot error 299 retained; no complete-module, clean-machine, dynamic-isolation, signature or release certification.",
+    "No new directory, CRT fallback, dependency install, original mutation, merge or release."
+  ],
+  "memory_diagnostic": {
+    "complete_component_verified_before_after": true,
+    "component_service_manager_requested": false,
+    "contexts": [
+      {
+        "actual_descriptor": "mscx",
+        "created": true,
+        "descriptor": "mscx",
+        "released": true
+      },
+      {
+        "actual_descriptor": "uno:affine",
+        "created": true,
+        "descriptor": "uno:affine",
+        "released": true
+      }
+    ],
+    "database_parameters_supplied": false,
+    "driver_implementation_modules_loaded": false,
+    "module_paths": {
+      "affine_uno_uno.dll": {
+        "canonical_path": "program/affine_uno_uno.dll",
+        "path": "program/affine_uno_uno.dll",
+        "sha256": "686f978cbba4d1044990a85d91f5ba01e452aa3d39ecbf14310bd41a5ebfda5f"
+      },
+      "cppu3.dll": {
+        "canonical_path": "program/cppu3.dll",
+        "path": "program/cppu3.dll",
+        "sha256": "c3cb0f14e9875eb445378eda73b0949f8b71f5cb24c6d53680f7445fa0ecaa12"
+      },
+      "mscx_uno.dll": {
+        "canonical_path": "program/mscx_uno.dll",
+        "path": "program/mscx_uno.dll",
+        "sha256": "d9f7629cc782c613b1789d1e9112fc7225bc35adfc5ebf420fd8ad73acf133ca"
+      },
+      "msvcp140.dll": {
+        "canonical_path": "program/msvcp140.dll",
+        "path": "program/MSVCP140.dll",
+        "sha256": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9"
+      },
+      "purpenvhelper3MSC.dll": {
+        "canonical_path": "program/purpenvhelper3MSC.dll",
+        "path": "program/purpenvhelper3MSC.dll",
+        "sha256": "94eb1b748bcb5b339a0ccc261e447be5892978bc41e705e546f054507f0ec517"
+      },
+      "sal3.dll": {
+        "canonical_path": "program/sal3.dll",
+        "path": "program/sal3.dll",
+        "sha256": "0a7299f648b6ed320b9ac7a161ac790173ece5022c56a338ed30b8c5c2db02dd"
+      },
+      "vcruntime140.dll": {
+        "canonical_path": "program/python-core-3.13.15/bin/vcruntime140.dll",
+        "path": "program/python-core-3.13.15/bin/VCRUNTIME140.dll",
+        "sha256": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066"
+      }
+    },
+    "modules_before_context_creation": {
+      "affine_uno_uno.dll": false,
+      "mscx_uno.dll": false,
+      "purpenvhelper3MSC.dll": false
+    },
+    "office_host_execution_verified": false,
+    "public_abi": {
+      "environment_bytes": 88,
+      "pointer_bytes": 8,
+      "public_release_offset": 40,
+      "string_buffer_offset": 8
+    },
+    "script_sha256": "a1171e83212a344e3975bdcfcc7316f74a31947503c02492df5c371cf55991e0"
+  },
+  "negative_counterfactuals": [
+    {
+      "case": "missing",
+      "image": "converters/libreoffice/program/affine_uno_uno.dll",
+      "reason": "Office environment native image differs: affine_uno_uno.dll",
+      "rejected": true
+    },
+    {
+      "case": "changed",
+      "image": "converters/libreoffice/program/affine_uno_uno.dll",
+      "reason": "Office environment native image differs: affine_uno_uno.dll",
+      "rejected": true
+    },
+    {
+      "case": "x86",
+      "image": "converters/libreoffice/program/affine_uno_uno.dll",
+      "reason": "Office environment native image differs: affine_uno_uno.dll",
+      "rejected": true
+    },
+    {
+      "case": "PE32",
+      "image": "converters/libreoffice/program/affine_uno_uno.dll",
+      "reason": "Office environment native image differs: affine_uno_uno.dll",
+      "rejected": true
+    },
+    {
+      "case": "not-DLL",
+      "image": "converters/libreoffice/program/affine_uno_uno.dll",
+      "reason": "Office environment native image differs: affine_uno_uno.dll",
+      "rejected": true
+    },
+    {
+      "case": "non-executable",
+      "image": "converters/libreoffice/program/affine_uno_uno.dll",
+      "reason": "Office environment native image differs: affine_uno_uno.dll",
+      "rejected": true
+    },
+    {
+      "case": "CLR",
+      "image": "converters/libreoffice/program/affine_uno_uno.dll",
+      "reason": "Office environment native image differs: affine_uno_uno.dll",
+      "rejected": true
+    },
+    {
+      "case": "missing",
+      "image": "converters/libreoffice/program/cppu3.dll",
+      "reason": "Office environment native image differs: cppu3.dll",
+      "rejected": true
+    },
+    {
+      "case": "changed",
+      "image": "converters/libreoffice/program/cppu3.dll",
+      "reason": "Office environment native image differs: cppu3.dll",
+      "rejected": true
+    },
+    {
+      "case": "x86",
+      "image": "converters/libreoffice/program/cppu3.dll",
+      "reason": "Office environment native image differs: cppu3.dll",
+      "rejected": true
+    },
+    {
+      "case": "PE32",
+      "image": "converters/libreoffice/program/cppu3.dll",
+      "reason": "Office environment native image differs: cppu3.dll",
+      "rejected": true
+    },
+    {
+      "case": "not-DLL",
+      "image": "converters/libreoffice/program/cppu3.dll",
+      "reason": "Office environment native image differs: cppu3.dll",
+      "rejected": true
+    },
+    {
+      "case": "non-executable",
+      "image": "converters/libreoffice/program/cppu3.dll",
+      "reason": "Office environment native image differs: cppu3.dll",
+      "rejected": true
+    },
+    {
+      "case": "CLR",
+      "image": "converters/libreoffice/program/cppu3.dll",
+      "reason": "Office environment native image differs: cppu3.dll",
+      "rejected": true
+    },
+    {
+      "case": "missing",
+      "image": "converters/libreoffice/program/mscx_uno.dll",
+      "reason": "Office environment native image differs: mscx_uno.dll",
+      "rejected": true
+    },
+    {
+      "case": "changed",
+      "image": "converters/libreoffice/program/mscx_uno.dll",
+      "reason": "Office environment native image differs: mscx_uno.dll",
+      "rejected": true
+    },
+    {
+      "case": "x86",
+      "image": "converters/libreoffice/program/mscx_uno.dll",
+      "reason": "Office environment native image differs: mscx_uno.dll",
+      "rejected": true
+    },
+    {
+      "case": "PE32",
+      "image": "converters/libreoffice/program/mscx_uno.dll",
+      "reason": "Office environment native image differs: mscx_uno.dll",
+      "rejected": true
+    },
+    {
+      "case": "not-DLL",
+      "image": "converters/libreoffice/program/mscx_uno.dll",
+      "reason": "Office environment native image differs: mscx_uno.dll",
+      "rejected": true
+    },
+    {
+      "case": "non-executable",
+      "image": "converters/libreoffice/program/mscx_uno.dll",
+      "reason": "Office environment native image differs: mscx_uno.dll",
+      "rejected": true
+    },
+    {
+      "case": "CLR",
+      "image": "converters/libreoffice/program/mscx_uno.dll",
+      "reason": "Office environment native image differs: mscx_uno.dll",
+      "rejected": true
+    },
+    {
+      "case": "missing",
+      "image": "converters/libreoffice/program/purpenvhelper3MSC.dll",
+      "reason": "Office environment native image differs: purpenvhelper3MSC.dll",
+      "rejected": true
+    },
+    {
+      "case": "changed",
+      "image": "converters/libreoffice/program/purpenvhelper3MSC.dll",
+      "reason": "Office environment native image differs: purpenvhelper3MSC.dll",
+      "rejected": true
+    },
+    {
+      "case": "x86",
+      "image": "converters/libreoffice/program/purpenvhelper3MSC.dll",
+      "reason": "Office environment native image differs: purpenvhelper3MSC.dll",
+      "rejected": true
+    },
+    {
+      "case": "PE32",
+      "image": "converters/libreoffice/program/purpenvhelper3MSC.dll",
+      "reason": "Office environment native image differs: purpenvhelper3MSC.dll",
+      "rejected": true
+    },
+    {
+      "case": "not-DLL",
+      "image": "converters/libreoffice/program/purpenvhelper3MSC.dll",
+      "reason": "Office environment native image differs: purpenvhelper3MSC.dll",
+      "rejected": true
+    },
+    {
+      "case": "non-executable",
+      "image": "converters/libreoffice/program/purpenvhelper3MSC.dll",
+      "reason": "Office environment native image differs: purpenvhelper3MSC.dll",
+      "rejected": true
+    },
+    {
+      "case": "CLR",
+      "image": "converters/libreoffice/program/purpenvhelper3MSC.dll",
+      "reason": "Office environment native image differs: purpenvhelper3MSC.dll",
+      "rejected": true
+    },
+    {
+      "case": "import-cannot-borrow-Java-or-bin-CRT",
+      "image": "converters/libreoffice/program/mscx_uno.dll",
+      "reason": "Unresolved import: converters/libreoffice/program/mscx_uno.dll -> vcruntime140.dll; loading directories=['converters/libreoffice/program']; elsewhere=['converters/libreoffice/System/vcruntime140.dll', 'converters/libreoffice/System64/vcruntime140.dll', 'converters/libreoffice/java/bin/vcruntime140.dll', 'converters/libreoffice/program/python-core-3.13.15/bin/vcruntime140.dll']; system CRT cannot satisfy private dependencies",
+      "rejected": true
+    },
+    {
+      "case": "delay-cannot-borrow-Java-or-bin-CRT",
+      "image": "converters/libreoffice/program/mscx_uno.dll",
+      "reason": "Unresolved delay: converters/libreoffice/program/mscx_uno.dll -> vcruntime140.dll; loading directories=['converters/libreoffice/program']; elsewhere=['converters/libreoffice/System/vcruntime140.dll', 'converters/libreoffice/System64/vcruntime140.dll', 'converters/libreoffice/java/bin/vcruntime140.dll', 'converters/libreoffice/program/python-core-3.13.15/bin/vcruntime140.dll']; system CRT cannot satisfy private dependencies",
+      "rejected": true
+    },
+    {
+      "case": "missing-registry",
+      "reason": "Missing fixed Office environment service registration",
+      "rejected": true
+    },
+    {
+      "case": "changed-registry",
+      "reason": "Office environment service registration changed",
+      "rejected": true
+    }
+  ],
+  "only_removed_unknown_paths": [
+    "program/affine_uno_uno.dll",
+    "program/mscx_uno.dll",
+    "program/purpenvhelper3MSC.dll"
+  ],
+  "ordinary_office_observation": {
+    "actually_observed_bindings": [
+      "cppu3.dll",
+      "mscx_uno.dll"
+    ],
+    "all_process_modules_observed": false,
+    "complete_component_verified_before_after": true,
+    "csv_sha256": "f1bd83714e7c6f87eb57b2e5abe7f1ec02be674e7f98d53a5754a62a0ac4fcf8",
+    "dynamic_isolation_certified": false,
+    "module_paths": {
+      "cppu3.dll": {
+        "canonical_path": "program/cppu3.dll",
+        "path": "program/cppu3.dll",
+        "sha256": "c3cb0f14e9875eb445378eda73b0949f8b71f5cb24c6d53680f7445fa0ecaa12"
+      },
+      "localedata_en.dll": {
+        "canonical_path": "program/localedata_en.dll",
+        "path": "program/localedata_en.dll",
+        "sha256": "17caee9f1354cc0dd9c8f82d6d452a1937e06d07293dbe48ca96cebdc1abc592"
+      },
+      "localedata_es.dll": {
+        "canonical_path": "program/localedata_es.dll",
+        "path": "program/localedata_es.dll",
+        "sha256": "2e6284058851d54d4cdb255b10bea4b1835c5fe8f02d63462b58f9af26657cea"
+      },
+      "localedata_euro.dll": {
+        "canonical_path": "program/localedata_euro.dll",
+        "path": "program/localedata_euro.dll",
+        "sha256": "0e0b70511ae9653286acf47f9f5040b057c860bb508c0b156004268d30a3f0a5"
+      },
+      "localedata_others.dll": {
+        "canonical_path": "program/localedata_others.dll",
+        "path": "program/localedata_others.dll",
+        "sha256": "af772a495d9d33b3160b5342d0d842293e3a5ad6ce636de16b454061ee38397d"
+      },
+      "mergedlo.dll": {
+        "canonical_path": "program/mergedlo.dll",
+        "path": "program/mergedlo.dll",
+        "sha256": "017d0c21b6e45e54c0194b58017853d8c653059cc643643c3eb831a4d309331f"
+      },
+      "mscx_uno.dll": {
+        "canonical_path": "program/mscx_uno.dll",
+        "path": "program/mscx_uno.dll",
+        "sha256": "d9f7629cc782c613b1789d1e9112fc7225bc35adfc5ebf420fd8ad73acf133ca"
+      },
+      "msvcp140.dll": {
+        "canonical_path": "program/msvcp140.dll",
+        "path": "program/MSVCP140.dll",
+        "sha256": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9"
+      },
+      "vcruntime140.dll": {
+        "canonical_path": "program/vcruntime140.dll",
+        "path": "program/VCRUNTIME140.dll",
+        "sha256": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066"
+      }
+    },
+    "number_date_verified": true,
+    "office_processes_exited": true,
+    "product_csv_support_added": false,
+    "sampled_soffice_processes": 2,
+    "sampling_errors": [
+      {
+        "code": 299,
+        "stage": "module-name"
+      },
+      {
+        "code": 299,
+        "stage": "modules"
+      }
+    ],
+    "script_sha256": "60ce6a7e12b41e7aa21992c553ae5a74e59fba4db2036d09a1e273c3b45603f3",
+    "unobserved_bindings": [
+      "affine_uno_uno.dll",
+      "purpenvhelper3MSC.dll"
+    ],
+    "workbook_bytes": 6177,
+    "workbook_sha256": "df83cc2dff01237ed53bda62f87b1418cd94d120111ed60bb769830c93306e7a"
+  },
+  "previous_selfcontained_unknown_count": 74,
+  "product_release_ready": false,
+  "raw_evidence": {
+    "environment-api-sources.json": {
+      "bytes": 133233,
+      "sha256": "303c004ddff76ff26e873eb4cd2e8ac9032b40900fdcfa9e8982fa8cec3cef5f"
+    },
+    "environment01/report.json": {
+      "bytes": 2995,
+      "sha256": "cd49b72b43f56821347a57ec5eee01f710697d5d3e983a71f8746b548d35f134"
+    },
+    "environment01/result.json": {
+      "bytes": 2440,
+      "sha256": "bad04d476e9d8eab5619e6bb8c86cbf2ff0fcc309cde79b10a46975f2e64dc83"
+    },
+    "environment_child.py": {
+      "bytes": 5918,
+      "sha256": "a1171e83212a344e3975bdcfcc7316f74a31947503c02492df5c371cf55991e0"
+    },
+    "environment_real.py": {
+      "bytes": 3078,
+      "sha256": "0e6401bc0e6b925fe89fab7ef2d0f7dee11ec57bc6d39f78af9acdfe864d6d1e"
+    },
+    "frozen-source-match01.log": {
+      "bytes": 95,
+      "sha256": "344368e89f9d3acfe74bae3e097ac97b50fcdc69da12f6095ed1d4378083645d"
+    },
+    "host01/en-US/output/source.xlsx": {
+      "bytes": 6177,
+      "sha256": "df83cc2dff01237ed53bda62f87b1418cd94d120111ed60bb769830c93306e7a"
+    },
+    "host01/en-US/report.json": {
+      "bytes": 3072,
+      "sha256": "ea162415385fd4ae1c33dfa6428e62fdfcb88f4e853da629c5b9a391b8d3b0c9"
+    },
+    "host01/en-US/source.csv": {
+      "bytes": 819,
+      "sha256": "f1bd83714e7c6f87eb57b2e5abe7f1ec02be674e7f98d53a5754a62a0ac4fcf8"
+    },
+    "host01/report.json": {
+      "bytes": 3947,
+      "sha256": "495767d907b42715a1612c78121c87da1a9549169d14ae75cc7d909be941216e"
+    },
+    "host_probe.py": {
+      "bytes": 10358,
+      "sha256": "60ce6a7e12b41e7aa21992c553ae5a74e59fba4db2036d09a1e273c3b45603f3"
+    },
+    "new01.json": {
+      "bytes": 1089884,
+      "sha256": "5586b686d3e05b687d6c1bd9fd898be69229969c42b9abb4e0c8d5928ca2395a"
+    },
+    "old01.json": {
+      "bytes": 1018275,
+      "sha256": "e05312eb9aeb3114a2092eff9fc9c0fa5da134f4d7fd8b6fa8da94722af9d1a9"
+    },
+    "p02.xml": {
+      "bytes": 80188,
+      "sha256": "551ff2bd8ed257b4ed87cb2ffb7a8be16798b57c8ea9d058db155d44ab0e77d5"
+    },
+    "probe01.json": {
+      "bytes": 476607,
+      "sha256": "4b3bc8ea071aa23cf0dc4040d1f0977fd6c78eed725461e6198f12bb0e1ecb88"
+    },
+    "q02.xml": {
+      "bytes": 80188,
+      "sha256": "9c8a47bd3c84700aad86f8f8e21553b1f3cb9c202fb6d2434abeb10a3fab1aac"
+    },
+    "ruff01.log": {
+      "bytes": 20,
+      "sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0"
+    },
+    "schemas01.log": {
+      "bytes": 30,
+      "sha256": "511f93e1fe8041c617c13bf477d01dee36d47535450f475c7aa1775cbcd7ea72"
+    },
+    "sources.json": {
+      "bytes": 118219,
+      "sha256": "ee9af2590a28c9f9a1a1625c02abc2f2c77880758e4f25e046ad1f567bde90ea"
+    },
+    "verified01.json": {
+      "bytes": 18881,
+      "sha256": "48c1b33bee01fe58f2570267667a2a4d80fffe73de141d2f477f9c1692a827a7"
+    }
+  },
+  "registered_native_environment_counts": {
+    "program/services.rdb": {
+      "mscx": 13
+    },
+    "program/services/postgresql-sdbc.rdb": {
+      "mscx": 2
+    },
+    "program/services/pyuno.rdb": {
+      "mscx": 1
+    },
+    "program/services/scriptproviderforbeanshell.rdb": {},
+    "program/services/scriptproviderforjavascript.rdb": {},
+    "program/services/scriptproviderforpython.rdb": {},
+    "program/services/services.rdb": {
+      "mscx": 167,
+      "mscx:affine": 2,
+      "null": 1
+    }
+  },
+  "scope": "OFF-02o fixed registered UNO environment bindings, separate static/diagnostic/Office-host scopes",
+  "selected_sha256": {
+    "converters/libreoffice/java/bin/vcruntime140.dll": "02c6aa0e6e624411a9f19b0360a7865ab15908e26024510e5c38a9c08362c35a",
+    "converters/libreoffice/program/affine_uno_uno.dll": "686f978cbba4d1044990a85d91f5ba01e452aa3d39ecbf14310bd41a5ebfda5f",
+    "converters/libreoffice/program/cppu3.dll": "c3cb0f14e9875eb445378eda73b0949f8b71f5cb24c6d53680f7445fa0ecaa12",
+    "converters/libreoffice/program/mscx_uno.dll": "d9f7629cc782c613b1789d1e9112fc7225bc35adfc5ebf420fd8ad73acf133ca",
+    "converters/libreoffice/program/purpenvhelper3MSC.dll": "94eb1b748bcb5b339a0ccc261e447be5892978bc41e705e546f054507f0ec517",
+    "converters/libreoffice/program/python-core-3.13.15/bin/vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+    "converters/libreoffice/program/services/services.rdb": "bc996be9362ebf3a9c6be11d4c3c9fef26941182743c70d1649a6e5fe317f094",
+    "converters/libreoffice/program/vcruntime140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066"
+  },
+  "selection_reason": "Promote only fixed source identities, graph differences and correlated finite observations; full source/raw tables remain ignored.",
+  "source_association_is_reproducible_compilation": false,
+  "source_commit": "bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1",
+  "source_identities": {
+    "bridges/Library_cpp_uno.mk": {
+      "git_blob": "94f17f0149b00c6f9539ae0e0b0b96665dfe03ab",
+      "sha256": "75a14369df0113d505c13966458bee17c1b55968c0652eae5aca4a675ad2c995"
+    },
+    "cppu/Library_affine_uno_uno.mk": {
+      "git_blob": "10b5389b51d6b83b4956453faba432516088b6c7",
+      "sha256": "9a396b75b729c948175352a312be4bf056f473d66c4030f85d36382a3c20d04c"
+    },
+    "cppu/Library_cppu.mk": {
+      "git_blob": "5f3caeded328d2158680023bb7ae6851dc344fe8",
+      "sha256": "dcd673de7f3486defc48405b3f204820ca6ddfb753c01aaf9a6ae18a7e4020e4"
+    },
+    "cppu/Library_purpenvhelper.mk": {
+      "git_blob": "9aca5818aa412a15370af340a127da774e9a63dd",
+      "sha256": "d87dc8c88d5c467985ed9dc213bcf0580939a2056ed5198db28ff47a504839bc"
+    },
+    "cppu/source/AffineBridge/AffineBridge.cxx": {
+      "git_blob": "147c9278bb40078b6de3cb1f87822f01fff23cc9",
+      "sha256": "f7d84b945b307fb973836ca88c814fcb0ab0dbdc458859c29fa83bd3c4e44f4d"
+    },
+    "cppu/source/helper/purpenv/helper_purpenv_Environment.cxx": {
+      "git_blob": "50e6eba1c3c45fa0d33c3d241b91a35c707f36c3",
+      "sha256": "b9adcf663e3ffd557ab22f7f7951d62dc82f62363410c5be425ba59c3ce16778"
+    },
+    "cppu/source/uno/EnvDcp.cxx": {
+      "git_blob": "c5597dec47a5f69ef19ec0bcec6ff423d6590046",
+      "sha256": "075f46401c0d0aa4f5fecaffd9729e70b19c2a8162c8c0690b759dd9c6d47a0f"
+    },
+    "cppu/source/uno/cascade_mapping.cxx": {
+      "git_blob": "393d00c27f2dea5479116051e5cad476563d5fca",
+      "sha256": "c56d6c4195112ad522fd6f6ed65e64b5214bb2a1bb641e6c261c702d1299beea"
+    },
+    "cppu/source/uno/lbenv.cxx": {
+      "git_blob": "32a145e3de355a18713f09b9e17988b55714d00a",
+      "sha256": "136bc429309688898416232557083694aa7355cf91c676ab984a1ada2fc48405"
+    },
+    "cppu/source/uno/lbmap.cxx": {
+      "git_blob": "dc135a2be4844ba2925fbf1a782e85acf2929e4e",
+      "sha256": "86025c3b5cb60d4aa9c96a73c8b45780425780ab15439cbf63688c2bc93955d2"
+    },
+    "cppu/source/uno/loadmodule.cxx": {
+      "git_blob": "f2811a5958d46ce6ae917cda7fc6a210edbac50b",
+      "sha256": "a38301720dad4d7770f12b3e32d6bab2c4fc72a02f907b90254ee12ed612986c"
+    },
+    "cppu/source/uno/loadmodule.hxx": {
+      "git_blob": "694b1402492e6dda306cf706dbbe39a7914d4d39",
+      "sha256": "ccd42a930b8562d5c859843a389b6cedb18acabc1e0b3d5ca2f3417366a2f2d9"
+    },
+    "cppuhelper/source/shlib.cxx": {
+      "git_blob": "5bbefd436833aae5c053c9022197b66c329b2ed5",
+      "sha256": "e18d0d862729bc34eeb33191cfd8c0e9afe62d40f0e6c48c2017faf36446aba2"
+    },
+    "include/cppu/EnvDcp.hxx": {
+      "git_blob": "02eb0301d73d837ee7470182a560ec27bcf955d6",
+      "sha256": "9c0fb54ae13e5165fda5a08196183fc7098b4347fa43f5521b5d00bd9942e906"
+    },
+    "include/osl/interlck.h": {
+      "git_blob": "f0a39e52c74ea797639f76db1d008868bf453743",
+      "sha256": "d1c488d832f6cc215b3b1f96a21eeca6d586421fc98c92b7d37abe049259f7b4"
+    },
+    "include/rtl/ustring.h": {
+      "git_blob": "ddc87e29205dc028e033c71827e9742d228d1662",
+      "sha256": "977a5dbfb359bd5f22b9f409df602ef7828e50861aa203c011bc1a7c856e1163"
+    },
+    "include/uno/environment.h": {
+      "git_blob": "700d9c18e0cbab344093212a0c371acc7976308f",
+      "sha256": "14a550acdccad510987abca7f031055803df66b7ca1ded6edef3149cd5b1cb01"
+    }
+  },
+  "static_components": [
+    {
+      "component_inventory_sha256": "156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9",
+      "office_directories_crt_configuration_unchanged": true,
+      "office_graph": {
+        "edges": 1903,
+        "nodes": 213,
+        "roots": 154
+      },
+      "other_domains_field_equivalent": true,
+      "pe_images": 351,
+      "physical_files": 19743,
+      "unknown_after": 72,
+      "unknown_before": 75
+    },
+    {
+      "component_inventory_sha256": "b0a040bd584bb69aeaba44f749996d2320d83707889b8f8ad85d93d44893c9ee",
+      "office_directories_crt_configuration_unchanged": true,
+      "office_graph": {
+        "edges": 1903,
+        "nodes": 213,
+        "roots": 154
+      },
+      "other_domains_field_equivalent": true,
+      "pe_images": 354,
+      "physical_files": 19746,
+      "unknown_after": 71,
+      "unknown_before": 74
+    }
+  ],
+  "tests": {
+    "p02": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 491
+    },
+    "q02": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 491
+    }
+  }
+}
