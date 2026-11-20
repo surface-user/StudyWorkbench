@@ -1,0 +1,796 @@
+{
+  "scope": "REL-01h current backend source correspondence; not full product SBOM",
+  "selection_reason": "Bind the runnable 46-module backend to exact sources; preserve source hashes, scoped CDX, all remaining identity gaps and precise bootloader differences; raw reports, full paths and binaries remain ignored.",
+  "candidate": {
+    "pr": 77,
+    "head": "12a1411fcff2b8c2b3e6ea7573545f287c764abd",
+    "tree": "4412a39bd4154d4aa2236b4138d6051c9d155fcc",
+    "files": 503
+  },
+  "application_source": {
+    "pr": 74,
+    "head": "5ab4ccdfbc3df4e80baf3022c3a7a908bb383b81",
+    "tree": "53e5e57ca698e0db40d8ca495ff6332483a71749",
+    "static_modules": 46,
+    "module_source_proofs": {
+      "backend/study_workbench/__init__.py": {
+        "sha256": "17760ecca60d84d97b62a99a0741f18e88d7d0b5941daddf9d50ecb7f0a8be40",
+        "git_blob_sha1": "d92b208ad0752845aad4b7718832ddbd894a6ba5"
+      },
+      "backend/study_workbench/__main__.py": {
+        "sha256": "808c05d4710041e3edeb189a732af82d5ac27469a8000e9457a40da4eff2d414",
+        "git_blob_sha1": "d1e07bf3a32f027183e8c3fde7126d0fd04f2987"
+      },
+      "backend/study_workbench/agent_access.py": {
+        "sha256": "557166668974b90ef3c0ad1f7d516fa4bd8c51a472b812d7988897f065ee1c83",
+        "git_blob_sha1": "5dc4cf3d850b5b567f0fe6c622035c942a74889b"
+      },
+      "backend/study_workbench/analysis_review.py": {
+        "sha256": "13693a157f4696331f8db0194523800a68fbfc74623d1986284d102cf568c234",
+        "git_blob_sha1": "20cb45e2d2eae00097d5c90c81ed75ecbe4a8e66"
+      },
+      "backend/study_workbench/api_errors.py": {
+        "sha256": "662a500db58fc9eade22f9776f9321cf6fb9cbaea7662d9959611ff5eb4bfe47",
+        "git_blob_sha1": "b47f87c4b1c88c4e806f08aad42889db5ebbbefd"
+      },
+      "backend/study_workbench/app.py": {
+        "sha256": "185d4162f619d726050bc77d9c07b6a347990ab7e9cdacd6990513b5ebb9d91e",
+        "git_blob_sha1": "f505722516c0ff4a52493a9227f287d691b3ae03"
+      },
+      "backend/study_workbench/backup_archive.py": {
+        "sha256": "fbd8cb93ea01c2e1c0d6ced0229a89e3549f3cc42fdbbb36d436ff33178fcf69",
+        "git_blob_sha1": "efa5b19435d0230107200476d14de038a503b339"
+      },
+      "backend/study_workbench/backup_store.py": {
+        "sha256": "4a7828605866a43f2055457d873844d9e7c6358b6fa1f90ba9e1c70b5c2e5382",
+        "git_blob_sha1": "54a75abe894994854bba1ec3fa2506b05ef33b3c"
+      },
+      "backend/study_workbench/content.py": {
+        "sha256": "5ff8ae2e07b1d61dd6808664972131ffb438e206182115c68ddc9504fc15a81b",
+        "git_blob_sha1": "9964ced285bb726341fe1cf0b4bc97582a5f46f6"
+      },
+      "backend/study_workbench/data_root.py": {
+        "sha256": "7461edab1fec47b06443989f93796094516abf2b59acc188d3c1c797b1bbde4a",
+        "git_blob_sha1": "8de21a93b4fb3d7510634ba285b51825e045c4b4"
+      },
+      "backend/study_workbench/db.py": {
+        "sha256": "367c79a607fa23bb907125cf5445303a50620af6fb054c7a2c6feefd71055616",
+        "git_blob_sha1": "2e676cde9906a8e1c5b38ad63f334bcb82e9ba3b"
+      },
+      "backend/study_workbench/document_files.py": {
+        "sha256": "23a28408538038bab901ca11ae2b04aa37bb3b3bb4bd37ac2a30ba4d2bd01e84",
+        "git_blob_sha1": "3e90477f3d09bc6750ae1f9abdf03de69f3af29c"
+      },
+      "backend/study_workbench/document_view_worker.py": {
+        "sha256": "b98eed8b79236791f5901c0acf23a3f853cf5ec8e6833ee7c6cfea1cf99505b4",
+        "git_blob_sha1": "8ecb7eda4b17efe4872746a7236a04c2b099582c"
+      },
+      "backend/study_workbench/documents.py": {
+        "sha256": "1f78de0cd55589d8ce7e5410d30ff85dfe298fb71056114a25f39bd1c4811a4a",
+        "git_blob_sha1": "22ef94893ef31230102d81f02db18008d70386a2"
+      },
+      "backend/study_workbench/draft_editing.py": {
+        "sha256": "70abd046e79464f00e0ca654383518f042b100b1265b8866b59b7954c45a1dea",
+        "git_blob_sha1": "22799d548dc49d07391f53766d51d5e959369312"
+      },
+      "backend/study_workbench/explorer.py": {
+        "sha256": "a787c2c0b1776b5214eca5556510252c76f619072df222e04e3acf14c939728f",
+        "git_blob_sha1": "357d38d0009a5c7561f4bce2cf9cc252f72b10d3"
+      },
+      "backend/study_workbench/imports.py": {
+        "sha256": "8d83a06f1d0eeb2405e282e0f380d217316b182998d8ec9b2ad620538ffe9058",
+        "git_blob_sha1": "fe2c775ae34c83597ea307286e41f8adf2567c78"
+      },
+      "backend/study_workbench/internal_links.py": {
+        "sha256": "5550984dc5d5b9b6c80470ee66bd4ba02375ab0d03c7d0929a76883573924cbc",
+        "git_blob_sha1": "d85495efe2354d03aa43c8cc5901247e08789c57"
+      },
+      "backend/study_workbench/learning.py": {
+        "sha256": "e5dde94f010b10db6000082d8512f9b5117a8ff3265f6a8b71cccba4bdbc9a36",
+        "git_blob_sha1": "f9a5283db8088870578301cf903804800af643a9"
+      },
+      "backend/study_workbench/learning_marks.py": {
+        "sha256": "3f9eb7e203386e63ef9bda12ec1f842f4ec3ec1b806fb13880508a98c210d48c",
+        "git_blob_sha1": "8b74b4a9a0851b797a9b1277975cf06aee02f3dc"
+      },
+      "backend/study_workbench/learning_records.py": {
+        "sha256": "bd18c97f338dc3901df341f89c3252eeb4e075b132e367768dec8de0287a1bdc",
+        "git_blob_sha1": "e3f0f7d700ee89c8c5c8c7020e4d56d987fb4627"
+      },
+      "backend/study_workbench/learning_search.py": {
+        "sha256": "f94bb1586a0061697e56325b4e6d88fb4c4adec35b4fd2d1a6ec94311060b1ba",
+        "git_blob_sha1": "e13a427dd8036cb99fbad01370b37e1b613c9ab4"
+      },
+      "backend/study_workbench/library.py": {
+        "sha256": "897ecc303b97aa7aa39666d726ef2a09f362409da396fc7cf60020675aadac7c",
+        "git_blob_sha1": "b2b171392de54ec3a767678bb6c51dfcee1458f9"
+      },
+      "backend/study_workbench/library_integrity.py": {
+        "sha256": "7f2e3622cf30e4a81b25427acdbfeced7300352b2e4595263b1647a442dcef18",
+        "git_blob_sha1": "21957fb8ed98d88a3774dcd0d4974b2c9571f2a1"
+      },
+      "backend/study_workbench/markdown_merge.py": {
+        "sha256": "7ff11e87bb7575099bb5b9421702e89322ca60cc948ed0afcb9306da07db1518",
+        "git_blob_sha1": "2c8dd6a544d66487f324434cfc29bddd4fde686c"
+      },
+      "backend/study_workbench/markdown_notes.py": {
+        "sha256": "5e0fbfe0f6da2121865a55c373513d1c9b92ba5a3d6348eb0bb58d0f9d952eb8",
+        "git_blob_sha1": "fecba471afe6143d8df9b01ee45dbc438def2203"
+      },
+      "backend/study_workbench/markdown_questions.py": {
+        "sha256": "10daea315a706b73301fb75a0ae4cf3788acb8184815b21cf678aade1118646f",
+        "git_blob_sha1": "18bab89283a9d21e97092783db225d4c20f16110"
+      },
+      "backend/study_workbench/media_download_http.py": {
+        "sha256": "0e342df0832baa41be7ba4625b1166438c900c116e70c0b3b6ad9ebbe3edc9d0",
+        "git_blob_sha1": "fe3132df5b08157f0ead4cf8337ac27616cbb26f"
+      },
+      "backend/study_workbench/media_download_worker.py": {
+        "sha256": "96282d9a854bac38cb28cdf6c5fd74838108b2a0823eea9e0139c73779acf959",
+        "git_blob_sha1": "28882203113ff0e44c02decbc9f7dda9ce8ddeb5"
+      },
+      "backend/study_workbench/media_downloads.py": {
+        "sha256": "26c74bef431a4a33b412ec682aa4a1d1a78887546d0370afdbdaa878411ec2bd",
+        "git_blob_sha1": "a163f40e6cff27617134f25bc61cb3a3c15381ef"
+      },
+      "backend/study_workbench/media_duration.py": {
+        "sha256": "1dc9aef3f44d94cddfe877e2804076b634807e646fa8d9383ec5632ac760d6e5",
+        "git_blob_sha1": "bcc7f0ea02f63c8e7799642051cdacc503d6b4f4"
+      },
+      "backend/study_workbench/media_library.py": {
+        "sha256": "5e70aada0b74b9629650926a84c0107b5c9bab7d67d00dd9c25eb3ce333393aa",
+        "git_blob_sha1": "81e5dec7aa642cd51559b15f070ec15020d4d41f"
+      },
+      "backend/study_workbench/migrate.py": {
+        "sha256": "3709599c9c45acc4d06144915ae477dfd95c03d454edaa66b8aae2c71240ce78",
+        "git_blob_sha1": "4a1011298d9daafb1eafe16e073e6b11438fc644"
+      },
+      "backend/study_workbench/office_inputs.py": {
+        "sha256": "cf6e00d1eb979b95658503b1d7bbac67373e8ccdb5828e71e15b411667d926d7",
+        "git_blob_sha1": "2cf0ee8e54869dcfa5d76d3324d2dfb8bcea51ab"
+      },
+      "backend/study_workbench/office_previews.py": {
+        "sha256": "baf80e60e78a0e421608df8e4cdc7a7a75611c968aae4e95998f812d486591cc",
+        "git_blob_sha1": "61d354530eb62abeb28e6fc46ace2e600432fd4f"
+      },
+      "backend/study_workbench/office_runtime.py": {
+        "sha256": "73cf153db60d3b1a3aa455ebd87b6fb868a44cd6d01fb20e46d9b8eef53f9b50",
+        "git_blob_sha1": "19f22bac59b229954974f98a94352b3c23caf869"
+      },
+      "backend/study_workbench/question_files.py": {
+        "sha256": "c808c4262ba2956b765841e2e56aaded6434fda932cdd39ed5d62dd81deb6c27",
+        "git_blob_sha1": "afd32c3ce94651c6c0e5fbf6d80fcc916c40b9ac"
+      },
+      "backend/study_workbench/question_files_format.py": {
+        "sha256": "7f2e1bfab989cfc1bd669ac10d933572db19ca7d9f56c3751c8795a6d201880a",
+        "git_blob_sha1": "eab35e798f5ee55fc62087e702e911d10c638d22"
+      },
+      "backend/study_workbench/question_protocol.py": {
+        "sha256": "6dccbc15b1ca8d16b861ddb70219b8b291591fa32af285845f8453e24996a0cc",
+        "git_blob_sha1": "4154eae4af508b82f7832becdf992f6be762efa2"
+      },
+      "backend/study_workbench/question_splitting.py": {
+        "sha256": "fd0b859dc19d512f274bb88ea7a39d84c186050254936d080e50b9bcd27b2855",
+        "git_blob_sha1": "78a5b652912e0b98df8664b0e99e037f44566b06"
+      },
+      "backend/study_workbench/recovery_storage.py": {
+        "sha256": "6b333f9b3adbd0594b0a87182e0c16eacabdfbd6baeac3fcf234d48cfa443c38",
+        "git_blob_sha1": "ab5b9eb2de588c2ce1f492999bf6812b37690269"
+      },
+      "backend/study_workbench/request_limits.py": {
+        "sha256": "3d0f63acfe8a6181a2553aefd00a0f2e8c94e765bdb21824fb4013b11ed0f783",
+        "git_blob_sha1": "11c37b2f8cc846e79d1a67895f0cdfd1af195515"
+      },
+      "backend/study_workbench/resource_grants.py": {
+        "sha256": "ca1c68dcf7feeb1f872f35c50fecbdf22223976e87d9691338e0fddc336939a9",
+        "git_blob_sha1": "a8c116fc4ad40f1bdb2a9cf8a37d36c5175c023a"
+      },
+      "backend/study_workbench/resource_pdf.py": {
+        "sha256": "1184b2e5f85b1e6db51e155409fcd6e5ccc3efab0f4384f012723ef582074b33",
+        "git_blob_sha1": "d6be2b49f6dedbbff06923c975cff31c52c4cd7d"
+      },
+      "backend/study_workbench/spreadsheet_view.py": {
+        "sha256": "8626fd68398dba32f66c34eaa33b18e8e0a22bcbca7d6983b80bb09c29ea922f",
+        "git_blob_sha1": "9c9392da015bb252cd808b394d927a46e0108fe5"
+      },
+      "backend/study_workbench/workspaces.py": {
+        "sha256": "8da4e0bd7250bc450faceb0a01f27613476269a9b0e1c55b29231ce8fcc0a7af",
+        "git_blob_sha1": "0b7dc5b02902bbb1c45bb69e91d6c5ab581105f9"
+      }
+    },
+    "source_and_build_provenance_authenticated": false
+  },
+  "source_lock_sha256": {
+    "backend/requirements.lock.txt": "8823dec8bd36cedab44ad894dbb018d442590187b23d5af837c1dbb2f2cb2512",
+    "apps/desktop/pubspec.lock": "c1ab979d33d15197f1018cae7ec752cfb0244523e26f3ed2c73ee1f761be2ce5"
+  },
+  "source_tree_manifest_sha256": "6b2d4f489750fb305018438622c193763b8475c47f97d6bc3af0545b43f3add3",
+  "collectors": {
+    "current": {
+      "tools/frozen_sbom.py": "817f2a83145bdd9f3b8e72b6b2489e10fa1ea1ed2010926ea8b750cad0f6e4b2",
+      "tools/frozen_python_members.py": "fc8b1173358014d2f18bd210b3280b04d7ec390dc02a5b572416faa1da24b89d",
+      "tools/frozen_python_origins.py": "a81199f00bf1ad4b67e30876bb705810f4985c625fed1a3c2e2fc5566a833db9",
+      "tools/check_frozen_sources.py": "a74a494f0c7e466344e7833f3b5df4084051f745b966bd96cdb9a9e4a6a19feb"
+    },
+    "native_tool": {
+      "pr": 54,
+      "head": "24405f0bd4bbdfe1716458eabe49e2fecee11c72",
+      "git_blob": "a4cd8bee3f99d69324d29716f6cb32b1203676b3",
+      "sha256": "0742aee01ea3f00a680b5ccdbc23e05aa283bfffa9b0964ba89af68f6c2a3496",
+      "used_without_modification": true
+    }
+  },
+  "fixed_python_archive": {
+    "version": "3.13.17",
+    "sha256": "dce409744b088f94c6e37ba41f8100c384c27e029e843237364c602d30d475e5",
+    "nuspec_sha256": "b3dd6246a1894c26eeaf424b6b1837957811d8a8fcc5390f79c19f3030c6971d",
+    "source": "https://api.nuget.org/v3-flatcontainer/python/3.13.17/python.3.13.17.nupkg",
+    "publisher_signature_verified": false
+  },
+  "payload": {
+    "exe": {
+      "bytes": 22600069,
+      "sha256": "f493edc9292c85556c0b2ce5c94f29595eb5d465863990d358d5d58930f91ba0"
+    },
+    "files": 969,
+    "fingerprint": "77b7e5ade7568c557b6a4b16d408641101dcd764163f702ffdeaa9beee22407e",
+    "native_files": 161,
+    "scanner_candidates": 73,
+    "shipped_metadata": 15,
+    "pyz_modules": 2724,
+    "unchanged_old_payload_files": 967,
+    "changed_from_old": {
+      "study_backend.exe": {
+        "old": {
+          "bytes": 22568458,
+          "sha256": "3fba079e510e4550d086b7786973f937fa3c2a92e28efcd0e112d6bec82d50a2"
+        },
+        "current": {
+          "bytes": 22600069,
+          "sha256": "f493edc9292c85556c0b2ce5c94f29595eb5d465863990d358d5d58930f91ba0"
+        }
+      },
+      "_internal/base_library.zip": {
+        "old": {
+          "bytes": 1409453,
+          "sha256": "1e79f25bfe12bb942bceaaa6f3295b0c340f2e9896069647fc829b48aa368353"
+        },
+        "current": {
+          "bytes": 1409453,
+          "sha256": "68aadf997dc1ce7f0b4e93b209da58c1168d2b42ff36922677d43fd0b166d9a0"
+        }
+      }
+    },
+    "unchanged_nonbusiness_pyz_stored_content": 2678,
+    "base_zip_member_directory_unchanged": true
+  },
+  "local_members": {
+    "packages": [
+      "pkg:pypi/alembic@1.20.1",
+      "pkg:pypi/annotated-doc@0.0.5",
+      "pkg:pypi/annotated-types@0.8.0",
+      "pkg:pypi/anyio@4.15.1",
+      "pkg:pypi/attrs@26.1.0",
+      "pkg:pypi/certifi@2026.10.19",
+      "pkg:pypi/charset-normalizer@3.5.2",
+      "pkg:pypi/click@8.5.0",
+      "pkg:pypi/colorama@0.4.6",
+      "pkg:pypi/defusedxml@0.7.1",
+      "pkg:pypi/doclang@0.8.0",
+      "pkg:pypi/docling-core@2.104.0",
+      "pkg:pypi/docling-slim@2.142.1",
+      "pkg:pypi/fastapi@0.161.1",
+      "pkg:pypi/filetype@1.2.0",
+      "pkg:pypi/h11@0.16.0",
+      "pkg:pypi/idna@3.20",
+      "pkg:pypi/iniconfig@2.3.1",
+      "pkg:pypi/langcodes@3.5.1",
+      "pkg:pypi/latex2mathml@3.81.1",
+      "pkg:pypi/lxml@6.1.3",
+      "pkg:pypi/mako@1.4.3",
+      "pkg:pypi/markdown-it-py@4.2.0",
+      "pkg:pypi/markupsafe@3.0.4",
+      "pkg:pypi/mdurl@0.1.2",
+      "pkg:pypi/numpy@2.5.4",
+      "pkg:pypi/opentelemetry-api@1.45.1",
+      "pkg:pypi/packaging@26.3",
+      "pkg:pypi/pandas@3.1.0",
+      "pkg:pypi/pillow@13.0.0",
+      "pkg:pypi/pluggy@1.7.0",
+      "pkg:pypi/pydantic-core@2.50.1",
+      "pkg:pypi/pydantic-settings@2.16.1",
+      "pkg:pypi/pydantic@2.14.1",
+      "pkg:pypi/pygments@2.21.0",
+      "pkg:pypi/pylatexenc@2.10",
+      "pkg:pypi/pypdfium2@5.14.0",
+      "pkg:pypi/pytest@9.0.3",
+      "pkg:pypi/python-dateutil@3.0.0",
+      "pkg:pypi/python-docx@1.2.0",
+      "pkg:pypi/python-dotenv@1.2.4",
+      "pkg:pypi/pyyaml@6.0.3",
+      "pkg:pypi/requests@2.34.2",
+      "pkg:pypi/rich@15.0.0",
+      "pkg:pypi/setuptools@84.2.1",
+      "pkg:pypi/six@1.17.0",
+      "pkg:pypi/sqlalchemy@2.1.6",
+      "pkg:pypi/starlette@1.3.1",
+      "pkg:pypi/tabulate@0.10.0",
+      "pkg:pypi/tqdm@4.70.1",
+      "pkg:pypi/typing-extensions@4.16.0",
+      "pkg:pypi/typing-inspection@0.4.4",
+      "pkg:pypi/tzdata@2026.5",
+      "pkg:pypi/urllib3@2.8.0",
+      "pkg:pypi/uvicorn@0.54.0"
+    ],
+    "module_status_counts": {
+      "matched": 2358,
+      "unmapped": 320
+    },
+    "physical_status_counts": {
+      "matched": 861,
+      "unmapped": 108
+    },
+    "record_rows_inspected": 14072,
+    "source_files_checked": 3344,
+    "source_bytes": 124220456,
+    "installed_package_membership_not_assumed": true
+  },
+  "additional_origins": {
+    "pyz": 311,
+    "base_zip": 154,
+    "physical": 62,
+    "startup_code": 11,
+    "namespaces": {
+      "docling.backend.docx.drawingml": {
+        "kind": "namespace_container",
+        "stored_code_bytes": 0,
+        "namespace_version": null,
+        "package_identity_authenticated": false,
+        "verified_child_modules": 1,
+        "contributing_build_distributions": [
+          "pkg:pypi/docling-slim@2.142.1"
+        ]
+      },
+      "opentelemetry": {
+        "kind": "namespace_container",
+        "stored_code_bytes": 0,
+        "namespace_version": null,
+        "package_identity_authenticated": false,
+        "verified_child_modules": 28,
+        "contributing_build_distributions": [
+          "pkg:pypi/opentelemetry-api@1.45.1"
+        ]
+      },
+      "opentelemetry.propagators": {
+        "kind": "namespace_container",
+        "stored_code_bytes": 0,
+        "namespace_version": null,
+        "package_identity_authenticated": false,
+        "verified_child_modules": 2,
+        "contributing_build_distributions": [
+          "pkg:pypi/opentelemetry-api@1.45.1"
+        ]
+      },
+      "opentelemetry.util": {
+        "kind": "namespace_container",
+        "stored_code_bytes": 0,
+        "namespace_version": null,
+        "package_identity_authenticated": false,
+        "verified_child_modules": 6,
+        "contributing_build_distributions": [
+          "pkg:pypi/opentelemetry-api@1.45.1"
+        ]
+      },
+      "setuptools._distutils.compilers": {
+        "kind": "namespace_container",
+        "stored_code_bytes": 0,
+        "namespace_version": null,
+        "package_identity_authenticated": false,
+        "verified_child_modules": 12,
+        "contributing_build_distributions": [
+          "pkg:pypi/setuptools@84.2.1"
+        ]
+      },
+      "setuptools._distutils.compilers.C": {
+        "kind": "namespace_container",
+        "stored_code_bytes": 0,
+        "namespace_version": null,
+        "package_identity_authenticated": false,
+        "verified_child_modules": 6,
+        "contributing_build_distributions": [
+          "pkg:pypi/setuptools@84.2.1"
+        ]
+      },
+      "setuptools._distutils.compilers.platform": {
+        "kind": "namespace_container",
+        "stored_code_bytes": 0,
+        "namespace_version": null,
+        "package_identity_authenticated": false,
+        "verified_child_modules": 2,
+        "contributing_build_distributions": [
+          "pkg:pypi/setuptools@84.2.1"
+        ]
+      },
+      "setuptools._vendor": {
+        "kind": "namespace_container",
+        "stored_code_bytes": 0,
+        "namespace_version": null,
+        "package_identity_authenticated": false,
+        "verified_child_modules": 31,
+        "contributing_build_distributions": [
+          "pkg:pypi/setuptools@84.2.1"
+        ]
+      },
+      "setuptools._vendor.jaraco": {
+        "kind": "namespace_container",
+        "stored_code_bytes": 0,
+        "namespace_version": null,
+        "package_identity_authenticated": false,
+        "verified_child_modules": 3,
+        "contributing_build_distributions": [
+          "pkg:pypi/setuptools@84.2.1"
+        ]
+      }
+    },
+    "remaining_code": [],
+    "remaining_base_zip": []
+  },
+  "remaining_unmapped_physical": {
+    "_internal/api-ms-win-core-console-l1-1-0.dll": {
+      "bytes": 22872,
+      "sha256": "015bd08815c7b934a8952c3a7578e9ce59f21136e8a880d42bbd414bec2c6058"
+    },
+    "_internal/api-ms-win-core-datetime-l1-1-0.dll": {
+      "bytes": 22896,
+      "sha256": "5534812cdbdae94ba45cb216e5eb9af686b853948df54365103555abbbaf9d9a"
+    },
+    "_internal/api-ms-win-core-debug-l1-1-0.dll": {
+      "bytes": 22872,
+      "sha256": "837d2b1b2cd03e03fc6ccb050698b6b5763af17c201304872342a5eae9e0a2d2"
+    },
+    "_internal/api-ms-win-core-errorhandling-l1-1-0.dll": {
+      "bytes": 22872,
+      "sha256": "de43b165f568c276c00e95acd454e3092f352a18e95874595f4f4658c06d2ec7"
+    },
+    "_internal/api-ms-win-core-fibers-l1-1-0.dll": {
+      "bytes": 22872,
+      "sha256": "3cebc45bf479ad74cfabf2c6bfd4994d7ad639ed1221025981d19cedf9ce0416"
+    },
+    "_internal/api-ms-win-core-fibers-l1-1-1.dll": {
+      "bytes": 22872,
+      "sha256": "5ef70308bcca628ce6b0e2856b15b1c7ae340c3f9bbbc4c1071d8c191a34a5c3"
+    },
+    "_internal/api-ms-win-core-file-l1-1-0.dll": {
+      "bytes": 27008,
+      "sha256": "250ac829f2617bcac1c6e5b8c4f630462e20765863ba573526a3e11bbfb94a9a"
+    },
+    "_internal/api-ms-win-core-file-l1-2-0.dll": {
+      "bytes": 22888,
+      "sha256": "ae14079a114733f60ce87b92cba42acd8083c2cd67594e53bc37dc0b97a4b465"
+    },
+    "_internal/api-ms-win-core-file-l2-1-0.dll": {
+      "bytes": 22912,
+      "sha256": "914bf26a298713119477ea0a8e7bd43171b91344ebe24fb47ad77c49686e3d87"
+    },
+    "_internal/api-ms-win-core-handle-l1-1-0.dll": {
+      "bytes": 22896,
+      "sha256": "ab5489955e371b15f77906c08ec3c7affe2c7a46a08c514ca628768b4478974b"
+    },
+    "_internal/api-ms-win-core-heap-l1-1-0.dll": {
+      "bytes": 22872,
+      "sha256": "c70f9644d8377fa39c5b71f2e9734c1400d7598904fdeb772e8502099982dcb7"
+    },
+    "_internal/api-ms-win-core-interlocked-l1-1-0.dll": {
+      "bytes": 22888,
+      "sha256": "f8129710188e407bb0e6f46d30aeba277d67b947ece5fe09e883fde2323f3ae6"
+    },
+    "_internal/api-ms-win-core-kernel32-legacy-l1-1-1.dll": {
+      "bytes": 22888,
+      "sha256": "5200b16cb2ddc61cfc07373a9a84aa85a3ab50806ca96c879c883275832944c1"
+    },
+    "_internal/api-ms-win-core-libraryloader-l1-1-0.dll": {
+      "bytes": 22872,
+      "sha256": "48786fb88b001dcd1f63acea903d3ca9cc0b3060d5a325e3f2f3cbc3bfd53166"
+    },
+    "_internal/api-ms-win-core-localization-l1-2-0.dll": {
+      "bytes": 22872,
+      "sha256": "9ec3898f7eba91faa28b51616c211a2689e3a13aeef8de6e13cb674e49d689eb"
+    },
+    "_internal/api-ms-win-core-memory-l1-1-0.dll": {
+      "bytes": 22896,
+      "sha256": "3a6cbc524c99e1cd80d5368f5601402a37ad602528b1ab628093573ef638eb3b"
+    },
+    "_internal/api-ms-win-core-namedpipe-l1-1-0.dll": {
+      "bytes": 22888,
+      "sha256": "97145ef89c44949fcf0f04ac834a8bc7d687ef49ee73ae9fc32f3c11136b7201"
+    },
+    "_internal/api-ms-win-core-processenvironment-l1-1-0.dll": {
+      "bytes": 22872,
+      "sha256": "8bc7c10b1851aea644e9c9f381cdb935e091fee6b0be3d3aedc6fffaac96adb7"
+    },
+    "_internal/api-ms-win-core-processthreads-l1-1-0.dll": {
+      "bytes": 22912,
+      "sha256": "d8030b777617c71f0f94564607699dbf7561487d779db9756aed378c5675213f"
+    },
+    "_internal/api-ms-win-core-processthreads-l1-1-1.dll": {
+      "bytes": 22872,
+      "sha256": "f5e676713340f73a03a3d41a6ec9883b431da7d16c7f07bd0a920fb80e6c0753"
+    },
+    "_internal/api-ms-win-core-profile-l1-1-0.dll": {
+      "bytes": 22872,
+      "sha256": "f023d47e44d3eea6b0743580f57e8c6ba81e79d5ebfa7da26250076c647b980e"
+    },
+    "_internal/api-ms-win-core-rtlsupport-l1-1-0.dll": {
+      "bytes": 22888,
+      "sha256": "9746d8930704153578a628c010638a5f818ffe5a927e25591b108e256dc6afca"
+    },
+    "_internal/api-ms-win-core-string-l1-1-0.dll": {
+      "bytes": 22896,
+      "sha256": "7c53ae24c982d16ffd1bf7f918d115b11b7f30e57bc7feaa18cb9781e4abb926"
+    },
+    "_internal/api-ms-win-core-synch-l1-1-0.dll": {
+      "bytes": 22896,
+      "sha256": "56d9d62ca5dba79a6581b8d574a7d8b2a64a5ecb71e47dcf06ed0285708b1859"
+    },
+    "_internal/api-ms-win-core-synch-l1-2-0.dll": {
+      "bytes": 22888,
+      "sha256": "f6482bbec5612c39ecb4822787a333f2b7570f7a5f922a4059be41ba957bb372"
+    },
+    "_internal/api-ms-win-core-sysinfo-l1-1-0.dll": {
+      "bytes": 22896,
+      "sha256": "272d02765fdd3582618236c2d309abba069642f9bc1062ede069d0c144e17007"
+    },
+    "_internal/api-ms-win-core-sysinfo-l1-2-0.dll": {
+      "bytes": 22912,
+      "sha256": "8a0900788859d0eb51c2f48f50cc6ed376a120b518100fa20e11d7702ccde260"
+    },
+    "_internal/api-ms-win-core-timezone-l1-1-0.dll": {
+      "bytes": 22896,
+      "sha256": "ff35de6c03812b332e140f17dade25c5dd4775156da9eeb1eaae3fddd27236ec"
+    },
+    "_internal/api-ms-win-core-util-l1-1-0.dll": {
+      "bytes": 22896,
+      "sha256": "191ef3e98641a57296f19d572d8eb62489470ff1ef6030d136af170c2f835173"
+    },
+    "_internal/api-ms-win-crt-conio-l1-1-0.dll": {
+      "bytes": 22872,
+      "sha256": "54ee5ec719a051496ff60aa00dbeaa94b9a7d2cdac27fe9b7317f1a666b6a2aa"
+    },
+    "_internal/api-ms-win-crt-convert-l1-1-0.dll": {
+      "bytes": 26992,
+      "sha256": "8b94662429171019fcd63c70bbf2095a075170599704a5e7dcdbe3da13f3a429"
+    },
+    "_internal/api-ms-win-crt-environment-l1-1-0.dll": {
+      "bytes": 22912,
+      "sha256": "39e5929593709e8af3bc9e0a75ec1155778d6f4a247f4cdfc58928ad6db88434"
+    },
+    "_internal/api-ms-win-crt-filesystem-l1-1-0.dll": {
+      "bytes": 22872,
+      "sha256": "5a8ecebac32edf4e1f3c5c6c1c8ea1a1add6cda4f9c9cb26f752fb295bea6865"
+    },
+    "_internal/api-ms-win-crt-heap-l1-1-0.dll": {
+      "bytes": 22872,
+      "sha256": "c71080cbcb43bf1f8f3e391deb12a582eb0abefc80946f340675a2c616e4feb4"
+    },
+    "_internal/api-ms-win-crt-locale-l1-1-0.dll": {
+      "bytes": 22896,
+      "sha256": "6c68648e524187e03c4ad9aaa4a99113c6ee9f29fb39cc0ed93f951975138e63"
+    },
+    "_internal/api-ms-win-crt-math-l1-1-0.dll": {
+      "bytes": 31064,
+      "sha256": "d4fbcccbe29371cbce431e43b2eb4f7ba9a6f04a3d740a071f02457a505e9dc8"
+    },
+    "_internal/api-ms-win-crt-private-l1-1-0.dll": {
+      "bytes": 76120,
+      "sha256": "29bf3d90617d3781d19b332d6ceb9f20ba5ce082ec74bf6c34d5d4aee56e48a1"
+    },
+    "_internal/api-ms-win-crt-process-l1-1-0.dll": {
+      "bytes": 22896,
+      "sha256": "47c1935942e3ac0812e4dcf18c0e265e565f0194a3349111c299712f5565f7ac"
+    },
+    "_internal/api-ms-win-crt-runtime-l1-1-0.dll": {
+      "bytes": 26968,
+      "sha256": "72adc1b3677e0814d9c4ebf0964000e84bb2acf67336c8963061665e44f78029"
+    },
+    "_internal/api-ms-win-crt-stdio-l1-1-0.dll": {
+      "bytes": 26968,
+      "sha256": "900afc3989673c9bb1a687ed38c192f46db9e6ba6d11a668898a539e7fc23798"
+    },
+    "_internal/api-ms-win-crt-string-l1-1-0.dll": {
+      "bytes": 26968,
+      "sha256": "fcf12466cc12fd3b73611fc0763a5a1f9d44e90349513c34a0c83b0f36421793"
+    },
+    "_internal/api-ms-win-crt-time-l1-1-0.dll": {
+      "bytes": 22912,
+      "sha256": "886e57c4a6adb299b38f02945369f590a67da4e79a798359fc60aaa067212d7c"
+    },
+    "_internal/api-ms-win-crt-utility-l1-1-0.dll": {
+      "bytes": 22912,
+      "sha256": "5f8f26b216ade615b67a41f6fbbb910972fc6153315a65bb8f09912be50215b1"
+    },
+    "_internal/base_library.zip": {
+      "bytes": 1409453,
+      "sha256": "68aadf997dc1ce7f0b4e93b209da58c1168d2b42ff36922677d43fd0b166d9a0"
+    },
+    "_internal/ucrtbase.dll": {
+      "bytes": 1362264,
+      "sha256": "3239227d27667ba20d10a880751924e5719de0078f9fce232d149d383f7681f6"
+    },
+    "study_backend.exe": {
+      "bytes": 22600069,
+      "sha256": "f493edc9292c85556c0b2ce5c94f29595eb5d465863990d358d5d58930f91ba0"
+    }
+  },
+  "crt": {
+    "count": 44,
+    "observed_source_family": "caller-local Codex runtime libheif directory",
+    "caller_runtime_directory_label": "OpenAI.CodexPrimaryRuntime.v26-1116-1210-0_26.1116.1210.0_x64__3k8sg7r9htsxt",
+    "caller_runtime_label_is_not_crt_identity": true,
+    "collect_entries": 969,
+    "collect_sha256": "08f88a8fe38980fe948434f7509f4c699ad19cf3291cabca2f0a167dd6a0107d",
+    "collect_authenticated": false,
+    "historical_local_source_capture": true,
+    "capture_date": "2026-11-19",
+    "source_recheck_date": "2026-11-20",
+    "current_source_path_status": {
+      "_internal/api-ms-win-core-console-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-datetime-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-debug-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-errorhandling-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-fibers-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-fibers-l1-1-1.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-file-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-file-l1-2-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-file-l2-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-handle-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-heap-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-interlocked-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-kernel32-legacy-l1-1-1.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-libraryloader-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-localization-l1-2-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-memory-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-namedpipe-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-processenvironment-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-processthreads-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-processthreads-l1-1-1.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-profile-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-rtlsupport-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-string-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-synch-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-synch-l1-2-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-sysinfo-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-sysinfo-l1-2-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-timezone-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-core-util-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-crt-conio-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-crt-convert-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-crt-environment-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-crt-filesystem-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-crt-heap-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-crt-locale-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-crt-math-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-crt-private-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-crt-process-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-crt-runtime-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-crt-stdio-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-crt-string-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-crt-time-l1-1-0.dll": "original_source_path_missing",
+      "_internal/api-ms-win-crt-utility-l1-1-0.dll": "original_source_path_missing",
+      "_internal/ucrtbase.dll": "original_source_path_missing"
+    },
+    "all_original_sources_rechecked_now": false,
+    "identity": null,
+    "version": null,
+    "official_archive": null,
+    "license_verified": false,
+    "redistribution_permission_verified": false
+  },
+  "bootloader": {
+    "wheel_bytes": 1454907,
+    "wheel_sha256": "500bd58c7bf7e584a8435adccbd763a0b918d5c12b08d74ff50fd79b2915458b",
+    "source_sha256": "581ea23eb35cee8f9df8835c892e91416df95ca629b1a6050289aea19390e08d",
+    "identical_sections": [
+      ".text",
+      ".data",
+      ".pdata",
+      ".fptable",
+      ".reloc"
+    ],
+    "debug_timestamp_fields": [
+      {
+        "source_offset": 278548,
+        "target_offset": 278548,
+        "field": "IMAGE_DEBUG_DIRECTORY.TimeDateStamp",
+        "source_value": 1789248718,
+        "target_value": 1795080383,
+        "source_hex": "cec4a56a",
+        "target_hex": "bfc0fe6a",
+        "changed_byte_offsets": [
+          278548,
+          278549,
+          278550
+        ]
+      }
+    ],
+    "whole_bootloader_verified": false,
+    "headers_authenticated": false,
+    "generated_resources_authenticated": false,
+    "overlay_authenticated": false,
+    "reproducible_build_verified": false
+  },
+  "raw_evidence": {
+    "artifacts\\backend-release-gap\\current-coverage01\\coverage.json": {
+      "bytes": 1243799,
+      "sha256": "5e01ea164bacdf9a71df24f471e878499359a18caa53821a994ba1de1780eee3"
+    },
+    "artifacts\\rel01h\\current-native01\\native-origins.json": {
+      "bytes": 54428,
+      "sha256": "9f3a8a7e62c2c769081518412f75e36cfbc30d8c659736e9b6ed9c5078154cf0"
+    },
+    "artifacts\\rel01h\\current-native01\\native-origins.cdx.json": {
+      "bytes": 426811,
+      "sha256": "dd395b1e8dde2e1afd2e32e318f523bc2ca5e76cd83af5ea8819b51af8192987"
+    },
+    "artifacts\\rel01h\\current-native01\\python-origins\\origins.json": {
+      "bytes": 321291,
+      "sha256": "e847c98f582483b5cc906981cca1f9f55af4d46dabc8bfda2345b4ffa472d340"
+    },
+    "artifacts\\rel01h\\current-native01\\python-origins\\python-origins.cdx.json": {
+      "bytes": 425628,
+      "sha256": "4515735be5811053077a450842d4c16bc1c57ea0669e2c7c17233c65549f2379"
+    },
+    "artifacts\\rel01h\\current-native01\\python-origins\\local-members\\members.json": {
+      "bytes": 2030605,
+      "sha256": "ef5ff118059c7e265f0bad6a6bd92c193ffe0725c1b34f8d3724771db2c8f9a5"
+    }
+  },
+  "selected_cdx": {
+    "components": 58,
+    "sha256": "758ae5a4f5bf73fa1ecb311c5bb206848cb13ee7bd6c4ce03291311d29544db9",
+    "bytes": 70331,
+    "official_cyclonedx_1_6_schema_valid": true,
+    "occurrences_are_role_samples": true
+  },
+  "schema_sha256": {
+    "bom-1.6.schema.json": "3e92dddbc30cf7f6a02b80f0942b1a4cfd4fb1c26f1dfc4310afa9d613cafb93",
+    "spdx.schema.json": "baa9d3bd1ed57b6751b0887edead6b5063ff53ff7429cf85d476c6c94af0166e",
+    "jsf-0.82.schema.json": "8bae002c25e723db7ee1f26afde680ae1a2b1a8f6b4b4b0fd65dc3becb090aae"
+  },
+  "junit": {
+    "q01": {
+      "sha256": "3c3e85a487866f5499dc1b6f022cb9a0f757c0bc4e44fa5008dd32994decb755",
+      "tests": 172,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "p01": {
+      "sha256": "977f88578c8bee74767f8b00f1552d729d15abc3bd10f52e8a84e66dd1406705",
+      "tests": 172,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "product_sbom_complete": false,
+  "upstream_provenance_verified": false,
+  "complete_licenses_verified": false,
+  "final_vulnerabilities_verified": false,
+  "signature_verified": false,
+  "release_ready": false,
+  "limitations": [
+    "COLLECT is an untrusted caller build record, not a signed build attestation or official archive.",
+    "Local CRT byte correspondence does not establish component identity, version, publisher archive, license or redistribution permission.",
+    "The fixed PyInstaller wheel pin and matching executable sections do not authenticate the entire generated executable.",
+    "Headers, generated resources, overlay and all reported differences remain separate; no executable reconstruction or reproducible build is claimed.",
+    "The product SBOM, native identities, dependency edges, licenses, vulnerabilities and signatures remain incomplete.",
+    "Before/after checks observe stability but do not provide an atomic filesystem snapshot.",
+    "The CPython archive pin identifies these bytes; publisher signatures and all embedded native libraries are not authenticated here.",
+    "Git head/tree values are caller declarations; matching blobs does not authenticate a remote commit or build service.",
+    "Local build RECORD/METADATA and relocated byte matches do not authenticate upstream wheels or uniquely assign shared library ownership.",
+    "Namespace entries contain no code; contributing child sources do not establish a namespace version or exclusive owner.",
+    "The outer PE bootloader, remaining native/CRT identities, generated containers and complete dependencies remain unverified.",
+    "This source subset does not certify the full product SBOM, licenses, vulnerabilities, signatures or runtime reachability.",
+    "Before/after hashes detect observed changes, not an atomic filesystem snapshot."
+  ]
+}

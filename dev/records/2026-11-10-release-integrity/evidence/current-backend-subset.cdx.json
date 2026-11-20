@@ -1,0 +1,2478 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "properties": [
+      {
+        "name": "studyworkbench:scope",
+        "value": "local-frozen-Python-member-subset"
+      },
+      {
+        "name": "studyworkbench:product-sbom-complete",
+        "value": "false"
+      },
+      {
+        "name": "studyworkbench:coverage-sha256",
+        "value": "5e01ea164bacdf9a71df24f471e878499359a18caa53821a994ba1de1780eee3"
+      },
+      {
+        "name": "studyworkbench:scope-extension",
+        "value": "pinned-Python-and-declared-source-origins"
+      },
+      {
+        "name": "studyworkbench:native-scope",
+        "value": "fixed-wheel-sections-and-unidentified-local-CRT"
+      },
+      {
+        "name": "studyworkbench:selection",
+        "value": "58 matched components; retain identity/provenance properties; sample at most one occurrence per location role; full reports remain separate"
+      },
+      {
+        "name": "studyworkbench:raw-bom-sha256",
+        "value": "dd395b1e8dde2e1afd2e32e318f523bc2ca5e76cd83af5ea8819b51af8192987"
+      },
+      {
+        "name": "studyworkbench:payload-exe-sha256",
+        "value": "f493edc9292c85556c0b2ce5c94f29595eb5d465863990d358d5d58930f91ba0"
+      },
+      {
+        "name": "studyworkbench:local-crt-source-currently-rechecked",
+        "value": "false"
+      },
+      {
+        "name": "studyworkbench:local-crt-capture-date",
+        "value": "2026-11-19"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "application",
+      "bom-ref": "application-source:5ab4ccdfbc3df4e80baf3022c3a7a908bb383b81",
+      "name": "StudyWorkbench-backend",
+      "version": "5ab4ccdfbc3df4e80baf3022c3a7a908bb383b81",
+      "properties": [
+        {
+          "name": "studyworkbench:version-kind",
+          "value": "declared-source-commit"
+        },
+        {
+          "name": "studyworkbench:source-tree-authenticated",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "66"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/migrations/env.py"
+          },
+          {
+            "location": "study_backend.exe!CArchive/frozen_entry"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/study_workbench"
+          }
+        ]
+      }
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/python@3.13.17",
+      "purl": "pkg:nuget/python@3.13.17",
+      "name": "python",
+      "version": "3.13.17",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "dce409744b088f94c6e37ba41f8100c384c27e029e843237364c602d30d475e5"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://api.nuget.org/v3-flatcontainer/python/3.13.17/python.3.13.17.nupkg"
+        }
+      ],
+      "properties": [
+        {
+          "name": "studyworkbench:archive-pin-matched",
+          "value": "true"
+        },
+        {
+          "name": "studyworkbench:publisher-signature-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "492"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/VCRUNTIME140.dll"
+          },
+          {
+            "location": "_internal/base_library.zip!/_collections_abc.pyc"
+          },
+          {
+            "location": "study_backend.exe!CArchive/struct"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/__future__"
+          }
+        ]
+      }
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/alembic@1.20.1",
+      "purl": "pkg:pypi/alembic@1.20.1",
+      "name": "alembic",
+      "version": "1.20.1",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/alembic"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "a7251d864147d4676f916be5888c1a2252a4f1db87a70cdf1d9b1dfa322cbe4e"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "027c526921b3af37b7d4eaa413cd7d1e90f31df12da95f49bc62b05bc44c9a05"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "50"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/annotated-doc@0.0.5",
+      "purl": "pkg:pypi/annotated-doc@0.0.5",
+      "name": "annotated-doc",
+      "version": "0.0.5",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/annotated_doc"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "8c24d70c5d9153d22123353a906042fd7603df2d15c2196290b0f8a962558c46"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "5c1ea36999cd62ee81229369ce99d5e383bfff6af6e16a8a9de59e99121523e8"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "2"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/annotated-types@0.8.0",
+      "purl": "pkg:pypi/annotated-types@0.8.0",
+      "name": "annotated-types",
+      "version": "0.8.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/annotated_types"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "614985b278f601b8ef863f82783b991cc3ada4b89f592eb71c7c48c5f2ef2298"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "2b5e93f24aff361ca5cfab15ce1c56b4127675728f11c3eab1e97b113a6250bd"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "1"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "false"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/anyio@4.15.1",
+      "purl": "pkg:pypi/anyio@4.15.1",
+      "name": "anyio",
+      "version": "4.15.1",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/anyio"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "043aecb571af7189e8a6c528f5d8e32545f1b2cdfaaf761d51e6d5b67ea3ca81"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "d6f6ce205631352dc5a1185f3fa9f8f80f857a83a695bd4ff89b9d2a65d46270"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "43"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/attrs@26.1.0",
+      "purl": "pkg:pypi/attrs@26.1.0",
+      "name": "attrs",
+      "version": "26.1.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/attrs-26.1.0.dist-info/INSTALLER"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/attr"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "4cd40e690f23bf37cbcad34efd6758e062df1df07c86833f7e3ce95bf1fa38cc"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "d5e36b4e3a4f8f4eef148e133178740d9291a00515eb59ad678ade2474f85d30"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "18"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/certifi@2026.10.19",
+      "purl": "pkg:pypi/certifi@2026.10.19",
+      "name": "certifi",
+      "version": "2026.10.19",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/certifi/cacert.pem"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/certifi"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "a5c0be3a42daeef0edfaf58e6ea5b7550f3e4e8eb35420f72e902df9bcf00f5c"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "0ae6bab148ebf88468b244a4d763d112adedd741db3939cff061407c3169e3c1"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "4"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/charset-normalizer@3.5.2",
+      "purl": "pkg:pypi/charset-normalizer@3.5.2",
+      "name": "charset-normalizer",
+      "version": "3.5.2",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/charset_normalizer/cd.cp313-win_amd64.pyd"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/charset_normalizer"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "49e955a09e1a159e0846872798006e8db7d518d8d70c637066fefdb08d3d9f7b"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "dc724fed516447dcafc3c9f701c670f9def063b64cb3a6b74c774685b52febca"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "9"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/click@8.5.0",
+      "purl": "pkg:pypi/click@8.5.0",
+      "name": "click",
+      "version": "8.5.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/click-8.5.0.dist-info/INSTALLER"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/click"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "e87bce0bd194de70dfb8e708e0a6b0483009f25611804eaf87bfeb63e6c20501"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "101ec7096b90ff8e449b54f10c387a7f6fb8de2849603c87a2099c28d2d975b5"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "22"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/colorama@0.4.6",
+      "purl": "pkg:pypi/colorama@0.4.6",
+      "name": "colorama",
+      "version": "0.4.6",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/colorama"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "7baed29eb50c3b29bdb33ff84e3177bf1bc05784f7685ecdcaa4471c7dd810cc"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "76dbf7d26970938d18bff5f3bab412e69384fbbb67bb01af01cfea7aad658c8a"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "6"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/defusedxml@0.7.1",
+      "purl": "pkg:pypi/defusedxml@0.7.1",
+      "name": "defusedxml",
+      "version": "0.7.1",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/defusedxml"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "369d3cef64870daf849fba711cb8d05a7efe3c8d9ab0f763adc34079fe378bb1"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "f494c4996d3db354933ac0f6bb4ac38d3323ec685a6a3369cf1fabff330ac97b"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "10"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/doclang@0.8.0",
+      "purl": "pkg:pypi/doclang@0.8.0",
+      "name": "doclang",
+      "version": "0.8.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/doclang-0.8.0.dist-info/INSTALLER"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/doclang"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "5c97f84e41dd1c4e7d23cd7e1c189459fa9709c98b343ca7167529e0949d9b55"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "62a8c88dd7ba2426a2fae0b8fa4c3353b15884c4cbfe52a62484a1a187b98249"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "25"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/docling-core@2.104.0",
+      "purl": "pkg:pypi/docling-core@2.104.0",
+      "name": "docling-core",
+      "version": "2.104.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/docling_core-2.104.0.dist-info/INSTALLER"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/docling_core"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "e81d8e8337d50217310b51d355428e8b80730e48092335266255b4feffd738ec"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "4911a3cc1929a460e0d0d86f4d2eb88c23d3b4e4d454685650e77bdcf722bcef"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "72"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/docling-slim@2.142.1",
+      "purl": "pkg:pypi/docling-slim@2.142.1",
+      "name": "docling-slim",
+      "version": "2.142.1",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/docling_slim-2.142.1.dist-info/INSTALLER"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/docling"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "675d614a20f4e8579c2e704b29b3412d938dedf6cc322e49de51b99a62660f7d"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "841aad82e6dae244367bbc7d1b9e45deea1bb1ccfc76f2928793b652b2695693"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "93"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/fastapi@0.161.1",
+      "purl": "pkg:pypi/fastapi@0.161.1",
+      "name": "fastapi",
+      "version": "0.161.1",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/fastapi"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "76f5ae728b9c3b67bf0f91dcdb8dd0e4b6a3b881e6a85820d67f9c299382c605"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "128d5682953ad5d8b65b3d9c2acd8dd90d08218ec19399962a5ce43abdf784db"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "42"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/filetype@1.2.0",
+      "purl": "pkg:pypi/filetype@1.2.0",
+      "name": "filetype",
+      "version": "1.2.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/filetype"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "30f2c7e912eaf67b34ec633ba9609853787ea1e25fa131f1f585bc0661fabf51"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "515ae8f0cb7a4fa9ee9f61beb77ef7ce7c9b1eb8a473e2e9dc156a67a279ac1c"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "15"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/h11@0.16.0",
+      "purl": "pkg:pypi/h11@0.16.0",
+      "name": "h11",
+      "version": "0.16.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/h11"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "28f326098ac09fcba79b8f180f96087c841fe2456215cb7b872a9c7d5cd19d64"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "bc57fd5ca20507218b26ef9bf46bf03aab2c81e2e53e055741ae9b9f58145751"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "11"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/idna@3.20",
+      "purl": "pkg:pypi/idna@3.20",
+      "name": "idna",
+      "version": "3.20",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/idna"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "dbd8c14c1e4ca1e0c9824a6dbc7cbbf78884f38eb52d91148cd3025f671e4b85"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "002d7063adbb9ce4bb6faf6aefbdb9080c13c24cbcc5f5d099fbd54a78ab7ee8"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "6"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/iniconfig@2.3.1",
+      "purl": "pkg:pypi/iniconfig@2.3.1",
+      "name": "iniconfig",
+      "version": "2.3.1",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/iniconfig"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "47c2c35d936f5c649d8074c6464719a42966a67b5cebad01e3e5784cf090cfb6"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "a3142f21a1c5a72af42ca6a78c3de5b3f9de7fbc2f86e5031c19d3949b278926"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "3"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/langcodes@3.5.1",
+      "purl": "pkg:pypi/langcodes@3.5.1",
+      "name": "langcodes",
+      "version": "3.5.1",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/langcodes/data/language-subtag-registry.txt"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/langcodes"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "c1e79a1eef9696524333265dabe4f15fc96d65c0fc71a358529e7ac7554e8af8"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "ea8aacea4a02c3f196871ccab9e3ec22dd0f8d6b0c133c08882958774982ca91"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "7"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/latex2mathml@3.81.1",
+      "purl": "pkg:pypi/latex2mathml@3.81.1",
+      "name": "latex2mathml",
+      "version": "3.81.1",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/latex2mathml-3.81.1.dist-info/INSTALLER"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/latex2mathml"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "63e19d6656396f4a009c50bdedc161b500cf7da5b46f7d7a33d86c11b23a10ed"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "c8e06f39a4bb9a6f3ea3978f3bd5659a0d0ccd8a26969b521cb05fea271dd5aa"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "12"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/lxml@6.1.3",
+      "purl": "pkg:pypi/lxml@6.1.3",
+      "name": "lxml",
+      "version": "6.1.3",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/lxml/_elementpath.cp313-win_amd64.pyd"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/lxml"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "4038f4e4decac1c15eb5fd883abf1370f2df9b176b53bd172dd709d4542e2a48"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "dd4542849eecca977584ca8a4524ce88a7f85c543a4deb1aa287f10de3333fa4"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "40"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/mako@1.4.3",
+      "purl": "pkg:pypi/mako@1.4.3",
+      "name": "mako",
+      "version": "1.4.3",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/mako"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "39ea65f21e706265428ea6f2925520f419a10f0113a59318192ed38175d8838b"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "bc116db83f5648977d22bb9a3e3b36812a8a8dbb3e8efd3c38dd82436139891c"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "17"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/markdown-it-py@4.2.0",
+      "purl": "pkg:pypi/markdown-it-py@4.2.0",
+      "name": "markdown-it-py",
+      "version": "4.2.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/markdown_it"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "72c36ff516755443b1ecb61e17b2567a990230b49a504b0eb0c42d5f82448a9c"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "05005ec4dce77d7b6c3b809ec66f45356a7195621fef86a5cd7736eeea438060"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "62"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/markupsafe@3.0.4",
+      "purl": "pkg:pypi/markupsafe@3.0.4",
+      "name": "markupsafe",
+      "version": "3.0.4",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/markupsafe-3.0.4.dist-info/INSTALLER"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/markupsafe"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "08fa79954ab288d778b0fee4f0e6c7dbc869e545a415747d1324622465d3b08d"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "b5b5a6caf0e66b839c2216d744f99dd17e29d710ca0940ef12bff0228f74f36c"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "10"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/mdurl@0.1.2",
+      "purl": "pkg:pypi/mdurl@0.1.2",
+      "name": "mdurl",
+      "version": "0.1.2",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/mdurl"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "b53b29d48f499367053fda3c81e7ce27d2558380ebbf83e66023b02eb7ddd25d"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "7ca94a09c9e6becaaf5ac463892ce28531d279289847a3f6999d0c4cece29a0f"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "6"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/numpy@2.5.4",
+      "purl": "pkg:pypi/numpy@2.5.4",
+      "name": "numpy",
+      "version": "2.5.4",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/libscipy_openblas64_-ed4f167a5330424524f45258e7ca2c8d.dll"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/numpy"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "e2b909d6a37d76c2bc130f528d7fed0c517322bce16dc7846b6a6df30e200403"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "8d4d6c31d5f1ff8615c2e19ae1c18d61a9300f5781565e7de778a3840b90310d"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "177"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/opentelemetry-api@1.45.1",
+      "purl": "pkg:pypi/opentelemetry-api@1.45.1",
+      "name": "opentelemetry-api",
+      "version": "1.45.1",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/opentelemetry_api-1.45.1.dist-info/INSTALLER"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/opentelemetry._logs"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "5bc71e90cb421be92a43bf5ad5b0f25dccfa2a24ddceaa2877779879962a4c9e"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "944dcb1e3c4052a15817712123961cdc0484ed50b4ce89f293f2e0d30b3eb68a"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "35"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/packaging@26.3",
+      "purl": "pkg:pypi/packaging@26.3",
+      "name": "packaging",
+      "version": "26.3",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/packaging"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "70fdb89fc4d4a9a043bf7372b8972bcc883fddff34ab55e9cf80d73875384763"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "8f7319b67472d7006578ea99cee185a4754d1e2bf05a11ea552f6b60efb1eee9"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "16"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pandas@3.1.0",
+      "purl": "pkg:pypi/pandas@3.1.0",
+      "name": "pandas",
+      "version": "3.1.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/msvcp140-a4c2229bdc2a2a630acdc095b4d86008.dll"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/pandas"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "b2b43910a5ef734a08be961df9c484f4664ad9ec2fa5a08294d0edfa08bcdd4b"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "8be62682a8a6b0ed91b391099d4b72c394d7c34ba2eed6db0645aad80750e335"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "336"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pillow@13.0.0",
+      "purl": "pkg:pypi/pillow@13.0.0",
+      "name": "pillow",
+      "version": "13.0.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/PIL/_avif.cp313-win_amd64.pyd"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/PIL"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "140f39cb31ec9b46109828a6286f034a4848621263d6aab38d2f142083dd06c5"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "614a1680a3d68fc1942b73cf3f3435d19e4421f438a0a67706453e67130239f5"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "86"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pluggy@1.7.0",
+      "purl": "pkg:pypi/pluggy@1.7.0",
+      "name": "pluggy",
+      "version": "1.7.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/pluggy-1.7.0.dist-info/INSTALLER"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/pluggy"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "20ac8237e37f1d6e7e75500cd663015177ba80c1a1a595ff6bae18a539ff8a2c"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "a142a5d1a77bb1349ee78c3ffd021f7c6d3a658925d34fe273d8cf8cddd18fac"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "20"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pydantic-core@2.50.1",
+      "purl": "pkg:pypi/pydantic-core@2.50.1",
+      "name": "pydantic-core",
+      "version": "2.50.1",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/pydantic_core/_pydantic_core.cp313-win_amd64.pyd"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/pydantic_core"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "790c40c25f95db9b18e1d4b5ae75979ce6027b15d6f924c042553252ff43328f"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "636b3659ff8e739e9822ad0d1b39824aad4d6d5bbd8ef8b217a4fb49f630c3d2"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "3"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pydantic-settings@2.16.1",
+      "purl": "pkg:pypi/pydantic-settings@2.16.1",
+      "name": "pydantic-settings",
+      "version": "2.16.1",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/pydantic_settings"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "893e79ff20ee1cfea0e778956505d65be9b0555c601a6e4ebb513f1ee707cb1c"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "3f07d04ab1e0fa148ba33b9551ff9ebdb0468861ab446360c8ffc0dcea8a9db8"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "22"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pydantic@2.14.1",
+      "purl": "pkg:pypi/pydantic@2.14.1",
+      "name": "pydantic",
+      "version": "2.14.1",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/pydantic-2.14.1.dist-info/INSTALLER"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/pydantic"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "4d4c8e8d5e6a27d5208f0d7949f25628e6747133034969d4d1399b1ad5394036"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "66881bb910e4d4b7db44ca57827cef617b322358e1b68006f575668813f69a80"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "111"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pygments@2.21.0",
+      "purl": "pkg:pypi/pygments@2.21.0",
+      "name": "pygments",
+      "version": "2.21.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/pygments"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "1dde075570136774c706bf0009183a793fe0ee262e4a5590cc6eff8453eedd43"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "8eb52461589b13adbd14933a732b53888b0fad782b3bd531aaa83e7241d07a7c"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "340"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pyinstaller@6.22.3",
+      "purl": "pkg:pypi/pyinstaller@6.22.3",
+      "name": "pyinstaller",
+      "version": "6.22.3",
+      "properties": [
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "2991d3dcd53fe9966b8c16586322a7f9bbc564dd4752c190bd4fe8d6747f7046"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "619282911f2fdfbe0596f6f66fccd608c561b89b297c0c556001b5075adab702"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:pyinstaller-wheel-pin-matched",
+          "value": "true"
+        },
+        {
+          "name": "studyworkbench:whole-generated-bootloader-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "14"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ],
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!CArchive/pyi_rth_inspect"
+          },
+          {
+            "location": "study_backend.exe#PE/.data"
+          }
+        ]
+      },
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "500bd58c7bf7e584a8435adccbd763a0b918d5c12b08d74ff50fd79b2915458b"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://files.pythonhosted.org/packages/24/83/c5422204772a27aef643280fdc887b7ef55679989096b21dceb1b9625fc4/pyinstaller-6.22.3-py3-none-win_amd64.whl"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pylatexenc@2.10",
+      "purl": "pkg:pypi/pylatexenc@2.10",
+      "name": "pylatexenc",
+      "version": "2.10",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/pylatexenc-2.10.dist-info/INSTALLER"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/pylatexenc"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "f502ae67cf6149777c72fab4b19bb607133e56d01b1ec3cefec95de8153821ce"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "3a23dc76a178bdd694378f95a1f60589a665b775368288d2a6d0b1b2231192c7"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "20"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pypdfium2@5.14.0",
+      "purl": "pkg:pypi/pypdfium2@5.14.0",
+      "name": "pypdfium2",
+      "version": "5.14.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/pypdfium2-5.14.0.dist-info/INSTALLER"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/pypdfium2"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "8733a714c056453b87b48c819495cc05f9038d38221b89505043d28c2501237e"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "32a162d0fb24137c98f393cd9359997300b659e38a2b0fe8f6fc69258ab12bac"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "55"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pytest@9.0.3",
+      "purl": "pkg:pypi/pytest@9.0.3",
+      "name": "pytest",
+      "version": "9.0.3",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/_pytest"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "c3966f28791686477bae35e518736d4cbea5b626d3a79011215854e2bc670207"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "4cfea071184f45e339a7a9f1a891d1d0ad3fada16accf6425665f890116f6fb1"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "73"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/python-dateutil@3.0.0",
+      "purl": "pkg:pypi/python-dateutil@3.0.0",
+      "name": "python-dateutil",
+      "version": "3.0.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/dateutil"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "e10ead93598aed51bdb28aa30ef64ee5d6ccc871e88741d220e504e979af4695"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "3422a5a72607b23e05633c0ca9fc5c9f31e0c2555d0aa56520c913a20efe328f"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "17"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/python-docx@1.2.0",
+      "purl": "pkg:pypi/python-docx@1.2.0",
+      "name": "python-docx",
+      "version": "1.2.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/docx/py.typed"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/docx"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "4c4cc819ebe6de4aca44daccfd3f9173e6f46d9ed900ad1c388ff9efb7b6b1d7"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "70f6355cef90445b61791e2ef73daa36425b07f116cea547e8239d2ed0f018b4"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "126"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/python-dotenv@1.2.4",
+      "purl": "pkg:pypi/python-dotenv@1.2.4",
+      "name": "python-dotenv",
+      "version": "1.2.4",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/dotenv"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "87cfee6042412d48df1100ea7822684988c3f2b79de7a250f4717f4df3026d6f"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "83edb867f69661310247f1f5affc1a0b3773b978dd3efd200b0a067546064bf1"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "5"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/pyyaml@6.0.3",
+      "purl": "pkg:pypi/pyyaml@6.0.3",
+      "name": "pyyaml",
+      "version": "6.0.3",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/yaml/_yaml.cp313-win_amd64.pyd"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/yaml"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "847a701020334386852b6e07bad1053cb0ce3da9ee1846e7e9d02b24e8bb3f8d"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "de847bac7f6a4dee76b265feb38c9c4727204279fa68d413825685292c65c7d5"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "18"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/requests@2.34.2",
+      "purl": "pkg:pypi/requests@2.34.2",
+      "name": "requests",
+      "version": "2.34.2",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/requests"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "8c384ba3e979480faae2859d3c5e6c1276dd2c3616e322e124d52c8cfc556f27"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "2e48b2db823e566cd0e9c99df87dfa6117fe020e6519f3f9909f4470291fab4b"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "18"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/rich@15.0.0",
+      "purl": "pkg:pypi/rich@15.0.0",
+      "name": "rich",
+      "version": "15.0.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/rich"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "fad34fc603fac4481bf81f8dd629492fc302c0ec31909c86644751512afb2e3b"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "1c6392a90e874ae7da79f7dd8be4d4e053944a88b6814f2d6d4b6a2fe11172bb"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "91"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/setuptools@84.2.1",
+      "purl": "pkg:pypi/setuptools@84.2.1",
+      "name": "setuptools",
+      "version": "84.2.1",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/setuptools/_vendor/jaraco/text/Lorem ipsum.txt"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/_distutils_hack"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "24939b84ead30ff4581918c8d5a95aafd377f6a8afc61f30ea18358a8786bfa4"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "558e5a80a48876b62fa74a3d710483ef0a96cfd1742c57e2e266ecdfd793957e"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "129"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/six@1.17.0",
+      "purl": "pkg:pypi/six@1.17.0",
+      "name": "six",
+      "version": "1.17.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/six"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "562042078c2752549f6d8a7c86dbc5dd708088a7be6d80672ec7b07100b72468"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "6de8d68885f918facfbdf65f4d0fec3ab6d22992593ebbff81699e54b6768081"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "1"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "false"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/sqlalchemy@2.1.6",
+      "purl": "pkg:pypi/sqlalchemy@2.1.6",
+      "name": "sqlalchemy",
+      "version": "2.1.6",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/sqlalchemy/engine/_processors_cy.cp313-win_amd64.pyd"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/sqlalchemy"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "abac8285ee6ac1507aafb2118e4de07340aca76fa7e9c1150489cb51d691c2f0"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "5374c9a27654f67d707c66598cea4d5ee70527162fd37e569339cea1b517a98c"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "200"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/starlette@1.3.1",
+      "purl": "pkg:pypi/starlette@1.3.1",
+      "name": "starlette",
+      "version": "1.3.1",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/starlette"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "d83ccd9665eb05d1f9393c75e209cb353990731a6215a609a0f1c5c0a6286c9a"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "c269532aac55b6e272c825fbede8df6805cde7755882c5f206926cf233e8a259"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "23"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/tabulate@0.10.0",
+      "purl": "pkg:pypi/tabulate@0.10.0",
+      "name": "tabulate",
+      "version": "0.10.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/tabulate"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "38dfc6db689745ff4c3890b3c30ef7e5d0b156fdbeeb765b9027fd917043d84b"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "75558cc3ee235356e01b00dde88d87892677130b3ba84fafdb5d289f03df505f"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "1"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "false"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/tqdm@4.70.1",
+      "purl": "pkg:pypi/tqdm@4.70.1",
+      "name": "tqdm",
+      "version": "4.70.1",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/tqdm-4.70.1.dist-info/INSTALLER"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/tqdm"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "a5da70b966afea3a759716041bad7187f2ece02c22348cf9e7c0a512bbf15f57"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "ee47fccc6c86c1eb0bcab46c7f99ca205b5bb56aac21197e7f558c6943dce8a5"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "16"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/typing-extensions@4.16.0",
+      "purl": "pkg:pypi/typing-extensions@4.16.0",
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/typing_extensions"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "b05084ca1d50879865178d9fff9fabeab61bdfb1f361bfbde95421ffc8f9be46"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "d7a220918ed91a6af1abf9508f734fe5d2c2f6b438ee519cc73ee4e60e6e665d"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "1"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "false"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/typing-inspection@0.4.4",
+      "purl": "pkg:pypi/typing-inspection@0.4.4",
+      "name": "typing-inspection",
+      "version": "0.4.4",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/typing_inspection"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "bad3d9e6342ef6750cf5128ec942327b8bebdce0b6e4d6f67cb15b27ae5118da"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "fba45e7650026ac463e436c30ea22f2d6d9d2a03e151a15e60702329d9714460"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "3"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/tzdata@2026.5",
+      "purl": "pkg:pypi/tzdata@2026.5",
+      "name": "tzdata",
+      "version": "2026.5",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "_internal/tzdata/zoneinfo/Africa/Abidjan"
+          },
+          {
+            "location": "study_backend.exe!PYZ.pyz/tzdata"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "e0780e8b6dc8882ce87e871a9d4589d59cb05a0c2d64f58b1ba62cde1ee91f6a"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "a7d0a91a1c7ac9aafbe4679817827a7132dc6cc5512512010849dd2ac615f536"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "627"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/urllib3@2.8.0",
+      "purl": "pkg:pypi/urllib3@2.8.0",
+      "name": "urllib3",
+      "version": "2.8.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/urllib3"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "10898c620e8007c030e07fa5622b68358a43010025dfbd78a1cb797699de2bb4"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "baf67d67aa6c400f7f82747da587aa2ebe4190e5c0340359963530982ed81f02"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "36"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:pypi/uvicorn@0.54.0",
+      "purl": "pkg:pypi/uvicorn@0.54.0",
+      "name": "uvicorn",
+      "version": "0.54.0",
+      "evidence": {
+        "occurrences": [
+          {
+            "location": "study_backend.exe!PYZ.pyz/uvicorn"
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "studyworkbench:identity-evidence",
+          "value": "local-build-record-and-static-comparison"
+        },
+        {
+          "name": "studyworkbench:metadata-sha256",
+          "value": "9399e5ddda3d26e842d6fb5420c38b0857aac568d53badbdc224b3a21339efa8"
+        },
+        {
+          "name": "studyworkbench:record-sha256",
+          "value": "0ab740e568caac790abedc541d8f88e404ff47d71ab77a6941085068878bbcf7"
+        },
+        {
+          "name": "studyworkbench:upstream-provenance-verified",
+          "value": "false"
+        },
+        {
+          "name": "studyworkbench:full-occurrence-count",
+          "value": "45"
+        },
+        {
+          "name": "studyworkbench:occurrences-sampled",
+          "value": "true"
+        }
+      ]
+    }
+  ]
+}

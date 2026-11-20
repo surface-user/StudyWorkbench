@@ -889,3 +889,40 @@ Q/P各运行python -m pytest backend/tests/test_native_dependencies.py backend/t
 父#53当前head CI43580584516已三组完成成功：双后端各1180、Flutter203、44模块新冻结及既定资源/巡检/API34/生命周期/workers成功；46步45成功，原分支限定公网探针1跳过，保留原报告边界，不据此补记本head公网实测。该有限组合已由主Agent接受DONE，本项不改其head。
 
 OFF-02h实现及相关自动化完成转REVIEW，等待本项独立草稿PR/当前head CI；未在本地重跑未改变的Flutter/产品转换，当前head CI仍会构建/验证。所有新增Java入口只是保守静态候选，未执行辅助程序、不提供产品启动入口；动态路径/实际调用/SxS/API-set及系统来源仍未知，133未分类保持发行阻断，完整SBOM/传递许可/漏洞/签名继续。审查暂缓、人工取消、未合并或发行。
+
+## 2026-11-19至20：REL-01h 当前后端包来源证据重绑定
+
+### 输入、真实差异与有限范围
+
+主Agent授权继续后端发行准备。#77最终12a1411fcff2b8c2b3e6ea7573545f287c764abd/tree4412a39bd4154d4aa2236b4138d6051c9d155fcc的503远端blob逐项对应本地；[当前CI44509335614](https://github.com/surface-user/StudyWorkbench/actions/runs/44509335614)三job成功，已独立读取完整日志：双1265/4既有警告、desktop203、46冻结模块及API81次HTTP/36错误ID通过，46步45成功/原分支限定公网探针1跳过。该PR仅将#66两项持久路径回归纳入#74实现，产品代码与#74精确相同。仍不把CI的自造ready Office收据模式当成本地真实普通Office转换，运行证据见原R6报告。
+
+从该精确503文件新建backend-sbom-current，旧#77/#74/#54及根工作区、Office组件/缓存不改。AGENTS与基础规范和现行打包/来源工具、相关调用方已按范围读取，未改变规范或依赖。本项只改task、本原报告及两份明确筛选的JSON证据；不引入工具框架、生产行为、迁移、工作流、依赖或新报告。固定对象是#74源码5ab4ccdfbc3df4e80baf3022c3a7a908bb383b81/tree53e5e57ca698e0db40d8ca495ff6332483a71749与其实际新冻结study_backend.exe（22600069字节/SHA256 f493edc9292c85556c0b2ce5c94f29595eb5d465863990d358d5d58930f91ba0）；只读源等价和Git blob对应不等于有签名的构建来源证明。
+
+旧REL-01b–e采集对象是43业务模块包。本次实际969文件中967字节相同，只有exe和base_library.zip外层变化；后者154个内部成员目录/hash精确相同，两份源锁hash也相同。PYZ2721→2724，仅新增study_workbench.api_errors、resource_grants、resource_pdf；2678非业务成员的种类、压缩长度和内容hash逐项相同。业务源码46模块重新静态比较嵌套代码/常量并核Git原blob，不把旧43模块报告直接冠作当前证据。
+
+### 既有工具复用与当前边界
+
+在独立ignored输出中复用当前frozen_sbom、frozen_python_members、frozen_python_origins；#54原frozen_native_origins以外部只读工具使用，远端固定24405f0bd4bbdfe1716458eabe49e2fecee11c72/treeaccc21f0392fcb167a9652946a71cb47ed2a30d9中blob a4cd8bee3f99d69324d29716f6cb32b1203676b3已核（22246字节）。当前依赖只有check_frozen_sources较#54抽出相同比较字段并增加code_fingerprint，等价比较语义保持；其余来源依赖原bytes相同，使用当前组合另跑原反例。未把该外部工具偷偷复制为候选产品代码或改其预算/断言。
+
+实际初始本地匹配仍55包/2358模块/861实体；补固定NuGet后311 PYZ/154 ZIP/62实体和11启动代码均有既有范围来源，9无代码namespace仅描述子模块来源、版本null，PYZ容器仍不是代码身份。923实体已有所列来源线索，仍46实体全局未认证（44 CRT、两生成容器）；同内容多来源、RECORD自身空hash、仅元数据存在和环境中额外包均不冒充实际分发成员或独占归属。pytest/setuptools实际随包范围保留。固定CPython3.13.17 NuGet和PyInstaller6.22.3 wheel原archive hash/元数据及本地RECORD链重核，不能据其归档pin把全部native/CRT或机器码源码等价称为已认证。
+
+当前COLLECT-00.toc有969项，SHA256 08f88a8fe38980fe948434f7509f4c699ad19cf3291cabca2f0a167dd6a0107d。11-19采集器逐44 CRT核实际caller本地CodexPrimaryRuntime.v26-1116-1210 libheif来源及payload hash，不能据路径认官方版本/许可/再分发资格。跨日应用runtime更新后，11-20严格只读复核verify01/02在原绝对源路径FileNotFound失败；逐44项核实均original_source_path_missing，未猜新路径、借System32/签名兜底或改TOC。主Agent明确要求保留11-19原输出/hash及当时runtime版本，今天不可读取与身份/许可未知分开列明。本精选all_original_sources_rechecked_now=false，记录44逐项缺失；不把历史成功观察当作今天源重读通过。原日志/两个失败及原报告不变。
+
+固定wheel bootloader与当前exe独立重核：.text/.data/.pdata/.fptable/.reloc五节相同；.rdata仅IMAGE_DEBUG_DIRECTORY.TimeDateStamp在278548、278549、278550三字节不同，完整字段cec4a56a→bfc0fe6a（1789248718→1795080383）及原新偏移全部保留。未通用忽略时间戳/rdata、资源、headers或overlay，完整PE认证/可重现构建和签名均false。该来源子集也不证明全部依赖边、许可义务/内嵌通知/源码提供、最终漏洞或正式发行准备完成。
+
+### 命令、自动化、精选与退出边界
+
+解释器复用只读starlette-fix/.local/starlette-{q,p}-isolated/Scripts/python.exe（3.13.17/3.12.7），工具解释器为根release-venv；PYTHONDONTWRITEBYTECODE=1。没有安装、升级或清理环境/包/个人数据。
+
+- Q tools/frozen_sbom.py --payload ../resource-pdf-provider/dist/study_backend --source ../resource-pdf-provider --source-head 5ab4ccdfbc3df4e80baf3022c3a7a908bb383b81 --exe-sha256 f493edc9292c85556c0b2ce5c94f29595eb5d465863990d358d5d58930f91ba0 --syft <固定1.57.1> --output artifacts/backend-release-gap/current-coverage01，在resource-backend-combo退出2（工具明确不完整）；969文件/161 native/15metadata/73 scanner候选，scanner候选不作已认证身份。Q tools/frozen_python_origins.py以该coverage、固定NuGet、#74精确source-tree及独立current-origins01输出退出2，311额外模块和58组件子集完成；完整原始输出保留原副本ignored目录，不修改旧证据。
+- Q artifacts/rel01h/run_native.py从真实COLLECT提取caller CRT根，未执行TOC/外来PE/源码，调用固定#54原工具。11-19原native01.log最后为Traced 44，54,428字节原报告与426,811字节原CDX完整保留；该工具成功采集按设计返回2，不是发行通过。跨日恢复时原进程会话已释放，未从不可用句柄补造新的退出码回执，更不把该历史命令算作11-20原CRT重读成功。
+- Q/P -m pytest backend/tests/test_frozen_sbom.py backend/tests/test_frozen_python_members.py backend/tests/test_frozen_python_origins.py ../frozen-native-origins/backend/tests/test_frozen_native_origins.py -q --basetemp=artifacts/rel01h/tmp-q01或tmp-p01 --junitxml=artifacts/rel01h/q01.xml或p01.xml：均实际退出0，各172通过（35.13/41.06秒），无失败/错误/跳过/警告。复用原RECORD/ZIP/TOC/预算/变源/歧义/DEBUG域反例，测试必要的Windows链接仅限本任务临时目录。未为不变生产代码另写镜像测试或重复本地构建；本PR当前CI仍新构建和全量执行。
+- Q artifacts/rel01h/verify_select.py在上述原CRT缺失失败后明确区分历史采集/当前可用性，verify03/04退出0。它重新核503原blob/46模块、969实际payload前后hash、2678压缩成员/154 ZIP相等、全部被索引METADATA/RECORD、固定原归档及wheel构建源、实际PE节/精确差异、原报告hash和三个固定官方CycloneDX1.6 Schema。原初始辅助比较把scanner候选list误当dict报TypeError，修正仅输出逻辑；一次Git contents响应形状非JSON的试探也保留，改读精确Git tree，无来源或采集规则变更。
+
+[精选summary](evidence/current-backend-sources-summary.json)保留当前源/包/锁/采集器/输入原输出hash、46模块逐源proof、44逐项当前不可读状态及全部46未知；[标准CDX子集](evidence/current-backend-subset.cdx.json)从真实58组件逐项保留身份/来源属性，位置每个角色只选一个样本，原总位置数及sampled明确标记。它不是完整425K原输出复制，也不是完整产品SBOM；CDX和summary均无本机绝对路径/个人内容，完整原件、配置、所有成员/来源路径及原日志留ignored。两者Schema验证通过，选择策略和原CDX hash可追溯；此范围未知不写成UNLICENSED。
+
+REL-01h转REVIEW，四文件范围检查/最终精选只读一致及独立草稿PR/当前head CI继续登记；未取得前不记开发交付完成。正式REL-01/02/03/04/05仍未闭合：44CRT官方归档/身份/许可、全部其他native内嵌来源、完整边/义务/漏洞、真实签名和组件/安装器全产品对应须继续，审查暂缓、人工取消，不合并或发布。新CI将构建自身head的另一个exe，不能反向认证本次固定#74 f493包的构建签名或把它改称最新全产品发行包。
+
+最终精选summary为35,894字节/SHA256 159e21b1e25b63a9cc05741710c65a715c167f98c540680ec5488bb4e9e758bb；CDX为70,331字节/SHA256 758ae5a4f5bf73fa1ecb311c5bb206848cb13ee7bd6c4ce03291311d29544db9，58组件及各角色位置样本Schema有效。summary另精确记录当时caller runtime目录标签，明确它不是CRT身份/版本。最后Q artifacts/rel01h/verify_select.py --read-only将重新核并仅比较两份精选原bytes；主Agent可用同入口独立只读复核，不写原件、报告、摘要或产物。
+
+工具解释器-m ruff check backend tools、Q tools/export_question_schema.py --check均退出0。artifacts/rel01h/check_changes.py退出0：仅4文件、501原blob保持/最终505文件、90本地引用及被引标题、66唯一调度行、UTF8/LF/逐文件diff --no-index --check、原报告完整前缀和所有业务/工具/打包/锁/工作流保持。未在旧#77头补写CI或本报告，独立PR交付链接及最终头CI继续跟进。
