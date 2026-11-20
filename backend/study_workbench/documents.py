@@ -4,15 +4,17 @@ import io
 import json
 import math
 import os
+import stat
 import subprocess
 import sys
 from pathlib import Path
 from uuid import uuid4
 from zipfile import BadZipFile, ZipFile
 
-from .document_view_worker import column_text
+from .document_view_worker import column_text, render
 from .question_splitting import START, DraftSplitter, all_blocks, split_blocks
 
+CHUNK_PDF_LIMIT = 128 * 1024 * 1024
 MAX_ASSETS = 64 * 1024 * 1024
 
 
@@ -320,11 +322,22 @@ def extract(data, suffix, *, page_range=None, two_columns=False):
     return {"kind": "note", "blocks": blocks, "question_drafts": drafts, "warnings": warnings, "_assets": assets}
 
 
-def worker(suffix, *, page_range=None, two_columns=False):
-    data = sys.stdin.buffer.read(8 * 1024 * 1024 + 1)
+def worker(suffix, *, page_range=None, two_columns=False, count_only=False):
     try:
-        if len(data) > 8 * 1024 * 1024:
-            raise ValueError("文档超过 8 MiB")
+        stream = sys.stdin.buffer
+        info = os.fstat(stream.fileno()) if page_range is not None or count_only else None
+        if info is not None and stat.S_ISREG(info.st_mode):
+            if info.st_size > CHUNK_PDF_LIMIT:
+                raise ValueError('PDF 分块输入超过 128 MiB')
+            stream.seek(0)
+            data = stream
+        else:
+            data = stream.read(8 * 1024 * 1024 + 1)
+            if len(data) > 8 * 1024 * 1024:
+                raise ValueError("文档超过 8 MiB")
+        if count_only:
+            print(json.dumps(render(data, 'pdf-info')), flush=True)
+            return
         if page_range is not None:
             if any(not value.isascii() or not value.isdecimal() or len(value) > 4 for value in page_range):
                 raise ValueError('PDF 页码必须为 1 至 2000 的十进制整数')

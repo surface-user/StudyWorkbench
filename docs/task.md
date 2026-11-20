@@ -65,9 +65,10 @@ R1–R5、资料删除和统一导入已有实现继续保留；R6授权切片/P
 | PAR-02a 解析契约和组件评估 | DONE | [契约](question-markdown-spec.md#columns-and-ocr)和[评估报告](../dev/records/2026-11-19-columns-ocr/report.md)，[#75](https://github.com/surface-user/StudyWorkbench/pull/75)，[当前提交 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44504637908)。 |
 | PAR-02b 原生双栏文字预览 | DONE | 用户指定单页的左右栏文字、原页位置与无法排序的提示，[#76](https://github.com/surface-user/StudyWorkbench/pull/76)，[当前提交 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44506256549)。 |
 | PAR-02c 固定 Windows OCR 组件 | DONE | [#78](https://github.com/surface-user/StudyWorkbench/pull/78) 的[当前提交 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44510080692)通过。 固定开发构建、两个模型与许可；在中文路径实测英、简中及空白，有界 PGM 输入和篡改回归见[报告](../dev/records/2026-11-19-columns-ocr/report.md)。 |
-| PAR-02d 扫描页候选文字 | REVIEW | 用户选定扫描页的中英文识别、原页词区、低置信提示与取消已通过源码和冻结 HTTP 验证，见[报告](../dev/records/2026-11-19-columns-ocr/report.md)。 |
+| PAR-02d 扫描页候选文字 | DONE | [#80](https://github.com/surface-user/StudyWorkbench/pull/80) 的[当前提交 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44678350119)通过。 用户选定扫描页的中英文识别、原页词区、低置信提示与取消已通过源码和冻结 HTTP 验证，见[报告](../dev/records/2026-11-19-columns-ocr/report.md)。 |
 | PAR-02e 双栏拆题与共享材料 | REVIEW | 显式双栏页段已有区域、跨栏续题、材料归组和逐题确认；双 Python 各 60 项，源码和冻结包通过真实 HTTP，[报告](../dev/records/2026-11-19-columns-ocr/report.md)。 |
-| PAR-03 大文档分块提取 | IN_PROGRESS | 8 MiB 内原生 PDF 的页段后端已交付 a–d；更大字节原件/其他格式仍待验证。预算、取消及恢复见[分块协议](question-markdown-spec.md#pdf-chunk-jobs)。 |
+| PAR-03 大文档分块提取 | IN_PROGRESS | 原生 PDF 的页段读取、恢复和显式确认已交付 a–d，e 已在 128 MiB 边界通过冻结验证。其他文档格式另行细化。预算、取消及恢复见[分块协议](question-markdown-spec.md#pdf-chunk-jobs)。 |
+| PAR-03e 较大托管 PDF 的流式校验与分块 | REVIEW | 1 MiB 分块校验、可定位快照和 128 MiB 原件上限；两版 Python 各 58 项，源码和最终冻结包通过取消恢复及选题确认，[报告](../dev/records/2026-11-19-pdf-chunks/report.md)。 |
 | PAR-03a 分块协议 | DONE | [CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44492950993)通过。 [PR #68](https://github.com/surface-user/StudyWorkbench/pull/68)，[任务报告](../dev/records/2026-11-19-pdf-chunks/report.md)。 |
 | PAR-03b PDF 页区间解析 | DONE | [PR #70](https://github.com/surface-user/StudyWorkbench/pull/70) 修复 CI 子进程工作目录后，[当前 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44497612890)通过。 在一次有界子进程中只渲染指定页，保留原始页码及候选边界提示，回归旧整篇解析。 |
 | PAR-03c 分块任务 API 与持久化 | DONE | [PR #71](https://github.com/surface-user/StudyWorkbench/pull/71) 的[当前 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/44497652513)通过。 依赖 [b 子进程](https://github.com/surface-user/StudyWorkbench/pull/70)。核对原件、原子记录进度、显式取消与恢复、并发重试和累计预算。 |

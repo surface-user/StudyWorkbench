@@ -41,3 +41,22 @@ Python 3.12.7 和 3.13.17 未设置 PYTHONPATH，分别执行 `python -X utf8 -m
 `python tools/check_api_errors.py --test-root artifacts/http01` 首轮在既有外部 Origin 拒绝检查读响应时遇到 Windows 10054 连接复位，退出 1。使用新建的 http02 隔离数据目录重跑同一脚本退出 0。使用 `packaging/windows/build-backend.ps1` 打包，首次打包期间裁题模块发生修正，核源拒绝旧模块，保留 artifacts/build.log。稳定源重建退出 0，46 个冻结模块与源码逐一匹配。对新生成的 exe 执行 `tools/check_api_errors.py --exe dist/study_backend/study_backend.exe --test-root artifacts/frozen-final` 退出 0。源码与冻结各 68 项 HTTP 检查、31 个不同错误 ID，均实际经过重启、续题、两次同选确认及原件字节校验。记录位于 artifacts/build-final.log、frozen-final.log 及两版 final JUnit。
 
 本次覆盖原生 PDF 有界分块的后端路径，更大字节原件、OCR、多栏和桌面入口仍在任务表分别跟踪。人工测试已取消，独立审查按本批要求暂缓。当前提交的 CI 另核。
+
+## PAR-03e 较大托管 PDF 的流式校验和页段提取
+
+从普通资料添加入口复制进工作区的 PDF 可以按页段处理，最大文件与该入口一致，均为 128 MiB。任务创建、推进、恢复、结果提交和首次选题确认都核对活动空间、资源身份、实际长度和 SHA-256。准备解析时按最多 1 MiB 的读取块同时生成系统临时文件快照，PDFium 从可定位的文件句柄按需读取，后端与子进程通过标准输入传递快照。单页 OCR、单页双栏预览、旧整篇上传保留 8 MiB 输入限额。页数、每块 20 页、25 秒、96 MiB 输出、64 MiB 累计图像和 200 道候选的上限沿用。快照写入或刷盘空间不足返回 507，过期原件不接受新结果。
+
+先用带有自编 PDF 合法填充的 9 MiB、32 MiB 样本验证原生工作进程计页、左栏题干与右栏续题。真实业务样本包含一页自编 RGB 噪声扫描图和第二页双栏题目，源码路径实际 9,076,345 字节。正常资料添加、SHA-256、单栏和双栏任务分离、取消与恢复、仅提取第 2 页、原页区域、显式确认的幂等性及取回原件字节均有断言。冻结边界样本在相同图像和题目内容前提下补入 PDF 注释并重算 xref 偏移，实际恰好 134,217,728 字节。两次测试都用了新建的业务数据目录。
+
+首次双 Python 专项各 56 通过、2 失败（退出 1）。Windows 管道的 seekable 值不能判断是否为可定位的普通文件，导致旧管道子进程拒绝合法样本。改由 fstat 的文件类型决定处理方式，原反例均保留。双 Python 管道专项各 9 通过，之后双 Python 3.12.7 / 3.13.17 全部相关专项各 58 通过、2 项已有警告，退出 0。实验、失败日志和最终 JUnit 均在 pdf-large-managed/artifacts。
+
+```powershell
+python -X utf8 -m pytest -q backend/tests/test_pdf_chunks.py backend/tests/test_documents.py backend/tests/test_markdown_questions.py backend/tests/test_ocr_page.py backend/tests/test_document_files.py
+ruff check backend tools
+python tools/export_question_schema.py --check
+python tools/check_api_errors.py --test-root artifacts/source-final
+./packaging/windows/build-backend.ps1 -Python (Resolve-Path '../starlette-fix/.local/starlette-q-isolated/Scripts/python.exe').Path
+python artifacts/check_bound.py --exe dist/study_backend/study_backend.exe --test-root artifacts/frozen-final
+```
+
+首次 Ruff 指出测试文件一处导入排序，修正后 Ruff 及协议检查均退出 0。源码正常业务路径 90 次 HTTP；最终冻结包 48 个模块核源通过，128 MiB 上限样本 92 次 HTTP。两端各 31 个不同错误 ID，支持恢复与确认的端到端检查均退出 0。一次冻结通过旧管道修正前的同类上限样本，已保留记录；交付采用修正后重建的最终 exe。其他文档格式和桌面分块交互另行跟踪。独立审查暂缓，人工测试取消。

@@ -5,6 +5,7 @@ import io
 import json
 import os
 import queue
+import random
 import re
 import secrets
 import subprocess
@@ -17,19 +18,57 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 
-def check_column_questions(request, prefix):
-    raw = (Path(__file__).resolve().parents[1] / 'contracts/samples/two-column-questions.pdf').read_bytes()
-    source, _ = request(prefix + '/imports?filename=columns.pdf', raw, headers={'Content-Type': 'application/pdf'})
-    options = {'resource_id': source['resource_id'], 'expected_sha256': source['sha256'], 'first_page': 1, 'last_page': 1}
+def add_source(request, prefix, source):
+    job, _ = request(prefix + '/resource-add-jobs', {'source_path': str(source), 'parent_id': None})
+    for _ in range(100):
+        job, _ = request(prefix + '/resource-add-jobs/' + job['id'])
+        if job['status'] not in {'queued', 'running'}:
+            break
+        time.sleep(.1)
+    return job['results'][0]['resource_item_id']
+
+
+def large_question_pdf(path):
+    import pypdfium2 as pdfium
+    from PIL import Image
+
+    image_pdf = io.BytesIO()
+    pixels = random.Random(23).randbytes(1900 * 1500 * 3)
+    with Image.frombytes('RGB', (1900, 1500), pixels) as picture:
+        picture.save(image_pdf, 'PDF', quality=98, subsampling=0)
+    sample = Path(__file__).resolve().parents[1] / 'contracts/samples/two-column-questions.pdf'
+    with pdfium.PdfDocument(image_pdf.getvalue()) as document, pdfium.PdfDocument(sample) as questions:
+        document.import_pages(questions)
+        document.save(path)
+    assert 8 * 1024 * 1024 < path.stat().st_size < 128 * 1024 * 1024
+
+
+def check_column_questions(request, prefix, managed=None):
+    if managed is None:
+        raw = (Path(__file__).resolve().parents[1] / 'contracts/samples/two-column-questions.pdf').read_bytes()
+        source, _ = request(prefix + '/imports?filename=columns.pdf', raw, headers={'Content-Type': 'application/pdf'})
+        page = 1
+    else:
+        large_question_pdf(managed)
+        node = add_source(request, prefix, managed)
+        source, _ = request(prefix + '/nodes/' + node)
+        raw = managed.read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == source['sha256']
+        page = 2
+    options = {'resource_id': source['resource_id'], 'expected_sha256': source['sha256'],
+               'first_page': page, 'last_page': page}
     classic, _ = request(prefix + '/pdf-chunk-jobs', options)
     job, _ = request(prefix + '/pdf-chunk-jobs', {**options, 'layout': 'two_columns'})
     assert job['id'] != classic['id'] and job['parser_version'] == 'pdf-column-chunks-v1'
     url = prefix + '/pdf-chunk-jobs/' + job['id']
-    parsed, _ = request(url + '/advance', {'first_page': 1})
+    if managed is not None:
+        assert request(url + '/cancel', {})[0]['status'] == 'cancelled'
+        assert request(url + '/resume', {})[0]['status'] == 'ready'
+    parsed, _ = request(url + '/advance', {'first_page': page})
     assert parsed['status'] == 'parsed'
     batch, _ = request(url + '/preview', {})
     first, second = batch['preview']['question_drafts']
-    assert first['shared_materials'] == second['shared_materials'] and first['source_pages'] == [1]
+    assert first['shared_materials'] == second['shared_materials'] and first['source_pages'] == [page]
     assert [r['box'][::2] for r in first['regions']] == [[0, .5], [.5, 1]]
     assert 'First question continues here.' in batch['question_markdown'][0]
     assert 'First question continues here.' not in batch['question_markdown'][1]
@@ -53,13 +92,7 @@ def check_scan(request, prefix, root):
     source = root / 'scan.pdf'
     pages[0].save(source, 'PDF', save_all=True, append_images=pages[1:], resolution=144)
     digest = hashlib.sha256(source.read_bytes()).hexdigest()
-    job, _ = request(prefix + '/resource-add-jobs', {'source_path': str(source), 'parent_id': None})
-    for _ in range(100):
-        job, _ = request(prefix + '/resource-add-jobs/' + job['id'])
-        if job['status'] not in {'queued', 'running'}:
-            break
-        time.sleep(.1)
-    node = job['results'][0]['resource_item_id']
+    node = add_source(request, prefix, source)
     url = prefix + '/nodes/' + node + '/document-ocr'
     options = {'expected_sha256': digest, 'request_id': '7' * 32}
     resource = None
@@ -201,6 +234,7 @@ def main():
             assert 'kept' in document['text']
             if not restart:
                 check_column_questions(request, prefix)
+                check_column_questions(request, prefix, root / 'larger.pdf')
                 original, _ = request(prefix + '/imports?filename=chunk.pdf', pdf_bytes,
                                       headers={'Content-Type': 'application/pdf'})
                 assert original['status'] == 'failed'
@@ -278,7 +312,7 @@ def main():
     print(json.dumps(dict(checks=checks, unique_error_ids=len(identifiers), restarted=True,
                          resource_grants_checked=True, resource_grants_not_restored=True,
                          pdf_chunk_confirmation_checked=True, receipts_preserved=True, media_range_preserved=True,
-                         scan_checked=bool(previous_scan), two_column_confirmation_checked=True, frozen=bool(args.exe))))
+                         scan_checked=bool(previous_scan), two_column_confirmation_checked=True, large_managed_pdf_checked=True, frozen=bool(args.exe))))
 
 
 if __name__ == '__main__':
