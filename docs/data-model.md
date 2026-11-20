@@ -1,10 +1,10 @@
 # 数据模型与权威关系
 
-状态基线：2026-11-05本地ORM与迁移。源码为[db.py](../backend/study_workbench/db.py)，迁移目录为[versions](../backend/migrations/versions/)。本文件分开当前已实现、规划中和待验证；不把未来表名当成现有实体。
+本分支的实体定义见 [db.py](../backend/study_workbench/db.py)，数据库升级脚本见 [versions](../backend/migrations/versions/)。
 
 ## 当前已实现
 
-当前迁移链为0001→0016，末版0016_analysis_review。此处描述代码schema，不表示任何个人库已经升级；开发仅使用隔离样本验证，不打开个人数据库。
+当前迁移链为 0001 至 0019。0017 添加 PDF 分块提取任务，0018 扩展本地媒体来源及执行记录，0019 添加用户自定义知识科目的不可变修订。
 
 | 实体 | 职责及约束 |
 |---|---|
