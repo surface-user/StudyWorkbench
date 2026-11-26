@@ -6,7 +6,7 @@ import threading
 import time
 from pathlib import Path
 
-from .media_download_http import LIMIT, DownloadError, transfer
+from .media_download_http import LIMIT, DownloadError, SiteNetworkBudget, transfer
 
 
 def worker():
@@ -18,6 +18,10 @@ def worker():
         options = json.loads(sys.stdin.buffer.readline(32768))
         threading.Thread(target=parent, daemon=True).start()
         deadline, last = time.monotonic() + 900, 0.0
+        budget = None
+        if options.get('site_host') is not None:
+            budget = SiteNetworkBudget(**options['site_budget'])
+            deadline = min(deadline, options['deadline'])
         def check():
             if cancelled.is_set() or time.monotonic() > deadline:
                 raise RuntimeError('下载已暂停或超时，已存部分保留')
@@ -32,7 +36,7 @@ def worker():
                 last = now
         result = transfer(options['url'], Path(options['path']), options['suffix'],
                           offset=options['offset'], etag=options.get('etag'), partial_sha256=options.get('partial_sha256'),
-                          site_host=options.get('site_host'), expected_size=options.get('expected_size'),
+                          site_host=options.get('site_host'), expected_size=options.get('expected_size'), budget=budget,
                           checkpoint=check, progress=progress)
         print(json.dumps({'result': result}), flush=True)
     except (DownloadError, RuntimeError) as error:

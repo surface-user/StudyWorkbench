@@ -6,6 +6,7 @@ import os
 import re
 import socket
 import ssl
+from dataclasses import dataclass
 from urllib.parse import quote, urljoin, urlsplit, urlunsplit
 
 LIMIT = 512 * 1024 * 1024
@@ -18,6 +19,22 @@ DENIED = tuple(ipaddress.ip_network(value) for value in (
 
 class DownloadError(ValueError):
     """Deliberately excludes URLs, credentials, socket addresses and remote response bodies."""
+
+
+@dataclass
+class SiteNetworkBudget:
+    requests_left: int
+    bytes_left: int
+
+    def __post_init__(self):
+        if (type(self.requests_left) is not int or not 0 <= self.requests_left <= 10
+                or type(self.bytes_left) is not int or not 0 <= self.bytes_left <= LIMIT):
+            raise DownloadError('站点传输额度无效')
+
+    def take_request(self):
+        if self.requests_left == 0:
+            raise DownloadError('本次站点确认与传输合计最多10次请求')
+        self.requests_left -= 1
 
 
 def parse_url(value):
@@ -85,7 +102,7 @@ def bilibili_media_host(host):
     return bool(re.fullmatch(r'upos-[a-z0-9](?:[a-z0-9-]{0,56}[a-z0-9])?\.bilivideo\.com', host))
 
 
-def transfer(url, path, suffix, *, offset=0, etag=None, partial_sha256=None, site_host=None, expected_size=None,
+def transfer(url, path, suffix, *, offset=0, etag=None, partial_sha256=None, site_host=None, expected_size=None, budget=None,
              checkpoint=lambda: None, progress=lambda value: None):
     """Write only a caller-owned fresh/partial file. Failure never truncates existing bytes."""
     from .media_library import media_mime
@@ -97,6 +114,8 @@ def transfer(url, path, suffix, *, offset=0, etag=None, partial_sha256=None, sit
             or offset and (not strong_etag(etag) or not isinstance(partial_sha256, str)
                            or not re.fullmatch('[a-f0-9]{64}', partial_sha256))):
         raise DownloadError('恢复参数或媒体格式无效')
+    if budget is not None and (expected_size is None or expected_size - offset > budget.bytes_left):
+        raise DownloadError('站点元数据与所选媒体超过共用字节额度')
     if offset:
         try:
             info = path.lstat()
@@ -111,6 +130,8 @@ def transfer(url, path, suffix, *, offset=0, etag=None, partial_sha256=None, sit
             current, host, target = parse_url(current)
             if site_host is not None and (host != site_host or not bilibili_media_host(host)):
                 raise DownloadError('站点媒体地址发生变化，请重新预览')
+            if budget is not None:
+                budget.take_request()
             address = resolve(host)
             checkpoint()
             connection = PinnedHTTPS(host, address)
@@ -177,7 +198,16 @@ def transfer(url, path, suffix, *, offset=0, etag=None, partial_sha256=None, sit
             with path.open('ab' if offset else 'xb') as output:
                 while True:
                     checkpoint()
-                    chunk = response.read(CHUNK)
+                    read_size = CHUNK
+                    if budget is not None:
+                        read_size = min(CHUNK, budget.bytes_left)
+                        if read_size == 0:
+                            if length is not None and received == total:
+                                break
+                            raise DownloadError('站点响应达到共用字节上限，无法验证结束')
+                    chunk = response.read(read_size)
+                    if budget is not None:
+                        budget.bytes_left -= len(chunk)
                     if not chunk:
                         break
                     received += len(chunk)

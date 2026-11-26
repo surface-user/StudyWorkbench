@@ -1,9 +1,31 @@
 """The durable confirmation contains identity and format, never a signed media address."""
 import hashlib
 import re
+from dataclasses import dataclass
 from urllib.parse import urlsplit
 
-from .media_download_http import LIMIT, DownloadError, bilibili_media_host, parse_url
+from .media_download_http import LIMIT, DownloadError, SiteNetworkBudget, bilibili_media_host, parse_url
+
+
+@dataclass(frozen=True)
+class SiteTransfer:
+    url: str
+    expires: float
+    deadline: float
+    budget: SiteNetworkBudget
+
+    @classmethod
+    def from_confirmation(cls, url, expires, deadline, usage, size):
+        if not isinstance(usage, dict) or set(usage) != {'requests', 'bytes'}:
+            raise DownloadError('未取得可验证的站点元数据用量')
+        requests, received = usage['requests'], usage['bytes']
+        if (type(requests) is not int or not 3 <= requests <= 10
+                or type(received) is not int or not 0 < received <= 8 * 1024 * 1024):
+            raise DownloadError('站点元数据用量无效')
+        budget = SiteNetworkBudget(10 - requests, LIMIT - received)
+        if budget.requests_left == 0 or size > budget.bytes_left:
+            raise DownloadError('本次站点确认没有足够的请求或字节额度')
+        return cls(url, expires, deadline, budget)
 
 
 def candidate(result, preview_id, format_id):

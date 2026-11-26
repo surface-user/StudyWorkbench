@@ -133,17 +133,19 @@ class MediaDownloads:
         with write_transaction(self.engine) as session:
             session.get(MediaDownloadJob, identifier).progress = value
 
-    def child(self, job, path, *, deadline=None, site_url=None):
+    def child(self, job, path, *, deadline=None, transfer=None):
         from . import media_mux, media_probe_runtime
         local = job.source_kind == 'local_pair'
         deadline = deadline if deadline is not None else time.monotonic() + JOB_SECONDS
         options = (media_mux.worker_options(self, job, deadline) if local else
-                   dict(url=site_url or job.source_url, path=str(path), suffix=Path(job.name).suffix.lower(),
+                   dict(url=transfer.url if transfer else job.source_url, path=str(path), suffix=Path(job.name).suffix.lower(),
                         offset=job.progress.get('received', 0), etag=job.progress.get('etag'),
                         partial_sha256=job.progress.get('partial_sha256')))
         if job.site_receipt:
             options['site_host'] = job.site_receipt['cdn_host']
             options['expected_size'] = job.site_receipt['size']
+            options['site_budget'] = {'requests_left': transfer.budget.requests_left, 'bytes_left': transfer.budget.bytes_left}
+            options['deadline'] = transfer.deadline
         environment = (media_probe_runtime.environment(path) if local else dict(os.environ))
         environment.update(PYTHONUTF8='1', PYTHONIOENCODING='utf-8',
                            PYTHONPATH=str(Path(__file__).resolve().parents[1]))
@@ -215,7 +217,12 @@ class MediaDownloads:
             raise DownloadError('下载工作进程异常，已存部分保留')
         return result
 
-    def run(self, identifier, site_url=None, valid_until=None):
+    def run(self, identifier, transfer=None):
+        def check():
+            if transfer and time.monotonic() >= transfer.deadline:
+                raise DownloadError('站点确认与传输超过共用时限，已存文件保留')
+            self.check(identifier)
+
         try:
             with Session(self.engine) as session:
                 current = session.get(MediaDownloadJob, identifier)
@@ -224,15 +231,14 @@ class MediaDownloads:
                 from .media_mux import run_local
                 run_local(self, identifier, self.child)
                 return
-            self.check(identifier)
+            check()
             with write_transaction(self.engine) as session:
                 job = session.get(MediaDownloadJob, identifier)
                 if job.status != 'queued':
                     return
                 if job.source_kind != 'direct_https':
                     raise DownloadError('下载任务来源类型无效，现有文件保留')
-                expired = site_url and (valid_until is None or time.monotonic() >= valid_until)
-                if bool(job.site_receipt) != bool(site_url) or expired:
+                if bool(job.site_receipt) != bool(transfer) or transfer and time.monotonic() >= transfer.expires:
                     raise DownloadError('站点媒体地址已失效，请重新预览并确认')
                 job.status = 'running'
                 session.flush()
@@ -245,14 +251,15 @@ class MediaDownloads:
             if received > 0 and received == job.progress.get('total'):
                 result = dict(size=received, sha256=job.progress.get('partial_sha256'), etag=job.progress.get('etag'))
             else:
-                result = self.child(job, path, site_url=site_url) if site_url else self.child(job, path)
-            self.check(identifier)
+                result = (self.child(job, path, deadline=transfer.deadline, transfer=transfer)
+                          if transfer else self.child(job, path))
+            check()
             size = path.stat().st_size
             def checked_hash(filename, expected):
                 digest, count = hashlib.sha256(), 0
                 with filename.open('rb') as source:
                     while chunk := source.read(1024 * 1024):
-                        self.check(identifier)
+                        check()
                         count += len(chunk)
                         if count > expected or count > LIMIT:
                             raise DownloadError('媒体实际大小变化，文件保留')
@@ -273,7 +280,7 @@ class MediaDownloads:
                 def inspect_check():
                     nonlocal next_check
                     if time.monotonic() >= next_check:
-                        self.check(identifier)
+                        check()
                         next_check = time.monotonic() + .05
                 try:
                     inspection = inspect_media_input(self.root, job.relative_path, size, checksum, mime, inspect_check)
@@ -283,6 +290,8 @@ class MediaDownloads:
                     raise DownloadError('实际媒体缺少完整音视频轨道，文件保留')
             with write_transaction(self.engine) as session:
                 item = session.get(MediaDownloadJob, identifier)
+                if transfer and time.monotonic() >= transfer.deadline:
+                    raise DownloadError('站点确认与发布超过共用时限，已存文件保留')
                 if item.cancel_requested or self.stopping.is_set():
                     raise DownloadError('下载已暂停，已存部分保留')
                 parent_in(session, job.workspace_id, job.parent_id)
@@ -335,7 +344,7 @@ class MediaDownloads:
         if not same_source or (old.name, old.parent_id) != (body.name, body.parent_id):
             raise HTTPException(409, '同一请求的下载参数变化')
 
-    def enqueue(self, workspace, body, source_url, *, receipt=None, media_url=None, valid_until=None):
+    def enqueue(self, workspace, body, source_url, *, receipt=None, transfer=None):
         with write_transaction(self.engine) as session:
             parent_in(session, workspace, body.parent_id)
             old = session.scalar(select(MediaDownloadJob).where(MediaDownloadJob.workspace_id == workspace,
@@ -358,8 +367,8 @@ class MediaDownloads:
             session.add(item)
             session.flush()
             result = describe(item)
-        if media_url:
-            self.pool.submit(self.run, identifier, media_url, valid_until)
+        if transfer:
+            self.pool.submit(self.run, identifier, transfer)
         else:
             self.pool.submit(self.run, identifier)
         return result

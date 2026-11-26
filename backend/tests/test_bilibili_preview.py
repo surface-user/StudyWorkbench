@@ -82,6 +82,8 @@ def test_fixed_page_nav_and_signed_playinfo_only(monkeypatch, source):
     calls, closed, pending = network(monkeypatch, source, page_extra='throw new Error("must not execute");')
     result = preview.extract(PAGE)
     assert result['title'] == '自编公开视频样本' and result['video_id'] == 'BV1234567890'
+    state, nav, play = source
+    assert result['metadata_usage'] == dict(requests=3, bytes=len(html(state)) + len(encoded(nav)) + len(encoded(play)))
     assert result['extractor_version'] == preview.VERSION
     assert len(result['formats']) == 2 and all(x['requires_merge'] for x in result['formats'])
     assert result['formats'][0]['height'] == 720

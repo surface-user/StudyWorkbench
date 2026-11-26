@@ -380,6 +380,7 @@ def extract(url, *, checkpoint=lambda: None):
                       source_cid=cid,
                       extractor_version=VERSION, duration_seconds=duration, returned_formats_only=True,
                       format_source='wbi_api',
+                      metadata_usage={'requests': client.requests, 'bytes': client.received},
                       formats=formats(play, can_download=duration > 0 and type(video['rights'].get('download')) is int
                                       and video['rights']['download'] == 1))
         if len(json.dumps(result, ensure_ascii=False).encode('utf-8')) > OUTPUT_LIMIT:

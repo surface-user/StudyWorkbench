@@ -17,9 +17,9 @@ from sqlalchemy.orm import Session
 
 from .bilibili_preview import OUTPUT_LIMIT, VERSION, PreviewHTTPError, page_url, safe_http_diagnostic
 from .media_download_http import DownloadError
-from .media_downloads import ConfirmSiteDownload
+from .media_downloads import JOB_SECONDS, ConfirmSiteDownload
 from .office_runtime import WindowsProcessJob
-from .site_download_receipt import candidate
+from .site_download_receipt import SiteTransfer, candidate
 from .workspaces import require_workspace
 
 SECONDS = 45
@@ -262,14 +262,17 @@ class MediaSitePreviews:
                 raise HTTPException(422, '目标文件名与所选格式不符')
             entry['checking'] = True
         try:
-            current, page, media_url = candidate(self.child(entry), identifier, body.format_id)
+            deadline = time.monotonic() + JOB_SECONDS
+            fresh = self.child(entry)
+            current, page, media_url = candidate(fresh, identifier, body.format_id)
             with self.lock:
                 self.prune()
                 if (self.entries.get(identifier) is not entry or entry['cancel'].is_set() or self.stopping.is_set()
                         or current != selected or media_url != selected_url):
                     raise HTTPException(409, '来源或候选已变化，请重新预览')
-                return downloads.enqueue(workspace, body, page, receipt=current, media_url=media_url,
-                                         valid_until=entry['expires'])
+                transfer = SiteTransfer.from_confirmation(media_url, entry['expires'], deadline,
+                                                          fresh.get('metadata_usage'), current['size'])
+                return downloads.enqueue(workspace, body, page, receipt=current, transfer=transfer)
         except DownloadError as error:
             raise HTTPException(409, str(error)) from None
         finally:
