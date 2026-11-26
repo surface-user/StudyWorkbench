@@ -14,6 +14,12 @@
 
 例如，随包标题将 FreeType 2.14.3 和 Harfbuzz 14.2.0 归在 `java.desktop`，ICU4J 72.1 归在 `java.base`。CLDR v43 的正文位于 `java.base`，`jdk.localedata` 引用这份正文。这些版本出自发布者的通知标题。底层软件的实际版本、每项具体再分发义务、对应源码交付及最终安装器中的材料仍需单独核实。
 
+## 通知正文的源码来源
+
+从官方发布资产核对 JRE 压缩包的专属元数据，压缩包 SHA-256 与实物相同。元数据中的 OpenJDK 源码提交和 Temurin 构建脚本提交都与 JRE 内的 release 对应。逐字节比对后，28 份补充正文与该 OpenJDK 提交下各模块的法律文件一致，三份共同正文与同一提交中的顶层文件一致。Temurin 根 NOTICE 与构建脚本提交中的 `sbin/NOTICE.template` 字节一致。31 份模块正文和 1 份根通知均已定位来源。[OpenJDK 固定提交](https://github.com/adoptium/jdk21u/tree/2ab10ca20c191701c3a9f3153bfc6e93d63714c1) · [Temurin 根通知来源](https://github.com/adoptium/temurin-build/blob/1cf43d7a3e77886bfea7d550a902e151a87d724d/sbin/NOTICE.template)
+
+另以官方发布资产摘要核验了同版 Windows 的供应商 CycloneDX。其 JRE 行中的文件名和源码提交与实物对应，但记载的压缩包摘要与最终发布 ZIP 不同，差异原因未确认。当前交付文件身份使用与最终 ZIP 实测相符的 JRE 专属元数据。[官方发布资产](https://github.com/adoptium/temurin21-binaries/releases/tag/jdk-21.0.13%2B9)
+
 ## 复现和验证
 
 在本机保留每份通知的相对位置、原始哈希、引用链、正文哈希及可识别的发布者标题。工具使用开发者提供的 JDK 镜像读取器，无需运行待核的产品 JRE。逐文件输出放入 Git 忽略的本地目录。
