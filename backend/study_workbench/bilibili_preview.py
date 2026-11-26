@@ -10,6 +10,7 @@ from html.parser import HTMLParser
 from urllib.parse import parse_qs, urlencode, urljoin, urlsplit
 
 from .media_download_http import LIMIT, DownloadError, PinnedHTTPS, bilibili_media_host, parse_url, resolve
+from .site_pair_selection import mark_choices
 
 VERSION = 'bilibili-preview-v3'
 STATE_SCRIPT_TRAILER = (';(function(){var s;(s=document.currentScript||document.scripts[document.scripts.length-1])'
@@ -281,6 +282,9 @@ def formats(play, *, can_download=False):
                                height=number(item.get('height'), maximum=32768, optional=True), fps=fps,
                                size_bytes=number(item.get('size'), optional=True), requires_merge=True,
                                download_supported=False, url=uri, fragments=None,
+                               _pair_permitted=can_download and not any(
+                                   obj.get(key) for obj in (play, dash, item) for key in
+                                   ('headers', 'http_headers', 'cookies', 'referer', 'origin')),
                                limitation='暂不支持分轨下载' if uri else '来源不是受支持的HTTPS媒体链接'))
     fragments = play.get('durl') or []
     if not isinstance(fragments, list) or len(fragments) > 64:
@@ -377,12 +381,13 @@ def extract(url, *, checkpoint=lambda: None):
         if duration and length + 3000 < duration * 1000:
             raise DownloadError('播放时长少于完整视频，未采用可能的试看格式')
         result = dict(title=title, video_id=identifier, source_host='www.bilibili.com', source_url=canonical,
-                      source_cid=cid,
+                      source_aid=aid, source_cid=cid,
                       extractor_version=VERSION, duration_seconds=duration, returned_formats_only=True,
                       format_source='wbi_api',
                       metadata_usage={'requests': client.requests, 'bytes': client.received},
                       formats=formats(play, can_download=duration > 0 and type(video['rights'].get('download')) is int
                                       and video['rights']['download'] == 1))
+        mark_choices(result)
         if len(json.dumps(result, ensure_ascii=False).encode('utf-8')) > OUTPUT_LIMIT:
             raise DownloadError('预览结果超过128KiB')
         check()

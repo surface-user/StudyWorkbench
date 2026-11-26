@@ -7,6 +7,8 @@ import sys
 import tempfile
 import time
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
+from datetime import UTC, datetime
 from pathlib import Path
 from threading import Event, RLock, Thread
 from uuid import uuid4
@@ -20,6 +22,7 @@ from .media_download_http import DownloadError
 from .media_downloads import JOB_SECONDS, ConfirmSiteDownload
 from .office_runtime import WindowsProcessJob
 from .site_download_receipt import SiteTransfer, candidate
+from .site_pair_selection import ConfirmPairSelection, digest, selected_pair
 from .workspaces import require_workspace
 
 SECONDS = 45
@@ -88,7 +91,11 @@ class MediaSitePreviews:
             key: result[key] for key in ('title', 'video_id', 'source_host', 'extractor_version',
                                         'duration_seconds', 'returned_formats_only')}
         if public is not None:
-            public['formats'] = [{key: item[key] for key in PUBLIC_FORMAT} for item in result['formats']]
+            public['formats'] = [{**{key: item[key] for key in PUBLIC_FORMAT},
+                                  **({'pair_track_ref': item['pair_track_ref']} if 'pair_track_ref' in item else {})}
+                                 for item in result['formats']]
+            if 'pair_selection' in entry:
+                public['pair_selection'] = entry['pair_selection']
         return dict(id=entry['id'], status=entry['status'], result=public, error=entry['error'],
                     error_diagnostic=entry.get('error_diagnostic'),
                     expires_in_seconds=max(0, int(entry['expires'] - time.monotonic())), extractor_version=VERSION)
@@ -133,6 +140,7 @@ class MediaSitePreviews:
             if entry is None or entry['workspace'] != workspace:
                 raise HTTPException(404, '预览已失效或不存在')
             entry['cancel'].set()
+            entry.pop('pair_selection', None)
             entry.update(status='cancelled', result=None, error=None, error_diagnostic=None)
             return self.describe(entry)
 
@@ -240,10 +248,8 @@ class MediaSitePreviews:
                                  error_diagnostic=error.diagnostic if isinstance(error, PreviewHTTPError) else None,
                                  error=str(error)[:300] if isinstance(error, DownloadError) else '预览未完成：站点或工作进程异常')
 
-    def confirm(self, downloads, workspace, identifier, body):
-        previous = downloads.site_retry(workspace, identifier, body)
-        if previous is not None:
-            return previous
+    @contextmanager
+    def checking(self, workspace, identifier):
         with self.lock:
             self.prune()
             entry = self.entries.get(identifier)
@@ -254,30 +260,62 @@ class MediaSitePreviews:
             if entry.get('checking') or sum(e['status'] == 'running' or bool(e.get('checking'))
                                             for e in self.entries.values()) >= 2:
                 raise HTTPException(429, '站点核对繁忙，请重试')
-            try:
-                selected, _, selected_url = candidate(entry['result'], identifier, body.format_id)
-            except DownloadError as error:
-                raise HTTPException(409, str(error)) from None
-            if Path(body.name).suffix.lower() != '.' + selected['container']:
-                raise HTTPException(422, '目标文件名与所选格式不符')
+            original = entry['result']
             entry['checking'] = True
         try:
-            deadline = time.monotonic() + JOB_SECONDS
-            fresh = self.child(entry)
-            current, page, media_url = candidate(fresh, identifier, body.format_id)
-            with self.lock:
-                self.prune()
-                if (self.entries.get(identifier) is not entry or entry['cancel'].is_set() or self.stopping.is_set()
-                        or current != selected or media_url != selected_url):
-                    raise HTTPException(409, '来源或候选已变化，请重新预览')
-                transfer = SiteTransfer.from_confirmation(media_url, entry['expires'], deadline,
-                                                          fresh.get('metadata_usage'), current['size'])
-                return downloads.enqueue(workspace, body, page, receipt=current, transfer=transfer)
+            yield entry, original
         except DownloadError as error:
             raise HTTPException(409, str(error)) from None
         finally:
             with self.lock:
                 entry.pop('checking', None)
+
+    def current(self, entry):
+        self.prune()
+        if (self.entries.get(entry['id']) is not entry or entry['cancel'].is_set() or self.stopping.is_set()):
+            raise HTTPException(409, '预览已结束，请重新预览')
+
+    def confirm(self, downloads, workspace, identifier, body):
+        previous = downloads.site_retry(workspace, identifier, body)
+        if previous is not None:
+            return previous
+        with self.checking(workspace, identifier) as (entry, original):
+            selected, _, selected_url = candidate(original, identifier, body.format_id)
+            if Path(body.name).suffix.lower() != '.' + selected['container']:
+                raise HTTPException(422, '目标文件名与所选格式不符')
+            deadline = time.monotonic() + JOB_SECONDS
+            fresh = self.child(entry)
+            current, page, media_url = candidate(fresh, identifier, body.format_id)
+            with self.lock:
+                self.current(entry)
+                if current != selected or media_url != selected_url:
+                    raise HTTPException(409, '来源或候选已变化，请重新预览')
+                transfer = SiteTransfer.from_confirmation(media_url, entry['expires'], deadline,
+                                                          fresh.get('metadata_usage'), current['size'])
+                return downloads.enqueue(workspace, body, page, receipt=current, transfer=transfer)
+
+    def confirm_pair_selection(self, workspace, identifier, body):
+        self.workspace(workspace)
+        with self.checking(workspace, identifier) as (entry, original):
+            selected = selected_pair(original, body)
+            with self.lock:
+                self.current(entry)
+                previous = entry.get('pair_selection')
+                if previous is not None:
+                    if (previous['request_id'] == body.request_id and previous['tracks'] == selected[0]['tracks']):
+                        return previous
+                    raise HTTPException(409, '本预览已有确认选择；更换轨道请重新预览')
+            fresh = selected_pair(self.child(entry), body)
+            with self.lock:
+                self.current(entry)
+                if fresh != selected:
+                    raise HTTPException(409, '作品身份、所选轨道或声明已变化，请重新预览')
+                receipt = dict(schema_version=1, preview_id=identifier, request_id=body.request_id,
+                               rights_confirmed=True, confirmed_at=datetime.now(UTC).isoformat(),
+                               delivery='dash_pair', download_supported=False, **fresh[0])
+                receipt['selection_sha256'] = digest(receipt)
+                entry['pair_selection'] = receipt
+                return receipt
 
     def router(self, downloads=None):
         router = APIRouter(prefix='/api/workspaces/{workspace_id}/media-site-previews', tags=['media'])
@@ -293,6 +331,10 @@ class MediaSitePreviews:
         @router.post('/{identifier}/confirm')
         def confirm(workspace_id: str, identifier: str, body: ConfirmSiteDownload):
             return self.confirm(downloads, workspace_id, identifier, body)
+
+        @router.post('/{identifier}/pair-selection')
+        def pair_selection(workspace_id: str, identifier: str, body: ConfirmPairSelection):
+            return self.confirm_pair_selection(workspace_id, identifier, body)
 
         @router.post('/{identifier}/cancel')
         def cancel(workspace_id: str, identifier: str):
