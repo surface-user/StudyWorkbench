@@ -84,6 +84,29 @@ def test_mastery_due_selection_and_task_progress_survive_restart(tmp_path):
         assert c.get(f'{SCOPE}/study-tasks').json()[0]['id'] == task['id']
 
 
+def test_knowledge_statistics_count_questions_once_per_subject_and_point(tmp_path):
+    with client(tmp_path) as c:
+        questions = [
+            dict(question(), id='point-one', subject='科目甲', knowledge_points=['共享', '其他', '共享']),
+            dict(question(), id='point-two', subject='科目甲', knowledge_points=['共享', '共享']),
+            dict(question(), id='point-three', subject='科目乙', knowledge_points=['共享']),
+        ]
+        job = upload(c, dict(schema_version=1, questions=questions, passages=[])).json()
+        assert confirm(c, job).status_code == 200
+        for selected in ['b', 'a', 'a', 'a']:
+            qid = 'point-one' if selected == 'b' else 'point-two'
+            assert c.post(f'{SCOPE}/attempts', json={'question_id': qid, 'response': {'selected': [selected]}}).status_code == 200
+
+    with client(tmp_path) as c:
+        stats = c.get(f'{SCOPE}/statistics').json()['knowledge_points']
+        assert [row for row in stats if row['subject'] in {'科目甲', '科目乙'}] == [
+            {'subject': '科目乙', 'name': '共享', 'questions': 1, 'mastered': 0, 'wrong': 0},
+            {'subject': '科目甲', 'name': '共享', 'questions': 2, 'mastered': 1, 'wrong': 1},
+            {'subject': '科目甲', 'name': '其他', 'questions': 1, 'mastered': 0, 'wrong': 1},
+        ]
+        assert c.get(f'{SCOPE}/questions/point-one').json()['knowledge_points'] == ['共享', '其他', '共享']
+
+
 def test_wrong_filters_and_server_owned_answers(tmp_path):
     with client(tmp_path) as c:
         c.post(f'{SCOPE}/attempts', json={'question_id': 'demo-integral', 'response': {'selected': ['b']}})

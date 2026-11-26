@@ -162,7 +162,7 @@ def learning_router(engine):
             rows = study_rows(session, workspace_id)
             points = defaultdict(list)
             for row in rows:
-                for point in row["knowledge_points"]:
+                for point in set(row["knowledge_points"]):
                     points[(row["subject"], point)].append(row)
             return {"questions": len(rows), "attempts": sum(r["attempt_count"] for r in rows),
                     "due": sum(r["due"] for r in rows), "wrong": sum(r["wrong"] for r in rows),
