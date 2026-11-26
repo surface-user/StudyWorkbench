@@ -117,11 +117,12 @@ def read_resource(root, resource):
     return data
 
 
-def pdf_item(session, workspace, resource_id, expected, limit):
+def document_item(session, workspace, resource_id, expected, limit, suffix):
     require_workspace(session, workspace)
+    label = suffix[1:].upper()
     item = session.get(Resource, resource_id)
     if item is None or item.workspace_id != workspace:
-        raise HTTPException(404, 'PDF 原件不存在')
+        raise HTTPException(404, f'{label} 原件不存在')
     try:
         parts = archive_path(item.relative_path).split('/')
     except ValueError:
@@ -129,14 +130,14 @@ def pdf_item(session, workspace, resource_id, expected, limit):
     if len(parts) < 3 or parts[:2] != ['workspaces', workspace] or item.sha256 != expected:
         raise HTTPException(409, '原件版本或工作空间路径不符')
     if not 0 < item.size <= limit:
-        raise HTTPException(413, f'此项 PDF 提取最多支持 {limit // (1024 * 1024)} MiB 原件')
-    if Path(item.original_name).suffix.lower() != '.pdf':
-        raise HTTPException(422, '请选择托管 PDF 原件')
+        raise HTTPException(413, f'此项 {label} 提取最多支持 {limit // (1024 * 1024)} MiB 原件')
+    if Path(item.original_name).suffix.lower() != suffix:
+        raise HTTPException(422, f'请选择托管 {label} 原件')
     return item
 
 
 def read_pdf_source(session, root, workspace, resource_id, expected):
-    item = pdf_item(session, workspace, resource_id, expected, 8 * 1024 * 1024)
+    item = document_item(session, workspace, resource_id, expected, 8 * 1024 * 1024, '.pdf')
     data = read_resource(root, item)
     if not data.startswith(b'%PDF-'):
         raise HTTPException(422, 'PDF 原件格式无效')
@@ -144,7 +145,7 @@ def read_pdf_source(session, root, workspace, resource_id, expected):
 
 
 def check_chunk_pdf(session, root, workspace, resource_id, expected, *, output=None):
-    item = pdf_item(session, workspace, resource_id, expected, CHUNK_PDF_LIMIT)
+    item = document_item(session, workspace, resource_id, expected, CHUNK_PDF_LIMIT, '.pdf')
     path = resource_path(root, item.relative_path)
     digest = hashlib.sha256()
     count = 0
