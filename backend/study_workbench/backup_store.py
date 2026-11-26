@@ -15,6 +15,7 @@ from uuid import uuid4
 
 from . import backup_archive as envelope
 from .data_root import DataLock, digest, validate_root, write_settings
+from .word_outline import WORD_JOB_VERSION, word_job_id
 
 CHUNK = 1024 * 1024
 VALUE_LIMIT = 64 * CHUNK
@@ -123,6 +124,37 @@ def check_references(root, files):
             for row in connection.execute(f'SELECT * FROM {table}'):
                 if table == 'resources' or row['status'] == 'ready':
                     require(row['relative_path'], row['sha256'], row['size'])
+        if 'import_jobs' in tables and 'workspace_nodes' in tables:
+            for row in connection.execute('SELECT * FROM import_jobs WHERE parser_version=?', (WORD_JOB_VERSION,)):
+                preview = json.loads(row['preview'])
+                state = preview.get('word_range', {})
+                original = connection.execute('SELECT workspace_id,sha256 FROM resources WHERE id=?',
+                                              (row['resource_id'],)).fetchone()
+                if original is None or tuple(original) != (row['workspace_id'], state.get('source_sha256')):
+                    raise ValueError('Word 选区任务的原件不属于记录的空间或版本')
+                if (any(type(state.get(k)) is not int for k in ('first_position', 'last_position', 'total_positions', 'generation'))
+                        or not 1 <= state['first_position'] <= state['last_position'] <= state['total_positions'] <= 200000
+                        or state['last_position'] - state['first_position'] >= 20 or state['generation'] < 0):
+                    raise ValueError('Word 选区任务的正文范围或执行代次无效')
+                if not state.get('node_id') or word_job_id(row['workspace_id'], row['resource_id'], state) != row['id']:
+                    raise ValueError('Word 选区绑定信息与任务标识不符')
+                if row['status'] not in {'ready', 'running', 'cancelled', 'interrupted', 'failed', 'preview', 'confirmed'}:
+                    raise ValueError('Word 选区任务状态无效')
+                if row['status'] in {'preview', 'confirmed'}:
+                    if (not preview.get('available') or any(preview.get(k) != state[k] for k in
+                            ('first_position', 'last_position', 'total_positions'))):
+                        raise ValueError('Word 选区候选的正文范围不匹配')
+                    content = [preview['blocks']]
+                    for draft in preview['question_drafts']:
+                        content.append(draft['blocks'])
+                        content.extend(m['blocks'] for m in draft.get('shared_materials', []))
+                    images = {b['attachment_id'] for blocks in content for b in blocks if b.get('type') == 'image'}
+                    for identifier in images:
+                        image = connection.execute('SELECT workspace_id FROM resources WHERE id=?', (identifier,)).fetchone()
+                        if image is None or image[0] != row['workspace_id']:
+                            raise ValueError('Word 选区候选的图片资源缺失或跨空间')
+                elif 'question_drafts' in preview or 'blocks' in preview:
+                    raise ValueError('未完成的 Word 选区已有候选内容')
         if 'pdf_chunk_jobs' in tables:
             for job in connection.execute('SELECT * FROM pdf_chunk_jobs'):
                 original = connection.execute('SELECT workspace_id, sha256 FROM resources WHERE id=?',

@@ -11,6 +11,7 @@
 | workspaces / desktop_state | 工作空间归档、活动选择及版本化layout JSON；不是系统目录 |
 | resources | 不可变原件/附件，原名/相对路径/MIME/大小/hash；同空间hash唯一 |
 | import_jobs | 原件、解析版本、预览、确认/失败/中断状态；不承担目录身份 |
+| import_jobs 单段 Word 选区 | `parser_version=docx-range-job-v1`。任务标识由空间、节点、资源、原件摘要、所选正文范围和版本确定。`preview.word_range` 记录绑定、原件位置总数、执行代次和图片字节数。只有整段提交成功才写入候选和附件，完成后沿用逐题确认收据。 |
 | workspace_nodes | 稳定逻辑ID、空间/父级、规范名、folder/resource/media/link互斥载荷；同空间复合FK；removed_at为空才参与同层名称唯一性 |
 | resource_add_jobs | 来源本地路径、目标父级、状态/取消、逐项结果和复制收据；路径留本机库，不写Git |
 | media_entries | 媒体路径/hash/MIME、入库状态和播放位置/倍速/字幕；经节点适配 |

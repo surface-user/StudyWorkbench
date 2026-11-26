@@ -87,6 +87,7 @@ def split_blocks(blocks, warnings=None, *, positions=None, table_positions=()):
     def append(target, block, index):
         target['blocks'].append(block)
         if positions is not None:
+            target.setdefault('block_positions', []).append(positions[index])
             source = target.setdefault('source_positions', [])
             if not source or source[-1] != positions[index]:
                 source.append(positions[index])

@@ -98,6 +98,9 @@ def draft_router(engine, root):
                 current['blocks'].extend(following['blocks'])
                 current['regions'].extend(following['regions'])
                 current['source_pages'] = sorted(set(current['source_pages'] + following['source_pages']))
+                if 'block_positions' in current:
+                    current['block_positions'].extend(following['block_positions'])
+                    current['source_positions'] = sorted(set(current['block_positions']))
                 shared = {m['id']: m for m in current.get('shared_materials', []) + following.get('shared_materials', [])}
                 current['shared_materials'] = list(shared.values())
             elif body.action == 'split_block':
@@ -117,6 +120,12 @@ def draft_router(engine, root):
                     raise HTTPException(422, '拆分后两题都必须有内容')
                 following = {**copy.deepcopy(current), 'title': body.title.strip(), 'blocks': right}
                 current['blocks'] = left
+                if 'block_positions' in current:
+                    positions = current['block_positions']
+                    current['block_positions'] = positions[:body.position + bool(body.text_offset)]
+                    following['block_positions'] = positions[body.position:]
+                    for piece in (current, following):
+                        piece['source_positions'] = sorted(set(piece['block_positions']))
                 drafts.insert(body.index + 1, following)
             elif body.action == 'split_region':
                 regions = current['regions']
@@ -140,6 +149,9 @@ def draft_router(engine, root):
                     raise HTTPException(422, '请选择原资料内容段和目标题目')
                 material = {'id': uuid4().hex, 'blocks': [copy.deepcopy(preview['blocks'][i])
                                                        for i in sorted(set(body.source_blocks))]}
+                if 'word_range' in preview:
+                    material['block_positions'] = [preview['block_positions'][i] for i in sorted(set(body.source_blocks))]
+                    material['source_positions'] = sorted(set(material['block_positions']))
                 for i in set(body.targets):
                     drafts[i].setdefault('shared_materials', []).append(material)
             if len(drafts) > 200:

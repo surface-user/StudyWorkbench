@@ -139,6 +139,17 @@ def main():
                     assert selected['source_sha256'] == hashlib.sha256(fixture.read_bytes()).hexdigest()
                     assert [q['title'] for q in selected['question_drafts']] == ['2. Second original question', '3. Third original question']
                     assert selected['block_positions'] == [2, 3] and 'PREFIX-ONLY' not in str(selected)
+                    word_job = request(prefix + '/word-range-jobs', {'node_id': added_id, 'expected_sha256': value['source_sha256'],
+                                                                     'first_position': 2, 'last_position': 3})
+                    word_job_url = prefix + '/word-range-jobs/' + word_job['id']
+                    assert request(word_job_url + '/cancel', {})['status'] == 'cancelled'
+                    assert request(word_job_url + '/resume', {})['status'] == 'ready'
+                    assert request(word_job_url + '/advance', {})['completed_positions'] == 2
+                    completed = request(word_job_url + '/preview')
+                    chosen = {'selected': [1], 'expected_revision': completed['draft_revision'], 'confirm': True}
+                    word_confirm_url = prefix + '/imports/' + word_job['id'] + '/question-markdown'
+                    word_receipt = request(word_confirm_url, chosen)
+                    assert len(word_receipt) == 1 and word_receipt[0]['title'].startswith('3.')
                 elif suffix == 'pdf':
                     assert value['page_count'] == 2
                     value = request(prefix + '/nodes/' + added_id + '/document-page?page=2')
@@ -169,6 +180,8 @@ def main():
         assert request(prefix + '/nodes/' + node['resource_item_id'])['name'] == '已改名.md'
         if args.documents:
             assert request(word_index_url) == word_index
+            assert request(word_job_url)['status'] == 'confirmed'
+            assert request(word_confirm_url, chosen) == word_receipt
             assert request(endpoint + '/document')['text'] == '# 保存的工作副本'
             with sqlite3.connect(root / 'data/study.db') as db:
                 relative = db.execute('SELECT relative_path FROM document_workfiles WHERE node_id=?', (node['resource_item_id'],)).fetchone()[0]
