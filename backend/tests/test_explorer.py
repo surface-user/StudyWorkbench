@@ -178,7 +178,12 @@ def test_budgets_failures_and_source_changes(tmp_path, monkeypatch):
         assert job['status'] == 'partial'
         assert any(r['status'] == 'failed' for r in job['results'])
         monkeypatch.setattr(module, 'NODE_LIMIT', 1)
-        assert start(c, source)['status'] == 'failed'
+        limited = start(c, source)
+        assert limited['status'] == 'failed'
+        folder, excess = limited['results']
+        assert folder['status'] == 'renamed' and folder['name'] == source.name
+        assert excess['status'] == 'failed' and excess['name'] in {'bad.webm', 'ok.txt'}
+        assert limited['error'] == excess['error']
         monkeypatch.setattr(module, 'NODE_LIMIT', 1000)
         monkeypatch.setattr(module, 'FILE_LIMIT', 2)
         assert start(c, source / 'ok.txt')['status'] == 'failed'
@@ -340,15 +345,22 @@ def test_depth_total_budget_and_queued_cancellation(tmp_path, monkeypatch):
     directory = tmp_path / 'deep'
     directory.mkdir()
     cursor = directory
-    for _ in range(33):
-        cursor = cursor / 'd'
+    for level in range(33):
+        cursor = cursor / f'd{level}'
         cursor.mkdir()
     entered, release = Event(), Event()
     with client(tmp_path / 'data') as c:
         monkeypatch.setattr(module, 'TOTAL_LIMIT', 2)
         assert start(c, source)['status'] == 'failed'
         monkeypatch.setattr(module, 'TOTAL_LIMIT', 1024 * 1024 * 1024)
-        assert start(c, directory)['status'] == 'failed'
+        job = start(c, directory)
+        assert job['status'] == 'failed'
+        added = [row for row in job['results'] if row['status'] == 'added']
+        failed = [row for row in job['results'] if row['status'] == 'failed']
+        assert len(added) == 33
+        assert [row['name'] for row in failed] == [cursor.name]
+        assert '32层' in failed[0]['error']
+        assert job['error'] == failed[0]['error']
         original = c.app.state.explorer.check
 
         def pause(identifier):

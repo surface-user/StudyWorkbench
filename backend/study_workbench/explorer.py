@@ -245,6 +245,10 @@ class CopyStopped(Exception):
     pass
 
 
+class CopyBudgetExceeded(Exception):
+    """The offending entry has its receipt. Stop traversing the whole job."""
+
+
 class Explorer:
     def __init__(self, engine, root):
         self.engine, self.root = engine, root
@@ -285,10 +289,10 @@ class Explorer:
             nonlocal count, total
             self.check(job_id)
             count += 1
-            if count > NODE_LIMIT or depth > 32:
-                raise HTTPException(413, '导入最多1000节点、32层；已完成部分保留')
             relative = None
             try:
+                if count > NODE_LIMIT or depth > 32:
+                    raise HTTPException(413, '导入最多1000节点、32层；已完成部分保留')
                 path = source_path(str(path), self.root)
                 name = normalized_name(path.name)
                 before = path.stat()
@@ -296,9 +300,10 @@ class Explorer:
                     with write_transaction(self.engine) as session:
                         parent_in(session, workspace, parent)
                         node = insert_node(session, workspace, parent, name, 'folder')
-                        folder_id, display = node.id, node.name
-                    self.result(job_id, dict(name=name, status='renamed' if display != name else 'added',
-                                             resource_item_id=folder_id))
+                        folder_id = node.id
+                        job = session.get(ResourceAddJob, job_id)
+                        job.results = [*job.results, dict(name=name, resource_item_id=folder_id,
+                                                          status='renamed' if node.name != name else 'added')]
                     # scandir is incremental: do not allocate an unbounded directory listing.
                     with os.scandir(path) as children:
                         for child in children:
@@ -365,7 +370,7 @@ class Explorer:
                                          copied_path=relative,
                                          error=str(error.detail) if isinstance(error, HTTPException) else '名称无效或文件不可读取'))
                 if isinstance(error, HTTPException) and error.status_code == 413:
-                    raise
+                    raise CopyBudgetExceeded(error.detail) from error
 
         status, error = 'completed', None
         try:
@@ -375,6 +380,8 @@ class Explorer:
                     status = 'partial'
         except CopyStopped:
             status, error = 'cancelled', '复制已停止；已登记资源及复制字节保留'
+        except CopyBudgetExceeded as stop:
+            status, error = 'failed', str(stop)
         except Exception:
             status, error = 'failed', '复制未完成；原目录、已登记资源和复制字节保留'
         with write_transaction(self.engine) as session:
