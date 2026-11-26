@@ -9,6 +9,15 @@ import pytest
 import yaml
 
 
+def test_checkout_preserves_pinned_supplemental_license_bytes():
+    folder = Path(__file__).parents[2] / 'packaging/licenses/latex2mathml-3.81.1'
+    profile = json.loads((folder / 'provenance.json').read_bytes())
+    for entry in profile['license_texts']:
+        original = (folder / entry['path']).read_bytes()
+        assert len(original) == entry['bytes']
+        assert hashlib.sha256(original).hexdigest() == entry['sha256']
+
+
 @pytest.fixture
 def example(tmp_path, monkeypatch):
     monkeypatch.syspath_prepend(str(Path(__file__).parents[2] / 'tools'))
