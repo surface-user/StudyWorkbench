@@ -44,6 +44,7 @@ from .library import library_router
 from .markdown_notes import MarkdownNotes
 from .markdown_questions import markdown_router
 from .media_downloads import MediaDownloads
+from .media_site_previews import MediaSitePreviews
 from .media_library import media_routers
 from .migrate import migrate
 from .pdf_chunks import pdf_chunk_router
@@ -96,6 +97,7 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
     learning_marks = LearningMarks(documents)
     question_files = QuestionFiles(documents)
     downloads = MediaDownloads(engine, data_dir)
+    site_previews = MediaSitePreviews(engine)
     media_probe_stopping = Event()
     agent_access = AgentAccess(engine, data_dir)
     analysis_reviews = AnalysisReviews(engine, data_dir, agent_access, markdown_notes, documents)
@@ -104,6 +106,7 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
     async def lifespan(_):
         yield
         media_probe_stopping.set()
+        await run_in_threadpool(site_previews.close)
         await run_in_threadpool(downloads.close)
         await run_in_threadpool(documents.close)
         await run_in_threadpool(explorer.close)
@@ -117,6 +120,7 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
     app.state.learning_marks = learning_marks
     app.state.question_files = question_files
     app.state.downloads = downloads
+    app.state.site_previews = site_previews
     app.state.media_probe_stopping = media_probe_stopping
     app.state.agent_access = agent_access
     app.state.analysis_reviews = analysis_reviews
@@ -149,6 +153,7 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
     app.include_router(workspace_router(engine), dependencies=auth)
     app.include_router(explorer.router(), dependencies=auth)
     app.include_router(downloads.router(), dependencies=auth)
+    app.include_router(site_previews.router(), dependencies=auth)
     app.include_router(documents.router(), dependencies=auth)
     app.include_router(documents.previews.router(), dependencies=auth)
     app.include_router(question_files.router(), dependencies=auth)
