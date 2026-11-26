@@ -170,7 +170,7 @@ python tools/source_licenses.py --package-config apps/desktop/.dart_tool/package
 
 精确版本`latex2mathml3.81.1`另有[固定来源补充](../packaging/licenses/latex2mathml-3.81.1/provenance.json)：官方wheel/sdist都漏带项目LICENSE，经固定tag的九个package文件逐字节核对后，收集器将本地九文件与已记录SHA256比较，再复制固定MIT和LPPL原文。任一package文件、许可文本、版本或来源配置不符即失败；采集中再次核配置及package文件未变。补充记录标记`repository_supplement`，不伪装为installed RECORD文件，也不成为其他版本或其他包的兜底。
 
-项目代码MIT与`unimathsymbols.txt`的LPPL-1.3-or-later分开映射，保留数据作者、原头部日期及vendor修改后未更新通知的事实。补齐原文仍保留上游归档缺文、LPPL原Work/修改条件待核；此组件有issue，CLI仍退出2，完整产品/归档来源/分发义务仍false。该补充不向产品payload添加数据或修改原依赖，不证明HTML/MathML导出已受支持；最终发行复制/成员范围和义务另核。
+项目代码按 MIT 记录，符号表按 LPPL-1.3-or-later 记录。采集器在内存中撤销 latex2mathml 对 U+00A7 的单处改动，并核对整表与两座公共档案馆留存的作者文件字节一致。许可索引保留作者、头部日期、原表摘要、来源链接及供应方修改说明。上游归档仍缺项目许可原文，LPPL 所指完整作品的组成和任何包含修改表的再分发义务继续单列。完整产品许可状态与原先的退出状态维持待核。[固定的符号表来源与变更](../packaging/licenses/latex2mathml-3.81.1/provenance.json)
 
 ## 规划中
 

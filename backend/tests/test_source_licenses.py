@@ -203,6 +203,10 @@ def supplemented(example):
     folder.mkdir(parents=True)
     for name in profile['package_files']:
         data = ('Self-authored source fixture for ' + name + '\n').encode()
+        if name == 'latex2mathml/unimathsymbols.txt':
+            data += '000A7^§^\\S^^N^mathord^^sect\n'.encode()
+            original = data.replace(b'\\S', b'')
+            profile['embedded_notices'][name]['original_table'].update(bytes=len(original), sha256=tool.sha256(original))
         path = metadata.parent / name
         path.parent.mkdir(exist_ok=True)
         path.write_bytes(data)
@@ -229,6 +233,8 @@ def test_pinned_supplement_keeps_mixed_license_scopes_and_unresolved_conditions(
     assert notice['copyright'] == 'Copyright 2011 Günter Milde'
     assert notice['declared_license'] == 'LPPL-1.3-or-later'
     assert notice['notice_not_updated_for_vendor_changes']
+    assert not notice['original_table']['complete_lppl_work_scope_verified']
+    assert len(notice['original_table']['author_site_captures']) == 2
     assert component['supplement']['upstream_commit'] == 'fb724a91658cf41d2fad0192da0845b05446f208'
     assert 'lppl_original_work_and_vendor_change_conditions_unresolved' in component['issues']
     assert report['packages_with_issues'] == 1 and not report['product_licenses_complete']
@@ -242,7 +248,8 @@ def test_pinned_supplement_keeps_mixed_license_scopes_and_unresolved_conditions(
 
 @pytest.mark.parametrize('kind', ['changed_source', 'missing_source', 'changed_text', 'wrong_length',
                                   'wrong_identity', 'missing_mapping', 'unsafe_source', 'other_package',
-                                  'unsafe_text', 'missing_profile'])
+                                  'unsafe_text', 'missing_profile', 'different_original', 'wrong_original_size',
+                                  'duplicate_vendor_row', 'missing_vendor_row'])
 def test_supplement_rejects_unmatched_or_unsafe_inputs(supplemented, kind):
     tool, source, config, output, metadata, _, folder, profile = supplemented
     first = next(iter(profile['package_files']))
@@ -256,6 +263,19 @@ def test_supplement_rejects_unmatched_or_unsafe_inputs(supplemented, kind):
         profile['license_texts'][0]['bytes'] += 1
     elif kind == 'wrong_identity':
         profile['purl'] = 'pkg:pypi/latex2mathml@3.81.2'
+    elif kind in ('different_original', 'wrong_original_size', 'duplicate_vendor_row', 'missing_vendor_row'):
+        name = 'latex2mathml/unimathsymbols.txt'
+        baseline = profile['embedded_notices'][name]['original_table']
+        if kind == 'different_original':
+            baseline['sha256'] = '0' * 64
+        elif kind == 'wrong_original_size':
+            baseline['bytes'] += 1
+        else:
+            table = metadata.parent / name
+            raw = table.read_bytes()
+            raw = raw * 2 if kind == 'duplicate_vendor_row' else raw.replace(b'\\S', b'')
+            table.write_bytes(raw)
+            profile['package_files'][name] = tool.sha256(raw)
     elif kind == 'missing_mapping':
         profile['package_files'].pop(first)
     elif kind == 'unsafe_source':

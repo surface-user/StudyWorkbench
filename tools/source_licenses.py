@@ -74,6 +74,16 @@ def latex2mathml_supplement(source, package_root, output):
             raise ValueError('Supplement references another package')
         if sha256(read_file(relative_file(package_root, name))) != expected:
             raise ValueError('Installed package differs from pinned supplemental source')
+    table = 'latex2mathml/unimathsymbols.txt'
+    modified = read_file(relative_file(package_root, table))
+    original = profile['embedded_notices'][table]['original_table']
+    # Compare the entire original by reversing the sole vendor change in the U+00A7 row.
+    changed_row = '\n000A7^§^\\S^^N^mathord^^sect\n'.encode()
+    if modified.count(changed_row) != 1:
+        raise ValueError('Expected one vendor change in the section-sign row')
+    restored = modified.replace(changed_row, changed_row.replace(b'\\S', b''), 1)
+    if len(restored) != original['bytes'] or sha256(restored) != original['sha256']:
+        raise ValueError('Restored symbol table differs from the archived author file')
     texts = []
     for item in profile['license_texts']:
         data = read_file(relative_file(folder, item['path']))
