@@ -62,6 +62,30 @@ OFFICE_ENVIRONMENT_IMAGES = {
     'purpenvhelper3MSC.dll': '94eb1b748bcb5b339a0ccc261e447be5892978bc41e705e546f054507f0ec517',
 }
 
+# Observed inside the packaged soffice.bin during both Writer and Impress PDF export.
+OFFICE_NSS_OBSERVED_LOCKS = {
+    '156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9',
+    'b0a040bd584bb69aeaba44f749996d2320d83707889b8f8ad85d93d44893c9ee',
+}
+
+
+def office_nss_entries(nodes, office, lock_sha256, manifest):
+    if lock_sha256 not in OFFICE_NSS_OBSERVED_LOCKS:
+        return {}
+    images = {}
+    for name in ('softokn3.dll', 'freebl3.dll', 'sqlite3.dll'):
+        relative = 'program/' + name
+        path = office + relative
+        image = nodes.get(path)
+        expected = manifest['files'].get(relative)
+        if (not expected or image is None or image['sha256'] != expected or image['machine'] != 0x8664
+                or image['magic'] != 0x20B or image['characteristics'] & 0x2002 != 0x2002 or image['clr_rva'] != 0):
+            raise ValueError('Observed Office NSS image differs: ' + relative)
+        images[path] = expected
+    if ('sqlite3.dll', 'import') not in nodes[office + 'program/softokn3.dll']['edges']:
+        raise ValueError('Expected the Office NSS module to import SQLite')
+    return images
+
 
 def office_environment_entries(payload, nodes, office):
     """Only fixed mscx/affine registrations and their cppu-relative native bindings."""
@@ -516,6 +540,9 @@ def inspect_dependencies(payload, system):
         text_entries = office_textencoding_entries(payload, nodes, office)
         locale_entries = office_locale_entries(payload, nodes, office)
         environment_entries = office_environment_entries(payload, nodes, office)
+        observed_nss = office_nss_entries(nodes, office, hashlib.sha256(raw).hexdigest(), manifest)
+        # SQLite is reached by the regular softokn3 import in the same program directory.
+        roots.extend(path for path in observed_nss if path != program + '/sqlite3.dll')
         domains['office'] = closure(nodes, sorted(set(roots) | uno_entries.keys()
             | set(text_entries['roots']) | set(locale_entries['roots']) | set(environment_entries['roots'])),
                                     [program, java, server], [program], system)
@@ -523,6 +550,7 @@ def inspect_dependencies(payload, system):
         domains['office']['text_encoding_entries'] = text_entries
         domains['office']['locale_data_entries'] = locale_entries
         domains['office']['environment_binding_entries'] = environment_entries
+        domains['office']['observed_pdf_export_nss_images'] = observed_nss
         domains['office']['uno_configuration_sha256'] = {
             office + name: digest for name, digest in OFFICE_UNO_FILES.items()}
         python_libraries = office_python_libraries(payload, nodes, office)
