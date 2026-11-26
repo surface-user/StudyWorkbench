@@ -211,7 +211,7 @@ TXT结果kind=text_resource且content_sha256绑定已核原件；正文命中时
 
 ### 知识目录的科目
 
-下表的 S 为 `/api/workspaces/{workspace_id}/knowledge/subjects`。当前可创建、列出、改名和移除用户命名的科目，并查看修订。知识点目录、资料及题目关联仍在规划中。
+下表的 S 为 `/api/workspaces/{workspace_id}/knowledge/subjects`。当前可维护科目及其知识点树。资料、题目及知识点之间的显式关联仍在规划中。
 
 | 请求 | 输入与结果 |
 |---|---|
@@ -221,7 +221,9 @@ TXT结果kind=text_resource且content_sha256绑定已核原件；正文命中时
 | POST S/{id}/remove | 提交 `confirm: true`、`expected_revision` 和 `request_id`。移除后可重建同名新科目，ID 独立。 |
 | GET S/{id}/revisions | 修订从新到旧，支持排他的 `before` 修订号及 `limit`（1–100）。可读取已移除科目的历史。 |
 
-写入返回 `{id, name, revision, removed}`。历史行另含 `action`。同空间内相同请求键和相同业务输入返回原修订；内容冲突、名称冲突和过期修订返回 409。外空间科目返回 404。科目修订保留题库原有科目、知识标签及作答。
+在 `S/{subject_id}/points` 下，GET 按稳定 ID 分页列出直属子项，省略 `parent_id` 时列根。POST 创建知识点，包含名称、请求键及可选上级。对 `/{point_id}/rename`、`/move`、`/remove` 的 POST 均要求请求键和预期修订号。移动必须显式传 `parent_id`，传 null 表示移到科目根部。移除要求显式确认，仍有子项的科目或知识点返回 409。同级重名、自身或后代目标返回 409，跨科目或空间的目标返回 404。成功回执包含科目、知识点、上级 ID、名称、修订号及移除状态。GET `/{point_id}/revisions` 在移除后仍可分页查看历史。
+
+科目写入返回 `{id, name, revision, removed}`。历史行另含 `action`。科目和知识点共用同一空间的请求键。相同业务输入重试返回原修订，内容冲突、名称冲突和过期修订返回 409。外空间科目返回 404。科目修订保留题库原有科目、知识标签及作答。
 
 ### 媒体与旧default兼容入口
 
