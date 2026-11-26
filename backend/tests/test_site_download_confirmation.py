@@ -5,6 +5,7 @@ import json
 import sqlite3
 import subprocess
 import sys
+from dataclasses import replace
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 
@@ -44,9 +45,10 @@ def ordinary(monkeypatch, source):
     calls = []
     def fetch(self, url, **flags):
         calls.append(url.split('?')[0])
-        if flags.get('page'):
-            return html(state), PAGE
-        return encoded(nav if url == preview.NAV else play), url
+        payload = html(state) if flags.get('page') else encoded(nav if url == preview.NAV else play)
+        self.requests += 1
+        self.received += len(payload)
+        return payload, PAGE if flags.get('page') else url
     monkeypatch.setattr(preview.Client, 'fetch', fetch)
     monkeypatch.setattr(MediaSitePreviews, 'child', lambda self, entry: preview.extract(entry['url']))
     return play['data'], data, calls
@@ -298,7 +300,7 @@ def test_empty_audio_track_is_not_published(monkeypatch, ordinary, tmp_path):
     metadata, _, _ = ordinary
     raw = mp4('video')
     metadata['durl'][0]['size'] = len(raw)
-    def single_track(self, job, path, *, site_url):
+    def single_track(self, job, path, *, transfer, deadline):
         path.write_bytes(raw)
         return {'size': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()}
     monkeypatch.setattr(MediaDownloads, 'child', single_track)
@@ -319,9 +321,9 @@ def test_expired_waiting_job_never_connects(monkeypatch, ordinary, tmp_path):
         monkeypatch.setattr(downloads.pool, 'submit', lambda *args: scheduled.append(args))
         monkeypatch.setattr(downloads, 'child', lambda *a, **k: pytest.fail('expired transfer started'))
         job = c.post(endpoint, json=TARGET).json()
-        run, identifier, url, _ = scheduled[0]
+        run, identifier, transfer = scheduled[0]
         assert identifier == job['id']
-        run(identifier, url, 0)
+        run(identifier, replace(transfer, expires=0))
         value = wait(c, identifier, {'failed'})
         assert '重新预览' in value['error'] and not value['can_resume']
 
@@ -334,3 +336,88 @@ def test_declared_size_disagreement_creates_no_file(monkeypatch, tmp_path):
     with pytest.raises(transport.DownloadError, match='大小'):
         transport.transfer(URL, path, '.mp4', site_host=CDN, expected_size=len(raw)+1)
     assert not path.exists()
+
+
+
+@pytest.mark.parametrize('usage', [None, {'requests': True, 'bytes': 12}, {'requests': 9, 'bytes': 0},
+                                   {'requests': 10, 'bytes': 12}, {'requests': 9, 'bytes': 8388609}])
+def test_confirmation_requires_remaining_verified_metadata_budget(monkeypatch, ordinary, tmp_path, usage):
+    with client(tmp_path) as c:
+        identifier, endpoint = start(c)
+        monkeypatch.setattr(c.app.state.downloads.pool, 'submit', lambda *args: None)
+        assert 'metadata_usage' not in finished(c, identifier)['result']
+        service = c.app.state.site_previews
+        original = service.child
+        def fresh(entry):
+            result = original(entry)
+            result['metadata_usage'] = usage
+            return result
+        monkeypatch.setattr(service, 'child', fresh)
+        assert c.post(endpoint, json=TARGET).status_code == 409
+        assert c.get(PREFIX+'/media-downloads').json() == []
+
+
+def test_media_declaration_and_metadata_bytes_must_fit_together(ordinary, tmp_path):
+    metadata, _, _ = ordinary
+    metadata['durl'][0]['size'] = transport.LIMIT
+    with client(tmp_path) as c:
+        _, endpoint = start(c)
+        response = c.post(endpoint, json=TARGET)
+        assert response.status_code == 409 and '额度' in response.text
+        assert c.get(PREFIX+'/media-downloads').json() == []
+
+
+def test_transfer_keeps_the_same_request_and_byte_counters(monkeypatch, tmp_path):
+    from test_media_download_http import Response, connections
+    raw = two_tracks()
+    def blob():
+        return Response(raw, fields=[('Content-Type','video/mp4'),('Content-Length',str(len(raw)))])
+    budget = transport.SiteNetworkBudget(3, 2*len(raw))
+    calls = connections(monkeypatch, [Response(b'', 302, [('Location','/again.mp4')]),blob(),blob()])
+    for name in ('first','second'):
+        result = transport.transfer(URL, tmp_path/name,'.mp4',site_host=CDN,expected_size=len(raw),budget=budget)
+        assert result['size'] == len(raw) and (tmp_path/name).read_bytes() == raw
+    assert budget.requests_left == budget.bytes_left == 0
+    assert sum(isinstance(x,tuple) and x[0]=='GET' for x in calls) == 3
+    with pytest.raises(transport.DownloadError, match='额度'):
+        transport.transfer(URL,tmp_path/'third','.mp4',site_host=CDN,expected_size=len(raw),budget=budget)
+    assert not (tmp_path/'third').exists()
+
+
+def test_redirect_after_last_shared_request_does_not_resolve(monkeypatch, tmp_path):
+    from test_media_download_http import Response, connections
+    connections(monkeypatch,[Response(b'',302,[('Location','/again.mp4')])])
+    resolved = []
+    monkeypatch.setattr(transport,'resolve',lambda host: resolved.append(host) or '93.184.216.34')
+    with pytest.raises(transport.DownloadError,match='10次请求'):
+        transport.transfer(URL,tmp_path/'blocked','.mp4',site_host=CDN,expected_size=100,
+                           budget=transport.SiteNetworkBudget(1,100))
+    assert resolved == [CDN] and not (tmp_path/'blocked').exists()
+
+
+def test_queue_time_and_validation_share_confirmation_deadline(monkeypatch, ordinary, tmp_path):
+    from types import SimpleNamespace
+
+    from study_workbench import media_downloads
+    _, data, _ = ordinary
+    clock = [0]
+    with client(tmp_path) as c:
+        _, endpoint = start(c)
+        downloads = c.app.state.downloads
+        scheduled = []
+        monkeypatch.setattr(downloads.pool,'submit',lambda *args: scheduled.append(args))
+        job = c.post(endpoint,json=TARGET).json()
+        run, identifier, grant = scheduled[0]
+        assert 0 < grant.budget.requests_left == 7 and grant.budget.bytes_left < transport.LIMIT
+        clock[0] = min(grant.expires, grant.deadline)-1
+        monkeypatch.setattr(media_downloads,'time',SimpleNamespace(monotonic=lambda: clock[0]))
+        def delayed(self, job, path, *, deadline, transfer):
+            assert deadline == grant.deadline and transfer is grant
+            path.write_bytes(data)
+            clock[0] = deadline
+            return {'size':len(data),'sha256':hashlib.sha256(data).hexdigest()}
+        monkeypatch.setattr(media_downloads.MediaDownloads,'child',delayed)
+        run(identifier,grant)
+        failed = wait(c,job['id'],{'failed'})
+        assert '共用时限' in failed['error']
+        assert c.get(PREFIX+'/media-downloads').json()[0]['result'] == {}
