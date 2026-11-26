@@ -135,6 +135,10 @@ def main():
                     assert base64.b64decode(value['image_base64']).startswith(b'\x89PNG')
                 else:
                     assert any('中文题干' in b.get('text', '') for b in value['blocks'])
+                    word_index_url = prefix + '/nodes/' + added_id + '/document-word-outline?expected_sha256=' + value['source_sha256']
+                    word_index = request(word_index_url)
+                    assert word_index['total_positions'] == 7 and word_index['positions'][3]['kind'] == 'table'
+                    assert request(word_index_url + '&first_position=7')['positions'] == word_index['positions'][-1:]
                     if args.without_office:
                         assert not value['preview_capability']['available']
             layout['version'] = 2
@@ -149,6 +153,7 @@ def main():
         assert request(prefix + '/resource-add-jobs/' + job['id'])['results'] == job['results']
         assert request(prefix + '/nodes/' + node['resource_item_id'])['name'] == '已改名.md'
         if args.documents:
+            assert request(word_index_url) == word_index
             assert request(endpoint + '/document')['text'] == '# 保存的工作副本'
             with sqlite3.connect(root / 'data/study.db') as db:
                 relative = db.execute('SELECT relative_path FROM document_workfiles WHERE node_id=?', (node['resource_item_id'],)).fetchone()[0]

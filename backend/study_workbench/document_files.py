@@ -21,8 +21,9 @@ from .backup_archive import archive_path
 from .db import DocumentSave, DocumentWorkfile, Resource, write_transaction
 from .documents import convert_document
 from .explorer import node_in, relative_node
-from .imports import read_pdf_source, read_resource, resource_path
+from .imports import document_item, read_pdf_source, read_resource, resource_path
 from .markdown_merge import preview_merge
+from .office_inputs import MAX_SOURCE
 from .office_previews import OfficePreviews
 from .workspaces import require_workspace
 
@@ -70,13 +71,14 @@ def write_new(path, data):
         raise HTTPException(409, '写入失败，原件、草稿及已写入字节保留') from error
 
 
-def raster(data, mode, page=1):
+def raster(data, mode, page=1, *, first_position=None):
     command = [sys.executable]
     if not getattr(sys, 'frozen', False):
         command.extend(['-m', 'study_workbench'])
     command.extend(['--view-document', mode])
     try:
-        result = subprocess.run(command, input=json.dumps({'page': page}).encode() + b'\n' + data,
+        options = {'page': page} if first_position is None else {'first_position': first_position}
+        result = subprocess.run(command, input=json.dumps(options).encode() + b'\n' + data,
                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=20,
                                 creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0,
                                 env={**os.environ, 'PYTHONUTF8': '1', 'PYTHONIOENCODING': 'utf-8',
@@ -378,6 +380,20 @@ class DocumentFiles:
             data, info = self.previews.read_pdf(workspace_id, node_id, preview_id)
             return dict(source_resource_id=info['source_resource_id'], source_sha256=info['source_sha256'],
                         pdf_sha256=info['pdf_sha256'], **raster(data, 'pdf-page', page))
+
+        @router.get('/document-word-outline')
+        @limited_view
+        def word_outline(workspace_id: str, node_id: str,
+                         expected_sha256: str = Query(pattern='^[0-9a-f]{64}$'),
+                         first_position: int = Query(1, ge=1, le=200000)):
+            with Session(self.engine) as session:
+                node = node_in(session, workspace_id, node_id)
+                if node.removed_at is not None or node.kind != 'resource' or not node.resource_id:
+                    raise HTTPException(404, 'Word 原件不存在')
+                item = document_item(session, workspace_id, node.resource_id, expected_sha256, MAX_SOURCE, '.docx')
+                data, resource_id = read_resource(self.root, item), item.id
+            return {**raster(data, 'docx-outline', first_position=first_position),
+                    'resource_id': resource_id, 'source_sha256': expected_sha256}
 
         @router.post('/document-columns')
         @limited_view

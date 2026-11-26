@@ -117,12 +117,17 @@ def render(data, mode, page=1):
 def worker(mode):
     try:
         options = json.loads(sys.stdin.buffer.readline(4096))
-        limit = (8 if mode == 'pdf-columns' else 128) * 1024 * 1024
+        limit = {'pdf-columns': 8, 'docx-outline': 32}.get(mode, 128) * 1024 * 1024
         data = sys.stdin.buffer.read(limit + 1)
-        if len(data) > limit or mode not in {'image', 'pdf-info', 'pdf-page', 'pdf-columns', 'xlsx'}:
+        if len(data) > limit or mode not in {'image', 'pdf-info', 'pdf-page', 'pdf-columns', 'xlsx', 'docx-outline'}:
             raise ValueError('查看大小或类型超限')
-        value = render(data, mode, options.get('page', 1))
-        value['renderer_version'] = {'xlsx': 'xlsx-values-v1', 'pdf-columns': 'pdfium-columns-v1'}.get(mode, VERSION)
+        if mode == 'docx-outline':
+            from .word_outline import outline
+            value = outline(data, options['first_position'])
+            value['renderer_version'] = 'docx-body-v1'
+        else:
+            value = render(data, mode, options.get('page', 1))
+            value['renderer_version'] = {'xlsx': 'xlsx-values-v1', 'pdf-columns': 'pdfium-columns-v1'}.get(mode, VERSION)
     except Exception:
         value = {'error': '文档无法渲染：可能损坏、加密、超出页数/像素预算；原件已保留'}
     print(json.dumps(value), flush=True)
