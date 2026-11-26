@@ -15,6 +15,9 @@ import urllib.request
 from contextlib import closing, contextmanager
 from pathlib import Path
 
+from alembic.config import Config
+from alembic.script import ScriptDirectory
+
 FIXTURES = (
     (1479, '45fdb2e24994372e8b7568399e5c57e016550bd80ec60d10dc13dbc3a4929d7a'),
     (911, '9bfd9f2c05af35aeb733ba0cd9d7de3eb62437390326607da0ce327a5e245352'),
@@ -195,9 +198,14 @@ def main():
     package, restored = root / 'full.zip', root / 'restored'
     saved = offline(['--data-dir', str(data), '--backup-to', str(package), '--confirm-all-workspaces'])
     result = offline(['--data-dir', str(restored), '--restore-backup', str(package), '--config', str(root / 'settings.json')])
-    assert saved['schema_revision'] == result['schema_revision'] == '0018'
+    migrations = Config()
+    migrations.set_main_option('script_location', str(repo / 'backend/migrations'))
+    expected_revision = ScriptDirectory.from_config(migrations).get_current_head()
+    assert expected_revision and saved['schema_revision'] == result['schema_revision'] == expected_revision
     assert files(data) == retained == files(restored)
     with closing(connect(data / 'study.db')) as original, closing(connect(restored / 'study.db')) as copied:
+        for db in (original, copied):
+            assert [row[0] for row in db.execute('SELECT version_num FROM alembic_version')] == [expected_revision]
         assert table_summary(original) == table_summary(copied)
     with backend(restored) as (request, _):
         interrupted_row = request(prefix + '/media-downloads/' + interrupted)
