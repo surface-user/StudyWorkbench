@@ -23,6 +23,7 @@ from .db import MediaDownloadAttempt, MediaDownloadJob, MediaEntry, write_transa
 from .explorer import insert_node, normalized_name, parent_in
 from .imports import resource_path
 from .media_download_http import LIMIT, DownloadError, parse_url, strong_etag
+from .media_inputs import inspect_media_input
 from .media_library import media_mime
 from .workspaces import require_workspace
 
@@ -30,18 +31,12 @@ JOB_SECONDS = 900
 STOP_SECONDS = 2
 
 
-class CreateDownload(BaseModel):
+class DownloadTarget(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    url: str = Field(min_length=1, max_length=8192)
     name: str = Field(min_length=1, max_length=200)
     parent_id: str | None = None
     request_id: str = Field(pattern=r'^[A-Za-z0-9_-]{16,100}$')
     rights_confirmed: bool = Field(strict=True)
-
-    @field_validator('url')
-    @classmethod
-    def url_value(cls, value):
-        return parse_url(value)[0]
 
     @field_validator('name')
     @classmethod
@@ -59,6 +54,18 @@ class CreateDownload(BaseModel):
         return value
 
 
+class CreateDownload(DownloadTarget):
+    url: str = Field(min_length=1, max_length=8192)
+
+    @field_validator('url')
+    @classmethod
+    def url_value(cls, value):
+        return parse_url(value)[0]
+
+class ConfirmSiteDownload(DownloadTarget):
+    format_id: str = Field(pattern=r'^legacy-[0-9]{1,2}$')
+
+
 class RetryDownload(BaseModel):
     model_config = ConfigDict(extra='forbid')
     mode: str = Field(pattern='^(resume|restart)$')
@@ -68,10 +75,10 @@ def describe(job):
     received = job.progress.get('received', 0)
     resumable = (0 < received < LIMIT or received == LIMIT == job.progress.get('total'))
     local = job.source_kind == 'local_pair'
-    return dict(id=job.id, name=job.name, source_kind=job.source_kind,
+    return dict(id=job.id, name=job.name, source_kind='site_progressive' if job.site_receipt else job.source_kind,
                 source_host='本地所选媒体' if local else parse_url(job.source_url)[1], parent_id=job.parent_id,
                 status=job.status, attempt=job.attempt, progress={k: job.progress.get(k) for k in ('received', 'total')},
-                can_resume=not local and job.status in {'paused', 'interrupted', 'failed'} and strong_etag(job.progress.get('etag')) and resumable,
+                can_resume=not local and not job.site_receipt and job.status in {'paused', 'interrupted', 'failed'} and strong_etag(job.progress.get('etag')) and resumable,
                 result=job.result, error=job.error, created_at=job.created_at)
 
 
@@ -113,7 +120,7 @@ class MediaDownloads:
         with write_transaction(self.engine) as session:
             session.get(MediaDownloadJob, identifier).progress = value
 
-    def child(self, job, path):
+    def child(self, job, path, *, site_url=None):
         command = [sys.executable]
         if not getattr(sys, 'frozen', False):
             command += ['-m', 'study_workbench']
@@ -141,9 +148,12 @@ class MediaDownloads:
         reader.start()
         result = None
         try:
-            options = dict(url=job.source_url, path=str(path), suffix=Path(job.name).suffix.lower(),
+            options = dict(url=site_url or job.source_url, path=str(path), suffix=Path(job.name).suffix.lower(),
                            offset=job.progress.get('received', 0), etag=job.progress.get('etag'),
                            partial_sha256=job.progress.get('partial_sha256'))
+            if job.site_receipt:
+                options['site_host'] = job.site_receipt['cdn_host']
+                options['expected_size'] = job.site_receipt['size']
             process.stdin.write(json.dumps(options).encode('utf-8') + b'\n')
             process.stdin.flush()
             deadline = time.monotonic() + JOB_SECONDS
@@ -179,7 +189,7 @@ class MediaDownloads:
             raise DownloadError('下载工作进程异常，已存部分保留')
         return result
 
-    def run(self, identifier):
+    def run(self, identifier, site_url=None, valid_until=None):
         try:
             self.check(identifier)
             with write_transaction(self.engine) as session:
@@ -188,6 +198,9 @@ class MediaDownloads:
                     return
                 if job.source_kind != 'direct_https':
                     raise DownloadError('本地合流执行尚未接入，原件与执行记录保留')
+                expired = site_url and (valid_until is None or time.monotonic() >= valid_until)
+                if bool(job.site_receipt) != bool(site_url) or expired:
+                    raise DownloadError('站点媒体地址已失效，请重新预览并确认')
                 job.status = 'running'
                 session.flush()
                 session.expunge(job)
@@ -199,7 +212,7 @@ class MediaDownloads:
             if received > 0 and received == job.progress.get('total'):
                 result = dict(size=received, sha256=job.progress.get('partial_sha256'), etag=job.progress.get('etag'))
             else:
-                result = self.child(job, path)
+                result = self.child(job, path, site_url=site_url) if site_url else self.child(job, path)
             self.check(identifier)
             size = path.stat().st_size
             def checked_hash(filename, expected):
@@ -216,10 +229,25 @@ class MediaDownloads:
                 return digest.hexdigest()
             with path.open('rb') as source:
                 header = source.read(32)
+            if job.site_receipt and size != job.site_receipt['size']:
+                raise DownloadError('实际媒体大小与已确认格式不符，请重新预览')
             checksum = checked_hash(path, result['size'])
             mime = media_mime(Path(job.name).suffix.lower(), header, size)
             if checksum != result['sha256'] or size != result['size']:
                 raise DownloadError('下载文件在入库前变化，已存部分保留')
+            if job.site_receipt:
+                next_check = 0.0
+                def inspect_check():
+                    nonlocal next_check
+                    if time.monotonic() >= next_check:
+                        self.check(identifier)
+                        next_check = time.monotonic() + .05
+                try:
+                    inspection = inspect_media_input(self.root, job.relative_path, size, checksum, mime, inspect_check)
+                except HTTPException:
+                    raise DownloadError('实际媒体不符合受支持的完整MP4结构，文件保留') from None
+                if {stream['role'] for stream in inspection['streams']} != {'video', 'audio'}:
+                    raise DownloadError('实际媒体缺少完整音视频轨道，文件保留')
             with write_transaction(self.engine) as session:
                 item = session.get(MediaDownloadJob, identifier)
                 if item.cancel_requested or self.stopping.is_set():
@@ -247,6 +275,60 @@ class MediaDownloads:
                     job.status = 'interrupted' if self.stopping.is_set() else 'paused' if job.cancel_requested else 'failed'
                     job.error = str(error) if isinstance(error, DownloadError) else '下载或入库未完成，文件保留；请检查目标目录、网络和磁盘'
 
+    @staticmethod
+    def capacity(session):
+        if session.scalar(select(func.count()).select_from(MediaDownloadJob).where(MediaDownloadJob.status.in_(['queued', 'running']))) >= 32:
+            raise HTTPException(429, '已有32个待完成下载，请先暂停或等待')
+
+    def site_retry(self, workspace, preview, body):
+        with Session(self.engine) as session:
+            require_workspace(session, workspace)
+            old = session.scalar(select(MediaDownloadJob).where(MediaDownloadJob.workspace_id == workspace,
+                                                                 MediaDownloadJob.request_id == body.request_id))
+            if old:
+                self.match_request(old, body, preview)
+                return describe(old)
+        return None
+
+    @staticmethod
+    def match_request(old, body, preview):
+        if preview:
+            same_source = (old.site_receipt and old.site_receipt['preview_id'] == preview
+                           and old.site_receipt['format_id'] == body.format_id)
+        else:
+            same_source = old.site_receipt is None and old.source_kind == 'direct_https' and old.source_url == body.url
+        if not same_source or (old.name, old.parent_id) != (body.name, body.parent_id):
+            raise HTTPException(409, '同一请求的下载参数变化')
+
+    def enqueue(self, workspace, body, source_url, *, receipt=None, media_url=None, valid_until=None):
+        with write_transaction(self.engine) as session:
+            parent_in(session, workspace, body.parent_id)
+            old = session.scalar(select(MediaDownloadJob).where(MediaDownloadJob.workspace_id == workspace,
+                                                                 MediaDownloadJob.request_id == body.request_id))
+            if old:
+                self.match_request(old, body, receipt['preview_id'] if receipt else None)
+                return describe(old)
+            if receipt and session.scalar(select(MediaDownloadJob.id).where(
+                    MediaDownloadJob.workspace_id == workspace,
+                    MediaDownloadJob.site_receipt['preview_id'].as_string() == receipt['preview_id'],
+                    MediaDownloadJob.site_receipt['format_id'].as_string() == receipt['format_id'])):
+                raise HTTPException(409, '此候选已确认，请查看原下载任务')
+            self.capacity(session)
+            identifier = uuid4().hex
+            item = MediaDownloadJob(id=identifier, workspace_id=workspace, parent_id=body.parent_id,
+                request_id=body.request_id, source_url=source_url, site_receipt=receipt, name=body.name, status='queued',
+                cancel_requested=False, attempt=1,
+                relative_path=f'workspaces/{workspace}/downloads/{identifier}/1{Path(body.name).suffix.lower()}',
+                progress={'received': 0}, result={}, error=None, created_at=datetime.now(timezone.utc).isoformat())
+            session.add(item)
+            session.flush()
+            result = describe(item)
+        if media_url:
+            self.pool.submit(self.run, identifier, media_url, valid_until)
+        else:
+            self.pool.submit(self.run, identifier)
+        return result
+
     def router(self):
         router = APIRouter(prefix='/api/workspaces/{workspace_id}/media-downloads')
         def job_in(session, workspace, identifier):
@@ -255,30 +337,9 @@ class MediaDownloads:
             if job is None or job.workspace_id != workspace:
                 raise HTTPException(404, '下载任务不存在')
             return job
-        def capacity(session):
-            if session.scalar(select(func.count()).select_from(MediaDownloadJob).where(MediaDownloadJob.status.in_(['queued', 'running']))) >= 32:
-                raise HTTPException(429, '已有32个待完成下载，请先暂停或等待')
         @router.post('')
         def create(workspace_id: str, body: CreateDownload):
-            with write_transaction(self.engine) as session:
-                parent_in(session, workspace_id, body.parent_id)
-                old = session.scalar(select(MediaDownloadJob).where(MediaDownloadJob.workspace_id == workspace_id,
-                    MediaDownloadJob.request_id == body.request_id))
-                if old:
-                    if (old.source_url, old.name, old.parent_id) != (body.url, body.name, body.parent_id):
-                        raise HTTPException(409, '同一请求的下载参数变化')
-                    return describe(old)
-                capacity(session)
-                identifier = uuid4().hex
-                item = MediaDownloadJob(id=identifier, workspace_id=workspace_id, parent_id=body.parent_id,
-                    request_id=body.request_id, source_url=body.url, name=body.name, status='queued', cancel_requested=False,
-                    attempt=1, relative_path=f'workspaces/{workspace_id}/downloads/{identifier}/1{Path(body.name).suffix.lower()}',
-                    progress={'received': 0}, result={}, error=None, created_at=datetime.now(timezone.utc).isoformat())
-                session.add(item)
-                session.flush()
-                result = describe(item)
-            self.pool.submit(self.run, identifier)
-            return result
+            return self.enqueue(workspace_id, body, body.url)
         @router.get('')
         def listing(workspace_id: str, offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100),
                     history: bool = False, newest_id: str | None = Query(None, pattern=r'^[a-f0-9]{32}$')):
@@ -315,10 +376,12 @@ class MediaDownloads:
                 job = job_in(session, workspace_id, identifier)
                 if job.status in {'queued', 'running', 'ready'}:
                     raise HTTPException(409, '此任务当前不能重试')
+                if job.site_receipt:
+                    raise HTTPException(409, '此站点任务须重新预览并确认，原部分保留')
                 if job.source_kind != 'direct_https':
                     raise HTTPException(409, '本地合流执行尚未接入，原件与执行记录保留')
                 parent_in(session, workspace_id, job.parent_id)
-                capacity(session)
+                self.capacity(session)
                 if body.mode == 'restart':
                     job.attempt += 1
                     job.relative_path = f'workspaces/{workspace_id}/downloads/{job.id}/{job.attempt}{Path(job.name).suffix.lower()}'

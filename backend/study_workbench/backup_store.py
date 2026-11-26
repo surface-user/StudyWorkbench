@@ -16,6 +16,7 @@ from uuid import uuid4
 from . import backup_archive as envelope
 from .data_root import DataLock, digest, validate_root, write_settings
 from .media_sources import retained_files, stored_attempt, stored_source
+from .site_download_receipt import valid as valid_site_receipt
 
 CHUNK = 1024 * 1024
 VALUE_LIMIT = 64 * CHUNK
@@ -170,6 +171,13 @@ def database_info(path, checkpoint=lambda _: None):
             """).fetchone()
             if invalid:
                 raise ValueError('备份的知识关联、请求或修订不一致')
+        if revisions[0] >= '0022':
+            for page, kind, name, raw in connection.execute(
+                    'SELECT source_url, source_kind, name, site_receipt FROM media_download_jobs WHERE site_receipt IS NOT NULL'):
+                checkpoint('site-receipt')
+                if (kind != 'direct_https' or not name.lower().endswith('.mp4') or len(raw) > 2048
+                        or not valid_site_receipt(json.loads(raw), page)):
+                    raise ValueError('备份中的站点媒体来源或确认收据无效')
         return revisions[0], table_summary(connection, checkpoint)
 
 

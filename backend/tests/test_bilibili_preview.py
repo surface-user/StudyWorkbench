@@ -204,7 +204,7 @@ def test_actual_http_client_page_nav_play_chain_keeps_each_domain(monkeypatch, s
     monkeypatch.setattr(transport.ssl.SSLContext, 'wrap_socket', wrap)
     monkeypatch.setattr(preview, 'resolve', lambda host: resolved.append(host) or '93.184.216.34')
     result = preview.extract(PAGE)
-    assert len(result['formats']) == 2 and result['extractor_version'] == 'bilibili-preview-v2'
+    assert len(result['formats']) == 2 and result['extractor_version'] == 'bilibili-preview-v3'
     assert resolved == names == ['www.bilibili.com', 'api.bilibili.com', 'api.bilibili.com']
     assert addresses == [(('93.184.216.34', 443), 10)] * 3
     wires = [b''.join(sock.sent) for sock in sockets]

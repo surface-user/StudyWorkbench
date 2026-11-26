@@ -181,8 +181,8 @@ def test_single_head_upgrade_keeps_every_legacy_column_no_invented_attempts_and_
         warnings.simplefilter('error', SAWarning)
         migrate(engine, path)
     with closing(backup_store.connect(path)) as db:
-        assert ScriptDirectory.from_config(config()).get_heads() == ['0021']
-        assert db.execute('SELECT version_num FROM alembic_version').fetchall()[0][0] == '0021'
+        assert ScriptDirectory.from_config(config()).get_heads() == ['0022']
+        assert db.execute('SELECT version_num FROM alembic_version').fetchall()[0][0] == '0022'
         old_columns = {row[0]: [c['name'] for c in db.execute('PRAGMA table_info("' + row[0] + '")')]
                        for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         old_columns['media_download_jobs'] = columns
@@ -208,7 +208,7 @@ def test_single_head_upgrade_keeps_every_legacy_column_no_invented_attempts_and_
             with pytest.raises(sqlite3.IntegrityError):
                 db.execute(sql)
             db.rollback()
-    backup = list((root / 'backups').glob('study-before-0021-*.db'))
+    backup = list((root / 'backups').glob('study-before-0022-*.db'))
     assert len(backup) == 1 and (root / 'retained.partial').read_bytes() == b'original failed attempt'
     with sqlite3.connect(backup[0]) as db:
         assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0017',)
@@ -233,7 +233,7 @@ def test_migration_failure_rolls_back_table_recreation_and_keeps_original_backup
         assert backup_store.table_summary(db) == before
         assert list(db.execute('SELECT name,sql FROM sqlite_master ORDER BY name')) == schema
         assert db.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
-    assert len(list((root / 'backups').glob('study-before-0021-*.db'))) == 1
+    assert len(list((root / 'backups').glob('study-before-0022-*.db'))) == 1
     assert (root / 'retained.partial').read_bytes() == b'original failed attempt'
     engine.dispose()
 
@@ -300,7 +300,7 @@ def test_complete_backup_restore_retains_originals_attempts_receipts_and_never_r
     package = tmp_path / 'backup.zip'
     saved = backup_store.create_backup(source_root, package)
     result = backup_store.restore_backup(package, restored, tmp_path / 'settings.json')
-    assert saved['schema_revision'] == result['schema_revision'] == '0021'
+    assert saved['schema_revision'] == result['schema_revision'] == '0022'
     assert snapshot(source_root) == before
     assert {k: v for k, v in snapshot(restored).items() if k != 'study.db'} == {
         k: v for k, v in before.items() if k != 'study.db'}

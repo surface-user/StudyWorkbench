@@ -81,11 +81,18 @@ def strong_etag(value):
     return isinstance(value, str) and bool(re.fullmatch(r'"[\x21\x23-\x7e]{0,510}"', value))
 
 
-def transfer(url, path, suffix, *, offset=0, etag=None, partial_sha256=None, checkpoint=lambda: None, progress=lambda value: None):
+def bilibili_media_host(host):
+    return bool(re.fullmatch(r'upos-[a-z0-9](?:[a-z0-9-]{0,56}[a-z0-9])?\.bilivideo\.com', host))
+
+
+def transfer(url, path, suffix, *, offset=0, etag=None, partial_sha256=None, site_host=None, expected_size=None,
+             checkpoint=lambda: None, progress=lambda value: None):
     """Write only a caller-owned fresh/partial file. Failure never truncates existing bytes."""
     from .media_library import media_mime
 
     allowed = {'.mp4': {'video/mp4'}, '.webm': {'video/webm'}, '.m4a': {'audio/mp4', 'audio/x-m4a'}}
+    if expected_size is not None and (type(expected_size) is not int or not 0 < expected_size <= LIMIT):
+        raise DownloadError('站点媒体大小无效')
     if (suffix not in allowed or type(offset) is not int or not 0 <= offset < LIMIT
             or offset and (not strong_etag(etag) or not isinstance(partial_sha256, str)
                            or not re.fullmatch('[a-f0-9]{64}', partial_sha256))):
@@ -102,6 +109,8 @@ def transfer(url, path, suffix, *, offset=0, etag=None, partial_sha256=None, che
         for redirects in range(4):
             checkpoint()
             current, host, target = parse_url(current)
+            if site_host is not None and (host != site_host or not bilibili_media_host(host)):
+                raise DownloadError('站点媒体地址发生变化，请重新预览')
             address = resolve(host)
             checkpoint()
             connection = PinnedHTTPS(host, address)
@@ -148,6 +157,10 @@ def transfer(url, path, suffix, *, offset=0, etag=None, partial_sha256=None, che
                 total = int(match[3])
             elif 'content-range' in values:
                 raise DownloadError('未请求的媒体范围响应')
+            if expected_size is not None:
+                if total is not None and total != expected_size:
+                    raise DownloadError('响应大小与已确认的站点媒体不符')
+                total = expected_size
             if total is not None and not offset < total <= LIMIT:
                 raise DownloadError('下载为空或超过512MiB')
             received, header, checksum = offset, b'', hashlib.sha256()

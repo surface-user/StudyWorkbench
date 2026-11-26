@@ -108,7 +108,8 @@ def main():
                 assert 'Big Buck Bunny' in result['title'] or '大雄兔' in result['title']
                 assert 550 <= result['duration_seconds'] <= 700
                 assert 0 < len(result['formats']) <= 64
-                assert all(not item['download_supported'] for item in result['formats'])
+                assert all(not item['download_supported'] or (item['delivery'] == 'progressive' and
+                           item['container'] == 'mp4' and not item['requires_merge']) for item in result['formats'])
                 assert request(prefix, body)['id'] == identifier
                 other = request('/api/workspaces', {'name': 'Preview isolation fixture'})['id']
                 request(f'/api/workspaces/{other}/media-site-previews/{identifier}', expected=404)

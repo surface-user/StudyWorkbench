@@ -271,7 +271,7 @@ def test_0008_upgrade_and_failure_retains_workfiles_layout_and_all_old_rows(tmp_
             assert db.execute('PRAGMA integrity_check').fetchone() == ('ok',)
             assert db.execute('PRAGMA foreign_key_check').fetchall() == []
     assert (root / 'working/current.md').read_bytes() == b'working'
-    backups = list((root / 'backups').glob('study-before-0021-*.db'))
+    backups = list((root / 'backups').glob('study-before-0022-*.db'))
     assert backups and all(snapshot(path) == before for path in backups)
 
 
