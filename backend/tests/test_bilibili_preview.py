@@ -488,6 +488,17 @@ def test_html_state_must_be_one_complete_inline_json_assignment(monkeypatch, sou
     assert len(calls) == 1 and not pending
 
 
+def test_public_state_script_trailer_is_exact_and_inert():
+    assignment = b'<script>window.__INITIAL_STATE__={"videoData":{"title":"test"}}'
+    trailer = (b';(function(){var s;(s=document.currentScript||document.scripts[document.scripts.length-1])'
+               b'.parentNode.removeChild(s);}());')
+    assert preview.source_json(assignment + trailer + b'</script>', page=True) == {'videoData': {'title': 'test'}}
+    for changed in (trailer + b'window.__INITIAL_STATE__={};', trailer.replace(b'removeChild(s)', b'run(s)'),
+                    trailer + trailer):
+        with pytest.raises(preview.DownloadError):
+            preview.source_json(assignment + changed + b'</script>', page=True)
+
+
 def test_json_string_anchor_is_data_and_whitespace_suffix_is_allowed(monkeypatch, source):
     source[0]['videoData']['title'] = 'A&B window.__INITIAL_STATE__={}; 普通文本'
     page = html(source[0]).replace(b';</script>', b'; \t\r\n</script>')

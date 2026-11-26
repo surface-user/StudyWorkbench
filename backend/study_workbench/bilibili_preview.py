@@ -12,6 +12,8 @@ from urllib.parse import parse_qs, urlencode, urljoin, urlsplit
 from .media_download_http import DownloadError, PinnedHTTPS, parse_url, resolve
 
 VERSION = 'bilibili-preview-v2'
+STATE_SCRIPT_TRAILER = (';(function(){var s;(s=document.currentScript||document.scripts[document.scripts.length-1])'
+                        '.parentNode.removeChild(s);}());')
 RESPONSE_LIMIT = 2 * 1024 * 1024
 TOTAL_LIMIT = 8 * 1024 * 1024
 OUTPUT_LIMIT = 128 * 1024
@@ -194,7 +196,7 @@ def source_json(raw, *, page=False):
             raise DownloadError('页面没有受支持的独立视频JSON数据，未执行脚本或挑战')
         script = parser.candidate
         value, end = decoder.raw_decode(script, INITIAL_ASSIGNMENT.match(script).end())
-        if script[end:].strip(' \t\r\n') != ';':
+        if script[end:].strip(' \t\r\n') not in (';', STATE_SCRIPT_TRAILER):
             raise DownloadError('页面视频JSON赋值尾部不受支持，未执行其他代码')
     else:
         value = decoder.decode(text)
