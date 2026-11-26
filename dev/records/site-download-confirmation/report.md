@@ -25,3 +25,10 @@
 - 以项目自有 2,177 字节 H.264/AAC 样片运行已有 API 端到端测试。独立下载工作进程从本机测试 HTTP 服务读取实际字节，随后入库、备份、恢复并复用确认，退出码 0。
 - Windows 打包后 59 个应用模块逐项匹配源代码。实际冻结下载工作进程分别拒绝用尽的请求、字节与时限，均未创建目标文件。源码及冻结产品验证真实授权样本仍在允许公网 IPv4 检查处停止，两者的格式、下载任务和媒体记录数均为 0。
 - 双轨来源仍需明确选择同一作品的一条视频和一条音频，持久绑定两项来源及共同运行收据，再交给既有 FFmpeg 执行。使用锁定 FFmpeg 在本机将自有样片拆成带 moov/moof/mdat 的视频 1,598 字节、音频 1,052 字节，两条分片 MP4 均被当前结构预检以 422 拒绝。这项结果属于自制样本；用户真实作品尚未取得播放格式。
+
+## 下载预览的网络解析反馈
+
+参考 [Seal v1.13.1 的格式预览与选择](https://github.com/JunkFood02/Seal/blob/a2d7e5d5819d0aa8b4f5dbb906731da283a28ed1/app/src/main/java/com/junkfood/seal/util/DownloadUtil.kt#L125-L173)，核对预览与后续下载之间的失败位置。下载和站点预览共用的 HTTPS 传输层现在区分未取得 IPv4 记录、含保留或非公网地址、返回数量超限及地址格式异常。错误消息只说明原因与可行的重试条件，不含域名、IP、URL 或解析器的原始错误。已收到的站点 HTTP 响应使用原有阶段和状态码。
+
+- `python -m pytest -q backend/tests/test_media_download_http.py backend/tests/test_bilibili_preview.py backend/tests/test_site_download_confirmation.py` 在 Python 3.12.7 和 3.13.17 各通过 180 项，退出 0。初次区分错误原因时有 16 项断言失败。覆盖保留地址、混合公网与私网、无结果、解析器错误、损坏与过多的结果。Ruff 和 `git diff --check` 退出 0。
+- `packaging/windows/build-backend.ps1 -Python <构建解释器>` 退出 0，全部 59 个冻结应用模块与本次源代码匹配。源码与新打包程序均经实际预览接口重试一条获准样本。两者均报告当前解析结果含保留或非公网地址，提取格式、创建下载任务和写入媒体的数量均为 0。待直接公网解析环境复验真实媒体。样本与完整运行证据仅留本机。

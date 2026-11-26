@@ -33,8 +33,34 @@ def test_any_nonpublic_dns_answer_refuses_the_whole_target(monkeypatch, address)
     monkeypatch.setattr(socket, 'getaddrinfo', lambda *args, **kwargs: [
         (socket.AF_INET, socket.SOCK_STREAM, 6, '', ('8.8.8.8', 443)),
         (socket.AF_INET, socket.SOCK_STREAM, 6, '', (address, 443))])
-    with pytest.raises(net.DownloadError):
+    with pytest.raises(net.DownloadError, match='保留或非公网地址') as error:
         net.resolve('media.example.com')
+    assert address not in str(error.value) and 'media.example.com' not in str(error.value)
+
+
+@pytest.mark.parametrize('failed', [False, True])
+def test_resolver_failure_is_distinct_from_a_blocked_address(monkeypatch, failed):
+    def lookup(*args, **kwargs):
+        if failed:
+            raise socket.gaierror('private resolver detail')
+        return []
+
+    monkeypatch.setattr(socket, 'getaddrinfo', lookup)
+    with pytest.raises(net.DownloadError, match='未取得公网IPv4解析结果') as error:
+        net.resolve('media.example.com')
+    assert 'private resolver detail' not in str(error.value) and 'media.example.com' not in str(error.value)
+
+
+@pytest.mark.parametrize(('answers', 'reason'), [
+    (['unparseable'], '无效IPv4地址'),
+    ([f'8.8.8.{i}' for i in range(1, 18)], '超过16个'),
+])
+def test_malformed_or_excess_dns_answers_still_refuse_the_target(monkeypatch, answers, reason):
+    monkeypatch.setattr(socket, 'getaddrinfo', lambda *args, **kwargs: [
+        (socket.AF_INET, socket.SOCK_STREAM, 6, '', (answer, 443)) for answer in answers])
+    with pytest.raises(net.DownloadError, match=reason) as error:
+        net.resolve('media.example.com')
+    assert all(answer not in str(error.value) for answer in answers)
 
 
 def test_tls_pins_validated_address_while_preserving_certificate_host(monkeypatch):
