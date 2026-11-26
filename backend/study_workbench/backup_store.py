@@ -106,6 +106,23 @@ def database_info(path, checkpoint=lambda _: None):
         revisions = [row[0] for row in connection.execute('SELECT version_num FROM alembic_version')]
         if len(revisions) != 1 or not '0001' <= revisions[0] <= envelope.SUPPORTED_SCHEMA:
             raise ValueError('备份数据库版本不支持')
+        if revisions[0] >= '0019':
+            invalid = connection.execute("""
+                WITH history AS (
+                    SELECT workspace_id, name, action,
+                           lead(action) OVER chain AS next_action,
+                           lag(name) OVER chain AS previous_name
+                    FROM knowledge_subject_revisions
+                    WINDOW chain AS (PARTITION BY workspace_id, subject_id ORDER BY revision)
+                )
+                SELECT 1 FROM history WHERE action='remove' AND (next_action IS NOT NULL OR name!=previous_name)
+                UNION ALL
+                SELECT 1 FROM history WHERE next_action IS NULL AND action!='remove'
+                GROUP BY workspace_id, name HAVING count(*)>1
+                LIMIT 1
+            """).fetchone()
+            if invalid:
+                raise ValueError('备份的知识科目修订或活动名称冲突')
         return revisions[0], table_summary(connection, checkpoint)
 
 

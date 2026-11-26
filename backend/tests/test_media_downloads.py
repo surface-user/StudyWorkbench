@@ -221,7 +221,7 @@ def test_offline_backup_restores_ready_task_partial_task_signed_url_and_all_byte
     package, target = tmp_path / 'library.zip', tmp_path / 'restored'
     create_backup(source, package)
     manifest = inspect_archive(package)
-    assert manifest['schema_revision'] == '0018'
+    assert manifest['schema_revision'] == '0019'
     assert manifest['tables']['media_download_jobs']['rows'] == 2
     assert restore_backup(package, target, tmp_path / 'settings.json')['data_activated']
     assert rows(target) == before == rows(source)

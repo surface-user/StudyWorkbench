@@ -209,6 +209,20 @@ TXT结果kind=text_resource且content_sha256绑定已核原件；正文命中时
 
 提交同request_id/答案/版本重试返回原作答，内容冲突409；确认新版不改变旧请求或分数。主观/缺答案待批改。事件同请求同内容幂等、不同内容409，null/省略兼容；无更新/删除事件接口。知识点最多100项、每项≤500非空独立，null不修订、[]清除；每作答最多100份显式同空间笔记。unknown旧版本不补造；latest-explicit-annotation-v1遍历全事件流，attempt-review-streak-v1依真实作答/人工评分，不因注记加分。
 
+### 知识目录的科目
+
+下表的 S 为 `/api/workspaces/{workspace_id}/knowledge/subjects`。当前可创建、列出、改名和移除用户命名的科目，并查看修订。知识点目录、资料及题目关联仍在规划中。
+
+| 请求 | 输入与结果 |
+|---|---|
+| GET S | 活动科目按稳定 ID 升序排列。可传 `after_id` 与 `limit`（1–100，默认 50）。 |
+| POST S | 提交 `request_id` 和 `name`。名称去除首尾空白后为 1–500 字符，拒绝空字符。本空间活动科目名称唯一。 |
+| POST S/{id}/rename | 提交新名称、`expected_revision` 和 `request_id`。 |
+| POST S/{id}/remove | 提交 `confirm: true`、`expected_revision` 和 `request_id`。移除后可重建同名新科目，ID 独立。 |
+| GET S/{id}/revisions | 修订从新到旧，支持排他的 `before` 修订号及 `limit`（1–100）。可读取已移除科目的历史。 |
+
+写入返回 `{id, name, revision, removed}`。历史行另含 `action`。同空间内相同请求键和相同业务输入返回原修订；内容冲突、名称冲突和过期修订返回 409。外空间科目返回 404。科目修订保留题库原有科目、知识标签及作答。
+
 ### 媒体与旧default兼容入口
 
 [实现](../backend/study_workbench/media_library.py)
