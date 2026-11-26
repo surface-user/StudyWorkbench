@@ -25,3 +25,9 @@ python -B -X utf8 tools/check_native_dependencies.py --office <对应固定组�
 Ruff、协议校验、两个组件的完整依赖图和四次转换的有界观察均退出 0。本机逐项复比两个旧图与新图，核实正好减少上述三个未知项。首次 pytest 的临时目录父目录缺失，日志和失败记录留存，改用已存在的父目录后重跑了原断言。一次 Ruff 模块入口找不到可执行文件，改用既有发行环境的 Ruff 后通过。
 
 本项仅更新发行检查器、测试和本报告。原件、清单、进程记录与原始图只留本机。人工测试已取消，独立审查暂缓。草稿 PR 的当前 CI 和最终状态见相应 GitHub 检查。
+
+## 本机解释器复核
+
+首次专项保留了两次各 374 项通过的记录，旧日志没有同时保存每次运行的解释器版本。复核时发现开发机上两个独立环境均报告 Python 3.13.17，因此旧日志单独不足以证明双版本覆盖。
+
+现已在 [PR #115](https://github.com/surface-user/StudyWorkbench/pull/115) 的提交 `6b939c4` 上显式检查 `sys.version_info[:3]`，并用对应解释器执行上述三个测试文件。Python 3.12.7 通过 374 项，Python 3.13.17 通过 374 项，两次均退出 0。此处计数仅来自本机；[该提交的 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/45823314721) 单列。
