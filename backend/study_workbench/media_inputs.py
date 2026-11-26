@@ -52,12 +52,17 @@ class MP4Input:
     def __init__(self, handle, size, deadline, checkpoint=lambda: None):
         self.handle, self.size, self.deadline = handle, size, deadline
         self.external_checkpoint = checkpoint
+        self.next_poll = float('-inf')
         self.box_count = self.metadata_bytes = 0
 
     def checkpoint(self):
-        self.external_checkpoint()
-        if time.monotonic() > self.deadline:
+        now = time.monotonic()
+        if now > self.deadline:
             raise HTTPException(413, '媒体预检超过时间预算，原文件保留')
+        # A mux cancellation poll can read SQLite. Dense sample tables contain many thousands of chunks.
+        if now >= self.next_poll:
+            self.external_checkpoint()
+            self.next_poll = now + .05
 
     def read(self, start, size):
         self.checkpoint()
@@ -285,6 +290,7 @@ def inspect_media_input(root, relative, size, sha256, mime, checkpoint=lambda: N
             if (identity(before) != identity(after) or identity(before) != identity(current) or
                     before.st_ctime_ns != after.st_ctime_ns or named_before.st_ctime_ns != current.st_ctime_ns):
                 raise HTTPException(409, '媒体在预检期间改变，结果已作废；原文件保留')
+            checkpoint()
         return {'policy_version': POLICY_VERSION, 'container': 'mp4', 'streams': streams,
                 'native_probe_performed': False, 'size': size, 'sha256': sha256}
     except OSError as error:

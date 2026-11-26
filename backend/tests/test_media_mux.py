@@ -17,6 +17,24 @@ from test_media_inputs import box, mp4
 from test_media_sources import metadata, receipt, selection
 
 
+def test_table_checks_keep_the_deadline_without_querying_cancel_for_every_chunk(monkeypatch):
+    from types import SimpleNamespace
+
+    from fastapi import HTTPException
+    from study_workbench import media_inputs
+
+    ticks = iter([1.0, 1.001, 1.002, 1.1, 1.101])
+    monkeypatch.setattr(media_inputs, 'time', SimpleNamespace(monotonic=lambda: next(ticks)))
+    polls = []
+    policy = media_inputs.MP4Input(None, 0, 1.1005, lambda: polls.append(True))
+    for _ in range(4):
+        policy.checkpoint()
+    with pytest.raises(HTTPException) as expired:
+        policy.checkpoint()
+    assert expired.value.status_code == 413
+    assert len(polls) == 2
+
+
 def boxes(data):
     offset = 0
     while offset < len(data):

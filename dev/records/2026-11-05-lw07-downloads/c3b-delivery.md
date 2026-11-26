@@ -10,4 +10,10 @@ Validation passed on both supported Python versions: 273 related tests and the f
 
 Retained failures include the initial new-directory existence-check error and a reproduced prepared-backup destination-conflict error. Both were corrected while preserving strict link/path and committed-output checks. Synthetic persistence substitutes are not counted as native evidence.
 
-This backend scope is implemented; independent PR/current-head CI remain required. Review is deferred and manual testing cancelled under user instructions. Desktop UI, station extraction/downloads, fragmented formats, HLS, transcoding and release readiness remain separate. No merge or release is requested.
+On a later real HTTP run, restarting the long input exceeded the 45-second test wait. A second run reported the 30-second media validation deadline. Inspection of its 3,852,074-byte mux output invoked 20,094 cancellation callbacks. The backend queried SQLite for each one. Validation now checks its local deadline at every structural checkpoint, polls external cancellation at 50 ms intervals and checks cancellation again before returning. It still checks every chunk and hash. The focused regression failed before the fix and passed afterward.
+
+The source and a freshly built Windows backend each passed all ten real HTTP cases again, including the long-input restart and backup recovery. Both produced the same short output and preserved the source packet hashes. The frozen source comparison passed for all 52 modules. The checks used `pytest -k table_checks`, `packaging/windows/build-backend.ps1` and `tools/check_media_mux.py` with the pinned test inputs. All three checks returned exit code 0 with the fix.
+
+The nine related suites passed all 275 cases on Python 3.13.17 and 3.12.7 (exit 0). The first restricted runs retained five failures each, including denied junction creation and file moves. The same suites and assertions were rerun in fresh test directories with those filesystem operations available.
+
+Delivered in [draft PR #113](https://github.com/surface-user/StudyWorkbench/pull/113), based on #106. Current-head CI is tracked on the PR. Review is deferred and manual testing cancelled under user instructions. Desktop UI, remote site downloads, fragmented formats, HLS, transcoding and release readiness remain separate.
