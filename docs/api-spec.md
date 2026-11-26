@@ -211,7 +211,7 @@ TXT结果kind=text_resource且content_sha256绑定已核原件；正文命中时
 
 ### 知识目录的科目
 
-下表的 S 为 `/api/workspaces/{workspace_id}/knowledge/subjects`。当前可维护科目及其知识点树。资料、题目及知识点之间的显式关联仍在规划中。
+下表的 S 为 `/api/workspaces/{workspace_id}/knowledge/subjects`。当前可维护科目、知识点树及其显式关联。
 
 | 请求 | 输入与结果 |
 |---|---|
@@ -223,7 +223,15 @@ TXT结果kind=text_resource且content_sha256绑定已核原件；正文命中时
 
 在 `S/{subject_id}/points` 下，GET 按稳定 ID 分页列出直属子项，省略 `parent_id` 时列根。POST 创建知识点，包含名称、请求键及可选上级。对 `/{point_id}/rename`、`/move`、`/remove` 的 POST 均要求请求键和预期修订号。移动必须显式传 `parent_id`，传 null 表示移到科目根部。移除要求显式确认，仍有子项的科目或知识点返回 409。同级重名、自身或后代目标返回 409，跨科目或空间的目标返回 404。成功回执包含科目、知识点、上级 ID、名称、修订号及移除状态。GET `/{point_id}/revisions` 在移除后仍可分页查看历史。
 
-科目写入返回 `{id, name, revision, removed}`。历史行另含 `action`。科目和知识点共用同一空间的请求键。相同业务输入重试返回原修订，内容冲突、名称冲突和过期修订返回 409。外空间科目返回 404。科目修订保留题库原有科目、知识标签及作答。
+科目写入返回 `{id, name, revision, removed}`。历史行另含 `action`。科目、知识点和关联共用同一空间的请求键。相同输入重试返回原回执，内容冲突、名称冲突和过期修订返回 409。外空间科目返回 404。
+
+### 知识点关联
+
+向 `W/knowledge/links` POST `request_id`、`source: {subject_id, id}` 及 `target`。资源树节点使用 `{kind: "resource", id}`，题目使用 `{kind: "question", id}`。知识点间的无向关系使用 `{kind: "related", subject_id, id}`，交换端点视为同一关联。用户命名的有向关系使用 `{kind: "directed", subject_id, id, label}`，端点顺序有意义。允许同空间跨科目关联，拒绝自关联、无效目标和重复活动关系。
+
+GET 同一路径按 ID 升序列出活动关系，支持 `after_id`、`limit`（1–100），也可成对传入 `subject_id`、`point_id` 查询一个知识点两端的关联。响应仅含稳定 ID、类型、用户填写的标签、修订号及状态。`available` 表示目录中的两个对象仍有效，读取内容仍通过原业务接口。原件所在节点移除后对应节点关系显示不可用，已确认的题目及其版本继续按题目 ID 读取。
+
+POST `W/knowledge/links/{id}/remove` 需要请求键、预期修订号和显式确认。撤销后可按新 ID 重新关联。GET `W/knowledge/links/{id}/revisions` 返回创建和撤销时的回执，从新到旧。
 
 ### 媒体与旧default兼容入口
 

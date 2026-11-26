@@ -7,9 +7,9 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 
+from .db import KnowledgeLinkRevision, write_transaction
 from .db import KnowledgePointRevision as Point
 from .db import KnowledgeSubjectRevision as Revision
-from .db import write_transaction
 from .workspaces import require_workspace
 
 
@@ -18,9 +18,11 @@ class Change(BaseModel):
     request_id: str = Field(min_length=16, max_length=100, pattern=r'^[A-Za-z0-9_-]+$')
 
 
+Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500, pattern=r'^[^\x00]+$')]
+
+
 class Create(Change):
-    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500,
-                                          pattern=r'^[^\x00]+$')]
+    name: Name
 
 
 class Rename(Create):
@@ -34,6 +36,13 @@ class Remove(Change):
 
 def view(row):
     return dict(id=row.subject_id, name=row.name, revision=row.revision, removed=row.action == 'remove')
+
+
+def require_unused_request(session, workspace, request_id, owner):
+    for table in (Revision, Point, KnowledgeLinkRevision):
+        if table is not owner and session.scalar(select(table.request_id).where(
+                table.workspace_id == workspace, table.request_id == request_id)):
+            raise HTTPException(409, '该请求已用于其他知识目录修订')
 
 
 def active(workspace):
@@ -60,9 +69,7 @@ def change(engine, workspace, subject_id, action, body):
             raise HTTPException(404, '科目不存在')
         if action == 'remove' and not body.confirm:
             raise HTTPException(422, '移除科目需要确认')
-        if session.scalar(select(Point.request_id).where(Point.workspace_id == workspace,
-                                                        Point.request_id == body.request_id)):
-            raise HTTPException(409, '该请求已用于知识点修订')
+        require_unused_request(session, workspace, body.request_id, Revision)
         saved = session.scalar(select(Revision).where(Revision.workspace_id == workspace,
                                                        Revision.request_id == body.request_id))
         if saved:

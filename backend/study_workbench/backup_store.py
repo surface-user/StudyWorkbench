@@ -151,6 +151,25 @@ def database_info(path, checkpoint=lambda _: None):
             """).fetchone()
             if invalid:
                 raise ValueError('备份的知识点层级、请求或修订不一致')
+        if revisions[0] >= '0021':
+            invalid = connection.execute("""
+                WITH linked AS (
+                    SELECT * FROM knowledge_link_revisions WHERE revision=1
+                ), removed AS (
+                    SELECT * FROM knowledge_link_revisions WHERE revision=2
+                )
+                SELECT 1 FROM linked l JOIN removed r USING (workspace_id,link_id)
+                    WHERE (l.subject_id,l.point_id,l.kind,l.target_subject_id,l.target_point_id,l.label,l.node_id,l.question_id)
+                       IS NOT (r.subject_id,r.point_id,r.kind,r.target_subject_id,r.target_point_id,r.label,r.node_id,r.question_id)
+                UNION ALL SELECT 1 FROM linked l LEFT JOIN removed r USING (workspace_id,link_id)
+                    WHERE r.link_id IS NULL GROUP BY l.workspace_id,l.subject_id,l.point_id,l.kind,
+                    l.target_subject_id,l.target_point_id,l.label,l.node_id,l.question_id HAVING count(*)>1
+                UNION ALL SELECT 1 FROM knowledge_link_revisions JOIN knowledge_point_revisions USING (workspace_id,request_id)
+                UNION ALL SELECT 1 FROM knowledge_link_revisions JOIN knowledge_subject_revisions USING (workspace_id,request_id)
+                LIMIT 1
+            """).fetchone()
+            if invalid:
+                raise ValueError('备份的知识关联、请求或修订不一致')
         return revisions[0], table_summary(connection, checkpoint)
 
 

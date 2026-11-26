@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from .db import KnowledgePointRevision as Point
 from .db import KnowledgeSubjectRevision as Subject
 from .db import write_transaction
-from .knowledge_subjects import Change, Create, Remove, Rename, active, active_points
+from .knowledge_subjects import Change, Create, Remove, Rename, active, active_points, require_unused_request
 from .workspaces import require_workspace
 
 
@@ -51,9 +51,7 @@ def change_point(engine, workspace, subject, point, action, body):
         previous = None if action == 'create' else body.expected_revision
         if action == 'remove' and not body.confirm:
             raise HTTPException(422, '移除知识点需要确认')
-        if session.scalar(select(Subject.request_id).where(Subject.workspace_id == workspace,
-                                                          Subject.request_id == body.request_id)):
-            raise HTTPException(409, '该请求已用于科目修订')
+        require_unused_request(session, workspace, body.request_id, Point)
         saved = session.scalar(select(Point).where(Point.workspace_id == workspace, Point.request_id == body.request_id))
         if saved:
             if (saved.action != action or saved.subject_id != subject or saved.previous_revision != previous
