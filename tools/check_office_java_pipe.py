@@ -21,6 +21,8 @@ PROBE_SOURCE = Path(__file__).with_name('office_java_pipe') / 'PipeDiagnostic.ja
 PROBE_SHA256 = '3845c5d1ebe2e164c5eaaab3a446857409fb83fd94d16afc7eb1a88abb66edb0'
 COMPONENTS = {'156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9',
     'b0a040bd584bb69aeaba44f749996d2320d83707889b8f8ad85d93d44893c9ee'}
+JAVA_PIPE_MODULES = ('program/jpipe.dll', 'program/jpipx.dll', 'program/sal3.dll',
+    'java/bin/vcruntime140.dll', 'java/bin/msvcp140.dll', 'java/bin/server/jvm.dll', 'java/bin/java.dll')
 
 
 def checked_output(component, output):
@@ -41,10 +43,10 @@ def checked_output(component, output):
     return candidate
 
 
-def fixed_probe_source(path=PROBE_SOURCE):
+def fixed_probe_source(path=PROBE_SOURCE, expected=PROBE_SHA256):
     with path.open('rb') as stream:
         raw = stream.read(16385)
-    if len(raw) > 16384 or hashlib.sha256(raw).hexdigest() != PROBE_SHA256:
+    if len(raw) > 16384 or hashlib.sha256(raw).hexdigest() != expected:
         raise ValueError('Fixed Java diagnostic source changed')
     return raw
 
@@ -80,6 +82,48 @@ def module_identity(root, files, path, canonical, pid):
     if digest != files[canonical]:
         raise ValueError('Actual module bytes changed')
     return dict(path=path.relative_to(root).as_posix(), canonical_path=canonical, sha256=digest, observed_pid=pid)
+
+
+def inspection_kernel():
+    kernel = c.WinDLL('kernel32', use_last_error=True)
+    kernel.IsProcessInJob.argtypes = [c.c_void_p, c.c_void_p, c.POINTER(c.c_int)]
+    kernel.QueryFullProcessImageNameW.argtypes = [c.c_void_p, c.c_uint32, c.c_wchar_p, c.POINTER(c.c_uint32)]
+    kernel.K32EnumProcessModulesEx.argtypes = [c.c_void_p, c.c_void_p, c.c_uint32, c.POINTER(c.c_uint32), c.c_uint32]
+    kernel.K32GetModuleFileNameExW.argtypes = [c.c_void_p, c.c_void_p, c.c_wchar_p, c.c_uint32]
+    kernel.K32GetModuleFileNameExW.restype = c.c_uint32
+    return kernel
+
+
+def owned_image(kernel, runtime, job, process, executable):
+    member = c.c_int()
+    buffer, capacity = c.create_unicode_buffer(32768), c.c_uint32(32768)
+    if not kernel.IsProcessInJob(process.handle, job.handle, c.byref(member)) or not member.value:
+        raise ValueError('Process is outside the diagnostic job')
+    if not kernel.QueryFullProcessImageNameW(process.handle, 0, buffer, c.byref(capacity)):
+        raise c.WinError(c.get_last_error())
+    return module_identity(runtime.root, runtime.files, Path(buffer.value), executable, process.pid)
+
+
+def observe_modules(kernel, runtime, process, paths, modules, errors):
+    required = {Path(path).name.casefold(): path for path in paths}
+    folded = {name.casefold(): name for name in runtime.files}
+    array, needed = (c.c_void_p * 4096)(), c.c_uint32()
+    if not kernel.K32EnumProcessModulesEx(process.handle, array, c.sizeof(array), c.byref(needed), 3):
+        raise c.WinError(c.get_last_error())
+    if needed.value > c.sizeof(array):
+        raise ValueError('Observed module list exceeded budget')
+    buffer = c.create_unicode_buffer(32768)
+    for module in array[:needed.value // c.sizeof(c.c_void_p)]:
+        length = kernel.K32GetModuleFileNameExW(process.handle, module, buffer, len(buffer))
+        if not 0 < length < len(buffer):
+            errors.add(('module-name', c.get_last_error()))
+            continue
+        path = Path(buffer.value)
+        name = path.name.casefold()
+        if name in required:
+            modules[name] = module_identity(runtime.root, runtime.files, path, folded[required[name].casefold()], process.pid)
+    if required.keys() - modules.keys():
+        raise ValueError('Missing required observed modules: ' + str(sorted(required.keys() - modules.keys())))
 
 
 def run_diagnostic(component, output, javac):
@@ -127,21 +171,12 @@ def run_diagnostic(component, output, javac):
     identities = dict(source_sha256=hashlib.sha256(script_raw).hexdigest(), class_sha256=class_hash,
         controller_sha256=hashlib.sha256(raw_script).hexdigest(), compiler_sha256=compiler_hash,
         compiler_version=(version.stdout + version.stderr).decode('utf-8', errors='replace').strip(), release_target=11)
-    kernel = c.WinDLL('kernel32', use_last_error=True)
-    kernel.IsProcessInJob.argtypes, kernel.IsProcessInJob.restype = [c.c_void_p, c.c_void_p, c.POINTER(c.c_int)], c.c_int
-    kernel.QueryFullProcessImageNameW.argtypes = [c.c_void_p, c.c_uint32, c.c_wchar_p, c.POINTER(c.c_uint32)]
-    kernel.QueryFullProcessImageNameW.restype = c.c_int
-    kernel.K32EnumProcessModulesEx.argtypes = [c.c_void_p, c.c_void_p, c.c_uint32, c.POINTER(c.c_uint32), c.c_uint32]
-    kernel.K32EnumProcessModulesEx.restype = c.c_int
-    kernel.K32GetModuleFileNameExW.argtypes = [c.c_void_p, c.c_void_p, c.c_wchar_p, c.c_uint32]
-    kernel.K32GetModuleFileNameExW.restype = c.c_uint32
+    kernel = inspection_kernel()
     environment = {key: os.environ[key] for key in ('SystemRoot', 'WINDIR') if key in os.environ}
     environment.update(PATH=str(runtime.root / 'java/bin') + os.pathsep + str(Path(os.environ['SystemRoot']) / 'System32'),
         TEMP=str(out / 'tmp'), TMP=str(out / 'tmp'), APPDATA=str(out / 'profile'),
         LOCALAPPDATA=str(out / 'profile'), USERPROFILE=str(out / 'profile'))
     job, process, result, modules, errors = WindowsProcessJob(), None, {}, {}, set()
-    folded = {name.casefold(): name for name in runtime.files}
-    selected = {'jpipe.dll', 'jpipx.dll', 'sal3.dll', 'vcruntime140.dll', 'msvcp140.dll', 'jvm.dll', 'java.dll'}
     report = dict(scope='Owned fixed-JRE Java UNO missing-pipe diagnostic, not ordinary Office-host proof',
         component_inventory_sha256=runtime.fingerprint, full_component_verified_before_after=False,
         identities=identities, product_release_ready=False, ordinary_office_execution_verified=False,
@@ -151,12 +186,7 @@ def run_diagnostic(component, output, javac):
             '-Djava.io.tmpdir=' + str(out / 'tmp'), '-Duser.home=' + str(out / 'profile'),
             '-cp', str(java_class.parent), 'PipeDiagnostic', str(runtime.root), str(out / 'result.json'),
             str(out / 'observer.done')], out / 'cwd', environment)
-        member = c.c_int()
-        assert kernel.IsProcessInJob(process.handle, job.handle, c.byref(member)) and member.value
-        buffer, capacity = c.create_unicode_buffer(32768), c.c_uint32(32768)
-        assert kernel.QueryFullProcessImageNameW(process.handle, 0, buffer, c.byref(capacity))
-        assert Path(buffer.value).samefile(runtime.root / 'java/bin/java.exe')
-        assert sha(Path(buffer.value)) == runtime.files['java/bin/java.exe']
+        owned_image(kernel, runtime, job, process, 'java/bin/java.exe')
         child_deadline = time.monotonic() + 20
         result_path = out / 'result.json'
         while not result_path.exists():
@@ -165,22 +195,7 @@ def run_diagnostic(component, output, javac):
             time.sleep(.01)
         assert 0 < result_path.stat().st_size <= 65536
         result = checked_java_result(result_path, process.pid)
-        array, needed = (c.c_void_p * 4096)(), c.c_uint32()
-        assert kernel.K32EnumProcessModulesEx(process.handle, array, c.sizeof(array), c.byref(needed), 3)
-        assert needed.value <= c.sizeof(array)
-        for module in array[:needed.value // c.sizeof(c.c_void_p)]:
-            length = kernel.K32GetModuleFileNameExW(process.handle, module, buffer, len(buffer))
-            if not 0 < length < len(buffer):
-                errors.add(('module-name', c.get_last_error()))
-                continue
-            path = Path(buffer.value)
-            name = path.name.casefold()
-            if name not in selected:
-                continue
-            canonical = folded[('java/bin/server/' if name == 'jvm.dll' else 'java/bin/' if name in {
-                'java.dll', 'vcruntime140.dll', 'msvcp140.dll'} else 'program/') + name]
-            modules[name] = module_identity(runtime.root, runtime.files, path, canonical, process.pid)
-        assert selected <= modules.keys(), ('Missing required observed modules', selected - modules.keys())
+        observe_modules(kernel, runtime, process, JAVA_PIPE_MODULES, modules, errors)
         (out / 'observer.done').write_bytes(b'owned selected modules verified')
         code = process.wait(max(1, child_deadline - time.monotonic()))
         assert code == 0
