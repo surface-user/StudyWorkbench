@@ -43,6 +43,10 @@ def main():
         from .document_view_worker import worker
         worker(sys.argv[2])
         return
+    if len(sys.argv) == 4 and sys.argv[1] == '--parse-word-range':
+        from .documents import worker
+        worker('.docx', word_range=sys.argv[2:4])
+        return
     if len(sys.argv) == 4 and sys.argv[1] in {'--parse-pdf-pages', '--parse-pdf-columns'}:
         from .documents import worker
         worker('.pdf', page_range=sys.argv[2:4], two_columns=sys.argv[1] == '--parse-pdf-columns')

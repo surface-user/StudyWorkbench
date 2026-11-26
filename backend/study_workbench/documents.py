@@ -8,6 +8,7 @@ import stat
 import subprocess
 import sys
 from pathlib import Path
+from threading import Timer
 from uuid import uuid4
 from zipfile import BadZipFile, ZipFile
 
@@ -37,6 +38,37 @@ def convert_document(data, name):
     if "error" in value:
         raise ValueError(value["error"])
     return value
+
+
+def run_document_worker(source, arguments, limit, timeout, label):
+    cmd = [sys.executable]
+    if not getattr(sys, 'frozen', False):
+        cmd.extend(['-m', 'study_workbench'])
+    cmd.extend(arguments)
+    env = {**os.environ, 'PYTHONPATH': str(Path(__file__).resolve().parents[1]), 'PYTHONUTF8': '1'}
+    source.seek(0)
+    with subprocess.Popen(cmd, stdin=source, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                          env=env, creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0) as proc:
+        timer = Timer(timeout, proc.kill)
+        timer.start()
+        try:
+            raw = proc.stdout.read(limit + 1)
+            if len(raw) > limit:
+                raise ValueError(f'{label} 分块输出超限')
+            if proc.wait():
+                raise ValueError(f'{label} 分块解析中断或超时')
+        finally:
+            timer.cancel()
+            if proc.poll() is None:
+                proc.kill()
+            proc.wait()
+            timer.join()
+    result = json.loads(raw)
+    if 'error' in result:
+        if label == 'Word' and isinstance(result['error'], str) and result['error'].startswith('Word '):
+            raise ValueError(result['error'][:240])
+        raise ValueError(f'{label} 分块原件无效或解析超限')
+    return result
 
 
 def column_segments(page):
@@ -85,7 +117,7 @@ def column_page(page, index, width, segments, image, text):
         bitmap.close()
 
 
-def extract(data, suffix, *, page_range=None, two_columns=False):
+def extract(data, suffix, *, page_range=None, two_columns=False, word_range=None):
     from PIL import Image
     from pydantic import TypeAdapter
 
@@ -95,7 +127,10 @@ def extract(data, suffix, *, page_range=None, two_columns=False):
         raise ValueError('PDF 双栏拆题需要显式页区间')
     if page_range is not None and suffix != '.pdf':
         raise ValueError('PDF 页区间只适用于 PDF 原件')
-    blocks, assets = [], []
+    if word_range is not None and suffix != '.docx':
+        raise ValueError('Word 正文选区只适用于 DOCX 原件')
+    blocks, assets, positions = [], [], []
+    range_info = {}
     total = 0
 
     def text(value):
@@ -128,6 +163,23 @@ def extract(data, suffix, *, page_range=None, two_columns=False):
         from docling.datamodel.document import InputDocument
         from docling_core.types.doc import ContentLayer, RichTableCell
 
+        backend = MsWordDocumentBackend
+        if word_range is not None:
+            from .word_outline import WORD, body_blocks
+            from .word_range import WordRangeBackend
+            first, last = word_range
+            if type(first) is not int or type(last) is not int or not 1 <= first <= last <= 200000 or last - first >= 20:
+                raise ValueError('Word 正文区间无效，每次最多 20 个位置')
+            original = body_blocks(data)
+            range_info = dict(parser_version='docx-body-candidates-v1', first_position=first, last_position=last)
+            if original is None:
+                return dict(available=False, reason='unsupported_body_structure', **range_info)
+            range_info['total_positions'] = len(original)
+            if last > len(original):
+                return dict(available=False, reason='position_out_of_range', **range_info)
+            range_info['table_positions'] = [p for p in range(first, last + 1) if original[p - 1].tag == WORD + 'tbl']
+            del original
+            backend = WordRangeBackend
         try:
             with ZipFile(io.BytesIO(data)) as archive:
                 files = archive.infolist()
@@ -147,10 +199,12 @@ def extract(data, suffix, *, page_range=None, two_columns=False):
                             # Offline conversion does not dereference even benign external links.
                             raise ValueError("Word 含外部引用，请移除引用或转换为 PDF 后导入")
             document = InputDocument(io.BytesIO(data), filename="source.docx", format=InputFormat.DOCX,
-                                     backend=MsWordDocumentBackend)
+                                     backend=backend)
             if not document.valid:
                 raise ValueError("Word 文档结构无效")
             try:
+                if word_range is not None:
+                    document._backend.selected_range = word_range
                 converted = document._backend.convert()
                 cell_roots = set()
                 cell_depth = None
@@ -159,10 +213,18 @@ def extract(data, suffix, *, page_range=None, two_columns=False):
                         cell_depth = None
                     if cell_depth is None and item.self_ref in cell_roots:
                         cell_depth = depth
+                    before = len(blocks)
+                    if word_range is not None:
+                        binding = document._backend.item_positions.get(id(item))
+                        if binding is None:
+                            continue
+                        pos = binding[1]
                     if str(item.label) == "formula":
                         blocks.append({"type": "latex", "tex": item.text, "display": True})
                     elif str(item.label) == "table":
                         rendered = item.export_to_markdown(doc=converted)
+                        if word_range is not None and len(rendered) > 20000:
+                            raise ValueError(f'Word 第 {pos} 个正文位置的表格超过输出预算')
                         text(rendered)
                         if rendered.strip():
                             cell_roots.update(cell.ref.cref for cell in item.data.table_cells if isinstance(cell, RichTableCell))
@@ -173,13 +235,32 @@ def extract(data, suffix, *, page_range=None, two_columns=False):
                     elif str(item.label) == "picture" and item.image:
                         with Image.open(io.BytesIO(base64.b64decode(str(item.image.uri).split(",", 1)[1]))) as embedded:
                             image(embedded, f"Word 图片 {len(assets) + 1}")
+                    if word_range is not None:
+                        positions.extend([pos] * (len(blocks) - before))
+                        if len(blocks) > 200:
+                            raise ValueError(f'Word 第 {pos} 个正文位置超出富内容预算')
             finally:
                 document._backend.unload()
         except BadZipFile as error:
             raise ValueError("Word ZIP 结构无效") from error
         warnings = ["Word按内容顺序与显式题号拆为MD候选，表格保留Markdown。不是实际分页截图；请核对复杂版式、图片顺序和题目边界，不推断缺失答案。",
                     "仅显式材料标题和完整有序题号范围自动归组为候选；其他卷头/材料仍在整篇预览，须核对或手动归组。"]
-        drafts = split_blocks(blocks, warnings)
+        if word_range is not None:
+            if first > 1:
+                warnings.append('选区起点之前可能有题干或材料')
+            if last < range_info['total_positions']:
+                warnings.append('选区末尾可能截断题目或材料')
+            if document._backend.uncertain:
+                warnings.append('下列正文位置的自动编号无法可靠恢复，已保留内容，请核对原件：' +
+                                '、'.join(map(str, sorted(document._backend.uncertain))))
+            if not blocks:
+                return dict(available=False, reason='no_extractable_content', warnings=warnings, **range_info)
+        if word_range is not None and document._backend.uncertain:
+            warnings.append('自动编号存在不确定位置，本选区仅保留富内容；请核对后缩小选区。')
+            drafts = []
+        else:
+            drafts = split_blocks(blocks, warnings, positions=positions if word_range is not None else None,
+                                  table_positions=range_info.get('table_positions', ()))
     elif suffix == ".pdf":
         import pypdfium2 as pdfium
 
@@ -328,14 +409,25 @@ def extract(data, suffix, *, page_range=None, two_columns=False):
         TypeAdapter(Content).validate_python(all_blocks(draft))
     if not drafts:
         warnings.append('未识别到可靠题号，原资料保留；当前不能自动拆题，请勿将整篇笔记视为逐题入库。')
+    if word_range is not None:
+        return dict(available=True, **range_info, blocks=blocks, block_positions=positions, question_drafts=drafts,
+                    warnings=warnings, assets=assets)
     return {"kind": "note", "blocks": blocks, "question_drafts": drafts, "warnings": warnings, "_assets": assets}
 
 
-def worker(suffix, *, page_range=None, two_columns=False, count_only=False):
+def worker(suffix, *, page_range=None, two_columns=False, count_only=False, word_range=None):
     try:
         stream = sys.stdin.buffer
         info = os.fstat(stream.fileno()) if page_range is not None or count_only else None
-        if info is not None and stat.S_ISREG(info.st_mode):
+        if word_range is not None:
+            from .office_inputs import MAX_SOURCE
+            if any(not n.isascii() or not n.isdecimal() or len(n) > 6 for n in word_range):
+                raise ValueError('Word 正文区间格式无效')
+            word_range = tuple(map(int, word_range))
+            data = stream.read(MAX_SOURCE + 1)
+            if len(data) > MAX_SOURCE:
+                raise ValueError('Word 原件超过 32 MiB')
+        elif info is not None and stat.S_ISREG(info.st_mode):
             if info.st_size > CHUNK_PDF_LIMIT:
                 raise ValueError('PDF 分块输入超过 128 MiB')
             stream.seek(0)
@@ -351,11 +443,11 @@ def worker(suffix, *, page_range=None, two_columns=False, count_only=False):
             if any(not value.isascii() or not value.isdecimal() or len(value) > 4 for value in page_range):
                 raise ValueError('PDF 页码必须为 1 至 2000 的十进制整数')
             page_range = tuple(map(int, page_range))
-        value = extract(data, suffix, page_range=page_range, two_columns=two_columns)
-        if page_range is not None:
+        value = extract(data, suffix, page_range=page_range, two_columns=two_columns, word_range=word_range)
+        if page_range is not None or word_range is not None:
             raw = json.dumps(value, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
             if len(raw) > 96 * 1024 * 1024:
-                raise ValueError('PDF 分块输出超限')
+                raise ValueError('Word 分块输出超限' if word_range is not None else 'PDF 分块输出超限')
             sys.stdout.buffer.write(raw)
             return
     except ValueError as error:

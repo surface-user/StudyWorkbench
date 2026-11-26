@@ -5,6 +5,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 from functools import wraps
 from pathlib import Path, PurePosixPath
 from threading import BoundedSemaphore, Event, RLock
@@ -19,7 +20,7 @@ from sqlalchemy.orm import Session
 from . import ocr_page, office_runtime
 from .backup_archive import archive_path
 from .db import DocumentSave, DocumentWorkfile, Resource, write_transaction
-from .documents import convert_document
+from .documents import convert_document, run_document_worker
 from .explorer import node_in, relative_node
 from .imports import document_item, read_pdf_source, read_resource, resource_path
 from .markdown_merge import preview_merge
@@ -105,6 +106,13 @@ class ColumnPage(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     expected_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
     page: int = Field(ge=1, le=2000)
+
+
+class WordRange(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    expected_sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
+    first_position: int = Field(ge=1, le=200000)
+    last_position: int = Field(ge=1, le=200000)
 
 
 class ScanPage(ColumnPage):
@@ -394,6 +402,33 @@ class DocumentFiles:
                 data, resource_id = read_resource(self.root, item), item.id
             return {**raster(data, 'docx-outline', first_position=first_position),
                     'resource_id': resource_id, 'source_sha256': expected_sha256}
+
+        @router.post('/document-word-candidates')
+        @limited_view
+        def word_candidates(workspace_id: str, node_id: str, body: WordRange):
+            if not 0 <= body.last_position - body.first_position < 20:
+                raise HTTPException(422, 'Word 正文区间无效，每次最多 20 个位置')
+
+            def source():
+                with Session(self.engine) as session:
+                    node = node_in(session, workspace_id, node_id)
+                    if node.removed_at is not None or node.kind != 'resource' or not node.resource_id:
+                        raise HTTPException(404, 'Word 原件不存在')
+                    item = document_item(session, workspace_id, node.resource_id, body.expected_sha256, MAX_SOURCE, '.docx')
+                    return item.id, read_resource(self.root, item)
+
+            resource_id, data = source()
+            try:
+                with tempfile.TemporaryFile() as stream:
+                    stream.write(data)
+                    del data
+                    result = run_document_worker(stream, ['--parse-word-range', str(body.first_position),
+                                                 str(body.last_position)], 96 * 1024 * 1024, 25, 'Word')
+            except ValueError as error:
+                raise HTTPException(422, str(error)) from error
+            if source()[0] != resource_id:
+                raise HTTPException(409, 'Word 正文选区绑定的原件已变化')
+            return dict(**result, resource_id=resource_id, source_sha256=body.expected_sha256)
 
         @router.post('/document-columns')
         @limited_view

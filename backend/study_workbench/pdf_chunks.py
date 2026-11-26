@@ -1,13 +1,8 @@
 """Workspace-scoped PDF extraction with durable, idempotent page checkpoints."""
 import base64
 import json
-import os
-import subprocess
-import sys
 import tempfile
 from datetime import datetime, timezone
-from pathlib import Path
-from threading import Timer
 from typing import Literal
 from uuid import uuid4
 
@@ -18,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from .db import ImportJob, PdfChunk, PdfChunkJob, Resource, write_transaction
 from .document_files import limited_view
+from .documents import run_document_worker
 from .imports import check_chunk_pdf, describe, persist_assets
 from .question_protocol import Content
 from .question_splitting import START, DraftSplitter, all_blocks
@@ -65,32 +61,7 @@ def chunk_snapshot():
 
 
 def run_pdf_worker(source, arguments, limit, timeout):
-    cmd = [sys.executable]
-    if not getattr(sys, 'frozen', False):
-        cmd.extend(['-m', 'study_workbench'])
-    cmd.extend(arguments)
-    env = {**os.environ, 'PYTHONPATH': str(Path(__file__).resolve().parents[1]), 'PYTHONUTF8': '1'}
-    source.seek(0)
-    with subprocess.Popen(cmd, stdin=source, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                          env=env, creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0) as proc:
-        timer = Timer(timeout, proc.kill)
-        timer.start()
-        try:
-            raw = proc.stdout.read(limit + 1)
-            if len(raw) > limit:
-                raise ValueError('PDF 分块输出超限')
-            if proc.wait():
-                raise ValueError('PDF 分块解析中断或超时')
-        finally:
-            timer.cancel()
-            if proc.poll() is None:
-                proc.kill()
-            proc.wait()
-            timer.join()
-    result = json.loads(raw)
-    if 'error' in result:
-        raise ValueError('PDF 分块原件无效或解析超限')
-    return result
+    return run_document_worker(source, arguments, limit, timeout, 'PDF')
 
 
 def parse_pages(source, first, last, version=VERSION):
