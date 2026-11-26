@@ -113,17 +113,20 @@ def observe_modules(kernel, runtime, process, paths, modules, errors):
     if needed.value > c.sizeof(array):
         raise ValueError('Observed module list exceeded budget')
     buffer = c.create_unicode_buffer(32768)
+    observed_paths = []
     for module in array[:needed.value // c.sizeof(c.c_void_p)]:
         length = kernel.K32GetModuleFileNameExW(process.handle, module, buffer, len(buffer))
         if not 0 < length < len(buffer):
             errors.add(('module-name', c.get_last_error()))
             continue
         path = Path(buffer.value)
+        observed_paths.append(path)
         name = path.name.casefold()
         if name in required:
             modules[name] = module_identity(runtime.root, runtime.files, path, folded[required[name].casefold()], process.pid)
     if required.keys() - modules.keys():
         raise ValueError('Missing required observed modules: ' + str(sorted(required.keys() - modules.keys())))
+    return observed_paths
 
 
 def run_diagnostic(component, output, javac):

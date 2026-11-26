@@ -27,6 +27,7 @@ CLIENT_SOURCE = Path(__file__).with_name('office_java_pipe') / 'OfficeUnoClient.
 CLIENT_SHA256 = '8cb0b934b60380e0f9eb68949e3db8fdbb68bb9eff328cc2d24014c5e8c26b18'
 SERVICE = 'com.sun.star.util.URLTransformer'
 IMPLEMENTATION = 'com.sun.star.comp.framework.URLTransformer'
+SAL_CRT = ('msvcp140_1.dll', 'vcruntime140_1.dll')
 OFFICE_MODULES = tuple('program/' + name for name in (
     'sal3.dll', 'cppu3.dll', 'mergedlo.dll', 'iolo.dll', 'binaryurplo.dll', 'vcruntime140.dll'))
 
@@ -46,6 +47,57 @@ def check_receipt(path, pid):
     with path.open('rb') as stream:
         if stream.read(len(expected) + 1) != expected:
             raise ValueError('Incorrect client PID or remote operation receipt')
+
+
+def crt_hash(path):
+    with path.open('rb') as stream:
+        data = stream.read(16 * 1024 * 1024 + 1)
+    if not 0 < len(data) <= 16 * 1024 * 1024:
+        raise ValueError('CRT image outside size budget')
+    return hashlib.sha256(data).hexdigest()
+
+
+def crt_candidates(runtime, system_directory):
+    catalog = {name: {} for name in SAL_CRT}
+    for relative, digest in runtime.files.items():
+        name = Path(relative).name.casefold()
+        if name in catalog:
+            catalog[name]['component/' + relative.casefold()] = (runtime.root / relative, digest)
+    for name, candidates in catalog.items():
+        for directory in ('java/bin', 'program'):
+            relative = directory + '/' + name
+            candidates.setdefault('component/' + relative, (runtime.root / relative, None))
+        path = system_directory / name
+        candidates['windows-system32/' + name] = (path, crt_hash(path) if path.is_file() else None)
+    return catalog
+
+
+def crt_observations(catalog, paths, pid, complete):
+    result = {}
+    for name, candidates in catalog.items():
+        observed = []
+        for path in paths:
+            if path.name.casefold() != name:
+                continue
+            digest = crt_hash(path)
+            # Equal bytes, including hard-linked copies in another directory, do not identify the loaded path.
+            matches = [key for key, (candidate, expected) in candidates.items()
+                       if expected and path == candidate and path.samefile(candidate)]
+            observed.append(dict(location=matches[0] if len(matches) == 1 else None, sha256=digest,
+                                 equal_bytes=[key for key, (_, expected) in candidates.items() if expected == digest]))
+        state = 'identified'
+        if not complete:
+            state = 'incomplete-snapshot'
+        elif not observed:
+            state = 'missing'
+        elif len(observed) != 1:
+            state = 'ambiguous'
+        elif observed[0]['location'] is None:
+            state = 'outside-known-locations'
+        elif observed[0]['location'] not in observed[0]['equal_bytes']:
+            state = 'changed'
+        result[name] = dict(state=state, observed_pid=pid, observations=observed)
+    return result
 
 
 def wait_for_pipe(kernel, pipe_id, process, deadline):
@@ -112,6 +164,13 @@ def run(component, output, javac):
                   class_sha256=class_hash, compiler_sha256=compiler_hash, controller_sha256=script_hashes,
                   service=SERVICE, ok=False)
     try:
+        system_path = c.create_unicode_buffer(32768)
+        kernel.GetSystemDirectoryW.argtypes = [c.c_wchar_p, c.c_uint]
+        if not 0 < kernel.GetSystemDirectoryW(system_path, len(system_path)) < len(system_path):
+            raise c.WinError(c.get_last_error())
+        catalog = crt_candidates(runtime, Path(system_path.value))
+        report['crt_candidates'] = {name: {location: digest for location, (_, digest) in entries.items()}
+                                    for name, entries in catalog.items()}
         host = job.start(server_command(runtime, out, pipe_id, instance_id), out / 'cwd', env)
         report['native_host'] = owned_image(kernel, runtime, job, host, 'program/uno.exe')
         limit = time.monotonic() + 30
@@ -127,16 +186,20 @@ def run(component, output, javac):
                 raise RuntimeError('Native UNO call did not complete; inspect the local client failure file')
             time.sleep(.02)
         check_receipt(out / 'ready', client.pid)
+        report['crt_origins'] = {}
         for proc, paths, key in ((client, JAVA_PIPE_MODULES, 'java_modules'), (host, OFFICE_MODULES, 'native_modules')):
             modules, errors = {}, set()
-            observe_modules(kernel, runtime, proc, paths, modules, errors)
+            loaded = observe_modules(kernel, runtime, proc, paths, modules, errors)
+            report['crt_origins'][key] = crt_observations(catalog, loaded, proc.pid, not errors)
             if errors:
                 raise ValueError('Incomplete module snapshot of the connected processes')
             report[key] = modules
         (out / 'observer.done').write_bytes(b'ok')
         if client.wait(8) != 0 or host.wait(8) != 0:
             raise RuntimeError('The single-use connection failed to shut down cleanly')
-        report['ok'] = True
+        report['remote_call_and_shutdown_verified'] = True
+        report['ok'] = all(row['state'] == 'identified' for process in report['crt_origins'].values()
+                           for row in process.values())
     except Exception as error:
         # Command lines and connection identifiers are private to this run.
         report['failure_type'] = type(error).__name__
