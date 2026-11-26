@@ -33,6 +33,7 @@ from .draft_editing import draft_router
 from .explorer import Explorer
 from .imports import import_router
 from .internal_links import router as internal_links_router
+from .knowledge_links import links_router
 from .knowledge_points import points_router
 from .knowledge_subjects import subjects_router
 from .learning import grade, learning_router, workspace_history
@@ -244,6 +245,7 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
     app.include_router(learning_router(engine), dependencies=auth)
     app.include_router(subjects_router(engine), dependencies=auth)
     app.include_router(points_router(engine), dependencies=auth)
+    app.include_router(links_router(engine), dependencies=auth)
     app.include_router(records_router(engine), dependencies=auth)
     app.include_router(markdown_router(engine, data_dir), dependencies=auth)
     app.include_router(draft_router(engine, data_dir), dependencies=auth)

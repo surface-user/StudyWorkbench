@@ -78,6 +78,38 @@ class KnowledgePointRevision(Base):
     )
 
 
+class KnowledgeLinkRevision(Base):
+    __tablename__ = 'knowledge_link_revisions'
+    workspace_id: Mapped[str] = mapped_column(String, primary_key=True)
+    link_id: Mapped[str] = mapped_column(String, primary_key=True)
+    revision: Mapped[int] = mapped_column(Integer, primary_key=True)
+    previous_revision: Mapped[int | None] = mapped_column(Integer)
+    first_revision: Mapped[int] = mapped_column(Integer, server_default='1')
+    request_id: Mapped[str] = mapped_column(String)
+    subject_id: Mapped[str] = mapped_column(String)
+    point_id: Mapped[str] = mapped_column(String)
+    kind: Mapped[str] = mapped_column(String)
+    label: Mapped[str | None] = mapped_column(String)
+    target_subject_id: Mapped[str | None] = mapped_column(String)
+    target_point_id: Mapped[str | None] = mapped_column(String)
+    node_id: Mapped[str | None] = mapped_column(String)
+    question_id: Mapped[str | None] = mapped_column(String)
+    __table_args__ = (
+        UniqueConstraint('workspace_id', 'request_id'),
+        ForeignKeyConstraint(['workspace_id', 'link_id', 'previous_revision'],
+                             ['knowledge_link_revisions.workspace_id', 'knowledge_link_revisions.link_id',
+                              'knowledge_link_revisions.revision']),
+        ForeignKeyConstraint(['workspace_id', 'subject_id', 'point_id', 'first_revision'],
+                             ['knowledge_point_revisions.workspace_id', 'knowledge_point_revisions.subject_id',
+                              'knowledge_point_revisions.point_id', 'knowledge_point_revisions.revision']),
+        ForeignKeyConstraint(['workspace_id', 'target_subject_id', 'target_point_id', 'first_revision'],
+                             ['knowledge_point_revisions.workspace_id', 'knowledge_point_revisions.subject_id',
+                              'knowledge_point_revisions.point_id', 'knowledge_point_revisions.revision']),
+        ForeignKeyConstraint(['workspace_id', 'node_id'], ['workspace_nodes.workspace_id', 'workspace_nodes.id']),
+        ForeignKeyConstraint(['workspace_id', 'question_id'], ['questions.workspace_id', 'questions.id']),
+    )
+
+
 class Question(Base):
     __tablename__ = "questions"
     id: Mapped[str] = mapped_column(String, primary_key=True)

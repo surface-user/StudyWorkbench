@@ -60,7 +60,7 @@ def test_tree_receipts_scope_moves_removal_and_restore(tmp_path):
     package = tmp_path / 'backup.zip'
     restored = tmp_path / 'restored'
     backup_store.create_backup(root, package)
-    assert backup_store.restore_backup(package, restored, tmp_path / 'settings.json')['schema_revision'] == '0020'
+    assert backup_store.restore_backup(package, restored, tmp_path / 'settings.json')['schema_revision'] == '0021'
     for library in (root, restored):
         with client(library) as c:
             assert c.post(url, json=make_leaf).json() == leaf
@@ -104,7 +104,7 @@ def test_concurrent_opposite_moves_and_backup_cycle(tmp_path, monkeypatch):
 
     def unchecked(path, checkpoint):
         with closing(backup_store.connect(path)) as db:
-            return '0020', backup_store.table_summary(db, checkpoint)
+            return '0021', backup_store.table_summary(db, checkpoint)
 
     with monkeypatch.context() as patch:
         patch.setattr(backup_store, 'database_info', unchecked)
@@ -133,6 +133,7 @@ def test_0019_subjects_upgrade_without_inferred_points(tmp_path):
     with closing(backup_store.connect(path)) as db:
         after = backup_store.table_summary(db)
     assert after.pop('knowledge_point_revisions')['rows'] == 0
+    assert after.pop('knowledge_link_revisions')['rows'] == 0
     assert after.pop('alembic_version')['rows'] == before.pop('alembic_version')['rows'] == 1
     assert after == before
     assert (library / 'retained.partial').read_bytes() == b'original failed attempt'
