@@ -172,7 +172,7 @@ python tools/source_licenses.py --package-config apps/desktop/.dart_tool/package
 
 项目代码MIT与`unimathsymbols.txt`的LPPL-1.3-or-later分开映射，保留数据作者、原头部日期及vendor修改后未更新通知的事实。补齐原文仍保留上游归档缺文、LPPL原Work/修改条件待核；此组件有issue，CLI仍退出2，完整产品/归档来源/分发义务仍false。该补充不向产品payload添加数据或修改原依赖，不证明HTML/MathML导出已受支持；最终发行复制/成员范围和义务另核。
 
-## 核对 Windows 冻结后端的签名
+## 核对 Windows 冻结后端和安装器的签名
 
 签名后的成品 SHA256 和发布方指定的签名证书 SHA256 均应从可信发行记录取得。后者是签名证书原始 DER 字节的 SHA256。对候选目录执行以下命令，目录应直接包含 `study_backend.exe`。
 
@@ -180,7 +180,13 @@ python tools/source_licenses.py --package-config apps/desktop/.dart_tool/package
 ./packaging/windows/verify-backend-signature.ps1 -BackendDirectory ./dist/study_backend -ExpectedFileSha256 $fileSha256 -ExpectedSignerSha256 $signerCertificateSha256
 ```
 
-退出 0 时，JSON 给出成品、签名者证书及时间戳证书的 SHA256 和 Windows 信任检查结果。缺少参数、文件变动、签名者不匹配、缺少时间戳证书或 Windows 未认可内嵌签名都会使检查失败。在自动化中以非交互模式运行，缺少参数将返回错误。此命令只读单个后端文件。其他组件、安装器、签署时选用的摘要和时间戳协议由各自的发行步骤核验。[Microsoft 验签说明](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/get-authenticodesignature)
+核验最终安装器时，传入包含 `StudyWorkbench-M1-setup.exe` 的目录，以及独立获得的签名后文件摘要和发行证书摘要。
+
+```powershell
+./packaging/windows/verify-release-signature.ps1 -Artifact Installer -Directory ./dist -ExpectedFileSha256 $setupSha256 -ExpectedSignerSha256 $signerCertificateSha256
+```
+
+退出 0 时，JSON 给出成品、签名者证书及时间戳证书的 SHA256 和 Windows 信任检查结果。缺少参数、文件变动、签名者不匹配、缺少时间戳证书或 Windows 未认可内嵌签名都会使检查失败。在自动化中以非交互模式运行，缺少参数将返回错误。每次命令只读所选成品。其他组件及签署时选用的摘要、时间戳协议由各自的发行步骤核验。[Microsoft 验签说明](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/get-authenticodesignature)
 
 ## 规划中
 
