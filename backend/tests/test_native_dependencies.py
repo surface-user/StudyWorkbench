@@ -18,6 +18,65 @@ def node(path, imports=(), *, machine=0x8664, digest='same'):
                 characteristics=0x0002, clr_rva=0)
 
 
+@pytest.fixture
+def observed_nss(native, monkeypatch):
+    office = 'converters/libreoffice/'
+    names = ['program/' + name for name in ('softokn3.dll', 'freebl3.dll', 'sqlite3.dll')]
+    files = {name: hashlib.sha256(name.encode()).hexdigest() for name in names}
+    nodes = {office + name: {**node(office + name, digest=digest), 'characteristics': 0x2002}
+             for name, digest in files.items()}
+    nodes[office + 'program/softokn3.dll']['edges'] = [('sqlite3.dll', 'import')]
+    digest = hashlib.sha256(json.dumps(files, sort_keys=True).encode()).hexdigest()
+    monkeypatch.setattr(native, 'OFFICE_NSS_OBSERVED_LOCKS', {digest})
+    return nodes, office, digest, {'files': files}
+
+
+def test_observed_nss_applies_only_to_verified_component_and_program_dir(native, observed_nss):
+    nodes, office, digest, manifest = observed_nss
+    assert native.office_nss_entries(nodes, office, digest, manifest) == {
+        path: value['sha256'] for path, value in nodes.items()}
+    assert native.office_nss_entries(nodes, office, 'unobserved', manifest) == {}
+    nodes[office + 'java/bin/sqlite3.dll'] = nodes.pop(office + 'program/sqlite3.dll')
+    with pytest.raises(ValueError, match='NSS image differs'):
+        native.office_nss_entries(nodes, office, digest, manifest)
+
+
+@pytest.mark.parametrize(('field', 'value'), [('sha256', 'changed'), ('machine', 0x14C),
+    ('magic', 0x10B), ('characteristics', 0x0002), ('clr_rva', 1)])
+def test_observed_nss_rejects_changed_images(native, observed_nss, field, value):
+    nodes, office, digest, manifest = observed_nss
+    nodes[office + 'program/freebl3.dll'][field] = value
+    with pytest.raises(ValueError, match='NSS image differs'):
+        native.office_nss_entries(nodes, office, digest, manifest)
+
+
+def test_observed_nss_requires_real_sqlite_import(native, observed_nss):
+    nodes, office, digest, manifest = observed_nss
+    nodes[office + 'program/softokn3.dll']['edges'] = [('sqlite3.dll', 'delay')]
+    with pytest.raises(ValueError, match='import SQLite'):
+        native.office_nss_entries(nodes, office, digest, manifest)
+
+
+def test_pdf_export_adds_only_two_roots_and_their_sqlite_import(
+        native, environment_registry, observed_nss, tmp_path, monkeypatch):
+    office, payload, nodes, _ = environment_registry
+    observed, _, digest, manifest = observed_nss
+    nodes.update(observed)
+    program = office + 'program/'
+    prior = native.inspect_dependencies(payload, tmp_path)
+    verified = native.office_nss_entries(nodes, office, digest, manifest)
+    monkeypatch.setattr(native, 'office_nss_entries', lambda *_: verified)
+    report = native.inspect_dependencies(payload, tmp_path)
+    before, after = prior['domains']['office'], report['domains']['office']
+    assert set(after['roots']) - set(before['roots']) == {program + 'softokn3.dll', program + 'freebl3.dll'}
+    assert set(after['nodes']) - set(before['nodes']) == set(verified)
+    for name, domain in prior['domains'].items():
+        if name != 'office':
+            assert domain == report['domains'][name]
+    assert report['unproven_runtime_candidates'] == [
+        row for row in prior['unproven_runtime_candidates'] if row['path'] not in verified]
+
+
 @pytest.mark.parametrize('kind', ['import', 'delay'])
 @pytest.mark.parametrize('root,other', [('program', 'java/bin'), ('java/bin', 'program'),
                                      ('backend/_internal', '.'), ('.', 'backend/_internal')])
