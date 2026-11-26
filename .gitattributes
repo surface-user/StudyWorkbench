@@ -4,3 +4,6 @@
 dev/archive/evidence/** -whitespace
 dev/records/**/evidence/** -whitespace
 contracts/samples/question-files-v1/*.md whitespace=-blank-at-eof
+# Fixed native source records and original licenses must survive Windows checkout byte-for-byte.
+packaging/licenses/cpython-native-3.13.17/* -text
+packaging/licenses/latex2mathml-3.81.1/* -text
