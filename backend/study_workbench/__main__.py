@@ -22,6 +22,11 @@ def main():
         from .media_download_worker import worker
         worker()
         return
+    if sys.argv[1:] == ['--preview-media']:
+        from .media_site_preview_worker import worker
+        worker()
+        return
+
     if sys.argv[1:] == ['--probe-media']:
         from .media_probes import worker
         raise SystemExit(worker())
