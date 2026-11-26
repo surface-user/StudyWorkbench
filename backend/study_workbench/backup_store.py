@@ -166,6 +166,10 @@ def check_references(root, files):
                         record = stored_attempt(row, attempt, source)
                         for paths, sha, size, optional in retained_files(source, record):
                             found = [path for path in paths if path in files]
+                            if len(paths) > 1:
+                                # A refused destination is not our output. Preserve it in the inventory;
+                                # a prepared receipt still needs one exact pending/final output candidate.
+                                found = [path for path in found if files[path]['sha256'] == sha and files[path]['size'] == size][:1]
                             if not found and not optional:
                                 raise ValueError('本地合流收据缺失受管文件')
                             for path in found:

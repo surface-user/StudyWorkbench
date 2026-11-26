@@ -68,11 +68,24 @@ def describe(job):
     received = job.progress.get('received', 0)
     resumable = (0 < received < LIMIT or received == LIMIT == job.progress.get('total'))
     local = job.source_kind == 'local_pair'
-    return dict(id=job.id, name=job.name, source_kind=job.source_kind,
+    result = dict(id=job.id, name=job.name, source_kind=job.source_kind,
                 source_host='本地所选媒体' if local else parse_url(job.source_url)[1], parent_id=job.parent_id,
                 status=job.status, attempt=job.attempt, progress={k: job.progress.get(k) for k in ('received', 'total')},
                 can_resume=not local and job.status in {'paused', 'interrupted', 'failed'} and strong_etag(job.progress.get('etag')) and resumable,
                 result=job.result, error=job.error, created_at=job.created_at)
+    if local:
+        from .media_sources import source_digest, source_snapshot
+        try:
+            source = source_snapshot(job.source_snapshot)
+            if source_digest(source) != job.source_snapshot_sha256:
+                raise ValueError('Source digest differs')
+            result['source_snapshot'] = source.model_dump(mode='json')
+            result['source_snapshot_sha256'] = job.source_snapshot_sha256
+            result['run_generation'] = job.run_generation
+        except (ValueError, TypeError) as error:
+            raise HTTPException(409, '本地媒体来源记录无效，原件与记录保留') from error
+        result['progress']['phase'] = job.progress.get('phase')
+    return result
 
 
 class MediaDownloads:
@@ -113,14 +126,23 @@ class MediaDownloads:
         with write_transaction(self.engine) as session:
             session.get(MediaDownloadJob, identifier).progress = value
 
-    def child(self, job, path):
+    def child(self, job, path, *, deadline=None):
+        from . import media_mux, media_probe_runtime
+        local = job.source_kind == 'local_pair'
+        deadline = deadline if deadline is not None else time.monotonic() + JOB_SECONDS
+        options = (media_mux.worker_options(self, job, deadline) if local else
+                   dict(url=job.source_url, path=str(path), suffix=Path(job.name).suffix.lower(),
+                        offset=job.progress.get('received', 0), etag=job.progress.get('etag'),
+                        partial_sha256=job.progress.get('partial_sha256')))
+        environment = (media_probe_runtime.environment(path) if local else dict(os.environ))
+        environment.update(PYTHONUTF8='1', PYTHONIOENCODING='utf-8',
+                           PYTHONPATH=str(Path(__file__).resolve().parents[1]))
         command = [sys.executable]
         if not getattr(sys, 'frozen', False):
             command += ['-m', 'study_workbench']
-        process = subprocess.Popen(command + ['--download-media'], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        process = subprocess.Popen(command + ['--mux-media' if local else '--download-media'], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL, creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0,
-            env={**os.environ, 'PYTHONUTF8': '1', 'PYTHONIOENCODING': 'utf-8',
-                 'PYTHONPATH': str(Path(__file__).resolve().parents[1])})
+            cwd=path if local else None, env=environment)
         messages, finished = queue.Queue(maxsize=16), Event()
         def read():
             try:
@@ -128,7 +150,7 @@ class MediaDownloads:
                     line = process.stdout.readline(16385)
                     if not line:
                         break
-                    value = json.loads(line) if len(line) <= 16384 else {'error': '下载工作响应超限'}
+                    value = (media_probe_runtime.strict_json(line, 16384) if local else json.loads(line)) if len(line) <= 16384 else {'error': '下载工作响应超限'}
                     while not finished.is_set():
                         try:
                             messages.put(value, timeout=.2)
@@ -141,12 +163,8 @@ class MediaDownloads:
         reader.start()
         result = None
         try:
-            options = dict(url=job.source_url, path=str(path), suffix=Path(job.name).suffix.lower(),
-                           offset=job.progress.get('received', 0), etag=job.progress.get('etag'),
-                           partial_sha256=job.progress.get('partial_sha256'))
             process.stdin.write(json.dumps(options).encode('utf-8') + b'\n')
             process.stdin.flush()
-            deadline = time.monotonic() + JOB_SECONDS
             while True:
                 self.check(job.id)
                 if time.monotonic() > deadline:
@@ -157,12 +175,20 @@ class MediaDownloads:
                     if process.poll() is not None and not reader.is_alive():
                         raise DownloadError('下载工作进程提前结束，已存部分保留')
                     continue
+                if local and (not isinstance(message, dict) or len(message) != 1):
+                    raise DownloadError('合流工作响应无效，文件保留')
                 if 'progress' in message:
-                    self.progress(job.id, message['progress'])
+                    if local:
+                        media_mux.progress(self, job, message['progress'])
+                    else:
+                        self.progress(job.id, message['progress'])
                 elif 'result' in message:
                     result = message['result']
                     break
                 else:
+                    if local:
+                        raise DownloadError({'cancelled': '合流已暂停，已存部分保留', 'budget': '合流超过资源或时间预算，已存部分保留'}
+                                            .get(message.get('error_code'), '此媒体无法完成受控合流，原件及已生成字节保留'))
                     # Remote text is never reflected; only the trusted fixed worker's bounded error is accepted.
                     raise DownloadError(str(message.get('error', '下载未完成'))[:300])
         finally:
@@ -181,6 +207,13 @@ class MediaDownloads:
 
     def run(self, identifier):
         try:
+            with Session(self.engine) as session:
+                current = session.get(MediaDownloadJob, identifier)
+                local = current is not None and current.source_kind == 'local_pair'
+            if local:
+                from .media_mux import run_local
+                run_local(self, identifier, self.child)
+                return
             self.check(identifier)
             with write_transaction(self.engine) as session:
                 job = session.get(MediaDownloadJob, identifier)
@@ -243,11 +276,15 @@ class MediaDownloads:
         except Exception as error:
             with write_transaction(self.engine) as session:
                 job = session.get(MediaDownloadJob, identifier)
+                if job is not None and job.source_kind == 'local_pair':
+                    return  # Local terminal handling checks its exact claimed generation; never overwrite a newer run.
                 if job is not None and job.status != 'ready':
                     job.status = 'interrupted' if self.stopping.is_set() else 'paused' if job.cancel_requested else 'failed'
                     job.error = str(error) if isinstance(error, DownloadError) else '下载或入库未完成，文件保留；请检查目标目录、网络和磁盘'
 
     def router(self):
+        from .media_mux import CreateLocalPair, same_request, source_for_request
+        from .media_sources import source_digest
         router = APIRouter(prefix='/api/workspaces/{workspace_id}/media-downloads')
         def job_in(session, workspace, identifier):
             require_workspace(session, workspace)
@@ -258,6 +295,35 @@ class MediaDownloads:
         def capacity(session):
             if session.scalar(select(func.count()).select_from(MediaDownloadJob).where(MediaDownloadJob.status.in_(['queued', 'running']))) >= 32:
                 raise HTTPException(429, '已有32个待完成下载，请先暂停或等待')
+        @router.post('/local-pair')
+        def local_pair(workspace_id: str, body: CreateLocalPair):
+            with write_transaction(self.engine) as session:
+                parent_in(session, workspace_id, body.parent_id)
+                old = session.scalar(select(MediaDownloadJob).where(MediaDownloadJob.workspace_id == workspace_id,
+                    MediaDownloadJob.request_id == body.request_id))
+                if old:
+                    try:
+                        equal = old.source_kind == 'local_pair' and same_request(old, body)
+                    except (ValueError, TypeError):
+                        equal = False
+                    if not equal:
+                        raise HTTPException(409, '同一请求的合流参数变化')
+                    return describe(old)
+                capacity(session)
+                source = source_for_request(session, workspace_id, body)
+                identifier = uuid4().hex
+                item = MediaDownloadJob(id=identifier, workspace_id=workspace_id, parent_id=body.parent_id,
+                    request_id=body.request_id, source_url=None, source_kind='local_pair',
+                    source_snapshot=source.model_dump(mode='json'), source_snapshot_sha256=source_digest(source),
+                    run_generation=0, name=body.name, status='queued', cancel_requested=False, attempt=1,
+                    relative_path=f'workspaces/{workspace_id}/downloads/{identifier}/1.mp4',
+                    progress={'received': 0, 'total': sum(t.size for t in source.tracks), 'phase': 'copying'},
+                    result={}, error=None, created_at=datetime.now(timezone.utc).isoformat())
+                session.add(item)
+                session.flush()
+                result = describe(item)
+            self.pool.submit(self.run, identifier)
+            return result
         @router.post('')
         def create(workspace_id: str, body: CreateDownload):
             with write_transaction(self.engine) as session:
@@ -315,8 +381,8 @@ class MediaDownloads:
                 job = job_in(session, workspace_id, identifier)
                 if job.status in {'queued', 'running', 'ready'}:
                     raise HTTPException(409, '此任务当前不能重试')
-                if job.source_kind != 'direct_https':
-                    raise HTTPException(409, '本地合流执行尚未接入，原件与执行记录保留')
+                if job.source_kind == 'local_pair' and body.mode != 'restart':
+                    raise HTTPException(409, '合流不追加中断片段，请保留旧执行并重新开始')
                 parent_in(session, workspace_id, job.parent_id)
                 capacity(session)
                 if body.mode == 'restart':

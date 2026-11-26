@@ -313,8 +313,8 @@ def test_complete_backup_restore_retains_originals_attempts_receipts_and_never_r
         assert row['source_kind'] == 'local_pair' and row['source_host'] == '本地所选媒体' and not row['can_resume']
         assert row['status'] == ('ready' if state == 'committed' else 'paused')
         if state != 'committed':
-            assert c.post(PREFIX + '/media-downloads/' + JOB + '/retry', json={'mode': 'restart'}).status_code == 409
-        assert 'source_snapshot' not in row and 'private original title' not in str(row)
+            assert c.post(PREFIX + '/media-downloads/' + JOB + '/retry', json={'mode': 'resume'}).status_code == 409
+        assert row['source_snapshot']['kind'] == 'local_pair' and 'private original title' not in str(row)
 
 
 @pytest.mark.parametrize('fault', ['source_hash', 'source_extra', 'source_cross_workspace', 'record_path',

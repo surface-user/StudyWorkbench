@@ -1,0 +1,19 @@
+# Controlled local dual-track mux backend
+
+Adds POST /api/workspaces/{workspace_id}/media-downloads/local-pair to the existing download queue. The request explicitly selects video and audio media IDs, their expected hashes and stream indices, a target MP4 name, optional parent, request ID and confirmed usage rights. Unknown fields, arbitrary paths/headers/commands, changed sources and cross-workspace selections are rejected. Immutable source identity is returned separately from progress.
+
+The fixed optional component performs exclusive input copies, bounded structural checks and native probes, stream-copy mux, output verification and packet-preserving publication. It uses the existing Windows Job and disposable worker control. Shared input, output, metadata, disk and execution limits cover both tracks and all phases. No runtime dependency or migration is added.
+
+Prepared receipts cover the file-move/SQL boundary. Destination files are never overwritten. Pause and parent EOF preserve prior bytes; restart is explicit and uses a new attempt. Restored libraries do not replay work. Publication commits the output receipt, media entry, tree node and job result together after file verification. A refused destination remains retained as unrelated data; a prepared backup still requires at least one exact output candidate. Integrity diagnostics continue to flag conflicting bytes.
+
+Validation passed on both supported Python versions: 273 related tests and the final 30 new tests (overlapping counts), plus the strengthened conflicting-output case. All 52 frozen modules matched source. Source and frozen real-HTTP checks each completed the same 10-check matrix: genuine fixed-component mux, explicit stream selection, exact output deduplication, unchanged video/audio packet hashes, cancellation after a native probe, parent EOF, explicit restart and full backup/restore followed by recovery. Original self-authored fixtures remained unchanged. Existing API compatibility each passed 85 checks.
+
+Retained failures include the initial new-directory existence-check error and a reproduced prepared-backup destination-conflict error. Both were corrected while preserving strict link/path and committed-output checks. Synthetic persistence substitutes are not counted as native evidence.
+
+On a later real HTTP run, restarting the long input exceeded the 45-second test wait. A second run reported the 30-second media validation deadline. Inspection of its 3,852,074-byte mux output invoked 20,094 cancellation callbacks. The backend queried SQLite for each one. Validation now checks its local deadline at every structural checkpoint, polls external cancellation at 50 ms intervals and checks cancellation again before returning. It still checks every chunk and hash. The focused regression failed before the fix and passed afterward.
+
+The source and a freshly built Windows backend each passed all ten real HTTP cases again, including the long-input restart and backup recovery. Both produced the same short output and preserved the source packet hashes. The frozen source comparison passed for all 52 modules. The checks used `pytest -k table_checks`, `packaging/windows/build-backend.ps1` and `tools/check_media_mux.py` with the pinned test inputs. All three checks returned exit code 0 with the fix.
+
+The nine related suites passed all 275 cases on Python 3.13.17 and 3.12.7 (exit 0). The first restricted runs retained five failures each, including denied junction creation and file moves. The same suites and assertions were rerun in fresh test directories with those filesystem operations available.
+
+Delivered in [draft PR #113](https://github.com/surface-user/StudyWorkbench/pull/113), based on #106. Current-head CI is tracked on the PR. Review is deferred and manual testing cancelled under user instructions. Desktop UI, remote site downloads, fragmented formats, HLS, transcoding and release readiness remain separate.
