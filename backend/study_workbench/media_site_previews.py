@@ -17,7 +17,9 @@ from sqlalchemy.orm import Session
 
 from .bilibili_preview import OUTPUT_LIMIT, VERSION, PreviewHTTPError, page_url, safe_http_diagnostic
 from .media_download_http import DownloadError
+from .media_downloads import ConfirmSiteDownload
 from .office_runtime import WindowsProcessJob
+from .site_download_receipt import candidate
 from .workspaces import require_workspace
 
 SECONDS = 45
@@ -102,7 +104,7 @@ class MediaSitePreviews:
                     if entry['url'] != body.url:
                         raise HTTPException(409, '预览请求参数变化，请重新确认')
                     return self.describe(entry)
-            if len(self.entries) >= 32 or sum(e['status'] == 'running' for e in self.entries.values()) >= 2:
+            if len(self.entries) >= 32 or sum(e['status'] == 'running' or bool(e.get('checking')) for e in self.entries.values()) >= 2:
                 raise HTTPException(429, '预览繁忙，请取消已有预览或稍后重试')
             identifier = uuid4().hex
             entry = dict(id=identifier, workspace=workspace, request=body.request_id, url=body.url,
@@ -238,7 +240,43 @@ class MediaSitePreviews:
                                  error_diagnostic=error.diagnostic if isinstance(error, PreviewHTTPError) else None,
                                  error=str(error)[:300] if isinstance(error, DownloadError) else '预览未完成：站点或工作进程异常')
 
-    def router(self):
+    def confirm(self, downloads, workspace, identifier, body):
+        previous = downloads.site_retry(workspace, identifier, body)
+        if previous is not None:
+            return previous
+        with self.lock:
+            self.prune()
+            entry = self.entries.get(identifier)
+            if entry is None or entry['workspace'] != workspace:
+                raise HTTPException(404, '预览已失效或不存在，请重新预览')
+            if entry['status'] != 'ready' or self.stopping.is_set():
+                raise HTTPException(409, '预览尚未就绪或已取消')
+            if entry.get('checking') or sum(e['status'] == 'running' or bool(e.get('checking'))
+                                            for e in self.entries.values()) >= 2:
+                raise HTTPException(429, '站点核对繁忙，请重试')
+            try:
+                selected, _, selected_url = candidate(entry['result'], identifier, body.format_id)
+            except DownloadError as error:
+                raise HTTPException(409, str(error)) from None
+            if Path(body.name).suffix.lower() != '.' + selected['container']:
+                raise HTTPException(422, '目标文件名与所选格式不符')
+            entry['checking'] = True
+        try:
+            current, page, media_url = candidate(self.child(entry), identifier, body.format_id)
+            with self.lock:
+                self.prune()
+                if (self.entries.get(identifier) is not entry or entry['cancel'].is_set() or self.stopping.is_set()
+                        or current != selected or media_url != selected_url):
+                    raise HTTPException(409, '来源或候选已变化，请重新预览')
+                return downloads.enqueue(workspace, body, page, receipt=current, media_url=media_url,
+                                         valid_until=entry['expires'])
+        except DownloadError as error:
+            raise HTTPException(409, str(error)) from None
+        finally:
+            with self.lock:
+                entry.pop('checking', None)
+
+    def router(self, downloads=None):
         router = APIRouter(prefix='/api/workspaces/{workspace_id}/media-site-previews', tags=['media'])
 
         @router.post('')
@@ -248,6 +286,10 @@ class MediaSitePreviews:
         @router.get('/{identifier}')
         def get(workspace_id: str, identifier: str):
             return self.get(workspace_id, identifier)
+
+        @router.post('/{identifier}/confirm')
+        def confirm(workspace_id: str, identifier: str, body: ConfirmSiteDownload):
+            return self.confirm(downloads, workspace_id, identifier, body)
 
         @router.post('/{identifier}/cancel')
         def cancel(workspace_id: str, identifier: str):

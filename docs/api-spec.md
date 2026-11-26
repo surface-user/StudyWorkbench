@@ -351,3 +351,13 @@ media_reference_rows/media_referenced_paths分别计有效范围内媒体声明�
 只读取任务ID/空间/attempt/路径/状态与媒体空间/路径/状态，不读取任务URL/名称列、媒体标题、progress/result/ETag、播放数据、正文或hash；文件相对路径/文件名属于显式统计输出。按路径表达引用，不重建内容去重结果或穷尽其他表、正文和文件系统alias。data_modified/deletion_authorized/content_integrity_checked/library_health_checked/snapshot_atomic/attempt_history_checked恒false，bytes_kind=observed_logical_lengths。无媒体引用、任务失败、较低编号或重复下载不代表文件可弃；没有删除/覆盖/保留策略或清理建议。
 
 预算为20000目录项、50000相关行（所有扫描的任务和媒体行合计，合法的其他命名空间媒体行只计行预算而不展开）、30秒协作期限、200问题与前20较大文件；超限只报不完整观测小计。完整退出0，不完整退出1，参数/取锁错误非零退出。重解析点不展开，hardlink不同路径重复计逻辑长度，不代表分配/可回收空间，非原子文件系统快照，阻塞系统调用无即时中断保证。原件、普通media目录、Markdown工作/恢复点、Office预览、确认版、未知根目录及操作暂存均不扫描；不改原下载/入库/断点恢复或DNS约束。
+
+## 站点单文件下载确认
+
+在 `/api/workspaces/{workspace_id}/media-site-previews` 提交页面链接、严格的 `rights_confirmed=true` 和 `request_id` 后，按返回的预览 ID 查询；`POST /{id}/cancel` 撤销预览。该空间的就绪预览有效期为十分钟。预览只显示元数据及格式 ID。
+
+`POST /api/workspaces/{workspace_id}/media-site-previews/{id}/confirm` 接受 `format_id`、`name`、可选 `parent_id`、新的 `request_id` 及严格的 `rights_confirmed=true`。本切片固定提取器版本为 `bilibili-preview-v3`。当前只接收页面声明允许下载、有质量和大小、单段 MP4 的固定 UPOS 域候选。目标文件扩展名须为 MP4。来源重新提取须匹配原作品、分 P、版本、质量、大小、容器、原媒体域、路径及查询串。临时签名改变或过期时需要重新预览并确认。域与路径的核对在服务端完成，客户端不能提交媒体地址、请求头或路径。
+
+确认返回现有下载任务，公开的 `source_kind` 为 `site_progressive`。同一空间与请求重复提交返回同一任务，包括服务重启和预览过期后。参数冲突、来源变化、不支持的格式和已消费候选返回 409；预览失效或跨空间访问返回 404；确认参数不合法返回 422；提取或队列满返回 429。每跳只连接同一个已确认媒体域，沿用公网 IPv4 预检、固定地址 TLS、三次跳转及 512 MiB 上限。签名地址只在本次执行内存中。进入传输前过期、重启、失败或暂停后须重新预览并显式确认，新任务保留旧文件与收据。
+
+实际流的字节数须匹配候选声明，入库前复验文件哈希和 MP4 结构，并要求完整 H.264 视频与 AAC 音轨。DASH、分段、需要额外请求头的媒体与其他格式不进入此路径。真实站点传输的验证状态单独记录。

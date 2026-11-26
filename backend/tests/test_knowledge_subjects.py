@@ -53,7 +53,7 @@ def test_subject_history_retries_scope_and_backup(tmp_path):
     package = tmp_path / 'library.zip'
     backup_store.create_backup(root, package)
     copy = tmp_path / 'restored'
-    assert backup_store.restore_backup(package, copy, tmp_path / 'settings.json')['schema_revision'] == '0021'
+    assert backup_store.restore_backup(package, copy, tmp_path / 'settings.json')['schema_revision'] == '0022'
     for library in (root, copy):
         with client(library) as c:
             assert c.get(SUBJECTS).json() == [new]
@@ -103,7 +103,7 @@ def test_backup_and_restore_refuse_conflicting_active_subjects_before_activation
     # Produce a fixture with accurate bytes and table digests to reach the restore-side check.
     def database_summary(path, checkpoint):
         with closing(backup_store.connect(path)) as db:
-            return '0021', backup_store.table_summary(db, checkpoint)
+            return '0022', backup_store.table_summary(db, checkpoint)
 
     package = tmp_path / 'inconsistent.zip'
     with monkeypatch.context() as patch:
@@ -126,6 +126,7 @@ def test_0018_upgrade_retains_rows_and_pre_upgrade_backup(tmp_path, monkeypatch,
         command.upgrade(cfg, '0018')
     with closing(backup_store.connect(path)) as db:
         before = backup_store.table_summary(db)
+        old_columns = [row['name'] for row in db.execute('PRAGMA table_info(media_download_jobs)')]
     if inject_failure:
         execute = op.execute
 
@@ -139,11 +140,16 @@ def test_0018_upgrade_retains_rows_and_pre_upgrade_backup(tmp_path, monkeypatch,
             migrate(engine, path)
     else:
         migrate(engine, path)
-    backup, = (root / 'backups').glob('study-before-0021-*.db')
+    backup, = (root / 'backups').glob('study-before-0022-*.db')
     with closing(backup_store.connect(backup)) as db:
         assert backup_store.table_summary(db) == before
     with closing(backup_store.connect(path)) as db:
         after = backup_store.table_summary(db)
+        if not inject_failure:
+            # Migration 0022 appends one empty receipt column; compare every previously stored field.
+            assert [r['name'] for r in db.execute('PRAGMA table_info(media_download_jobs)')] == [*old_columns, 'site_receipt']
+            assert db.execute('SELECT count(*) FROM media_download_jobs WHERE site_receipt IS NOT NULL').fetchone()[0] == 0
+            after.update(backup_store.table_summary(db, columns={'media_download_jobs': old_columns}))
         if inject_failure:
             assert after == before
         else:
@@ -152,6 +158,6 @@ def test_0018_upgrade_retains_rows_and_pre_upgrade_backup(tmp_path, monkeypatch,
             assert after.pop('knowledge_link_revisions')['rows'] == 0
             assert after.pop('alembic_version')['rows'] == before.pop('alembic_version')['rows'] == 1
             assert after == before
-            assert db.execute('SELECT version_num FROM alembic_version').fetchone()[0] == '0021'
+            assert db.execute('SELECT version_num FROM alembic_version').fetchone()[0] == '0022'
     assert (root / 'retained.partial').read_bytes() == b'original failed attempt'
     engine.dispose()

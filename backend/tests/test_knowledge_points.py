@@ -60,7 +60,7 @@ def test_tree_receipts_scope_moves_removal_and_restore(tmp_path):
     package = tmp_path / 'backup.zip'
     restored = tmp_path / 'restored'
     backup_store.create_backup(root, package)
-    assert backup_store.restore_backup(package, restored, tmp_path / 'settings.json')['schema_revision'] == '0021'
+    assert backup_store.restore_backup(package, restored, tmp_path / 'settings.json')['schema_revision'] == '0022'
     for library in (root, restored):
         with client(library) as c:
             assert c.post(url, json=make_leaf).json() == leaf
@@ -104,7 +104,7 @@ def test_concurrent_opposite_moves_and_backup_cycle(tmp_path, monkeypatch):
 
     def unchecked(path, checkpoint):
         with closing(backup_store.connect(path)) as db:
-            return '0021', backup_store.table_summary(db, checkpoint)
+            return '0022', backup_store.table_summary(db, checkpoint)
 
     with monkeypatch.context() as patch:
         patch.setattr(backup_store, 'database_info', unchecked)
@@ -129,9 +129,14 @@ def test_0019_subjects_upgrade_without_inferred_points(tmp_path):
             (workspace_id,subject_id,revision,request_id,action,name) VALUES ('default','s',1,'earlier','create','既有')""")
     with closing(backup_store.connect(path)) as db:
         before = backup_store.table_summary(db)
+        old_columns = [row['name'] for row in db.execute('PRAGMA table_info(media_download_jobs)')]
     migrate(engine, path)
     with closing(backup_store.connect(path)) as db:
         after = backup_store.table_summary(db)
+        # Migration 0022 appends one empty receipt column; compare every previously stored field.
+        assert [r['name'] for r in db.execute('PRAGMA table_info(media_download_jobs)')] == [*old_columns, 'site_receipt']
+        assert db.execute('SELECT count(*) FROM media_download_jobs WHERE site_receipt IS NOT NULL').fetchone()[0] == 0
+        after.update(backup_store.table_summary(db, columns={'media_download_jobs': old_columns}))
     assert after.pop('knowledge_point_revisions')['rows'] == 0
     assert after.pop('knowledge_link_revisions')['rows'] == 0
     assert after.pop('alembic_version')['rows'] == before.pop('alembic_version')['rows'] == 1

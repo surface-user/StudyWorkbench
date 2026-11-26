@@ -32,6 +32,7 @@ def worker():
                 last = now
         result = transfer(options['url'], Path(options['path']), options['suffix'],
                           offset=options['offset'], etag=options.get('etag'), partial_sha256=options.get('partial_sha256'),
+                          site_host=options.get('site_host'), expected_size=options.get('expected_size'),
                           checkpoint=check, progress=progress)
         print(json.dumps({'result': result}), flush=True)
     except (DownloadError, RuntimeError) as error:

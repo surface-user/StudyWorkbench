@@ -284,6 +284,7 @@ class MediaDownloadJob(Base):
     parent_id: Mapped[str | None] = mapped_column(String, nullable=True)
     request_id: Mapped[str] = mapped_column(String)
     source_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    site_receipt: Mapped[dict | None] = mapped_column(JSON(none_as_null=True), nullable=True)
     source_kind: Mapped[str] = mapped_column(String, default='direct_https', server_default='direct_https')
     source_snapshot: Mapped[dict | None] = mapped_column(JSON(none_as_null=True), nullable=True)
     source_snapshot_sha256: Mapped[str | None] = mapped_column(String, nullable=True)

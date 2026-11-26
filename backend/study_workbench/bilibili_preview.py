@@ -9,9 +9,9 @@ from fractions import Fraction
 from html.parser import HTMLParser
 from urllib.parse import parse_qs, urlencode, urljoin, urlsplit
 
-from .media_download_http import DownloadError, PinnedHTTPS, parse_url, resolve
+from .media_download_http import LIMIT, DownloadError, PinnedHTTPS, bilibili_media_host, parse_url, resolve
 
-VERSION = 'bilibili-preview-v2'
+VERSION = 'bilibili-preview-v3'
 STATE_SCRIPT_TRAILER = (';(function(){var s;(s=document.currentScript||document.scripts[document.scripts.length-1])'
                         '.parentNode.removeChild(s);}());')
 RESPONSE_LIMIT = 2 * 1024 * 1024
@@ -242,7 +242,7 @@ def sign(params, key):
     return urlencode(params)
 
 
-def formats(play):
+def formats(play, *, can_download=False):
     result = []
     dash = play.get('dash') or {}
     if not isinstance(dash, dict):
@@ -290,19 +290,29 @@ def formats(play):
         for item in fragments:
             if not isinstance(item, dict):
                 raise DownloadError('站点分段格式已变化')
+            if restricted(item, ('drm_tech_type', 'drm_type', 'is_drm', 'license_url')):
+                raise DownloadError('不支持加密或受限格式')
             try:
                 urls.append(parse_url(item.get('url'))[0])
             except DownloadError:
                 urls.append(None)
             sizes.append(number(item.get('size'), optional=True))
         segmented = len(fragments) > 1
+        mime = play.get('format')
+        parts = urlsplit(urls[0]) if urls[0] else None
+        eligible = (can_download and not segmented and mime == 'mp4' and parts is not None
+                    and bilibili_media_host(parts.hostname) and parts.path.lower().endswith('.mp4')
+                    and type(play.get('quality')) is int and play['quality'] > 0
+                    and sizes[0] is not None and 0 < sizes[0] <= LIMIT
+                    and not any(data.get(key) for data in (play, fragments[0])
+                                for key in ('headers', 'http_headers', 'cookies', 'referer', 'origin')))
         result.append(dict(format_id=f'legacy-{len(result)}', delivery='segments' if segmented else 'progressive',
                            source_format_id=number(play.get('quality'), optional=True),
-                           container=None, codecs=None, width=None, height=None, fps=None,
+                           container='mp4' if eligible else None, codecs=None, width=None, height=None, fps=None,
                            size_bytes=sum(sizes) if all(x is not None for x in sizes) else None,
-                           requires_merge=segmented, download_supported=False,
+                           requires_merge=segmented, download_supported=bool(eligible),
                            url=urls[0] if not segmented else None, fragments=urls if segmented else None,
-                           limitation='暂不支持分段下载' if segmented else '此格式尚未接入下载'))
+                           limitation=None if eligible else '暂不支持分段下载' if segmented else '此格式尚未接入下载'))
     if not 0 < len(result) <= 64:
         raise DownloadError('未取得可预览格式，或格式超过64项')
     return result
@@ -360,7 +370,7 @@ def extract(url, *, checkpoint=lambda: None):
         if 'cid' in play and number(play['cid']) != cid:
             raise DownloadError('格式与页面视频身份不符')
         descriptions = play.get('accept_description') or []
-        if restricted(play, ('is_preview', 'is_pay_preview', 'is_drm', 'drm_tech_type')) or any(
+        if restricted(play, ('is_preview', 'is_pay_preview', 'is_drm', 'drm_tech_type', 'drm_type', 'license_url')) or any(
                 isinstance(value, str) and '试看' in value for value in descriptions):
             raise DownloadError('不将试看或受限格式作为完整视频')
         length = number(play.get('timelength'), maximum=7 * 86400 * 1000)
@@ -370,7 +380,8 @@ def extract(url, *, checkpoint=lambda: None):
                       source_cid=cid,
                       extractor_version=VERSION, duration_seconds=duration, returned_formats_only=True,
                       format_source='wbi_api',
-                      formats=formats(play))
+                      formats=formats(play, can_download=duration > 0 and type(video['rights'].get('download')) is int
+                                      and video['rights']['download'] == 1))
         if len(json.dumps(result, ensure_ascii=False).encode('utf-8')) > OUTPUT_LIMIT:
             raise DownloadError('预览结果超过128KiB')
         check()
