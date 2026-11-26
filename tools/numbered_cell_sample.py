@@ -8,6 +8,15 @@ from docx.shared import Inches
 from make_question_samples import PNG
 
 
+def numbered_range_docx():
+    document = Document()
+    for title in ('PREFIX-ONLY', 'Second original question', 'Third original question'):
+        document.add_paragraph(title, style='List Number')
+    stream = io.BytesIO()
+    document.save(stream)
+    return stream.getvalue()
+
+
 def numbered_cell_docx():
     path = Path(__file__).resolve().parents[1] / 'contracts/samples/numbered-questions.docx'
     doc = Document(path)

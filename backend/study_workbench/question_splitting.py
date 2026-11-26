@@ -82,26 +82,33 @@ class DraftSplitter:
         return self.drafts
 
 
-def split_blocks(blocks, warnings=None):
+def split_blocks(blocks, warnings=None, *, positions=None, table_positions=()):
     splitter = DraftSplitter()
-    for block in blocks:
-        if block['type'] != 'text':
+    def append(target, block, index):
+        target['blocks'].append(block)
+        if positions is not None:
+            source = target.setdefault('source_positions', [])
+            if not source or source[-1] != positions[index]:
+                source.append(positions[index])
+
+    for index, block in enumerate(blocks):
+        if block['type'] != 'text' or (positions is not None and positions[index] in table_positions):
             if splitter.current is not None:
-                splitter.current['blocks'].append(block)
+                append(splitter.current, block, index)
             continue
         text = block['text']
         starts = list(START.finditer(text))
         if not starts:
             if splitter.current is not None:
-                splitter.current['blocks'].append(block)
+                append(splitter.current, block, index)
             continue
         if splitter.current is not None and text[:starts[0].start()].strip():
-            splitter.current['blocks'].append({'type': 'text', 'text': text[:starts[0].start()]})
-        for index, match in enumerate(starts):
-            end = starts[index + 1].start() if index + 1 < len(starts) else len(text)
+            append(splitter.current, {'type': 'text', 'text': text[:starts[0].start()]}, index)
+        for number, match in enumerate(starts):
+            end = starts[number + 1].start() if number + 1 < len(starts) else len(text)
             current = splitter.begin(match)
             if current is not None:
-                current['blocks'].append({'type': 'text', 'text': text[match.start():end].strip()})
+                append(current, {'type': 'text', 'text': text[match.start():end].strip()}, index)
     drafts = splitter.finish()
     if warnings is not None:
         warnings.extend(splitter.warnings)

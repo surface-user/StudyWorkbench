@@ -6,7 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from numbered_cell_sample import check_numbered_cell, numbered_cell_docx
+from numbered_cell_sample import check_numbered_cell, numbered_cell_docx, numbered_range_docx
 
 root = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
@@ -56,6 +56,14 @@ response = subprocess.run([*command, '--parse-document', '.docx'], input=numbere
                           check=True, timeout=45, env=environment, cwd=root)
 check_numbered_cell(json.loads(response.stdout))
 print('docx: numbered rich table cell stays with its original question, including image and math')
+
+response = subprocess.run([*command, '--parse-word-range', '2', '3'], input=numbered_range_docx(), capture_output=True,
+                          check=True, timeout=25, env=environment, cwd=root)
+preview = json.loads(response.stdout)
+assert preview['available'] and preview['block_positions'] == [2, 3]
+assert [item['title'] for item in preview['question_drafts']] == ['2. Second original question', '3. Third original question']
+assert 'PREFIX-ONLY' not in str(preview)
+print('docx: selected body positions keep original list numbers')
 
 raw = (root / 'contracts/samples/numbered-questions.pdf').read_bytes()
 response = subprocess.run([*command, '--parse-pdf-pages', '2', '2'], input=raw, capture_output=True,

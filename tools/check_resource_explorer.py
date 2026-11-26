@@ -116,8 +116,12 @@ def main():
             request(endpoint + '/working-copy', {'expected_sha256': document['sha256']})
             saved = request(endpoint + '/document', {'expected_sha256': document['sha256'], 'text': '# 保存的工作副本'}, 'PUT')
             assert request(endpoint + '/document')['text'] == '# 保存的工作副本'
-            for suffix in ['pdf', 'docx']:
-                fixture = Path(__file__).resolve().parents[1] / 'contracts/samples' / ('original-study.' + suffix)
+            from numbered_cell_sample import numbered_range_docx
+            range_sample = root / '自动编号.docx'
+            range_sample.write_bytes(numbered_range_docx())
+            sample_dir = Path(__file__).resolve().parents[1] / 'contracts/samples'
+            for fixture in (sample_dir / 'original-study.pdf', sample_dir / 'original-study.docx', range_sample):
+                suffix = fixture.suffix[1:]
                 added = request(prefix + '/resource-add-jobs', {'source_path': str(fixture)})
                 deadline = time.monotonic() + 20
                 while time.monotonic() < deadline:
@@ -129,7 +133,13 @@ def main():
                 added_id = added['results'][0]['resource_item_id']
                 value = request(prefix + '/nodes/' + added_id + '/document')
                 assert value['type'] == ('pdf' if suffix == 'pdf' else 'word')
-                if suffix == 'pdf':
+                if fixture == range_sample:
+                    selected = request(prefix + '/nodes/' + added_id + '/document-word-candidates',
+                                       {'expected_sha256': value['source_sha256'], 'first_position': 2, 'last_position': 3})
+                    assert selected['source_sha256'] == hashlib.sha256(fixture.read_bytes()).hexdigest()
+                    assert [q['title'] for q in selected['question_drafts']] == ['2. Second original question', '3. Third original question']
+                    assert selected['block_positions'] == [2, 3] and 'PREFIX-ONLY' not in str(selected)
+                elif suffix == 'pdf':
                     assert value['page_count'] == 2
                     value = request(prefix + '/nodes/' + added_id + '/document-page?page=2')
                     assert base64.b64decode(value['image_base64']).startswith(b'\x89PNG')
@@ -139,6 +149,11 @@ def main():
                     word_index = request(word_index_url)
                     assert word_index['total_positions'] == 7 and word_index['positions'][3]['kind'] == 'table'
                     assert request(word_index_url + '&first_position=7')['positions'] == word_index['positions'][-1:]
+                    selected = request(prefix + '/nodes/' + added_id + '/document-word-candidates',
+                                       {'expected_sha256': value['source_sha256'], 'first_position': 4, 'last_position': 4})
+                    assert selected['available'] and selected['source_sha256'] == value['source_sha256']
+                    assert selected['resource_id'] == word_index['resource_id'] and set(selected['block_positions']) == {4}
+                    assert any(b['type'] == 'text' and '|' in b['text'] for b in selected['blocks'])
                     if args.without_office:
                         assert not value['preview_capability']['available']
             layout['version'] = 2
