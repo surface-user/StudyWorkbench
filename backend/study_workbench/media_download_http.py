@@ -67,15 +67,20 @@ def resolve(host):
     try:
         answers = socket.getaddrinfo(host, 443, family=socket.AF_INET, type=socket.SOCK_STREAM)
         addresses = list(dict.fromkeys(answer[4][0] for answer in answers))
-        if not 0 < len(addresses) <= 16:
-            raise ValueError()
-        for value in addresses:
+    except OSError:
+        addresses = []
+    if not addresses:
+        raise DownloadError('当前网络未取得公网IPv4解析结果，请检查网络连接后重试') from None
+    if len(addresses) > 16:
+        raise DownloadError('下载域名返回的IPv4地址超过16个')
+    for value in addresses:
+        try:
             address = ipaddress.IPv4Address(value)
-            if not address.is_global or any(address in network for network in DENIED):
-                raise ValueError()
-        return addresses[0]
-    except (OSError, ValueError):
-        raise DownloadError('下载域名无法解析为允许的公网IPv4地址') from None
+        except ValueError:
+            raise DownloadError('下载域名返回无效IPv4地址') from None
+        if not address.is_global or any(address in network for network in DENIED):
+            raise DownloadError('域名解析结果含保留或非公网地址，请在能直接解析到公网IPv4的网络重试')
+    return addresses[0]
 
 
 class PinnedHTTPS(http.client.HTTPSConnection):
