@@ -9,6 +9,7 @@
 | [requirements](requirements.md) | 产品目标、范围和验收要求 |
 | [学习工作台路线](learning-workbench-roadmap.md) | 已采纳范围、LW任务依赖及交付目标；任务进度统一查task |
 | [普通学习流程契约](learning-workbench-contracts.md) | 普通学习行为与规划契约；当前已实现字段查API/数据模型，自审与实施过程查原任务报告 |
+| [知识点目录与关系](knowledge-catalog.md) | 规划中的用户分类、关系修订及其与题目、作答历史的边界 |
 | [task](task.md) | 当前安排、状态、历史遗留和退出条件 |
 | [architecture](architecture.md) | 当前模块和数据流；规划与待验证分列 |
 | [data-model](data-model.md) | 当前表、身份、权威与迁移保护 |
