@@ -60,6 +60,26 @@ def start(c):
     return key, ENDPOINT + '/' + key + '/confirm'
 
 
+def test_site_and_local_pair_keep_distinct_sources_in_one_queue(ordinary, monkeypatch, tmp_path):
+    from test_media_mux import imports
+
+    with client(tmp_path) as c:
+        monkeypatch.setattr(c.app.state.downloads.pool, 'submit', lambda *args: None)
+        _, confirm = start(c)
+        first = c.post(confirm, json=TARGET)
+        assert first.status_code == 200
+        body = imports(c)
+        pairs = PREFIX + '/media-downloads/local-pair'
+        assert c.post(pairs, json={**body, 'request_id': TARGET['request_id']}).status_code == 409
+        second = c.post(pairs, json=body)
+        assert second.status_code == 200
+        jobs = c.get(PREFIX + '/media-downloads').json()
+        assert {row['id']: row['source_kind'] for row in jobs} == {
+            first.json()['id']: 'site_progressive', second.json()['id']: 'local_pair'}
+        assert c.post(confirm, json=TARGET).json()['id'] == first.json()['id']
+        assert c.post(pairs, json=body).json()['id'] == second.json()['id']
+
+
 def test_offline_http_transfer_replay_and_backup(monkeypatch, ordinary, tmp_path):
     _, data, calls = ordinary
     requests = []
