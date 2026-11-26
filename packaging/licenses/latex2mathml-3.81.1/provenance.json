@@ -54,7 +54,23 @@
       "declared_license": "LPPL-1.3-or-later",
       "last_revised_in_header": "2011-11-08",
       "source_url": "https://github.com/roniemartinez/latex2mathml/blob/fb724a91658cf41d2fad0192da0845b05446f208/latex2mathml/unimathsymbols.txt",
-      "notice_not_updated_for_vendor_changes": true
+      "notice_not_updated_for_vendor_changes": true,
+      "original_table": {
+        "name": "Unicode characters and corresponding LaTeX math mode commands",
+        "author": "Günter Milde",
+        "sha256": "ed310b43f2b4e5cae8b53fce7443e429d4e826c01f90c59d709af07e6806c3a9",
+        "bytes": 216332,
+        "author_site_captures": [
+          "https://web.archive.org/web/20180314032527id_/http://milde.users.sourceforge.net/LUCR/Math/data/unimathsymbols.txt",
+          "https://arquivo.pt/noFrame/replay/20200308035800id_/http://milde.users.sourceforge.net/LUCR/Math/data/unimathsymbols.txt"
+        ],
+        "project_description": "https://arquivo.pt/noFrame/replay/20200308035750id_/http://milde.users.sourceforge.net/LUCR/Math/",
+        "version_note": "The captured table gives a header date of 2011-11-08 and describes a 2015-09-21 format change. It does not give a release number.",
+        "vendor_refresh_commit": "a1343b4ede0f121efee6d26d895af2e10be8fcdc",
+        "vendor_change_commit": "ecef40e0519ee477f660d44e217c325a0cc552e7",
+        "vendor_change": "On 2021-06-20 latex2mathml added the LaTeX command \\S for U+00A7 SECTION SIGN. Removing the two command bytes reproduces the original table exactly.",
+        "complete_lppl_work_scope_verified": false
+      }
     }
   }
 }
