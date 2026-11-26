@@ -18,11 +18,12 @@ from starlette.concurrency import run_in_threadpool
 
 from .db import MediaEntry, write_transaction
 from .imports import resource_path
-from .media_inputs import inspect_media_input, managed_media_path
+from .media_inputs import FRAGMENT_POLICY, inspect_media_input, managed_media_path
 from .media_probes import probe_media_input
 from .workspaces import require_workspace
 
 MEDIA_LIMIT = 512 * 1024 * 1024
+MEDIA_SUFFIXES = {'.mp4', '.m4a', '.webm', '.m4s'}
 
 
 class InputPreview(BaseModel):
@@ -42,7 +43,22 @@ def media_mime(suffix, header, size):
     if not size or (suffix == '.webm' and not header.startswith(b'\x1aE\xdf\xa3') or
                     suffix != '.webm' and header[4:8] != b'ftyp'):
         raise HTTPException(422, '媒体容器头不匹配，文件已保留；请检查格式或在外部工具中转换')
+    if suffix == '.m4s':
+        return 'application/mp4'
     return 'video/webm' if suffix == '.webm' else 'audio/mp4' if suffix == '.m4a' else 'video/mp4'
+
+
+def imported_media_mime(root, relative, suffix, header, size, checksum, checkpoint=lambda: None):
+    mime = media_mime(suffix, header, size)
+    if suffix != '.m4s':
+        return mime
+    # The extension does not identify the stream type. Classify the exact managed copy.
+    from .document_files import limited_view
+
+    result = limited_view(inspect_media_input)(root, relative, size, checksum, 'video/mp4', checkpoint)
+    if result['policy_version'] != FRAGMENT_POLICY:
+        raise HTTPException(422, 'M4S 须含完整初始化段及单一音轨或视频轨，原件保留')
+    return 'audio/mp4' if result['streams'][0]['role'] == 'audio' else 'video/mp4'
 
 
 class Playback(BaseModel):
@@ -82,9 +98,9 @@ def media_routers(engine, root, probe_stopping):
     @api.post('/media/import')
     async def import_media(workspace_id: str, request: Request, filename: str = Query(min_length=1, max_length=240)):
         suffix = Path(filename).suffix.lower()
-        if (suffix not in {'.mp4', '.webm', '.m4a'} or any(c in filename for c in '/\\:') or
+        if (suffix not in MEDIA_SUFFIXES or any(c in filename for c in '/\\:') or
                 any(ord(c) < 32 for c in filename)):
-            raise HTTPException(422, '请选择MP4、WebM或M4A文件；编码是否可播放仍需播放器验证')
+            raise HTTPException(422, '请选择MP4、WebM、M4A或带初始化段的单轨M4S；播放仍需验证')
         identifier = uuid4().hex
         relative = f'workspaces/{workspace_id}/media/{identifier}{suffix}'
         with write_transaction(engine) as session:
@@ -107,7 +123,7 @@ def media_routers(engine, root, probe_stopping):
                     await run_in_threadpool(handle.write, chunk)
                 await run_in_threadpool(handle.flush)
                 await run_in_threadpool(os.fsync, handle.fileno())
-            mime = media_mime(suffix, header, size)
+            mime = await run_in_threadpool(imported_media_mime, root, relative, suffix, header, size, checksum.hexdigest())
             with write_transaction(engine) as session:
                 item = entry(session, workspace_id, identifier)
                 item.status, item.size, item.sha256, item.mime = 'ready', size, checksum.hexdigest(), mime

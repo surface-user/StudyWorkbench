@@ -241,11 +241,13 @@ POST W/media/import?filename=...为MP4/WebM/M4A流式导入≤512MiB；GET W/med
 
 POST W/media/{id}/input-preview为只读本地来源预检。请求仅`expected_sha256`（严格64位小写hex字符串，额外字段拒绝）；沿用Bearer/Host/Origin/同空间和既有2份查看任务共享并发预算（忙429），不接路径/URL/header/命令。仅ready媒体、当前数据库摘要与请求一致，且原件实际大小/hash一致时处理；来源记录须规范同空间media原件或downloads attempt路径。拒绝UNC/映射网络盘/设备路径/符号链接/重解析点，读取前后核句柄及路径身份/大小/时间，变化409；未加OS排他锁，不能作为后续写入或native授权，后续须再次核源。
 
-首版policy_version=`local-mp4-input-v1`仅接受严格有界的非分片MP4 H.264/AAC、M4A AAC结构子集；单个视频/音频各最多1轨，必须有样本表和本文件mdat引用、单个self-contained dref，拒外部引用、加密/未知box/重复单值box及其他布局。WebM、分片MP4/DASH、其他codec、QuickTime音频版本等明确422，不改变旧导入/播放器兼容。预算512MiB原件、2MiB实际元数据读取、4096个box、每表至多100万项、30秒协作检查；超预算413，阻塞系统调用无即时终止保证。常规文本标签中的URL只是元数据，不作为外部来源执行。
+首版policy_version=`local-mp4-input-v1`仅接受严格有界的非分片MP4 H.264/AAC、M4A AAC结构子集；单个视频/音频各最多1轨，必须有样本表和本文件mdat引用、单个self-contained dref，拒外部引用、加密/未知box/重复单值box及其他布局。此普通文件策略对WebM、其他codec、QuickTime音频版本等返回422，不改变旧导入/播放器兼容。预算512MiB原件、2MiB实际元数据读取、4096个box、每表至多100万项、30秒协作检查；超预算413，阻塞系统调用无即时终止保证。常规文本标签中的URL只是元数据，不作为外部来源执行。
 
-响应仅`media_id/policy_version/container/streams/size/sha256/native_probe_performed`；container=mp4，streams含role=video|audio、declared_codec=h264|aac，无标题/标签/路径或传输URL，native_probe_performed恒false。结构/声明不证明媒体可解码或完整有效；不执行FFmpeg、不创建下载/合流任务、能力或数据库收据，不修改文件/播放数据，不持久缓存或落库。现有导入的magic检查、历史媒体保留及播放入口不因严格预检被改写。独立同步native探测见下文；WebM/分片扩展、持久队列/合流与最终原子入库仍规划中。实现见[media_inputs.py](../backend/study_workbench/media_inputs.py)。
+`local-fragmented-mp4-input-v1`接受单个本地文件内的完整初始化段及连续分片。仅限一条H.264视频或AAC音频轨。初始化段须声明本文件数据引用；每个moof只含同轨的一个traf和一个trun，解码时间连续，样本大小总和须与紧随的mdat完全一致。有全局sidx或末尾mfra时校验其索引。沿用文件、元数据、box及时间预算，所有分片合计最多100万个样本。缺初始化段、加密、外部引用、未知布局和多轨分片返回422。媒体导入及资源管理器复制本地.m4s后，在共享查看槽内按完整副本判定audio/mp4或video/mp4；两种轨道可以使用相同文件名。该范围不接收网址、播放清单或分别提供的初始化段与媒体段。
 
-POST W/media/{id}/native-probe沿用相同严格expected_sha256请求、空间/状态/来源校验及2查看槽；同步返回结果，无桌面调用或另建持久队列。仅Windows x64已核固定可选组件，缺失/资产摘要变化503；不从PATH或用户HTTP字段取组件、路径或参数。只接受上述非分片MP4/M4A子集，原件先验、独占复制/核摘要、对副本重验后固定ffprobe探测，返回前再次核原件与数据库选择；变化409，不自动采用旧版本结果。探测仅元数据，不解码、转码、合流、创建播放器能力或入库。
+响应仅`media_id/policy_version/container/streams/size/sha256/native_probe_performed`；container=mp4，streams含role=video|audio、declared_codec=h264|aac，无标题/标签/路径或传输URL，native_probe_performed恒false。结构/声明不证明媒体可解码或完整有效；不执行FFmpeg、不创建下载/合流任务、能力或数据库收据，不修改文件/播放数据，不持久缓存或落库。普通媒体导入沿用容器头检查。本地双轨任务复用这两种预检策略，并在合成前重新核对轨道、冻结副本和原件。WebM及其他分片布局的预检仍待实现。见[预检实现](../backend/study_workbench/media_inputs.py)与[分片布局校验](../backend/study_workbench/media_fragments.py)。
+
+POST W/media/{id}/native-probe沿用相同严格expected_sha256请求、空间/状态/来源校验及2查看槽；同步返回结果，无桌面调用或另建持久队列。仅Windows x64已核固定可选组件，缺失/资产摘要变化503；不从PATH或用户HTTP字段取组件、路径或参数。接受上述两个本地MP4策略，原件先验、独占复制/核摘要、对副本重验后固定ffprobe探测，返回前再次核原件与数据库选择；变化409，不自动采用旧版本结果。探测仅元数据，不解码、转码、合流、创建播放器能力或入库。
 
 成功响应增加probe_version=`ffprobe-mp4-local-v1`、component_snapshot_sha256与duration_ms，native_probe_performed=true；streams各有index、role、codec、duration_ms，video另width/height（1..32768）、audio另sample_rate（8000..192000）/channels（1..8），仍仅各1轨。duration_ms为1..604800000，实际codec/角色须与结构声明一致。父进程只接受严格有界字段/类型/固定身份；不返回native原始JSON、tags、路径、命令或stderr。成功不保证播放/全包可解码，也不能当作稍后处理的永久授权。
 

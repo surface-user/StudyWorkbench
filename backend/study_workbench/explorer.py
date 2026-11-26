@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from .db import MediaEntry, Resource, ResourceAddJob, WorkspaceNode, write_transaction
 from .imports import resource_path
-from .media_library import media_mime
+from .media_library import MEDIA_SUFFIXES, imported_media_mime, media_mime
 from .workspaces import Tab, require_workspace
 
 NODE_LIMIT = 1000
@@ -79,14 +79,14 @@ def inspect_source(value, root):
         if not stat.S_ISREG(info.st_mode):
             raise HTTPException(422, '仅支持普通文件与文件夹')
         extension = path.suffix.lower()
-        media = extension in {'.mp4', '.webm', '.m4a'}
+        media = extension in MEDIA_SUFFIXES
         result['size'] = info.st_size
         if info.st_size > (512 * 1024 * 1024 if media else FILE_LIMIT):
-            raise HTTPException(413, '超过单文件限制：普通文件128MiB，MP4/WebM/M4A媒体512MiB')
+            raise HTTPException(413, '超过单文件限制：普通文件128MiB，媒体512MiB')
         with path.open('rb') as handle:
             header = handle.read(32)
         if media:
-            result.update(kind='media', type='音频' if extension == '.m4a' else '视频',
+            result.update(kind='media', type='分片媒体' if extension == '.m4s' else '音频' if extension == '.m4a' else '视频',
                           mime=media_mime(extension, header, info.st_size),
                           warning='容器已识别；编码是否可播放需打开后验证')
         else:
@@ -306,7 +306,7 @@ class Explorer:
                     return
                 if not stat.S_ISREG(before.st_mode):
                     raise HTTPException(422, '仅支持普通文件与文件夹')
-                media = path.suffix.lower() in {'.mp4', '.webm', '.m4a'}
+                media = path.suffix.lower() in MEDIA_SUFFIXES
                 limit = 512 * 1024 * 1024 if media else FILE_LIMIT
                 if before.st_size > limit or total + before.st_size > TOTAL_LIMIT:
                     raise HTTPException(413, '超过文件大小或单任务1GiB预算；已完成部分保留')
@@ -337,10 +337,14 @@ class Explorer:
                 after = path.stat()
                 if (before.st_size, before.st_mtime_ns, before.st_ino) != (after.st_size, after.st_mtime_ns, after.st_ino) or size != before.st_size:
                     raise HTTPException(409, '来源在复制时变化；副本保留但不登记为可用资源')
-                mime = media_mime(path.suffix.lower(), header, size) if media else mimetypes.guess_type(name)[0] or 'application/octet-stream'
+                checksum = digest.hexdigest()
+                if media:
+                    mime = imported_media_mime(self.root, relative, path.suffix.lower(), header, size, checksum,
+                                               lambda: self.check(job_id))
+                else:
+                    mime = mimetypes.guess_type(name)[0] or 'application/octet-stream'
                 with write_transaction(self.engine) as session:
                     parent_in(session, workspace, parent)
-                    checksum = digest.hexdigest()
                     existing = None if media else session.scalar(select(Resource).where(
                         Resource.workspace_id == workspace, Resource.sha256 == checksum))
                     if existing:

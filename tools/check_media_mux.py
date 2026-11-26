@@ -25,6 +25,11 @@ FIXTURES = (
     (480835, '5e893c9a36d56b0d33a63375d9f901745e8b33be1b760038a5454c7ff3288467'),
 )
 
+FRAGMENT_FIXTURES = (
+    (1598, '923b57611181a13d54365fe97c2f46f4a2860d2daf2850312c76bc127648354b'),
+    (1052, 'beba1ea9db86110f222545cf70492529265e3ee4b838a75486a96bd5512eb3cd'),
+)
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -34,10 +39,14 @@ def main():
     parser.add_argument('--audio-file', type=Path, required=True)
     parser.add_argument('--long-video-file', type=Path, required=True)
     parser.add_argument('--long-audio-file', type=Path, required=True)
+    parser.add_argument('--fragment-tracks', type=Path, nargs=2, metavar=('VIDEO', 'AUDIO'))
     parser.add_argument('--test-root', type=Path, required=True)
     args = parser.parse_args()
     inputs = [args.video_file, args.audio_file, args.long_video_file, args.long_audio_file]
-    for path, (size, sha) in zip(inputs, FIXTURES, strict=True):
+    checked_inputs = list(zip(inputs, FIXTURES, strict=True))
+    if args.fragment_tracks:
+        checked_inputs.extend(zip(args.fragment_tracks, FRAGMENT_FIXTURES, strict=True))
+    for path, (size, sha) in checked_inputs:
         assert path.stat().st_size == size and hashlib.sha256(path.read_bytes()).hexdigest() == sha
     root = args.test_root.resolve()
     root.mkdir()  # Refuse reuse of every previous profile, including failed ones.
@@ -96,11 +105,22 @@ def main():
             assert process.returncode == 0
             assert not process.stderr.read().strip(), 'Backend emitted unexpected stderr'
 
-    def selected(request, paths):
+    def selected(request, paths, *, fragmented=False):
         items = []
         for i, path in enumerate(paths):
             name = 'video.mp4' if i == 0 else 'audio.m4a'
-            items.append(request(prefix + '/media/import?filename=' + name, path.read_bytes()))
+            if fragmented:
+                name = 'track.m4s'
+            item = request(prefix + '/media/import?filename=' + name, path.read_bytes())
+            if fragmented:
+                role = 'video' if i == 0 else 'audio'
+                assert item['mime'] == role + '/mp4'
+                for action in ('input-preview', 'native-probe'):
+                    result = request(f"{prefix}/media/{item['id']}/{action}", {'expected_sha256': item['sha256']})
+                    assert result['policy_version'] == 'local-fragmented-mp4-input-v1'
+                    assert len(result['streams']) == 1 and result['streams'][0]['role'] == role
+                    assert result['native_probe_performed'] == (action == 'native-probe')
+            items.append(item)
         return dict(video=dict(media_id=items[0]['id'], expected_sha256=items[0]['sha256'], stream_index=0),
                     audio=dict(media_id=items[1]['id'], expected_sha256=items[1]['sha256'], stream_index=0),
                     rights_confirmed=True)
@@ -156,6 +176,16 @@ def main():
     (root / 'tmp').mkdir()
     data = root / 'data'
     with backend(data) as (request, process):
+        if args.fragment_tracks:
+            selected_fragments = selected(request, args.fragment_tracks, fragmented=True)
+            frag_body, frag_job = enqueue(request, selected_fragments, 'fragment-pair')
+            merged = wait(request, frag_job, 'ready')['result']
+            assert merged['native_mux_performed']
+            assert request(prefix + '/media-downloads/local-pair', frag_body)['id'] == frag_job
+            result_path = data / f'workspaces/default/downloads/{frag_job}/1.mp4'
+            packets = packet_hashes(result_path)
+            for role, path in zip(('video', 'audio'), args.fragment_tracks, strict=True):
+                assert packets[role] and packets[role] == packet_hashes(path)[role]
         short = selected(request, inputs[:2])
         body, identifier = enqueue(request, short, 'baseline-pair')
         ready = wait(request, identifier, 'ready')
@@ -214,13 +244,16 @@ def main():
         recovered = wait(request, interrupted, 'ready')
         assert recovered['attempt'] == 2 and recovered['result']['native_mux_performed'] is True
     assert all((restored / p).is_file() and hashlib.sha256((restored / p).read_bytes()).hexdigest() == sha for p, sha in retained.items())
-    for path, (size, sha) in zip(inputs, FIXTURES, strict=True):
+    for path, (size, sha) in checked_inputs:
         assert path.stat().st_size == size and hashlib.sha256(path.read_bytes()).hexdigest() == sha
     summary = dict(checks=10, http_requests=requests, frozen=bool(args.exe), real_dual_track_mux=True,
                    native_packet_hashes_retained=True, pause_after_native_probe=True, parent_eof_after_native_probe=True,
                    explicit_stream_selection_and_dedup=True,
                    explicit_restart=True, full_backup_restore=True, recovered_restart=True, original_fixtures_retained=True,
                    baseline_output=output)
+    if args.fragment_tracks:
+        summary['fragmented_track_mux'] = dict(size=merged['output']['size'], sha256=merged['output']['sha256'],
+                                               hashed_packets_retained=True, restored_sources_retained=True)
     (root / 'result.json').write_text(json.dumps(summary, indent=2) + '\n', encoding='utf-8')
     print(json.dumps(summary))
 

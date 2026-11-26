@@ -16,12 +16,13 @@ METADATA_LIMIT = 2 * 1024 * 1024
 BOX_LIMIT = 4096
 SAMPLE_LIMIT = 1000000
 POLICY_VERSION = 'local-mp4-input-v1'
+FRAGMENT_POLICY = 'local-fragmented-mp4-input-v1'
 
 
 def managed_media_path(workspace, identifier, relative):
     parts = PurePosixPath(relative).parts
     local = len(parts) == 4 and parts[2] == 'media' and parts[3] in (
-        identifier + '.mp4', identifier + '.m4a', identifier + '.webm')
+        identifier + '.mp4', identifier + '.m4a', identifier + '.webm', identifier + '.m4s')
     downloaded = (len(parts) == 5 and parts[2] == 'downloads' and re.fullmatch('[0-9a-f]{32}', parts[3]) and
                   re.fullmatch(r'[1-9][0-9]*\.(mp4|m4a|webm)', parts[4]))
     if parts[:2] != ('workspaces', workspace) or not (local or downloaded) or PurePosixPath(relative).as_posix() != relative:
@@ -54,6 +55,7 @@ class MP4Input:
         self.external_checkpoint = checkpoint
         self.next_poll = float('-inf')
         self.box_count = self.metadata_bytes = 0
+        self.version = POLICY_VERSION
 
     def checkpoint(self):
         now = time.monotonic()
@@ -75,7 +77,7 @@ class MP4Input:
         require(len(value) == size)
         return value
 
-    def boxes(self, start, stop, allowed, multiple=()):
+    def boxes(self, start, stop, allowed, multiple=(), *, order=None):
         result = {}
         while start < stop:
             self.box_count += 1
@@ -87,9 +89,11 @@ class MP4Input:
             if size == 1:
                 size = int.from_bytes(self.read(start + 8, 8), 'big')
                 header = 16
-            # Zero-sized/fragmented/unknown boxes deliberately require a later policy version.
+            # Every box has an explicit local extent and a permitted type.
             require(size >= header and start + size <= stop and kind in allowed)
             require(kind in multiple or kind not in result)
+            if order is not None:
+                order.append((kind, start, start + header, start + size))
             result.setdefault(kind, []).append((start + header, start + size))
             start += size
         require(start == stop)
@@ -163,11 +167,12 @@ class MP4Input:
                 require(children[key][0][1] - children[key][0][0] == (8 if key == b'pasp' else 12))
         return 'h264' if role == 'video' else 'aac'
 
-    def track(self, bounds, mdats):
+    def track_description(self, bounds, *, fragmented=False):
         track = self.boxes(*bounds, {b'tkhd', b'edts', b'mdia'})
         tkhd = self.payload(self.one(track, b'tkhd'))
         require(len(tkhd) in (84, 96) and tkhd[0] in (0, 1))
         if b'edts' in track:
+            require(not fragmented)
             edits = self.boxes(*self.one(track, b'edts'), {b'elst'})
             self.table(edits, b'elst', 3)
         media = self.boxes(*self.one(track, b'mdia'), {b'mdhd', b'hdlr', b'minf'})
@@ -185,6 +190,11 @@ class MP4Input:
         samples = self.boxes(*self.one(info, b'stbl'),
                              {b'stsd', b'stts', b'stsc', b'stsz', b'stco', b'co64', b'stss', b'ctts', b'sgpd', b'sbgp'})
         codec = self.sample_entry(self.one(samples, b'stsd'), role)
+        return {'role': role, 'declared_codec': codec}, tkhd, mdhd, samples
+
+    def track(self, bounds, mdats):
+        declaration, _, _, samples = self.track_description(bounds)
+        role = declaration['role']
         raw = self.payload(self.one(samples, b'stsz'))
         require(len(raw) >= 12 and raw[:4] == b'\0' * 4)
         fixed, count = struct.unpack_from('>II', raw, 4)
@@ -230,10 +240,19 @@ class MP4Input:
             require(len(sbgp) == 12 + int.from_bytes(sbgp[8:12], 'big') * 8)
             groups = list(struct.iter_unpack('>II', sbgp[12:]))
             require(sum(n for n, _ in groups) == count and all(n > 0 and group <= 1 for n, group in groups))
-        return {'role': role, 'declared_codec': codec}
+        return declaration
 
     def inspect(self, mime):
-        top = self.boxes(0, self.size, {b'ftyp', b'moov', b'mdat', b'free'}, {b'mdat', b'free'})
+        order = []
+        top = self.boxes(0, self.size, {b'ftyp', b'moov', b'mdat', b'free', b'moof', b'mfra', b'sidx', b'styp'},
+                         {b'mdat', b'free', b'moof', b'styp'}, order=order)
+        if b'moof' in top:
+            from .media_fragments import inspect_fragmented
+
+            streams = inspect_fragmented(self, top, order, mime)
+            self.version = FRAGMENT_POLICY
+            return streams
+        require(set(top) <= {b'ftyp', b'moov', b'mdat', b'free'})
         brand = self.payload(self.one(top, b'ftyp'))
         require(len(brand) >= 8 and len(brand) % 4 == 0)
         brands = [brand[:4], *[brand[i:i + 4] for i in range(8, len(brand), 4)]]
@@ -291,7 +310,7 @@ def inspect_media_input(root, relative, size, sha256, mime, checkpoint=lambda: N
                     before.st_ctime_ns != after.st_ctime_ns or named_before.st_ctime_ns != current.st_ctime_ns):
                 raise HTTPException(409, '媒体在预检期间改变，结果已作废；原文件保留')
             checkpoint()
-        return {'policy_version': POLICY_VERSION, 'container': 'mp4', 'streams': streams,
+        return {'policy_version': policy.version, 'container': 'mp4', 'streams': streams,
                 'native_probe_performed': False, 'size': size, 'sha256': sha256}
     except OSError as error:
         raise HTTPException(409, '媒体文件不可读取，原文件保留') from error

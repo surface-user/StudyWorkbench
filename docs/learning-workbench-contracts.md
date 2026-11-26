@@ -192,7 +192,7 @@ LW-07首批采用用户确认有权下载的直接HTTPS媒体文件，只保留�
 
 ### 格式、轨道与队列交接（规划中）
 
-当前只读`media/{id}/input-preview`独立核验显式选中的本地MediaEntry、同空间来源及expected/实际hash；local-mp4-input-v1仅非分片MP4 H.264/AAC、M4A AAC的有界结构子集，WebM/分片/其他布局拒绝。返回声明codec与native_probe_performed=false，不创任务/落库、不调用FFmpeg或授权后续处理；独立`native-probe`同步请求可用固定可选组件重验/独占冻结本地源，按固定配方返回受限实际元数据，支持HTTP断开/父EOF取消，无持久队列/新表，输入/结果/失败字节保留且不自动重放。完整字段/预算见[API](api-spec.md#媒体与旧default兼容入口)。这两项不是下述站点候选确认、DASH合流或来源快照实现；旧导入与播放保留，后续合流worker仍须重新核验/冻结来源。
+当前只读`media/{id}/input-preview`独立核验显式选中的本地MediaEntry、同空间来源及expected/实际hash；local-mp4-input-v1仅非分片MP4 H.264/AAC、M4A AAC的有界结构子集，WebM和其他布局拒绝。local-fragmented-mp4-input-v1接收含完整初始化段、连续本地片段的单轨H.264或AAC文件；.m4s导入按内容区分音视频。返回声明codec与native_probe_performed=false，不创任务/落库、不调用FFmpeg或授权后续处理；独立`native-probe`同步请求可用固定可选组件重验/独占冻结本地源，按固定配方返回受限实际元数据，支持HTTP断开/父EOF取消，无持久队列/新表，输入/结果/失败字节保留且不自动重放。完整字段/预算见[API](api-spec.md#媒体与旧default兼容入口)。这两项不是下述站点候选确认、DASH合流或来源快照实现；本地合流worker在显式确认后重新核验并冻结所选的两份原件，包括上述单轨分片文件。
 
 下述交接是后续实现契约，不增加当前站点确认API、表或FFmpeg能力。预览只供选择；用户明确选择质量/音轨、空间/目录/名称并确认权利后才可创建下载。复用MediaDownloadJob、MediaEntry、32待办/单worker，不建立另一份站点队列。
 

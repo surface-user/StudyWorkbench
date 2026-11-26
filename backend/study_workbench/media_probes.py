@@ -116,10 +116,10 @@ def validated_result(raw, size, declarations):
     return {'container': 'mp4', 'duration_ms': milliseconds(summary['duration']), 'streams': streams}
 
 
-def checked_worker_result(result, size, checksum, declarations):
+def checked_worker_result(result, size, checksum, declarations, policy_version=POLICY_VERSION):
     metadata_fields = {'container', 'duration_ms', 'streams'}
     identity = {'native_probe_performed': True, 'probe_version': runtime.VERSION,
-                'component_snapshot_sha256': runtime.SNAPSHOT, 'policy_version': POLICY_VERSION,
+                'component_snapshot_sha256': runtime.SNAPSHOT, 'policy_version': policy_version,
                 'size': size, 'sha256': checksum}
     if (not isinstance(result, dict) or set(result) != metadata_fields | set(identity) or
             any(result[key] != expected or type(result[key]) is not type(expected) for key, expected in identity.items())):
@@ -210,7 +210,7 @@ def worker():
         finally:
             job.close()
         result.update(native_probe_performed=True, probe_version=runtime.VERSION,
-                      component_snapshot_sha256=runtime.SNAPSHOT, policy_version=POLICY_VERSION,
+                      component_snapshot_sha256=runtime.SNAPSHOT, policy_version=preview['policy_version'],
                       size=size, sha256=checksum)
     except ProbeStopped:
         result = {'error_code': 'cancelled'}
@@ -300,7 +300,7 @@ def probe_media_input(root, workspace, identifier, relative, size, checksum, mim
             raise HTTPException(422, '此媒体无法完成受控探测；可能损坏或超出支持子集，原文件保留')
         if process.returncode != 0:
             raise ValueError('Private exit')
-        result = checked_worker_result(result, size, checksum, preview['streams'])
+        result = checked_worker_result(result, size, checksum, preview['streams'], preview['policy_version'])
         # Check the original again, so a result for an old selection is never adopted silently.
         inspect_media_input(root, relative, size, checksum, mime, check)
         check()
