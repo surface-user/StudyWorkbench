@@ -1,9 +1,11 @@
 """Read-only, bounded MP4 input policy. This is not a native probe or a codec validator."""
 import hashlib
 import os
+import re
 import stat
 import struct
 import time
+from pathlib import PurePosixPath
 
 from fastapi import HTTPException
 
@@ -14,6 +16,17 @@ METADATA_LIMIT = 2 * 1024 * 1024
 BOX_LIMIT = 4096
 SAMPLE_LIMIT = 1000000
 POLICY_VERSION = 'local-mp4-input-v1'
+
+
+def managed_media_path(workspace, identifier, relative):
+    parts = PurePosixPath(relative).parts
+    local = len(parts) == 4 and parts[2] == 'media' and parts[3] in (
+        identifier + '.mp4', identifier + '.m4a', identifier + '.webm')
+    downloaded = (len(parts) == 5 and parts[2] == 'downloads' and re.fullmatch('[0-9a-f]{32}', parts[3]) and
+                  re.fullmatch(r'[1-9][0-9]*\.(mp4|m4a|webm)', parts[4]))
+    if parts[:2] != ('workspaces', workspace) or not (local or downloaded) or PurePosixPath(relative).as_posix() != relative:
+        raise HTTPException(409, '媒体来源记录无效，原文件保留')
+    return relative
 
 
 def require(condition):
@@ -39,12 +52,17 @@ class MP4Input:
     def __init__(self, handle, size, deadline, checkpoint=lambda: None):
         self.handle, self.size, self.deadline = handle, size, deadline
         self.external_checkpoint = checkpoint
+        self.next_poll = float('-inf')
         self.box_count = self.metadata_bytes = 0
 
     def checkpoint(self):
-        self.external_checkpoint()
-        if time.monotonic() > self.deadline:
+        now = time.monotonic()
+        if now > self.deadline:
             raise HTTPException(413, '媒体预检超过时间预算，原文件保留')
+        # A mux cancellation poll can read SQLite. Dense sample tables contain many thousands of chunks.
+        if now >= self.next_poll:
+            self.external_checkpoint()
+            self.next_poll = now + .05
 
     def read(self, start, size):
         self.checkpoint()
@@ -272,6 +290,7 @@ def inspect_media_input(root, relative, size, sha256, mime, checkpoint=lambda: N
             if (identity(before) != identity(after) or identity(before) != identity(current) or
                     before.st_ctime_ns != after.st_ctime_ns or named_before.st_ctime_ns != current.st_ctime_ns):
                 raise HTTPException(409, '媒体在预检期间改变，结果已作废；原文件保留')
+            checkpoint()
         return {'policy_version': POLICY_VERSION, 'container': 'mp4', 'streams': streams,
                 'native_probe_performed': False, 'size': size, 'sha256': sha256}
     except OSError as error:

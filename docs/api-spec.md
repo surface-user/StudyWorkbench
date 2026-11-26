@@ -269,6 +269,8 @@ UI传`--parent-pipe`，stdout仅阶段/最终结果JSON，关闭stdin表示协�
 
 前缀W/media-downloads，继承Bearer/Host/Origin/空间隔离。POST根路径接收url、name（合法MP4/WebM/M4A文件名）、parent_id可空、request_id（16–100字符）、严格布尔rights_confirmed=true；额外字段拒绝，不接受文件目标路径。同空间同请求同参数重试返回原任务，不同参数409；待办全库32上限429。GET根路径offset≥0、limit=1..100，优先queued/running再创建时间倒序；GET /{id}读取单项。响应含id/name/source_host/parent_id/status/attempt/progress(received,total)/can_resume/result/error/created_at，无完整URL/query、磁盘路径或ETag。
 
+同一队列接受本地双轨合成。向 `W/media-downloads/local-pair` 提交同空间的 `video`、`audio`（媒体 ID、预期 SHA256、所选流序号）、MP4 输出名、目标目录、请求 ID 和明确授权。响应标为 `local_pair`；站点单文件确认标为 `site_progressive`。两类创建共用队列限额和空间内请求 ID。重复相同请求返回已有任务，跨来源复用请求 ID 返回 409。本地合成中断后可从头重做，站点任务重试需重新预览并确认。
+
 GET根路径可选history=true，改用created_at倒序、id升序的稳定历史顺序，复用offset/limit。可选newest_id为32位小写hex的同空间任务ID，将范围限定为其创建时间/ID上界（含自身），不随queued/running状态变化重排。跨空间或不存在边界404，非法ID或非history模式带边界422；原默认活动优先顺序和列表响应形状保留。上界是时间/ID范围而非事务快照：时钟回拨造成的新任务落入旧范围时，显式刷新重新开始浏览；不承诺同时写入下的事务快照。
 
 POST /{id}/pause保留字节、请求暂停；ready拒绝409。POST /{id}/retry仅mode=resume|restart，活动/完成任务不能重试；resume缺少可信断点409，实际字节/版本不符时任务失败且旧部分保留，restart换新attempt不覆盖旧文件。result为resource_item_id/media_id/deduplicated。重启queued/running转interrupted，不自动联网；任务缺失/跨空间404。HTTP创建成功表示排队，不表示下载、解码或验收通过。
