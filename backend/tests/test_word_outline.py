@@ -20,7 +20,7 @@ def test_outline_pages_keep_blank_paragraphs_and_whole_tables(tmp_path):
     cell = document.add_table(rows=1, cols=1).cell(0, 0)
     cell.text = '9. 表格内的题号'
     cell.add_table(rows=1, cols=1).cell(0, 0).text = '嵌套'
-    document.add_paragraph('末尾')
+    document.add_paragraph('末\t尾\n续行')
     raw = original(document)
     sha = hashlib.sha256(raw).hexdigest()
     with client(tmp_path) as c:
@@ -34,7 +34,7 @@ def test_outline_pages_keep_blank_paragraphs_and_whole_tables(tmp_path):
         assert result['positions'][1] == {'position': 2, 'kind': 'paragraph', 'excerpt': ''}
         assert result['positions'][-1]['kind'] == 'table' and '9. 表格' in result['positions'][-1]['excerpt']
         page = c.get(url, params={**params, 'first_position': 51}).json()
-        assert page['positions'] == [{'position': 51, 'kind': 'paragraph', 'excerpt': '末尾'}]
+        assert page['positions'] == [{'position': 51, 'kind': 'paragraph', 'excerpt': '末 尾 续行'}]
         assert page['next_position'] is None
         assert c.get(url, params={**params, 'first_position': 52}).json()['reason'] == 'position_out_of_range'
         assert c.get(url, params={'expected_sha256': '0' * 64}).status_code == 409

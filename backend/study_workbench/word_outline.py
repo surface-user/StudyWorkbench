@@ -1,11 +1,24 @@
 """Read bounded excerpts at stable positions in a managed Word document."""
 from io import BytesIO
+from itertools import islice
 from xml.etree import ElementTree
 from zipfile import ZipFile
 
 from .office_inputs import validate_office
 
 WORD = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+
+
+def excerpt_characters(paragraphs):
+    for index, paragraph in enumerate(paragraphs):
+        if index:
+            yield ' '
+        for run in paragraph.iterfind(WORD + 'r'):
+            for part in run:
+                if part.tag == WORD + 't':
+                    yield from part.text or ''
+                elif part.tag in {WORD + 'tab', WORD + 'br', WORD + 'cr'}:
+                    yield ' '
 
 
 def outline(data, first_position):
@@ -32,8 +45,8 @@ def outline(data, first_position):
         is_table = block.tag == WORD + 'tbl'
         paragraphs = block.iterfind(f'{WORD}tr/{WORD}tc/{WORD}p') if is_table else (block,)
         # Only direct runs contribute text. Field instructions and deleted revisions stay out of excerpts.
-        excerpt = ' '.join(''.join(t.text or '' for t in p.iterfind(f'{WORD}r/{WORD}t')) for p in paragraphs)
-        positions.append({'position': index, 'kind': 'table' if is_table else 'paragraph', 'excerpt': excerpt[:120]})
+        excerpt = ''.join(islice(excerpt_characters(paragraphs), 120))
+        positions.append({'position': index, 'kind': 'table' if is_table else 'paragraph', 'excerpt': excerpt})
     following = first_position + len(positions)
     return {'available': True, 'total_positions': len(blocks), 'positions': positions,
             'next_position': following if following <= len(blocks) else None}
