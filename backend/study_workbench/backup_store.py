@@ -123,6 +123,34 @@ def database_info(path, checkpoint=lambda _: None):
             """).fetchone()
             if invalid:
                 raise ValueError('备份的知识科目修订或活动名称冲突')
+        if revisions[0] >= '0020':
+            invalid = connection.execute("""
+                WITH RECURSIVE history AS (
+                    SELECT *, lead(action) OVER chain AS next_action,
+                           lag(parent_id) OVER chain AS old_parent, lag(name) OVER chain AS old_name
+                    FROM knowledge_point_revisions
+                    WINDOW chain AS (PARTITION BY workspace_id, subject_id, point_id ORDER BY revision)
+                ), active AS (
+                    SELECT * FROM history WHERE next_action IS NULL AND action!='remove'
+                ), reachable(workspace_id, subject_id, point_id) AS (
+                    SELECT workspace_id, subject_id, point_id FROM active WHERE parent_id IS NULL
+                    UNION ALL
+                    SELECT a.workspace_id, a.subject_id, a.point_id FROM active a JOIN reachable r
+                    ON a.workspace_id=r.workspace_id AND a.subject_id=r.subject_id AND a.parent_id=r.point_id
+                )
+                SELECT 1 FROM history WHERE (action='remove' AND next_action IS NOT NULL)
+                    OR (action IN ('rename','remove') AND parent_id IS NOT old_parent)
+                    OR (action IN ('move','remove') AND name!=old_name)
+                UNION ALL SELECT 1 FROM active GROUP BY workspace_id, subject_id, parent_id, name HAVING count(*)>1
+                UNION ALL SELECT 1 FROM active a JOIN knowledge_subject_revisions s USING (workspace_id, subject_id)
+                    WHERE s.action='remove'
+                UNION ALL SELECT 1 FROM active a LEFT JOIN reachable r USING (workspace_id, subject_id, point_id)
+                    WHERE r.point_id IS NULL
+                UNION ALL SELECT 1 FROM history JOIN knowledge_subject_revisions USING (workspace_id, request_id)
+                LIMIT 1
+            """).fetchone()
+            if invalid:
+                raise ValueError('备份的知识点层级、请求或修订不一致')
         return revisions[0], table_summary(connection, checkpoint)
 
 

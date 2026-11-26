@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 
+from .db import KnowledgePointRevision as Point
 from .db import KnowledgeSubjectRevision as Revision
 from .db import write_transaction
 from .workspaces import require_workspace
@@ -43,6 +44,14 @@ def active(workspace):
         Revision.workspace_id == workspace, Revision.action != 'remove')
 
 
+def active_points(workspace, subject):
+    latest = select(Point.point_id, func.max(Point.revision).label('revision')).where(
+        Point.workspace_id == workspace, Point.subject_id == subject).group_by(Point.point_id).subquery()
+    return select(Point).join(latest, and_(Point.point_id == latest.c.point_id,
+                                          Point.revision == latest.c.revision)).where(
+        Point.workspace_id == workspace, Point.subject_id == subject, Point.action != 'remove')
+
+
 def change(engine, workspace, subject_id, action, body):
     with write_transaction(engine) as session:
         require_workspace(session, workspace)
@@ -51,6 +60,9 @@ def change(engine, workspace, subject_id, action, body):
             raise HTTPException(404, '科目不存在')
         if action == 'remove' and not body.confirm:
             raise HTTPException(422, '移除科目需要确认')
+        if session.scalar(select(Point.request_id).where(Point.workspace_id == workspace,
+                                                        Point.request_id == body.request_id)):
+            raise HTTPException(409, '该请求已用于知识点修订')
         saved = session.scalar(select(Revision).where(Revision.workspace_id == workspace,
                                                        Revision.request_id == body.request_id))
         if saved:
@@ -68,6 +80,8 @@ def change(engine, workspace, subject_id, action, body):
                 raise HTTPException(404, '科目不存在或已移除')
             if current.revision != previous:
                 raise HTTPException(409, '科目已修订，请刷新')
+            if action == 'remove' and session.scalar(active_points(workspace, subject_id).limit(1)):
+                raise HTTPException(409, '请先移除科目内的知识点')
             name = current.name if action == 'remove' else body.name
         if action != 'remove' and session.scalar(active(workspace).where(
                 Revision.name == name, Revision.subject_id != subject_id).limit(1)):
