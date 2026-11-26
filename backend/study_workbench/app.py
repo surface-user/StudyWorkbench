@@ -47,6 +47,9 @@ from .question_files import QuestionFiles, current_question_view, verify_version
 from .question_files_format import FileQuestion
 from .question_protocol import LatexBlock, QuestionDocument, TextBlock
 from .request_limits import RequestLimits
+from .word_jobs import invalidate as invalidate_word_job
+from .word_jobs import word_job_router
+from .word_outline import WORD_JOB_PREFIX
 from .workspaces import initial_layout, require_workspace, workspace_router
 
 WrittenBlock = Annotated[TextBlock | LatexBlock, Field(discriminator="type")]
@@ -96,6 +99,9 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
         for job in session.scalars(select(PdfChunkJob).where(PdfChunkJob.status == 'running')):
             job.status = 'interrupted'
             job.generation += 1
+        for job in session.scalars(select(ImportJob).where(ImportJob.status == 'running',
+                                   ImportJob.parser_version.startswith(WORD_JOB_PREFIX))):
+            invalidate_word_job(job, 'interrupted')
         for content in (DEMO, SUBJECTIVE):
             QuestionDocument.model_validate(content)
             if not session.get(Question, (content["id"], "default")):
@@ -245,6 +251,7 @@ def create_app(data_dir: Path, token: str, media: Path | None = None):
 
     app.include_router(import_router(engine, data_dir), dependencies=auth)
     app.include_router(pdf_chunk_router(engine, data_dir), dependencies=auth)
+    app.include_router(word_job_router(engine, data_dir), dependencies=auth)
     app.include_router(markdown_notes.router(), dependencies=auth)
     app.include_router(learning_marks.router(), dependencies=auth)
     app.include_router(internal_links_router(learning_marks), dependencies=auth)

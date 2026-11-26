@@ -7,6 +7,7 @@ import os
 import stat
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from threading import Timer
 from uuid import uuid4
@@ -69,6 +70,12 @@ def run_document_worker(source, arguments, limit, timeout, label):
             raise ValueError(result['error'][:240])
         raise ValueError(f'{label} 分块原件无效或解析超限')
     return result
+
+
+def parse_word_range(data, first, last):
+    with tempfile.TemporaryFile() as source:
+        source.write(data)
+        return run_document_worker(source, ['--parse-word-range', str(first), str(last)], 96 * 1024 * 1024, 25, 'Word')
 
 
 def column_segments(page):

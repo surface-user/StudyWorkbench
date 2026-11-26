@@ -5,7 +5,6 @@ import os
 import re
 import subprocess
 import sys
-import tempfile
 from functools import wraps
 from pathlib import Path, PurePosixPath
 from threading import BoundedSemaphore, Event, RLock
@@ -20,9 +19,9 @@ from sqlalchemy.orm import Session
 from . import ocr_page, office_runtime
 from .backup_archive import archive_path
 from .db import DocumentSave, DocumentWorkfile, Resource, write_transaction
-from .documents import convert_document, run_document_worker
+from .documents import convert_document, parse_word_range
 from .explorer import node_in, relative_node
-from .imports import document_item, read_pdf_source, read_resource, resource_path
+from .imports import document_item, read_pdf_source, read_resource, read_word_source, resource_path
 from .markdown_merge import preview_merge
 from .office_inputs import MAX_SOURCE
 from .office_previews import OfficePreviews
@@ -411,19 +410,11 @@ class DocumentFiles:
 
             def source():
                 with Session(self.engine) as session:
-                    node = node_in(session, workspace_id, node_id)
-                    if node.removed_at is not None or node.kind != 'resource' or not node.resource_id:
-                        raise HTTPException(404, 'Word 原件不存在')
-                    item = document_item(session, workspace_id, node.resource_id, body.expected_sha256, MAX_SOURCE, '.docx')
-                    return item.id, read_resource(self.root, item)
+                    return read_word_source(session, self.root, workspace_id, node_id, body.expected_sha256)
 
             resource_id, data = source()
             try:
-                with tempfile.TemporaryFile() as stream:
-                    stream.write(data)
-                    del data
-                    result = run_document_worker(stream, ['--parse-word-range', str(body.first_position),
-                                                 str(body.last_position)], 96 * 1024 * 1024, 25, 'Word')
+                result = parse_word_range(data, body.first_position, body.last_position)
             except ValueError as error:
                 raise HTTPException(422, str(error)) from error
             if source()[0] != resource_id:

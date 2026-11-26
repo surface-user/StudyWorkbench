@@ -15,8 +15,9 @@ from sqlalchemy.orm import Session
 from .backup_archive import archive_path
 from .db import ImportJob, MarkdownQuestion, PdfChunkJob, Resource, write_transaction
 from .document_files import limited_view
-from .imports import check_chunk_pdf, read_resource, resource_path, validate_attachments
+from .imports import check_chunk_pdf, read_resource, read_word_source, resource_path, validate_attachments
 from .question_splitting import all_blocks, draft_revision, markdown
+from .word_outline import WORD_JOB_PREFIX, WORD_JOB_VERSION, word_job_id
 from .workspaces import require_workspace
 
 
@@ -53,6 +54,11 @@ def question_bytes(draft, job, original, chunk_job):
                   'verification': 'unverified', 'answer_status': 'not_inferred'}
     if chunk_job is not None:
         provenance['selected_page_range'] = [chunk_job.first_page, chunk_job.last_page]
+    if job.parser_version == WORD_JOB_VERSION:
+        state = job.preview['word_range']
+        provenance['selected_body_range'] = [state['first_position'], state['last_position']]
+        provenance['source_positions'] = draft['source_positions']
+        pages = 'Word 正文位置 ' + '、'.join(map(str, draft['source_positions']))
     provenance['shared_material_ids'] = [m['id'] for m in draft.get('shared_materials', [])]
     provenance['shared_materials'] = [
         {key: value for key, value in material.items() if key != 'blocks'}
@@ -120,7 +126,9 @@ def match_recovery(session, root, workspace_id, job_id, body):
     original = session.get(Resource, job.resource_id)
     chunk = session.get(PdfChunkJob, job.id)
     check_recovery_resource(original, workspace_id)
-    if chunk is None:
+    if job.parser_version.startswith(WORD_JOB_PREFIX):
+        verify_word_job_source(session, root, job)
+    elif chunk is None:
         if not 0 < original.size <= 8 * 1024 * 1024:
             raise HTTPException(413, '旧题原件超过核对预算')
         try:
@@ -179,10 +187,21 @@ def match_recovery(session, root, workspace_id, job_id, body):
             'confirmation': {'selected': [body.ordinal], 'finalizes_batch': True}}
 
 
+def verify_word_job_source(session, root, job):
+    if job.parser_version != WORD_JOB_VERSION:
+        raise HTTPException(409, 'Word 选区解析器版本已变')
+    state = job.preview['word_range']
+    if word_job_id(job.workspace_id, job.resource_id, state) != job.id:
+        raise HTTPException(409, 'Word 选区绑定信息已变化')
+    read_word_source(session, root, job.workspace_id, state['node_id'], state['source_sha256'], job.resource_id)
+
+
 def save_selected(session, root, workspace_id, job, drafts, selected):
     original = session.get(Resource, job.resource_id)
     chunk_job = session.get(PdfChunkJob, job.id)
-    if chunk_job is None:
+    if job.parser_version.startswith(WORD_JOB_PREFIX):
+        verify_word_job_source(session, root, job)
+    elif chunk_job is None:
         read_resource(root, original)
     else:
         if chunk_job.workspace_id != workspace_id or chunk_job.resource_id != job.resource_id:

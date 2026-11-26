@@ -30,6 +30,7 @@ from .db import (
 )
 from .documents import CHUNK_PDF_LIMIT
 from .question_protocol import Content, QuestionBundle
+from .word_outline import WORD_JOB_PREFIX
 from .workspaces import require_workspace
 
 PARSER_VERSION = "builtin-4-grouped-md-docling-2.142.1-pdfium-5.14.0-cell-text-v2"
@@ -142,6 +143,18 @@ def read_pdf_source(session, root, workspace, resource_id, expected):
     if not data.startswith(b'%PDF-'):
         raise HTTPException(422, 'PDF 原件格式无效')
     return data
+
+
+def read_word_source(session, root, workspace, node_id, expected, resource_id=None):
+    from .explorer import node_in
+    from .office_inputs import MAX_SOURCE
+    node = node_in(session, workspace, node_id)
+    if node.removed_at is not None or node.kind != 'resource' or not node.resource_id:
+        raise HTTPException(404, 'Word 原件不存在')
+    if resource_id is not None and node.resource_id != resource_id:
+        raise HTTPException(409, 'Word 正文选区绑定的原件已变化')
+    item = document_item(session, workspace, node.resource_id, expected, MAX_SOURCE, '.docx')
+    return item.id, read_resource(root, item)
 
 
 def check_chunk_pdf(session, root, workspace, resource_id, expected, *, output=None):
@@ -328,6 +341,7 @@ def import_router(engine, root):
                 Resource.workspace_id == workspace_id, Resource.sha256 == checksum))
             if existing:
                 job = session.scalar(select(ImportJob).where(ImportJob.resource_id == existing.id,
+                    ~ImportJob.parser_version.startswith(WORD_JOB_PREFIX),
                     ~select(PdfChunkJob.id).where(PdfChunkJob.id == ImportJob.id).exists()))
                 if job:
                     return {**describe(job, existing, preview=True), "duplicate": True}
@@ -440,7 +454,7 @@ def import_router(engine, root):
         with write_transaction(engine) as session:
             job = scoped_job(session, workspace_id, job_id)
             resource = session.get(Resource, job.resource_id)
-            if session.get(PdfChunkJob, job.id) is not None:
+            if job.parser_version.startswith(WORD_JOB_PREFIX) or session.get(PdfChunkJob, job.id) is not None:
                 raise HTTPException(409, '分块候选须使用逐题选择和确认入口')
             if job.status == "confirmed":
                 return describe(job, resource, preview=True)

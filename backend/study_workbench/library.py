@@ -35,6 +35,7 @@ from .imports import (
 )
 from .question_protocol import Content
 from .question_splitting import all_blocks
+from .word_outline import WORD_JOB_PREFIX
 from .workspaces import require_workspace
 
 EXPORT_METADATA_LIMIT = 32 * 1024 * 1024
@@ -101,7 +102,7 @@ def library_router(engine, root, question_files):
             job = session.get(ImportJob, job_id)
             if job is None or job.workspace_id != workspace_id:
                 raise HTTPException(404, "导入记录不存在")
-            if session.get(PdfChunkJob, job_id) is not None:
+            if job.parser_version.startswith(WORD_JOB_PREFIX) or session.get(PdfChunkJob, job_id) is not None:
                 raise HTTPException(409, '分块候选使用原分块任务恢复，不能整篇重解析')
             if job.status in {"confirmed", "parsing"}:
                 raise HTTPException(409, "已确认或正在解析的内容不能重新解析或覆盖")
