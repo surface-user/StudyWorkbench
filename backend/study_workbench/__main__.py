@@ -25,6 +25,9 @@ def main():
     if sys.argv[1:] == ['--probe-media']:
         from .media_probes import worker
         raise SystemExit(worker())
+    if sys.argv[1:] == ['--mux-media']:
+        from .media_mux_worker import worker
+        raise SystemExit(worker())
     if len(sys.argv) == 3 and sys.argv[1] == '--inspect-backup':
         from .backup_archive import inspect_archive
         manifest = inspect_archive(Path(sys.argv[2]))
@@ -174,6 +177,7 @@ def serve(args, data, warning=None):
         # EOF also handles an abruptly terminated desktop parent.
         sys.stdin.read()
         app.state.media_probe_stopping.set()
+        app.state.downloads.stopping.set()
         server.should_exit = True
 
     threading.Thread(target=parent_lifetime, daemon=True).start()

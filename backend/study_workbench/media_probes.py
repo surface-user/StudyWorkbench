@@ -131,6 +131,39 @@ def checked_worker_result(result, size, checksum, declarations):
     return {**identity, **metadata}
 
 
+def clear_native_dll_directory():
+    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel.SetDllDirectoryW.argtypes = [ctypes.c_wchar_p]
+    kernel.SetDllDirectoryW.restype = ctypes.c_int
+    if not kernel.SetDllDirectoryW(None):
+        raise ctypes.WinError(ctypes.get_last_error())
+
+
+def native_process(job, command, operation, checkpoint, output, limit):
+    """Fixed recipes share one existing Job; only their own process handle is released here."""
+    process = None
+    try:
+        checkpoint()
+        process = job.start(command, operation, runtime.environment(operation))
+        while process.poll() is None:
+            checkpoint()
+            if output.exists() and output.stat().st_size > limit:
+                raise ProbeBudget()
+            time.sleep(.025)
+        checkpoint()
+        if process.returncode != 0:
+            raise ValueError('Native media command rejected input')
+    except BaseException:
+        job.close()
+        raise
+    finally:
+        if process is not None:
+            try:
+                process.wait(timeout=2)
+            finally:
+                process.close()
+
+
 def worker():
     """Only private stdin supplies a previously frozen server-owned operation and pinned component."""
     operation = None
@@ -167,33 +200,15 @@ def worker():
         for name in ('probe.json', 'result.json'):
             if (operation / name).exists() or (operation / name).is_symlink():
                 raise ValueError('Private output already exists')
-        kernel = ctypes.WinDLL('kernel32', use_last_error=True)
-        kernel.SetDllDirectoryW.argtypes = [ctypes.c_wchar_p]
-        kernel.SetDllDirectoryW.restype = ctypes.c_int
-        if not kernel.SetDllDirectoryW(None):
-            raise ctypes.WinError(ctypes.get_last_error())
-        job, process = WindowsProcessJob(), None
+        clear_native_dll_directory()
+        job = WindowsProcessJob()
         try:
-            check()
-            process = job.start(runtime.command(component, operation, suffix), operation, runtime.environment(operation))
-            while process.poll() is None:
-                check()
-                output = operation / 'probe.json'
-                if output.exists() and output.stat().st_size > runtime.OUTPUT_LIMIT:
-                    raise ProbeBudget()
-                time.sleep(.025)
-            check()
-            if process.returncode != 0:
-                raise ValueError('Native probe rejected input')
+            native_process(job, runtime.command(component, operation, suffix), operation, check,
+                           operation / 'probe.json', runtime.OUTPUT_LIMIT)
             with runtime.local_path(operation / 'probe.json').open('rb') as output:
                 result = validated_result(output.read(runtime.OUTPUT_LIMIT + 1), size, preview['streams'])
         finally:
             job.close()
-            if process is not None:
-                try:
-                    process.wait(timeout=2)
-                finally:
-                    process.close()
         result.update(native_probe_performed=True, probe_version=runtime.VERSION,
                       component_snapshot_sha256=runtime.SNAPSHOT, policy_version=POLICY_VERSION,
                       size=size, sha256=checksum)

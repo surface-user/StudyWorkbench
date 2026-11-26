@@ -4,9 +4,8 @@ import hashlib
 import html
 import json
 import os
-import re
 import secrets
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from threading import Event
 from uuid import uuid4
 
@@ -19,7 +18,7 @@ from starlette.concurrency import run_in_threadpool
 
 from .db import MediaEntry, write_transaction
 from .imports import resource_path
-from .media_inputs import inspect_media_input
+from .media_inputs import inspect_media_input, managed_media_path
 from .media_probes import probe_media_input
 from .workspaces import require_workspace
 
@@ -161,13 +160,7 @@ def media_routers(engine, root, probe_stopping):
             item = entry(session, workspace_id, media_id)
             if item.status != 'ready' or expected != item.sha256:
                 raise HTTPException(409, '媒体状态或摘要已改变，请刷新后重新选择；原文件保留')
-            parts = PurePosixPath(item.relative_path).parts
-            local = len(parts) == 4 and parts[2] == 'media' and parts[3] in (item.id + '.mp4', item.id + '.m4a', item.id + '.webm')
-            downloaded = (len(parts) == 5 and parts[2] == 'downloads' and re.fullmatch('[0-9a-f]{32}', parts[3]) and
-                          re.fullmatch(r'[1-9][0-9]*\.(mp4|m4a|webm)', parts[4]))
-            if (parts[:2] != ('workspaces', workspace_id) or not (local or downloaded) or
-                    PurePosixPath(item.relative_path).as_posix() != item.relative_path):
-                raise HTTPException(409, '媒体来源记录无效，原文件保留')
+            managed_media_path(workspace_id, item.id, item.relative_path)
             return item.relative_path, item.size, item.sha256, item.mime
 
     @api.post('/media/{media_id}/input-preview')

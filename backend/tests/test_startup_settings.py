@@ -65,7 +65,7 @@ def test_failed_settings_write_retains_old_config_and_returns_warning(tmp_path, 
     config = tmp_path / 'settings.json'
     config.write_text('old config', encoding='utf-8')
     disposed = []
-    application = SimpleNamespace(state=SimpleNamespace(media_probe_stopping=Event()))
+    application = SimpleNamespace(state=SimpleNamespace(media_probe_stopping=Event(), downloads=SimpleNamespace(stopping=Event())))
 
     def app(*args):
         disposed.append(args)
@@ -85,6 +85,7 @@ def test_failed_settings_write_retains_old_config_and_returns_warning(tmp_path, 
             while not self.should_exit and time.monotonic() < until:
                 await asyncio.sleep(.001)
             assert self.should_exit and application.state.media_probe_stopping.is_set()
+            assert application.state.downloads.stopping.is_set()
 
     monkeypatch.setattr(entry, 'write_settings', denied)
     monkeypatch.setattr(entry, 'create_app', app)

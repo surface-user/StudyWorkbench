@@ -118,10 +118,33 @@ def verify_component(directory, checkpoint):
 def command(directory, operation, suffix):
     if suffix not in ('.mp4', '.m4a'):
         raise ValueError('Unsupported probe input')
+    return probe_command(directory, operation, 'source' + suffix, 'probe.json')
+
+
+def probe_command(directory, operation, source, output):
+    if source not in {'source.mp4', 'source.m4a', 'input0.mp4', 'input0.m4a', 'input1.mp4', 'input1.m4a', 'output.pending.mp4'}:
+        raise ValueError('Unsupported fixed probe source')
+    if output not in {'probe.json', 'probe0.json', 'probe1.json', 'output-probe.json'}:
+        raise ValueError('Unsupported fixed probe output')
     return [str(directory / 'bin/ffprobe.exe'), '-hide_banner', '-v', 'error', '-max_alloc', '33554432',
             '-protocol_whitelist', 'file', '-f', 'mov', '-enable_drefs', '0', '-use_absolute_path', '0',
             '-probesize', '2097152', '-analyzeduration', '1000000', '-show_entries', ENTRIES,
-            '-of', 'json', '-o', str(operation / 'probe.json'), str(operation / ('source' + suffix))]
+            '-of', 'json', '-o', str(operation / output), str(operation / source)]
+
+
+def mux_command(directory, operation, inputs, indices):
+    if (len(inputs) != 2 or any(name not in {'input0.mp4', 'input0.m4a'} for name in inputs[:1]) or
+            any(name not in {'input1.mp4', 'input1.m4a'} for name in inputs[1:]) or
+            len(indices) != 2 or any(type(index) is not int or not 0 <= index <= 1 for index in indices)):
+        raise ValueError('Unsupported fixed mux selection')
+    result = [str(directory / 'bin/ffmpeg.exe'), '-hide_banner', '-loglevel', 'error', '-nostdin', '-n',
+              '-max_alloc', '33554432']
+    for name in inputs:
+        result += ['-protocol_whitelist', 'file', '-f', 'mov', '-enable_drefs', '0', '-use_absolute_path', '0',
+                   '-probesize', '2097152', '-analyzeduration', '1000000', '-i', str(operation / name)]
+    return result + ['-map', f'0:{indices[0]}', '-map', f'1:{indices[1]}', '-c', 'copy',
+                     '-map_metadata', '-1', '-map_chapters', '-1', '-threads', '1', '-f', 'mp4',
+                     str(operation / 'output.pending.mp4')]
 
 
 def environment(operation):

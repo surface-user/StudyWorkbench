@@ -1,0 +1,13 @@
+# Controlled local dual-track mux backend
+
+Adds POST /api/workspaces/{workspace_id}/media-downloads/local-pair to the existing download queue. The request explicitly selects video and audio media IDs, their expected hashes and stream indices, a target MP4 name, optional parent, request ID and confirmed usage rights. Unknown fields, arbitrary paths/headers/commands, changed sources and cross-workspace selections are rejected. Immutable source identity is returned separately from progress.
+
+The fixed optional component performs exclusive input copies, bounded structural checks and native probes, stream-copy mux, output verification and packet-preserving publication. It uses the existing Windows Job and disposable worker control. Shared input, output, metadata, disk and execution limits cover both tracks and all phases. No runtime dependency or migration is added.
+
+Prepared receipts cover the file-move/SQL boundary. Destination files are never overwritten. Pause and parent EOF preserve prior bytes; restart is explicit and uses a new attempt. Restored libraries do not replay work. Publication commits the output receipt, media entry, tree node and job result together after file verification. A refused destination remains retained as unrelated data; a prepared backup still requires at least one exact output candidate. Integrity diagnostics continue to flag conflicting bytes.
+
+Validation passed on both supported Python versions: 273 related tests and the final 30 new tests (overlapping counts), plus the strengthened conflicting-output case. All 52 frozen modules matched source. Source and frozen real-HTTP checks each completed the same 10-check matrix: genuine fixed-component mux, explicit stream selection, exact output deduplication, unchanged video/audio packet hashes, cancellation after a native probe, parent EOF, explicit restart and full backup/restore followed by recovery. Original self-authored fixtures remained unchanged. Existing API compatibility each passed 85 checks.
+
+Retained failures include the initial new-directory existence-check error and a reproduced prepared-backup destination-conflict error. Both were corrected while preserving strict link/path and committed-output checks. Synthetic persistence substitutes are not counted as native evidence.
+
+This backend scope is implemented; independent PR/current-head CI remain required. Review is deferred and manual testing cancelled under user instructions. Desktop UI, station extraction/downloads, fragmented formats, HLS, transcoding and release readiness remain separate. No merge or release is requested.

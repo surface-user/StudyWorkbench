@@ -1,9 +1,11 @@
 """Read-only, bounded MP4 input policy. This is not a native probe or a codec validator."""
 import hashlib
 import os
+import re
 import stat
 import struct
 import time
+from pathlib import PurePosixPath
 
 from fastapi import HTTPException
 
@@ -14,6 +16,17 @@ METADATA_LIMIT = 2 * 1024 * 1024
 BOX_LIMIT = 4096
 SAMPLE_LIMIT = 1000000
 POLICY_VERSION = 'local-mp4-input-v1'
+
+
+def managed_media_path(workspace, identifier, relative):
+    parts = PurePosixPath(relative).parts
+    local = len(parts) == 4 and parts[2] == 'media' and parts[3] in (
+        identifier + '.mp4', identifier + '.m4a', identifier + '.webm')
+    downloaded = (len(parts) == 5 and parts[2] == 'downloads' and re.fullmatch('[0-9a-f]{32}', parts[3]) and
+                  re.fullmatch(r'[1-9][0-9]*\.(mp4|m4a|webm)', parts[4]))
+    if parts[:2] != ('workspaces', workspace) or not (local or downloaded) or PurePosixPath(relative).as_posix() != relative:
+        raise HTTPException(409, '媒体来源记录无效，原文件保留')
+    return relative
 
 
 def require(condition):
