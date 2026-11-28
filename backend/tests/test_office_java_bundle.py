@@ -42,6 +42,19 @@ def components(tmp_path, monkeypatch):
     return compose, office_root, java_root, tmp_path / 'combined'
 
 
+def test_retired_office_msi_cannot_be_used_or_composed(components):
+    compose, original, java, target = components
+    lock = original / 'runtime-lock.json'
+    manifest = json.loads(lock.read_bytes())
+    manifest.update(version='26.8.1', package_sha256='c6298b10cfa1748bcbedad94c62ce771e240e5021bfd6d7a967cd571b04b5312')
+    lock.write_text(json.dumps(manifest), encoding='utf-8')
+    with pytest.raises(ValueError, match='版本未锁定'):
+        office_runtime.OfficeRuntime(original)
+    with pytest.raises(ValueError, match='版本未锁定'):
+        compose.compose(original, java, target)
+    assert not target.exists()
+
+
 def test_composition_preserves_originals_and_pins_child_environment(components, monkeypatch, tmp_path):
     compose, original, java, target = components
     original_bytes = {p.relative_to(original): p.read_bytes() for p in original.rglob('*') if p.is_file()}
@@ -145,8 +158,8 @@ def python_components(components, monkeypatch):
     lock = original / 'runtime-lock.json'
     manifest = json.loads(lock.read_text())
     for name in ['program/python313.dll', 'program/python3.dll',
-                 'program/python-core-3.13.15/bin/python.exe', 'program/python-core-3.13.15/bin/pythonw.exe',
-                 'program/python-core-3.13.15/bin/venvlauncher.exe', 'program/python-core-3.13.15/lib/os.py']:
+                 'program/python-core-3.13.18/bin/python.exe', 'program/python-core-3.13.18/bin/pythonw.exe',
+                 'program/python-core-3.13.18/bin/venvlauncher.exe', 'program/python-core-3.13.18/lib/os.py']:
         data = ('distinct self-authored original Python fixture: ' + name).encode()
         path = original / name
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -165,15 +178,15 @@ def test_python_layout_copies_only_fixed_office_sources_and_keeps_old_mode(pytho
     old = compose.compose(original, java, target)
     old_manifest = json.loads((target / 'runtime-lock.json').read_bytes())
     assert old.python_launchers is False and 'python_launchers' not in old_manifest
-    assert not (target / 'program/python-core-3.13.15/bin/python313.dll').exists()
+    assert not (target / 'program/python-core-3.13.18/bin/python313.dll').exists()
     fresh = target.with_name('self-contained')
     new = compose.compose(original, java, fresh, python_launchers=True)
     assert new.python_launchers is True
     assert json.loads((fresh / 'runtime-lock.json').read_bytes())['python_launchers'] == {
-        'layout': 'bin-local-v1', 'version': '3.13.15', 'directory': 'program/python-core-3.13.15/bin'}
+        'layout': 'bin-local-v1', 'version': '3.13.18', 'directory': 'program/python-core-3.13.18/bin'}
     for name, origin in [('python313.dll', 'program/python313.dll'), ('python3.dll', 'program/python3.dll'),
                          ('vcruntime140.dll', 'System64/vcruntime140.dll')]:
-        path = fresh / 'program/python-core-3.13.15/bin' / name
+        path = fresh / 'program/python-core-3.13.18/bin' / name
         assert path.read_bytes() == before[Path(origin)]
         assert not path.samefile(original / origin)
     assert {path.relative_to(original): path.read_bytes() for path in original.rglob('*') if path.is_file()} == before
@@ -187,7 +200,7 @@ def test_python_layout_cannot_relabel_or_omit_companion_images(python_components
     compose.compose(original, java, target, python_launchers=True)
     lock = target / 'runtime-lock.json'
     manifest = json.loads(lock.read_text())
-    prefix = 'program/python-core-3.13.15/bin/'
+    prefix = 'program/python-core-3.13.18/bin/'
     if damage == 'unknown-layout':
         manifest['python_launchers']['layout'] = 'ambient-path'
     elif damage == 'missing-marker':
@@ -212,7 +225,7 @@ def test_python_layout_cannot_relabel_or_omit_companion_images(python_components
 def test_python_layout_checks_actual_bytes_and_extra_installers(python_components, damage):
     compose, original, java, target = python_components
     runtime = compose.compose(original, java, target, python_launchers=True)
-    path = target / ('unlisted.msi' if damage.endswith('.msi') else 'program/python-core-3.13.15/bin/' + damage)
+    path = target / ('unlisted.msi' if damage.endswith('.msi') else 'program/python-core-3.13.18/bin/' + damage)
     path.write_bytes(b'changed or unlisted payload')
     with pytest.raises(ValueError):
         runtime.verify(lambda: None)

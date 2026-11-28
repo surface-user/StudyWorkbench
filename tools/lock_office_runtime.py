@@ -5,9 +5,9 @@ import json
 import stat
 from pathlib import Path
 
-VERSION = '26.8.1'
-PACKAGE_SHA256 = 'c6298b10cfa1748bcbedad94c62ce771e240e5021bfd6d7a967cd571b04b5312'
-URL = 'https://download.documentfoundation.org/libreoffice/stable/26.8.1/win/x86_64/LibreOffice_26.8.1_Win_x86-64.msi'
+VERSION = '26.8.3'
+PACKAGE_SHA256 = '0e6918c273eabbdbbd800ee0dacbbf130a14c13c2e4cec861b06dd59e015bf94'
+URL = 'https://download.documentfoundation.org/libreoffice/stable/26.8.3/win/x86_64/LibreOffice_26.8.3_Win_x86-64.msi'
 
 
 def main():
