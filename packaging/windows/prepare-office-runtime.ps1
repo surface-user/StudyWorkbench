@@ -6,7 +6,7 @@ $candidate = if ([IO.Path]::IsPathRooted($Destination)) { $Destination } else { 
 $target = [IO.Path]::GetFullPath($candidate).TrimEnd('\')
 if (-not $target.StartsWith($taskRoot + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'Extraction must stay in project' }
 if (Test-Path -LiteralPath $target) { throw 'Destination already exists; no replacement allowed' }
-if ((Get-FileHash -LiteralPath $msi -Algorithm SHA256).Hash -ne 'C6298B10CFA1748BCBEDAD94C62CE771E240E5021BFD6D7A967CD571B04B5312') { throw 'Package hash differs' }
+if ((Get-FileHash -LiteralPath $msi -Algorithm SHA256).Hash -ne '0E6918C273EABDBBBD800EE0DACBBF130A14C13C2E4CEC861B06DD59E015BF94') { throw 'Package hash differs' }
 $signature = Get-AuthenticodeSignature -LiteralPath $msi
 if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'The Document Foundation') { throw 'Package signature invalid' }
 # Administrative image only; never register a system installation or file associations.

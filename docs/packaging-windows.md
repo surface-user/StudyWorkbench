@@ -22,7 +22,7 @@ check_release遇到任一闭包外未分类PE即拒绝发行并输出partial及�
 
 仓库根先执行packaging/windows/prepare-tools.ps1验证固定下载SHA256/签名并建立.local/release-venv，再执行packaging/windows/build-release.ps1。后端使用--clean避免增量缓存保留旧业务代码，并由tools/check_frozen_sources.py在固定CPython3.13.17下核对包内全部业务模块与源码（含嵌套代码/常量/异常表），失败即构建失败。构建从pubspec.yaml读取版本，写全新staging，收集Python/Dart/Flutter/native许可证、文件hash与PE依赖。Windows构建串行；只能交付配套前端data/app.so与冻结backend，不能只拿exe或旧runner后端。
 
-可选LibreOffice26.8.1组件以prepare-office-runtime.ps1 -Package <固定MSI> -Destination <新目录>管理镜像解包，不注册系统安装或关联。build-release.ps1默认不带组件；显式-OfficeRuntime <已核目录>才经tools/stage_office_runtime.py复制清单/许可并校验。拒绝覆盖现有组件目录。历史清单19417文件/约1.47GiB（不含MSI/清单），体积属于当时固定版本；默认主包不增加此组件。
+可选LibreOffice26.8.3组件以prepare-office-runtime.ps1 -Package <固定MSI> -Destination <新目录>管理镜像解包，不注册系统安装或关联。build-release.ps1默认不带组件；显式-OfficeRuntime <已核目录>才经tools/stage_office_runtime.py复制清单/许可并校验。拒绝覆盖现有组件目录。新管理镜像锁定 19,423 个文件，共 1,584,132,037 字节（不含 MSI 和清单）；默认主包不增加此组件。
 
 后端相对安装根定位组件，仅启动环境可用STUDY_OFFICE_RUNTIME指定可信绝对路径，HTTP不接受转换器路径/命令。完整核验运行时会增加耗时，90秒限制只约束引擎执行。
 
@@ -45,7 +45,7 @@ check_release遇到任一闭包外未分类PE即拒绝发行并输出partial及�
 ## Office与Java组合运行时
 
 ```powershell
-.local/release-venv/Scripts/python.exe tools/compose_office_runtime.py --office .local/release-tools/libreoffice-26.8.1 --java .local/java-runtime-21.0.13-9 --destination .local/office-java-runtime
+.local/release-venv/Scripts/python.exe tools/compose_office_runtime.py --office .local/release-tools/libreoffice-26.8.3 --java .local/java-runtime-21.0.13-9 --destination .local/office-java-runtime
 ```
 
 两个输入必须分别通过固定原清单/hash与完整文件核验；目标父目录须存在，目标必须全新且不位于输入内，拒绝链接/重解析目录。命令保留原Office所有文件与原清单office-runtime-lock.json，在java/保留全部JRE及java-runtime-lock.json，只另将Office原System64中的8份VC运行库逐字复制到program/，不覆盖原文件。新runtime-lock.json声明配套Java及完整组合集合；加载时要求两份原清单hash和文件集合精确相等，转换前继续逐文件核验。失败保留现场，不能因清单已写入就视为成功；必须以命令退出0及完整复核为准。
@@ -55,6 +55,8 @@ Office子进程才接收包内JAVA_HOME、UNO_JAVA_JFW_JREHOME文件URI和headle
 源码与冻结helper共用固定bootstrap命令：配置仅从包内share/registry的schema/data/resource层和本任务profile读取，不加载HKLM/HKCU策略或扩展配置层；UNO服务/类型限定原包7份services及3份types注册文件，Java类型仅原包两份jar，不展开用户/共享/捆绑扩展unorc。所有路径由已核组件和任务目录生成file URI，不接HTTP/文档传入的bootstrap参数；环境从SystemRoot/WINDIR重新建立，不继承URE_BOOTSTRAP、INIFILENAME等配置来源。profile显式清空ooSetupConnectionURL；强制策略隔离由省略外来配置层实现，不依赖空值覆盖finalized策略。转换选项升v4，旧缓存与文件保留但须重新生成后使用。该措施不删除原组件、扩展文件或许可，不构成Windows文件/网络沙箱，也不证明TWAIN等所有动态路径不可达；证据及未验边界继续原报告。
 
 组合目录可交给原build-release.ps1的-OfficeRuntime入口，默认主包行为保持。实际加载、转换及限制见[发行任务报告](../dev/records/2026-11-10-release-integrity/report.md)。完整PE进程加载域/延迟导入门禁、发行SBOM、传递许可/源码义务、漏洞和签名仍须分别完成；本步骤不等于Office整包可发行或干净机验证。
+
+以下加载关系和依赖结论对应历史 26.8.1.1 构建。26.8.3.1 的程序、组件清单和已重跑的诊断见[升级记录](../dev/records/office-windows-runtime-update/report.md)。
 
 固定JRE原清单同时约束DLL与EXE的完整集合、路径、hash及AMD64/PE32+。诊断将所有固定bin启动器作为潜在入口，保守纳入Java静态域，不表示产品实际执行它们；仍仅bin/bin-server搜索及bin私有CRT，不使用外来PATH或Office私有CRT。EXE不加入Office进程DLL根。Windows加载器的[应用目录与系统搜索规则](https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order)提供静态导入检查边界，动态加载、SxS、API-set/系统来源与其余组件仍须单列，任何未知继续阻断发行。
 
@@ -73,12 +75,12 @@ program直属的固定30个AMD64原生EXE/COM/BIN另作office_program保守静�
 上述Python bin缺DLL限制仍适用于默认旧组合。固定Office/Java原件另可生成一个全新、可选的自包含布局；不改变默认产品包或原组件：
 
 ```powershell
-.local/release-venv/Scripts/python.exe tools/compose_office_runtime.py --office .local/release-tools/libreoffice-26.8.1 --java .local/java-runtime-21.0.13-9 --destination .local/office-python-runtime --python-launchers
+.local/release-venv/Scripts/python.exe tools/compose_office_runtime.py --office .local/release-tools/libreoffice-26.8.3 --java .local/java-runtime-21.0.13-9 --destination .local/office-python-runtime --python-launchers
 ```
 
-新清单必须精确声明python_launchers={layout:bin-local-v1,version:3.13.15,directory:program/python-core-3.13.15/bin}，在原组合之外只增加三份原Office字节副本：program/python313.dll、program/python3.dll及System64/vcruntime140.dll复制到core/bin。源原清单、精确派生文件集合与全部hash共同校验；不借Java或System32的CRT，错误标记、缺失/改动/多余文件拒绝。默认composer输出保留原规范清单字节，新布局固定清单SHA256为b0a040bd584bb69aeaba44f749996d2320d83707889b8f8ad85d93d44893c9ee。
+26.8.3.1 的新清单必须精确声明python_launchers={layout:bin-local-v1,version:3.13.18,directory:program/python-core-3.13.18/bin}，在原组合之外只增加三份原Office字节副本：program/python313.dll、program/python3.dll及System64/vcruntime140.dll复制到core/bin。源原清单、精确派生文件集合与全部hash共同校验；不借Java或System32的CRT，错误标记、缺失/改动/多余文件拒绝。默认composer输出保留原规范清单字节，新布局固定清单SHA256为b0a040bd584bb69aeaba44f749996d2320d83707889b8f8ad85d93d44893c9ee。
 
-该布局的两个Python主程序静态域仅搜索bin、CRT仅bin；独立子进程扩展域使用lib+bin、CRT仍仅bin，Office宿主的lib+program域保持。两份python3.dll仍未分类：固定902个转发中3个目标不匹配，不能因实际消费者成功就认证全部ABI。
+下列静态域和诊断记录以 26.8.1.1 的自包含组件为输入。该布局的两个Python主程序静态域仅搜索bin、CRT仅bin；独立子进程扩展域使用lib+bin、CRT仍仅bin，Office宿主的lib+program域保持。两份python3.dll仍未分类：固定902个转发中3个目标不匹配，不能因实际消费者成功就认证全部ABI。
 
 使用已有构建环境运行固定探针；output须全新且位于组件之外，冻结版须先由现有模块核源检查通过：
 

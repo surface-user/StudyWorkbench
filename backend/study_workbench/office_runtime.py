@@ -15,16 +15,16 @@ from fastapi import HTTPException
 from .imports import resource_path
 from .office_inputs import MAX_SOURCE, validate_office
 
-VERSION = '26.8.1'
-PACKAGE_SHA256 = 'c6298b10cfa1748bcbedad94c62ce771e240e5021bfd6d7a967cd571b04b5312'
-OFFICE_LOCK_SHA256 = '147d21f38890236a51ac3b079d4632690ce7ae12f1470d6896aaef3597a0f8ca'
+VERSION = '26.8.3'
+PACKAGE_SHA256 = '0e6918c273eabbdbbd800ee0dacbbf130a14c13c2e4cec861b06dd59e015bf94'
+OFFICE_LOCK_SHA256 = '5466c0a85ae6174868841aa1d1859410b4c596bb22f0d2610bd02d220a973c92'
 JAVA_LOCK_SHA256 = '159433e3a2fc9f2a9c4f633a613d3db5aaca29d1b52caa64e3a63755ac8e1907'
 JAVA = {'version': '21.0.13+9', 'directory': 'java',
         'package_sha256': '2332c0b4cff6bed722da3567c91d5e47568bcba863fa4945d0a8d6fc76158628'}
 APP_LOCAL_CRT = ('msvcp140.dll', 'msvcp140_1.dll', 'msvcp140_2.dll', 'msvcp140_atomic_wait.dll',
                  'msvcp140_codecvt_ids.dll', 'vcruntime140.dll', 'vcruntime140_1.dll', 'vcruntime140_threads.dll')
-PYTHON_CORE = 'program/python-core-3.13.15/'
-PYTHON_LAUNCHERS = {'layout': 'bin-local-v1', 'version': '3.13.15', 'directory': PYTHON_CORE + 'bin'}
+PYTHON_CORE = 'program/python-core-3.13.18/'
+PYTHON_LAUNCHERS = {'layout': 'bin-local-v1', 'version': '3.13.18', 'directory': PYTHON_CORE + 'bin'}
 APP_LOCAL_PYTHON = {'python313.dll': 'program/python313.dll', 'python3.dll': 'program/python3.dll',
                     'vcruntime140.dll': 'System64/vcruntime140.dll'}
 OPTIONS = 'pdf-static-v4-fixed-config-no-macros-no-external-links-internal-charts-math'
@@ -385,7 +385,7 @@ def runtime():
     if directory is None:
         directory = (Path(sys.executable).resolve().parent.parent / 'converters/libreoffice'
                      if getattr(sys, 'frozen', False) else
-                     Path(__file__).resolve().parents[2] / '.local/release-tools/libreoffice-26.8.1')
+                     Path(__file__).resolve().parents[2] / '.local/release-tools/libreoffice-26.8.3')
     return OfficeRuntime(directory)
 
 

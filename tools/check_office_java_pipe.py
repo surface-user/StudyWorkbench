@@ -19,8 +19,8 @@ from pathlib import Path
 SOURCE = Path(__file__).resolve().parents[1]
 PROBE_SOURCE = Path(__file__).with_name('office_java_pipe') / 'PipeDiagnostic.java'
 PROBE_SHA256 = '3845c5d1ebe2e164c5eaaab3a446857409fb83fd94d16afc7eb1a88abb66edb0'
-COMPONENTS = {'156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9',
-    'b0a040bd584bb69aeaba44f749996d2320d83707889b8f8ad85d93d44893c9ee'}
+COMPONENTS = {'7d8a8b17324435d0a8a5272ecc7ff4bdefdb8abb435e0afa44152f7e040ce39f',
+    '829c404487bb64b2438a12f99e7a884cba1abaf54bca93a5f914ad08393d3155'}
 JAVA_PIPE_MODULES = ('program/jpipe.dll', 'program/jpipx.dll', 'program/sal3.dll',
     'java/bin/vcruntime140.dll', 'java/bin/msvcp140.dll', 'java/bin/server/jvm.dll', 'java/bin/java.dll')
 
