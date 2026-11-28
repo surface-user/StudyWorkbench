@@ -60,7 +60,7 @@ def test_tree_receipts_scope_moves_removal_and_restore(tmp_path):
     package = tmp_path / 'backup.zip'
     restored = tmp_path / 'restored'
     backup_store.create_backup(root, package)
-    assert backup_store.restore_backup(package, restored, tmp_path / 'settings.json')['schema_revision'] == '0022'
+    assert backup_store.restore_backup(package, restored, tmp_path / 'settings.json')['schema_revision'] == '0023'
     for library in (root, restored):
         with client(library) as c:
             assert c.post(url, json=make_leaf).json() == leaf
@@ -104,7 +104,7 @@ def test_concurrent_opposite_moves_and_backup_cycle(tmp_path, monkeypatch):
 
     def unchecked(path, checkpoint):
         with closing(backup_store.connect(path)) as db:
-            return '0022', backup_store.table_summary(db, checkpoint)
+            return '0023', backup_store.table_summary(db, checkpoint)
 
     with monkeypatch.context() as patch:
         patch.setattr(backup_store, 'database_info', unchecked)

@@ -74,13 +74,13 @@ class RetryDownload(BaseModel):
 def describe(job):
     received = job.progress.get('received', 0)
     resumable = (0 < received < LIMIT or received == LIMIT == job.progress.get('total'))
-    local = job.source_kind == 'local_pair'
+    pair_host = {'local_pair': '本地所选媒体', 'site_pair': 'www.bilibili.com'}.get(job.source_kind)
     result = dict(id=job.id, name=job.name, source_kind='site_progressive' if job.site_receipt else job.source_kind,
-                source_host='本地所选媒体' if local else parse_url(job.source_url)[1], parent_id=job.parent_id,
+                source_host=pair_host or parse_url(job.source_url)[1], parent_id=job.parent_id,
                 status=job.status, attempt=job.attempt, progress={k: job.progress.get(k) for k in ('received', 'total')},
-                can_resume=not local and not job.site_receipt and job.status in {'paused', 'interrupted', 'failed'} and strong_etag(job.progress.get('etag')) and resumable,
+                can_resume=pair_host is None and not job.site_receipt and job.status in {'paused', 'interrupted', 'failed'} and strong_etag(job.progress.get('etag')) and resumable,
                 result=job.result, error=job.error, created_at=job.created_at)
-    if local:
+    if pair_host is not None:
         from .media_sources import source_digest, source_snapshot
         try:
             source = source_snapshot(job.source_snapshot)
@@ -103,7 +103,7 @@ class MediaDownloads:
         with write_transaction(engine) as session:
             for job in session.scalars(select(MediaDownloadJob).where(MediaDownloadJob.status.in_(['queued', 'running']))):
                 job.status, job.error = 'interrupted', '上次下载被中断；请显式选择断点恢复或保留旧部分重新开始'
-                if job.source_kind == 'local_pair':
+                if job.source_kind in ('local_pair', 'site_pair'):
                     attempt = session.get(MediaDownloadAttempt, (job.id, job.run_generation))
                     if attempt is not None and attempt.status == 'running':
                         attempt.status = 'interrupted'
@@ -451,7 +451,7 @@ class MediaDownloads:
                 job = job_in(session, workspace_id, identifier)
                 if job.status in {'queued', 'running', 'ready'}:
                     raise HTTPException(409, '此任务当前不能重试')
-                if job.site_receipt:
+                if job.site_receipt or job.source_kind == 'site_pair':
                     raise HTTPException(409, '此站点任务须重新预览并确认，原部分保留')
                 if job.source_kind == 'local_pair' and body.mode != 'restart':
                     raise HTTPException(409, '合流不追加中断片段，请保留旧执行并重新开始')

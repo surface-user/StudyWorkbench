@@ -2,7 +2,7 @@
 import hashlib
 import json
 import re
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -50,12 +50,72 @@ class LocalPairSource(BaseModel):
         return self
 
 
+class SiteTrack(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    role: Literal['video', 'audio']
+    track_ref: str = Field(pattern=r'^(video|audio)-[a-f0-9]{64}$')
+    resource_sha256: str = Field(pattern=r'^[a-f0-9]{64}$')
+    source_format_id: int = Field(gt=0, le=2**53-1)
+    container: Literal['mp4', 'm4a']
+    codecs: str = Field(max_length=16)
+    width: int | None = Field(ge=1, le=32768)
+    height: int | None = Field(ge=1, le=32768)
+    fps: float | None = Field(gt=0, le=1000)
+    size_bytes: int | None = Field(ge=1, le=INPUT_LIMIT)
+
+    @property
+    def mime(self):
+        return self.role + '/mp4'
+
+    @property
+    def stream_index(self):
+        return 0
+
+
+class SitePairSource(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    schema_version: Annotated[int, Field(strict=True, ge=1, le=1)]
+    kind: Literal['site_pair']
+    recipe_version: Literal['mp4-copy-pair-v1']
+    component_snapshot_sha256: Literal[SNAPSHOT]
+    site: Literal['bilibili']
+    extractor_version: Literal['bilibili-preview-v3']
+    preview_id: str = Field(pattern=r'^[a-f0-9]{32}$')
+    selection_sha256: str = Field(pattern=r'^[a-f0-9]{64}$')
+    video_id: str = Field(pattern=r'^BV[a-zA-Z0-9]{10}$')
+    aid: int = Field(gt=0, le=2**53-1)
+    cid: int = Field(gt=0, le=2**53-1)
+    duration_seconds: int = Field(gt=0, le=7*86400)
+    tracks: list[SiteTrack] = Field(min_length=2, max_length=2)
+
+    @model_validator(mode='after')
+    def selected_pair(self):
+        video, audio = self.tracks
+        if ((video.role, video.container, audio.role, audio.container, audio.codecs) !=
+                ('video', 'mp4', 'audio', 'm4a', 'mp4a.40.2') or not re.fullmatch(r'avc1\.[0-9a-fA-F]{6}', video.codecs)
+                or (audio.width, audio.height, audio.fps) != (None, None, None)
+                or video.resource_sha256 == audio.resource_sha256 or sum(t.size_bytes or 0 for t in self.tracks) > INPUT_LIMIT):
+            raise ValueError('Unsupported or duplicate site tracks')
+        for track in self.tracks:
+            identity = [self.video_id, self.aid, self.cid, track.role, track.source_format_id, track.codecs]
+            if track.track_ref != track.role + '-' + hashlib.sha256(canonical(identity)).hexdigest():
+                raise ValueError('Site track identity does not match its selection')
+        return self
+
+
+class ReceivedContent(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    size: int = Field(ge=1, le=INPUT_LIMIT)
+    sha256: str = Field(pattern=r'^[a-f0-9]{64}$')
+
+
 class FrozenTrack(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     ordinal: int = Field(ge=0, le=1)
     state: Literal['pending', 'copied', 'probed']
     relative_path: str = Field(min_length=1, max_length=2048)
     metadata: ProbeMetadata | None = None
+    received: ReceivedContent | None = None
 
     @model_validator(mode='after')
     def observed_metadata(self):
@@ -113,7 +173,8 @@ def canonical(value):
 
 def source_snapshot(value):
     raw = value.encode('utf-8') if isinstance(value, str) else canonical(value)
-    return LocalPairSource.model_validate(strict_json(raw, SOURCE_LIMIT))
+    data = strict_json(raw, SOURCE_LIMIT)
+    return (SitePairSource if isinstance(data, dict) and data.get('kind') == 'site_pair' else LocalPairSource).model_validate(data)
 
 
 def source_digest(source):
@@ -142,6 +203,15 @@ def attempt_context(workspace, job, attempt, generation, source, record, *, read
             streams = track.metadata.streams
             if selection.stream_index >= len(streams) or streams[selection.stream_index].role != selection.role:
                 raise ValueError('Selected stream differs from actual probe')
+        if isinstance(source, SitePairSource):
+            if ((track.state != 'pending') != (track.received is not None)
+                    or track.received and selection.size_bytes not in (None, track.received.size)
+                    or track.metadata and len(track.metadata.streams) != 1):
+                raise ValueError('Site track bytes or stream do not match the confirmed selection')
+        elif track.received is not None:
+            raise ValueError('A local selection already fixes its input bytes')
+    if sum(track.received.size for track in record.tracks if track.received) > INPUT_LIMIT:
+        raise ValueError('Shared site input budget exceeded')
     if record.output is not None and (record.output.pending_path != f'{directory}/output.pending.mp4' or
                                       record.output.final_path != f'{parent}/{attempt}.mp4'):
         raise ValueError('Output is outside this attempt')
@@ -153,7 +223,7 @@ def attempt_context(workspace, job, attempt, generation, source, record, *, read
 def stored_source(job):
     """Validate a local job independently of SQL CHECKs, including restored databases."""
     source = source_snapshot(job['source_snapshot'])
-    if (job['source_kind'] != 'local_pair' or job['source_url'] is not None or
+    if (job['source_kind'] != source.kind or job['source_url'] is not None or
             source_digest(source) != job['source_snapshot_sha256'] or
             type(job['attempt']) is not int or job['attempt'] < 1 or
             type(job['run_generation']) is not int or job['run_generation'] < 0 or
@@ -188,7 +258,8 @@ def retained_files(source, record):
     """Yield alternative paths, expected hash/size, optional. Prepared publication may have moved."""
     for selection, track in zip(source.tracks, record.tracks, strict=True):
         full = track.state != 'pending'
-        yield (track.relative_path,), selection.sha256 if full else None, selection.size if full else None, not full
+        content = track.received if isinstance(source, SitePairSource) else selection
+        yield (track.relative_path,), content.sha256 if full else None, content.size if full else None, not full
     if record.output is not None:
         output = record.output
         paths = (output.final_path,) if output.state == 'committed' else (output.pending_path, output.final_path)
