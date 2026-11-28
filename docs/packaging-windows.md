@@ -93,6 +93,12 @@ program直属的固定30个AMD64原生EXE/COM/BIN另作office_program保守静�
 
 固定UNO环境绑定沿[该版cppu加载器](https://github.com/LibreOffice/core/blob/bf6ef2662401c7d6dce671ab4deb26ee0af3a7c1/cppu/source/uno/loadmodule.cxx)相对实际cppu3.dll解析。固定服务注册的mscx及mscx:affine分别关联mscx_uno.dll、affine_uno_uno.dll，后者普通导入purpenvhelper3MSC.dll。仅在既定原/自包含组合锁、services注册与caller/三库精确hash及AMD64原生DLL头都吻合时，加入原Office潜在静态根；搜索和私有CRT目录不变。源码、静态图、public UNO内存诊断与普通soffice实际观察分别记录。内存诊断不创建服务管理器或数据库驱动；普通宿主未观察的affine/helper不标成已执行。JDBC/ADO注册不构成数据库功能支持；其他环境目的、缺环境注册、动态加载和系统来源继续待核。
 
+### 为可选 Office 包配套 Java 源码
+
+准备构建时可同时指定 `-OfficeRuntime <带固定JRE的Office目录>` 和 `-TemurinSources @('<OpenJDK源码tar.gz>', '<Temurin构建脚本ZIP>')`。先用[源码归档校验命令](../dev/records/2026-11-28-temurin-source-archive/report.md)核对输入。此构建选项将两个固定归档与含来源、版本及 SHA-256 的清单放入应用目录的 `sources/temurin/`，继续使用现有全包清单和发行门禁。
+
+可在已安装或已独立解包的应用根目录运行 `python tools/temurin_source_delivery.py --installed <应用目录>`。该命令逐文件核实实际 JRE，检查配套源码文件集合、清单与归档字节。完整产品的其他源码和再分发义务仍须逐项核对。
+
 ## Office Python模板来源证据
 
 使用已有构建Python环境离线运行；输入必须是固定Office-Java组合及已下载的[CPython 3.13.15官方源码归档](https://www.python.org/ftp/python/3.13.15/Python-3.13.15.tar.xz)，命令不会下载、安装或执行归档内容：

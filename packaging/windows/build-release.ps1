@@ -2,12 +2,16 @@ param(
     [string]$Iscc = '.local/release-tools/inno7/ISCC.exe',
     [string]$CrtDirectory = 'C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Redist/MSVC/14.44.35112/x64/Microsoft.VC143.CRT',
     [string]$WebViewInstaller = '.local/release-tools/MicrosoftEdgeWebView2RuntimeInstallerX64.exe',
-    [string]$OfficeRuntime = ''
+    [string]$OfficeRuntime = '',
+    [string[]]$TemurinSources = @()
 )
 $ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 Push-Location $taskRoot
 try {
+    if ($TemurinSources.Count -and (-not $OfficeRuntime -or $TemurinSources.Count -ne 2)) {
+        throw 'TemurinSources requires OfficeRuntime and two files: the OpenJDK and Temurin build archives'
+    }
     $compiler = (Resolve-Path -LiteralPath $Iscc).Path
     $appVersion = ((Select-String -LiteralPath 'apps/desktop/pubspec.yaml' -Pattern '^version:\s*(\S+)').Matches[0].Groups[1].Value -split '\+')[0]
     $runtime = (Resolve-Path -LiteralPath $WebViewInstaller).Path
@@ -42,7 +46,9 @@ try {
         Copy-Item -LiteralPath $dll.FullName -Destination $stage
     }
     if ($OfficeRuntime) {
-        & .local/release-venv/Scripts/python.exe tools/stage_office_runtime.py --runtime $OfficeRuntime --stage $stage
+        $sourceArgs = @()
+        if ($TemurinSources.Count) { $sourceArgs = @('--temurin-sources') + $TemurinSources }
+        & .local/release-venv/Scripts/python.exe tools/stage_office_runtime.py --runtime $OfficeRuntime --stage $stage @sourceArgs
         if ($LASTEXITCODE -ne 0) { throw 'Office runtime staging failed; incomplete stage preserved' }
     }
     & .local/release-venv/Scripts/python.exe tools/release_inventory.py --stage $stage

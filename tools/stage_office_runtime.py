@@ -13,9 +13,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--runtime', type=Path, required=True)
     parser.add_argument('--stage', type=Path, required=True)
+    parser.add_argument('--temurin-sources', type=Path, nargs=2, metavar=('OPENJDK_SOURCES', 'BUILD_SOURCES'))
     args = parser.parse_args()
     stage = args.stage.resolve(strict=True)
     runtime = OfficeRuntime(args.runtime.resolve(strict=True))
+    if args.temurin_sources and runtime.java_home is None:
+        raise ValueError('Temurin sources require Office with the pinned JRE')
     assert not stage.is_relative_to(runtime.root), 'Stage cannot be inside runtime'
     destination = resource_path(stage, 'converters/libreoffice')
     assert not destination.exists(), 'Never replace an existing converter'
@@ -30,6 +33,9 @@ def main():
     copied = OfficeRuntime(destination)
     copied.verify(lambda: None)
     assert copied.fingerprint == runtime.fingerprint
+    if args.temurin_sources:
+        from temurin_source_delivery import stage as stage_sources
+        stage_sources(stage, *args.temurin_sources)
     print(f'Optional LibreOffice {len(runtime.files)} files verified and staged')
 
 

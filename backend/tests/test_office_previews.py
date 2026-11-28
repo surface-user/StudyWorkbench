@@ -372,8 +372,12 @@ def test_runtime_inventory_rejects_missing_changed_unlisted_and_bad_paths(tmp_pa
     stage.mkdir()
     command = [sys.executable, str(Path(__file__).parents[2] / 'tools/stage_office_runtime.py'),
                '--runtime', str(root), '--stage', str(stage)]
+    refused = subprocess.run([*command, '--temurin-sources', 'source', 'build'], capture_output=True, timeout=30)
+    assert refused.returncode != 0 and b'require Office with the pinned JRE' in refused.stderr
+    assert not any(stage.iterdir())
     result = subprocess.run(command, capture_output=True, timeout=30)
     assert result.returncode == 0, result.stderr.decode(errors='replace')
+    assert not (stage / 'sources').exists()
     assert office_runtime.OfficeRuntime(stage / 'converters/libreoffice').fingerprint == runtime.fingerprint
     assert subprocess.run(command, capture_output=True, timeout=30).returncode != 0
     (root / 'NOTICE').write_bytes(b'tamper')
