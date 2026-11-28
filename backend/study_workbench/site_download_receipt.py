@@ -9,7 +9,7 @@ from .media_download_http import LIMIT, DownloadError, SiteNetworkBudget, bilibi
 
 @dataclass(frozen=True)
 class SiteTransfer:
-    url: str
+    url: str | tuple[str, str]
     expires: float
     deadline: float
     budget: SiteNetworkBudget
@@ -23,7 +23,7 @@ class SiteTransfer:
                 or type(received) is not int or not 0 < received <= 8 * 1024 * 1024):
             raise DownloadError('站点元数据用量无效')
         budget = SiteNetworkBudget(10 - requests, LIMIT - received)
-        if budget.requests_left == 0 or size > budget.bytes_left:
+        if budget.requests_left < (2 if isinstance(url, tuple) else 1) or size > budget.bytes_left:
             raise DownloadError('本次站点确认没有足够的请求或字节额度')
         return cls(url, expires, deadline, budget)
 

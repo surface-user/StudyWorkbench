@@ -103,6 +103,7 @@ def bilibili_media_host(host):
 
 
 def transfer(url, path, suffix, *, offset=0, etag=None, partial_sha256=None, site_host=None, expected_size=None, budget=None,
+             site_track=False,
              checkpoint=lambda: None, progress=lambda value: None):
     """Write only a caller-owned fresh/partial file. Failure never truncates existing bytes."""
     from .media_library import media_mime
@@ -114,7 +115,9 @@ def transfer(url, path, suffix, *, offset=0, etag=None, partial_sha256=None, sit
             or offset and (not strong_etag(etag) or not isinstance(partial_sha256, str)
                            or not re.fullmatch('[a-f0-9]{64}', partial_sha256))):
         raise DownloadError('恢复参数或媒体格式无效')
-    if budget is not None and (expected_size is None or expected_size - offset > budget.bytes_left):
+    if site_track and (site_host is None or budget is None or offset or suffix not in ('.mp4', '.m4a')):
+        raise DownloadError('站点轨道输入无效')
+    if budget is not None and ((expected_size is None and not site_track) or (expected_size or 1) - offset > budget.bytes_left):
         raise DownloadError('站点元数据与所选媒体超过共用字节额度')
     if offset:
         try:
@@ -184,6 +187,8 @@ def transfer(url, path, suffix, *, offset=0, etag=None, partial_sha256=None, sit
                 total = expected_size
             if total is not None and not offset < total <= LIMIT:
                 raise DownloadError('下载为空或超过512MiB')
+            if budget is not None and total is not None and total-offset > budget.bytes_left:
+                raise DownloadError('轨道响应长度超过剩余共用字节额度')
             received, header, checksum = offset, b'', hashlib.sha256()
             if offset:
                 with path.open('rb') as old:

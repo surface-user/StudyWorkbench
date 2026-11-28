@@ -32,9 +32,9 @@ def tracks(monkeypatch, source):
     dash['video'].append(dict(video, id=80, width=1920, height=1080, baseUrl=f'https://{HOST}/higher.m4s'))
     hosts = []
 
-    def extract(self, entry):
+    def extract(self, entry, selected_refs=()):
         calls, _, _ = network(monkeypatch, source)
-        result = preview.extract(entry['url'])
+        result = preview.extract(entry['url'], selected_refs=selected_refs)
         hosts.extend(call[0] for call in calls)
         return result
 
@@ -71,7 +71,7 @@ def test_pick_pair_recheck_and_replay_without_media_transfer(tmp_path, tracks):
         assert first.status_code == 200, first.text
         receipt = first.json()
         assert receipt['aid'] == 7 and receipt['cid'] == 9 and receipt['delivery'] == 'dash_pair'
-        assert receipt['rights_confirmed'] is True and receipt['download_supported'] is False
+        assert receipt['rights_confirmed'] is True and receipt['download_supported'] is True
         assert [r['source_format_id'] for r in receipt['tracks']] == [64, 30280]
         assert receipt['selection_sha256'] == digest({k: v for k, v in receipt.items() if k != 'selection_sha256'})
         assert api.post(endpoint, json=choice(refs)).json() == receipt

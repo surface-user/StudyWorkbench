@@ -34,6 +34,10 @@ class LocalPairSource(BaseModel):
     component_snapshot_sha256: str
     tracks: list[TrackSelection] = Field(min_length=2, max_length=2)
 
+    @property
+    def input_size(self):
+        return sum(track.size for track in self.tracks)
+
     @model_validator(mode='before')
     @classmethod
     def integer_version(cls, value):
@@ -87,6 +91,11 @@ class SitePairSource(BaseModel):
     cid: int = Field(gt=0, le=2**53-1)
     duration_seconds: int = Field(gt=0, le=7*86400)
     tracks: list[SiteTrack] = Field(min_length=2, max_length=2)
+
+    @property
+    def input_size(self):
+        sizes = [track.size_bytes for track in self.tracks]
+        return sum(sizes) if all(size is not None for size in sizes) else None
 
     @model_validator(mode='after')
     def selected_pair(self):
@@ -208,6 +217,12 @@ def attempt_context(workspace, job, attempt, generation, source, record, *, read
                     or track.received and selection.size_bytes not in (None, track.received.size)
                     or track.metadata and len(track.metadata.streams) != 1):
                 raise ValueError('Site track bytes or stream do not match the confirmed selection')
+            if track.metadata is not None:
+                stream = track.metadata.streams[0]
+                if (abs(stream.duration_ms - source.duration_seconds*1000) > 3000
+                        or selection.role == 'video' and (selection.width not in (None, stream.width)
+                                                            or selection.height not in (None, stream.height))):
+                    raise ValueError('Actual duration or video dimensions differ from the confirmed site track')
         elif track.received is not None:
             raise ValueError('A local selection already fixes its input bytes')
     if sum(track.received.size for track in record.tracks if track.received) > INPUT_LIMIT:

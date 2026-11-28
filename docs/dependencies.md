@@ -140,7 +140,7 @@ webview_windows0.4.0仅保留候选；已采用的是flutter_inappwebview。yt-d
 
 可选同步probe由[media_probe_runtime.py](../backend/study_workbench/media_probe_runtime.py)校验整个固定17资产及清单：canonical payload的snapshot=`2cd1cbbdc939fc6ab27818a71092e24d122519cdb7fb9dca78c9bf29037e9390`、profile=`ee0f21d31ae183a6579bbf0b3414ae84f46d7ce6c6cd5660e07906b0e8e7af9f`，派生hash不进入自身preimage；少/多文件、链接/重解析、改后自重签或不匹配bytes均拒绝。仅在开发进程可用STUDY_FFMPEG_RUNTIME定位同一已核组件，仍须全量pin；默认源码根.local/ffmpeg-runtime、冻结包父目录converters/ffmpeg。无PATH查找、自动安装/下载/更新或HTTP任意路径入口，发行脚本尚不捆绑此可选组件。
 
-实际处理限于c1的非分片MP4 H264/AAC与M4A AAC，受管媒体ID/expected hash、独占源副本、固定MOV参数/无网络编译配置、Job/EOF/HTTP断开取消，输出为有界实际元数据，非decode或合流。原始帧/下载来源和实际站点能力不由此验证；WebM/分片/DASH/HLS、持久来源/attempt、合流发布及最终发行仍未完成。Windows源码/冻结与限制证据见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)，原工具/RC/管道/真实取消失败保留。
+c1 的同步探测覆盖受管的非分片 MP4 H.264/AAC 与 M4A AAC，按期望哈希核验独占副本，使用固定 MOV 参数和禁用网络的组件，返回有界元数据。后续本地与站点双轨合成复用同一固定组件，接收受控的 H.264/AAC 单轨文件，支持已校验的本地分片布局。站点流程和已有凭据的恢复见[双轨执行报告](../dev/records/site-pair-execution/report.md)。公开站点下载及最终发行仍待分别验证。c1 的 Windows 源码、冻结验证和原有失败记录见[原报告](../dev/records/2026-11-05-lw07-downloads/report.md)。
 
 ## 待验证与升级门禁
 
