@@ -69,22 +69,44 @@ OFFICE_NSS_OBSERVED_LOCKS = {
 }
 
 
-def office_nss_entries(nodes, office, lock_sha256, manifest):
-    if lock_sha256 not in OFFICE_NSS_OBSERVED_LOCKS:
-        return {}
+def observed_office_images(nodes, office, manifest, relatives, label):
     images = {}
-    for name in ('softokn3.dll', 'freebl3.dll', 'sqlite3.dll'):
-        relative = 'program/' + name
+    for relative in relatives:
         path = office + relative
         image = nodes.get(path)
         expected = manifest['files'].get(relative)
         if (not expected or image is None or image['sha256'] != expected or image['machine'] != 0x8664
                 or image['magic'] != 0x20B or image['characteristics'] & 0x2002 != 0x2002 or image['clr_rva'] != 0):
-            raise ValueError('Observed Office NSS image differs: ' + relative)
+            raise ValueError(f'Observed Office {label} image differs: {relative}')
         images[path] = expected
+    return images
+
+
+def office_nss_entries(nodes, office, lock_sha256, manifest):
+    if lock_sha256 not in OFFICE_NSS_OBSERVED_LOCKS:
+        return {}
+    images = observed_office_images(nodes, office, manifest,
+        ('program/softokn3.dll', 'program/freebl3.dll', 'program/sqlite3.dll'), 'NSS')
     if ('sqlite3.dll', 'import') not in nodes[office + 'program/softokn3.dll']['edges']:
         raise ValueError('Expected the Office NSS module to import SQLite')
     return images
+
+
+def office_java_pipe_domain(nodes, office, lock_sha256, manifest, system):
+    # These are the two component inventories observed during the formal UNO client call.
+    if lock_sha256 not in {'156b4421aeb8eaadb565d6d33234bf69c58d22b5e46b78c9de81548dfe7b9bc9',
+                           'b0a040bd584bb69aeaba44f749996d2320d83707889b8f8ad85d93d44893c9ee'}:
+        return None
+    roots = ('program/jpipe.dll', 'program/jpipx.dll')
+    paths = (*roots, 'program/sal3.dll', 'program/msvcp140_1.dll',
+             'java/bin/msvcp140.dll', 'java/bin/vcruntime140.dll', 'java/bin/vcruntime140_1.dll')
+    observed = observed_office_images(nodes, office, manifest, paths, 'Java pipe')
+    # Only these package DLLs were observed in the formal Java UNO client's pipe call.
+    selected = {path: nodes[path] for path in observed}
+    directories = [office + 'java/bin', office + 'program']
+    domain = closure(selected, [office + path for path in roots], directories, directories, system)
+    domain['observed_images'] = observed
+    return domain
 
 
 def office_environment_entries(payload, nodes, office):
@@ -536,6 +558,9 @@ def inspect_dependencies(payload, system):
             # Conservatively include every fixed launcher; this does not assert the product executes it.
             domains['java'] = closure(nodes, sorted(java_libraries['executables']) + list(java_libraries['dlls']),
                                       [java, server], [java], system)
+            pipe = office_java_pipe_domain(nodes, office, hashlib.sha256(raw).hexdigest(), manifest, system)
+            if pipe is not None:
+                domains['office_java_pipe_client'] = pipe
         uno_entries = office_uno_entries(payload, office)
         text_entries = office_textencoding_entries(payload, nodes, office)
         locale_entries = office_locale_entries(payload, nodes, office)

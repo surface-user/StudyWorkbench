@@ -55,3 +55,18 @@ python -B -X utf8 tools/export_question_schema.py --check
 | 两份 CRT 的实际来源，`67dae84` | 382 项通过，退出 0 | 382 项通过，退出 0 | [PR #127 的 CI](https://github.com/surface-user/StudyWorkbench/actions/runs/45837951989) |
 
 两份提交均执行上方列出的四个测试文件，用 `sys.version_info[:3]` 断言指定的精确版本后运行 pytest。本次纠正只涉及自动化回归的本机版本归属；实际 Office/Java 子进程的来源证据在原专项中独立记录。
+
+## 2026-11-28 正式客户端的管道依赖图
+
+对两份已验证的完整组件，将 Java 进程内观察到的 jpipe 和 jpipx 作为独立入口。对应七个包内 DLL 逐一核对固定路径、SHA-256、x64 PE32+ 原生 DLL 类型。这个客户端调用的包内解析只使用这些已观察到的文件。在两份组件中，SAL 的四个私有 CRT 依赖均落在观察到的实际目录。
+
+| 组件 | 原有未归类 PE | 本次剩余 | 新域中的包内依赖 |
+|---|---:|---:|---:|
+| Office 与 Temurin | 69 / 351 | 67 / 351 | 12 |
+| 自包含 Python 布局 | 68 / 354 | 66 / 354 | 12 |
+
+- 对两套实物分别运行 `python tools/check_native_dependencies.py --office <固定组件目录>`，退出 0。与该组件原报告相比，未归类集合仅移出 jpipe 和 jpipx。此前所有进程域的内容逐项一致。新域另列 35 个 API-set 引用及 16 个系统文件引用。
+- 分别运行 `python -B -X utf8 tools/check_office_uno_client.py --component <固定组件> --output <新测试目录> --javac <开发用编译器>`。初次运行均未完成管道通信，保留失败报告。在允许使用本机 Windows 管道的独立测试目录复跑，两个正式客户端与服务均正常结束，URLTransformer 调用成功。新的实际加载记录与图中七份文件的路径及摘要逐一匹配。
+- `python -m pytest -q backend/tests/test_native_dependencies.py backend/tests/test_office_uno_client.py backend/tests/test_office_java_pipe.py` 在 Python 3.12.7、3.13.17 各通过 351 项。新增用例起初失败，修复后覆盖未知组件、入口摘要变更，以及错误目录中存在同名同字节 CRT 的情况。Ruff 与差异检查退出 0。
+
+此结论仅适用于已实测的正式 Java 管道调用。普通文档转换中的 JVM 启用、其余未归类文件和最终发行整包继续单列。

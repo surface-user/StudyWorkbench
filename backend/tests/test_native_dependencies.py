@@ -18,6 +18,35 @@ def node(path, imports=(), *, machine=0x8664, digest='same'):
                 characteristics=0x0002, clr_rva=0)
 
 
+def test_observed_java_pipe_binds_each_crt_to_its_loaded_directory(native, tmp_path):
+    office = 'converters/libreoffice/'
+    names = ['program/jpipe.dll', 'program/jpipx.dll', 'program/sal3.dll', 'program/msvcp140_1.dll',
+             'java/bin/msvcp140.dll', 'java/bin/vcruntime140.dll', 'java/bin/vcruntime140_1.dll']
+    files = {name: hashlib.sha256(name.encode()).hexdigest() for name in names}
+    nodes = {office + name: {**node(office + name, digest=digest), 'characteristics': 0x2002}
+             for name, digest in files.items()}
+    sal = nodes[office + 'program/sal3.dll']
+    sal['edges'] = [(name.split('/')[-1], 'import') for name in names[3:]]
+    nodes[office + 'program/jpipx.dll']['edges'] = [('sal3.dll', 'import')]
+    other_crt = office + 'program/vcruntime140_1.dll'
+    nodes[other_crt] = {**nodes[office + 'java/bin/vcruntime140_1.dll'], 'path': other_crt}
+    lock = native.OFFICE_SELFCONTAINED_LOCK_SHA256
+    def run():
+        return native.office_java_pipe_domain(nodes, office, lock, {'files': files}, tmp_path)
+    result = run()
+    assert set(result['nodes']) == {office + name for name in names}
+    assert {e['target'] for e in result['edges'] if e['source'] == sal['path']} == {office + n for n in names[3:]}
+    assert native.office_java_pipe_domain(nodes, office, 'unknown', {'files': files}, tmp_path) is None
+    nodes[office + 'program/jpipe.dll']['sha256'] = 'different'
+    with pytest.raises(ValueError, match='Java pipe'):
+        run()
+    nodes[office + 'program/jpipe.dll']['sha256'] = files['program/jpipe.dll']
+    del nodes[office + 'java/bin/vcruntime140_1.dll']
+    (tmp_path / 'vcruntime140_1.dll').touch()
+    with pytest.raises(ValueError, match='Java pipe'):
+        run()
+
+
 @pytest.fixture
 def observed_nss(native, monkeypatch):
     office = 'converters/libreoffice/'
