@@ -7,7 +7,7 @@ from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from .media_download_http import LIMIT, DownloadError, bilibili_media_host
+from .media_download_http import LIMIT, DownloadError, bilibili_media_host, parse_url
 
 
 class ConfirmPairSelection(BaseModel):
@@ -30,7 +30,16 @@ def digest(value):
     return hashlib.sha256(raw.encode('ascii')).hexdigest()
 
 
-def mark_choices(result):
+def bound_media_url(track, url):
+    url, host, _ = parse_url(url)
+    path = urlsplit(url).path
+    if (not bilibili_media_host(host) or not path.lower().endswith('.m4s')
+            or digest([host, path]) != track.resource_sha256):
+        raise DownloadError('所选轨道的来源已变化，请重新预览')
+    return url, host
+
+
+def mark_choices(result, selected_refs=()):
     """Called on parsed metadata only. No signed URL participates in a stable track identity."""
     rows = result['formats']
     marks = []
@@ -60,15 +69,17 @@ def mark_choices(result):
     if {role for _, role, _, _ in choices} == {'video', 'audio'}:
         for row, _, ref, path_id in choices:
             row['pair_track_ref'], row['_pair_resource'] = ref, path_id
+            if ref in selected_refs:
+                result.setdefault('_selected_pair_urls', {})[ref] = row['url']
     for row in rows:
         if row['delivery'] in ('dash_video', 'dash_audio'):
             row.pop('_pair_permitted', None)
             row['url'] = None
 
 
-def selected_pair(result, body):
+def selected_pair(result, video_ref, audio_ref):
     selections, resources = [], []
-    for role, ref in [('video', body.video_ref), ('audio', body.audio_ref)]:
+    for role, ref in [('video', video_ref), ('audio', audio_ref)]:
         matches = [row for row in result['formats'] if row.get('pair_track_ref') == ref
                    and row['delivery'] == 'dash_' + role]
         if len(matches) != 1:

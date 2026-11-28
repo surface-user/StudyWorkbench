@@ -322,7 +322,7 @@ def formats(play, *, can_download=False):
     return result
 
 
-def extract(url, *, checkpoint=lambda: None):
+def extract(url, *, checkpoint=lambda: None, selected_refs=()):
     deadline = time.monotonic() + 45
 
     def check():
@@ -387,7 +387,7 @@ def extract(url, *, checkpoint=lambda: None):
                       metadata_usage={'requests': client.requests, 'bytes': client.received},
                       formats=formats(play, can_download=duration > 0 and type(video['rights'].get('download')) is int
                                       and video['rights']['download'] == 1))
-        mark_choices(result)
+        mark_choices(result, selected_refs)
         if len(json.dumps(result, ensure_ascii=False).encode('utf-8')) > OUTPUT_LIMIT:
             raise DownloadError('预览结果超过128KiB')
         check()

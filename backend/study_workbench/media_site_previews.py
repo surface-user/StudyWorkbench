@@ -19,10 +19,12 @@ from sqlalchemy.orm import Session
 
 from .bilibili_preview import OUTPUT_LIMIT, VERSION, PreviewHTTPError, page_url, safe_http_diagnostic
 from .media_download_http import DownloadError
-from .media_downloads import JOB_SECONDS, ConfirmSiteDownload
+from .media_downloads import JOB_SECONDS, ConfirmSiteDownload, ConfirmSitePair
+from .media_probe_runtime import SNAPSHOT
+from .media_sources import RECIPE, source_snapshot
 from .office_runtime import WindowsProcessJob
 from .site_download_receipt import SiteTransfer, candidate
-from .site_pair_selection import ConfirmPairSelection, digest, selected_pair
+from .site_pair_selection import ConfirmPairSelection, bound_media_url, digest, selected_pair
 from .workspaces import require_workspace
 
 SECONDS = 45
@@ -144,7 +146,7 @@ class MediaSitePreviews:
             entry.update(status='cancelled', result=None, error=None, error_diagnostic=None)
             return self.describe(entry)
 
-    def child(self, entry):
+    def child(self, entry, selected_refs=()):
         if self.stopping.is_set() or entry['cancel'].is_set():
             raise DownloadError('预览已取消')
         command = [sys.executable]
@@ -182,7 +184,10 @@ class MediaSitePreviews:
                 # The fixed worker waits for this input; no request can begin before Job ownership.
                 if self.stopping.is_set() or entry['cancel'].is_set():
                     raise DownloadError('预览已取消')
-                process.stdin.write(json.dumps({'url': entry['url']}).encode('utf-8') + b'\n')
+                options = {'url': entry['url']}
+                if selected_refs:
+                    options['selected_refs'] = list(selected_refs)
+                process.stdin.write(json.dumps(options).encode('utf-8') + b'\n')
                 process.stdin.flush()
                 while True:
                     if self.stopping.is_set() or entry['cancel'].is_set():
@@ -297,7 +302,7 @@ class MediaSitePreviews:
     def confirm_pair_selection(self, workspace, identifier, body):
         self.workspace(workspace)
         with self.checking(workspace, identifier) as (entry, original):
-            selected = selected_pair(original, body)
+            selected = selected_pair(original, body.video_ref, body.audio_ref)
             with self.lock:
                 self.current(entry)
                 previous = entry.get('pair_selection')
@@ -305,17 +310,49 @@ class MediaSitePreviews:
                     if (previous['request_id'] == body.request_id and previous['tracks'] == selected[0]['tracks']):
                         return previous
                     raise HTTPException(409, '本预览已有确认选择；更换轨道请重新预览')
-            fresh = selected_pair(self.child(entry), body)
+            fresh = selected_pair(self.child(entry), body.video_ref, body.audio_ref)
             with self.lock:
                 self.current(entry)
                 if fresh != selected:
                     raise HTTPException(409, '作品身份、所选轨道或声明已变化，请重新预览')
                 receipt = dict(schema_version=1, preview_id=identifier, request_id=body.request_id,
                                rights_confirmed=True, confirmed_at=datetime.now(UTC).isoformat(),
-                               delivery='dash_pair', download_supported=False, **fresh[0])
+                               delivery='dash_pair', download_supported=True, **fresh[0])
                 receipt['selection_sha256'] = digest(receipt)
                 entry['pair_selection'] = receipt
                 return receipt
+
+    def download_pair(self, downloads, workspace, identifier, body):
+        previous = downloads.site_retry(workspace, identifier, body)
+        if previous is not None:
+            return previous
+        if Path(body.name).suffix.lower() != '.mp4':
+            raise HTTPException(422, '合成文件名须为 MP4')
+        with self.checking(workspace, identifier) as (entry, original):
+            receipt = entry.get('pair_selection')
+            if receipt is None or receipt['selection_sha256'] != body.selection_sha256:
+                raise HTTPException(409, '请先明确选择并确认同一预览的两条轨道')
+            refs = tuple(row['track_ref'] for row in receipt['tracks'])
+            deadline = time.monotonic() + JOB_SECONDS
+            fresh = self.child(entry, refs)
+            logical, resources = selected_pair(fresh, *refs)
+            if (logical, resources) != selected_pair(original, *refs):
+                raise HTTPException(409, '作品身份或轨道已变化，请重新预览')
+            temporary = fresh.get('_selected_pair_urls')
+            if not isinstance(temporary, dict) or set(temporary) != set(refs):
+                raise HTTPException(409, '未取得所选两条轨道的当前地址')
+            urls = tuple(temporary[ref] for ref in refs)
+            tracks = [dict(row, resource_sha256=identity) for row, identity in zip(logical['tracks'], resources, strict=True)]
+            source = source_snapshot(dict(logical, schema_version=1, kind='site_pair', preview_id=identifier,
+                selection_sha256=body.selection_sha256, recipe_version=RECIPE, component_snapshot_sha256=SNAPSHOT,
+                tracks=tracks))
+            for track, url in zip(source.tracks, urls, strict=True):
+                bound_media_url(track, url)
+            with self.lock:
+                self.current(entry)
+                transfer = SiteTransfer.from_confirmation(urls, entry['expires'], deadline, fresh.get('metadata_usage'),
+                                                           sum(t.size_bytes or 1 for t in source.tracks))
+                return downloads.enqueue_site_pair(workspace, body, source, transfer)
 
     def router(self, downloads=None):
         router = APIRouter(prefix='/api/workspaces/{workspace_id}/media-site-previews', tags=['media'])
@@ -335,6 +372,10 @@ class MediaSitePreviews:
         @router.post('/{identifier}/pair-selection')
         def pair_selection(workspace_id: str, identifier: str, body: ConfirmPairSelection):
             return self.confirm_pair_selection(workspace_id, identifier, body)
+
+        @router.post('/{identifier}/confirm-pair')
+        def confirm_pair(workspace_id: str, identifier: str, body: ConfirmSitePair):
+            return self.download_pair(downloads, workspace_id, identifier, body)
 
         @router.post('/{identifier}/cancel')
         def cancel(workspace_id: str, identifier: str):

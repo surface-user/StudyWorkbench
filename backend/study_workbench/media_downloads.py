@@ -66,6 +66,10 @@ class ConfirmSiteDownload(DownloadTarget):
     format_id: str = Field(pattern=r'^legacy-[0-9]{1,2}$')
 
 
+class ConfirmSitePair(DownloadTarget):
+    selection_sha256: str = Field(pattern=r'^[a-f0-9]{64}$')
+
+
 class RetryDownload(BaseModel):
     model_config = ConfigDict(extra='forbid')
     mode: str = Field(pattern='^(resume|restart)$')
@@ -133,20 +137,29 @@ class MediaDownloads:
         with write_transaction(self.engine) as session:
             session.get(MediaDownloadJob, identifier).progress = value
 
-    def child(self, job, path, *, deadline=None, transfer=None):
+    def child(self, job, path, *, deadline=None, transfer=None, acquired=None):
         from . import media_mux, media_probe_runtime
-        local = job.source_kind == 'local_pair'
+        paired = job.source_kind in ('local_pair', 'site_pair')
+        fetching = job.source_kind == 'site_pair' and transfer is not None
+        local = paired and not fetching
         deadline = deadline if deadline is not None else time.monotonic() + JOB_SECONDS
-        options = (media_mux.worker_options(self, job, deadline) if local else
-                   dict(url=transfer.url if transfer else job.source_url, path=str(path), suffix=Path(job.name).suffix.lower(),
-                        offset=job.progress.get('received', 0), etag=job.progress.get('etag'),
-                        partial_sha256=job.progress.get('partial_sha256')))
+        if paired:
+            options = media_mux.worker_options(self, job, deadline, acquired=acquired)
+            if fetching:
+                options.update(mode='site_pair', urls=list(transfer.url), deadline=deadline,
+                               site_budget=vars(transfer.budget))
+                options.pop('runtime')
+                options.pop('inputs')
+        else:
+            options = dict(url=transfer.url if transfer else job.source_url, path=str(path), suffix=Path(job.name).suffix.lower(),
+                           offset=job.progress.get('received', 0), etag=job.progress.get('etag'),
+                           partial_sha256=job.progress.get('partial_sha256'))
         if job.site_receipt:
             options['site_host'] = job.site_receipt['cdn_host']
             options['expected_size'] = job.site_receipt['size']
             options['site_budget'] = {'requests_left': transfer.budget.requests_left, 'bytes_left': transfer.budget.bytes_left}
             options['deadline'] = transfer.deadline
-        environment = (media_probe_runtime.environment(path) if local else dict(os.environ))
+        environment = (media_probe_runtime.environment(path) if paired else dict(os.environ))
         environment.update(PYTHONUTF8='1', PYTHONIOENCODING='utf-8',
                            PYTHONPATH=str(Path(__file__).resolve().parents[1]))
         command = [sys.executable]
@@ -154,7 +167,7 @@ class MediaDownloads:
             command += ['-m', 'study_workbench']
         process = subprocess.Popen(command + ['--mux-media' if local else '--download-media'], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL, creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0,
-            cwd=path if local else None, env=environment)
+            cwd=path if paired else None, env=environment)
         messages, finished = queue.Queue(maxsize=16), Event()
         def read():
             try:
@@ -187,10 +200,10 @@ class MediaDownloads:
                     if process.poll() is not None and not reader.is_alive():
                         raise DownloadError('下载工作进程提前结束，已存部分保留')
                     continue
-                if local and (not isinstance(message, dict) or len(message) != 1):
+                if paired and (not isinstance(message, dict) or len(message) != 1):
                     raise DownloadError('合流工作响应无效，文件保留')
                 if 'progress' in message:
-                    if local:
+                    if paired:
                         media_mux.progress(self, job, message['progress'])
                     else:
                         self.progress(job.id, message['progress'])
@@ -226,10 +239,10 @@ class MediaDownloads:
         try:
             with Session(self.engine) as session:
                 current = session.get(MediaDownloadJob, identifier)
-                local = current is not None and current.source_kind == 'local_pair'
-            if local:
+                paired = current is not None and current.source_kind in ('local_pair', 'site_pair')
+            if paired:
                 from .media_mux import run_local
-                run_local(self, identifier, self.child)
+                run_local(self, identifier, self.child, transfer)
                 return
             check()
             with write_transaction(self.engine) as session:
@@ -336,13 +349,47 @@ class MediaDownloads:
 
     @staticmethod
     def match_request(old, body, preview):
-        if preview:
+        if isinstance(body, ConfirmSitePair):
+            same_source = (old.source_kind == 'site_pair' and old.source_snapshot.get('preview_id') == preview
+                           and old.source_snapshot.get('selection_sha256') == body.selection_sha256)
+        elif preview:
             same_source = (old.site_receipt and old.site_receipt['preview_id'] == preview
                            and old.site_receipt['format_id'] == body.format_id)
         else:
             same_source = old.site_receipt is None and old.source_kind == 'direct_https' and old.source_url == body.url
         if not same_source or (old.name, old.parent_id) != (body.name, body.parent_id):
             raise HTTPException(409, '同一请求的下载参数变化')
+
+    def insert_pair(self, session, workspace, body, source):
+        from .media_sources import source_digest
+        self.capacity(session)
+        identifier = uuid4().hex
+        item = MediaDownloadJob(id=identifier, workspace_id=workspace, parent_id=body.parent_id,
+            request_id=body.request_id, source_url=None, source_kind=source.kind,
+            source_snapshot=source.model_dump(mode='json'), source_snapshot_sha256=source_digest(source),
+            run_generation=0, name=body.name, status='queued', cancel_requested=False, attempt=1,
+            relative_path=f'workspaces/{workspace}/downloads/{identifier}/1.mp4',
+            progress={'received': 0, 'total': source.input_size, 'phase': 'copying'}, result={}, error=None,
+            created_at=datetime.now(timezone.utc).isoformat())
+        session.add(item)
+        session.flush()
+        return describe(item)
+
+    def enqueue_site_pair(self, workspace, body, source, transfer):
+        with write_transaction(self.engine) as session:
+            parent_in(session, workspace, body.parent_id)
+            old = session.scalar(select(MediaDownloadJob).where(MediaDownloadJob.workspace_id == workspace,
+                                                                 MediaDownloadJob.request_id == body.request_id))
+            if old:
+                self.match_request(old, body, source.preview_id)
+                return describe(old)
+            if session.scalar(select(MediaDownloadJob.id).where(MediaDownloadJob.workspace_id == workspace,
+                    MediaDownloadJob.source_kind == 'site_pair',
+                    MediaDownloadJob.source_snapshot['preview_id'].as_string() == source.preview_id)):
+                raise HTTPException(409, '此预览已有双轨任务，请查看原下载任务')
+            result = self.insert_pair(session, workspace, body, source)
+        self.pool.submit(self.run, result['id'], transfer)
+        return result
 
     def enqueue(self, workspace, body, source_url, *, receipt=None, transfer=None):
         with write_transaction(self.engine) as session:
@@ -375,7 +422,6 @@ class MediaDownloads:
 
     def router(self):
         from .media_mux import CreateLocalPair, same_request, source_for_request
-        from .media_sources import source_digest
         router = APIRouter(prefix='/api/workspaces/{workspace_id}/media-downloads')
         def job_in(session, workspace, identifier):
             require_workspace(session, workspace)
@@ -397,20 +443,9 @@ class MediaDownloads:
                     if not equal:
                         raise HTTPException(409, '同一请求的合流参数变化')
                     return describe(old)
-                self.capacity(session)
                 source = source_for_request(session, workspace_id, body)
-                identifier = uuid4().hex
-                item = MediaDownloadJob(id=identifier, workspace_id=workspace_id, parent_id=body.parent_id,
-                    request_id=body.request_id, source_url=None, source_kind='local_pair',
-                    source_snapshot=source.model_dump(mode='json'), source_snapshot_sha256=source_digest(source),
-                    run_generation=0, name=body.name, status='queued', cancel_requested=False, attempt=1,
-                    relative_path=f'workspaces/{workspace_id}/downloads/{identifier}/1.mp4',
-                    progress={'received': 0, 'total': sum(t.size for t in source.tracks), 'phase': 'copying'},
-                    result={}, error=None, created_at=datetime.now(timezone.utc).isoformat())
-                session.add(item)
-                session.flush()
-                result = describe(item)
-            self.pool.submit(self.run, identifier)
+                result = self.insert_pair(session, workspace_id, body, source)
+            self.pool.submit(self.run, result['id'])
             return result
         @router.post('')
         def create(workspace_id: str, body: CreateDownload):

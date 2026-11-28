@@ -40,7 +40,7 @@ def worker():
     try:
         options = runtime.strict_json(sys.stdin.buffer.readline(32769), 32768)
         fields = {'root', 'workspace', 'job', 'attempt', 'generation', 'snapshot', 'inputs', 'runtime', 'remaining_ms'}
-        if not isinstance(options, dict) or set(options) != fields:
+        if not isinstance(options, dict) or set(options) not in (fields, fields | {'record'}):
             raise ValueError('Private mux fields')
         if type(options['remaining_ms']) is not int or not 1 <= options['remaining_ms'] <= 900000:
             raise ValueError('Private shared deadline')
@@ -57,7 +57,10 @@ def worker():
         parent_thread.start()
         source = source_snapshot(options['snapshot'])
         root = runtime.local_path(Path(options['root']))
-        record = attempt_record(dict(schema_version=1, source_snapshot_sha256=source_digest(source), tracks=[
+        site = source.kind == 'site_pair'
+        if site != ('record' in options):
+            raise ValueError('Unexpected acquired inputs')
+        record = attempt_record(options['record'] if site else dict(schema_version=1, source_snapshot_sha256=source_digest(source), tracks=[
             dict(ordinal=i, state='pending',
                  relative_path=f"workspaces/{options['workspace']}/downloads/{options['job']}/{options['attempt']}/{options['generation']}/input{i}" +
                                ('.m4a' if track.mime == 'audio/mp4' else '.mp4'), metadata=None)
@@ -65,18 +68,24 @@ def worker():
         relative = attempt_context(options['workspace'], options['job'], options['attempt'],
                                    options['generation'], source, record)
         operation = runtime.local_path(resource_path(root, relative))
-        if not operation.is_dir() or list(operation.iterdir()) != [operation / 'tmp']:
+        expected = {operation / 'tmp'}
+        if site:
+            if record.output or any(track.state != 'copied' for track in record.tracks):
+                raise ValueError('Acquired single-track files required')
+            expected.update(resource_path(root, t.relative_path) for t in record.tracks)
+        if not operation.is_dir() or set(operation.iterdir()) != expected:
             raise ValueError('Private operation is not new')
         runtime.local_path(operation / 'tmp')
-        if not isinstance(options['inputs'], list) or len(options['inputs']) != 2:
+        if not isinstance(options['inputs'], list) or len(options['inputs']) != (0 if site else 2):
             raise ValueError('Private source count')
-        for selection, original in zip(source.tracks, options['inputs'], strict=True):
+        local_tracks = () if site else source.tracks
+        for selection, original in zip(local_tracks, options['inputs'], strict=True):
             if not isinstance(original, str) or len(original) > 2048:
                 raise ValueError('Private source path')
             managed_media_path(options['workspace'], selection.media_id, original)
         component = runtime.verify_component(Path(options['runtime']), check)
-        total = sum(t.size for t in source.tracks)
-        received, metadata_bytes = 0, 0
+        total = sum(t.received.size for t in record.tracks) if site else source.input_size
+        received, metadata_bytes = total if site else 0, 0
         def disk(output_size=0):
             check()
             if shutil.disk_usage(operation).free < total - received + INPUT_LIMIT - output_size + RESERVE:
@@ -86,8 +95,14 @@ def worker():
             value = dict(phase=phase, received=received, total=total, record=record.model_dump(mode='json'))
             print(json.dumps({'progress': value}, allow_nan=False), flush=True)
         names, previews = [], []
-        emit('copying')
-        for selection, original, frozen in zip(source.tracks, options['inputs'], record.tracks, strict=True):
+        if site:
+            for selection, track in zip(source.tracks, record.tracks, strict=True):
+                names.append(Path(track.relative_path).name)
+                previews.append(inspect_media_input(root, track.relative_path, track.received.size,
+                                                    track.received.sha256, selection.mime, check))
+        else:
+            emit('copying')
+        for selection, original, frozen in zip(local_tracks, options['inputs'], () if site else record.tracks, strict=True):
             disk()
             inspect_media_input(root, original, selection.size, selection.sha256, selection.mime, check)
             target = resource_path(root, frozen.relative_path)
@@ -128,7 +143,7 @@ def worker():
             metadata_bytes += len(raw)
             if metadata_bytes > METADATA_TOTAL:
                 raise ProbeBudget()
-            metadata = validated_result(raw, selection.size, preview['streams'])
+            metadata = validated_result(raw, (frozen.received or selection).size, preview['streams'])
             frozen.metadata = ProbeMetadata.model_validate(metadata)
             frozen.state = 'probed'
             attempt_context(options['workspace'], options['job'], options['attempt'],
@@ -169,7 +184,7 @@ def worker():
         if metadata_bytes > METADATA_TOTAL:
             raise ProbeBudget()
         metadata = validated_result(raw, size, preview['streams'])
-        for selected, original in zip(source.tracks, options['inputs'], strict=True):
+        for selected, original in zip(local_tracks, options['inputs'], strict=True):
             inspect_media_input(root, original, selected.size, selected.sha256, selected.mime, check)
         record.output = OutputReceipt.model_validate(dict(state='prepared', pending_path=pending.relative_to(root).as_posix(),
                              final_path=f"workspaces/{options['workspace']}/downloads/{options['job']}/{options['attempt']}.mp4",

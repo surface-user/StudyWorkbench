@@ -17,6 +17,7 @@ from .imports import resource_path
 from .media_download_http import DownloadError
 from .media_inputs import inspect_media_input, managed_media_path
 from .media_sources import (
+    INPUT_LIMIT,
     RECIPE,
     attempt_context,
     attempt_record,
@@ -67,6 +68,8 @@ def job_fields(job):
 
 
 def inputs_in(session, workspace, source):
+    if source.kind == 'site_pair':
+        return []
     paths = []
     for track in source.tracks:
         item = session.get(MediaEntry, track.media_id)
@@ -107,7 +110,7 @@ def checkpoint(downloads, identifier, deadline):
         raise DownloadError('合流超过15分钟；原件及已生成字节保留')
 
 
-def worker_options(downloads, job, deadline):
+def worker_options(downloads, job, deadline, *, acquired=None):
     def check():
         checkpoint(downloads, job.id, deadline)
     source = stored_source(job_fields(job))
@@ -120,21 +123,29 @@ def worker_options(downloads, job, deadline):
     remaining = int((deadline - time.monotonic()) * 1000)
     if not 1 <= remaining <= 900000:
         raise DownloadError('合流超过资源或时间预算，原件与记录保留')
-    return dict(root=str(downloads.root.resolve()), workspace=job.workspace_id, job=job.id,
+    options = dict(root=str(downloads.root.resolve()), workspace=job.workspace_id, job=job.id,
                 attempt=job.attempt, generation=job.run_generation, snapshot=source.model_dump(mode='json'),
                 inputs=paths, runtime=str(component), remaining_ms=remaining)
+    if acquired is not None:
+        options['record'] = acquired.model_dump(mode='json')
+    return options
 
 
 def progress(downloads, job, value):
     if not isinstance(value, dict) or set(value) != {'phase', 'received', 'total', 'record'}:
         raise DownloadError('合流工作进度无效')
     source = stored_source(job_fields(job))
-    total = sum(t.size for t in source.tracks)
-    if (value['phase'] not in PHASES[:4] or type(value['received']) is not int or
-            type(value['total']) is not int or value['total'] != total or not 0 <= value['received'] <= total):
-        raise DownloadError('合流工作预算或阶段无效')
     record = attempt_record(value['record'])
     attempt_context(job.workspace_id, job.id, job.attempt, job.run_generation, source, record)
+    total = source.input_size
+    if source.kind == 'site_pair' and value['phase'] != 'copying':
+        if not all(t.received for t in record.tracks):
+            raise DownloadError('尚未完整取得所选两条轨道')
+        total = sum(t.received.size for t in record.tracks)
+    if (value['phase'] not in PHASES[:4] or type(value['received']) is not int or
+            value['total'] != total or value['total'] is not None and type(value['total']) is not int
+            or not 0 <= value['received'] <= (total if total is not None else INPUT_LIMIT)):
+        raise DownloadError('合流工作预算或阶段无效')
     if record.output is not None:
         raise DownloadError('合流工作进度不能提前发布结果')
     with write_transaction(downloads.engine) as session:
@@ -150,10 +161,10 @@ def progress(downloads, job, value):
         current.progress = {'received': value['received'], 'total': total, 'phase': value['phase']}
 
 
-def run_local(downloads, identifier, child):
+def run_local(downloads, identifier, child, transfer=None):
     claim = {}
     try:
-        _run_local(downloads, identifier, child, claim)
+        _run_local(downloads, identifier, child, claim, transfer)
     except Exception as error:
         with write_transaction(downloads.engine) as session:
             current = session.get(MediaDownloadJob, identifier)
@@ -173,20 +184,22 @@ def run_local(downloads, identifier, child):
                     receipt.status = current.status
 
 
-def _run_local(downloads, identifier, child, claim):
-    deadline = time.monotonic() + 900
+def _run_local(downloads, identifier, child, claim, transfer):
+    deadline = transfer.deadline if transfer else time.monotonic() + 900
     def check():
         checkpoint(downloads, identifier, deadline)
     check()
     with write_transaction(downloads.engine) as session:
         job = session.get(MediaDownloadJob, identifier)
-        if job.status != 'queued' or job.source_kind != 'local_pair':
+        if job.status != 'queued' or job.source_kind not in ('local_pair', 'site_pair'):
             return
+        if (job.source_kind == 'site_pair') != bool(transfer) or transfer and time.monotonic() >= transfer.expires:
+            raise DownloadError('所选站点轨道已失效，请重新预览')
         source = stored_source(job_fields(job))
         inputs_in(session, job.workspace_id, source)
         job.run_generation += 1
         job.status = 'running'
-        total = sum(t.size for t in source.tracks)
+        total = source.input_size
         job.progress = {'received': 0, 'total': total, 'phase': 'copying'}
         directory = f'workspaces/{job.workspace_id}/downloads/{job.id}/{job.attempt}/{job.run_generation}'
         record = attempt_record(dict(schema_version=1, source_snapshot_sha256=source_digest(source), tracks=[
@@ -204,16 +217,29 @@ def _run_local(downloads, identifier, child, claim):
     operation.mkdir(parents=True, exist_ok=False)
     runtime.local_path(operation)
     (operation / 'tmp').mkdir()
-    result = child(job, operation, deadline=deadline)
+    if source.kind == 'site_pair':
+        fetched = attempt_record(child(job, operation, deadline=deadline, transfer=transfer, acquired=record))
+        attempt_context(job.workspace_id, job.id, job.attempt, job.run_generation, source, fetched)
+        if fetched.output is not None or any(track.state != 'copied' for track in fetched.tracks):
+            raise DownloadError('轨道传输记录不完整')
+        for track, selection in zip(fetched.tracks, source.tracks, strict=True):
+            inspect_media_input(downloads.root, track.relative_path, track.received.size, track.received.sha256, selection.mime, check)
+        total = sum(t.received.size for t in fetched.tracks)
+        result = child(job, operation, deadline=deadline, acquired=fetched)
+    else:
+        result = child(job, operation, deadline=deadline)
     record = attempt_record(result)
+    if source.kind == 'site_pair' and [t.received for t in record.tracks] != [t.received for t in fetched.tracks]:
+        raise DownloadError('合成结果与已取得的轨道身份不符')
     if record.output is None or record.output.state != 'prepared':
         raise DownloadError('合流工作结果缺少已校验输出')
     attempt_context(job.workspace_id, job.id, job.attempt, job.run_generation, source, record)
     for selected, frozen in zip(source.tracks, record.tracks, strict=True):
-        inspect_media_input(downloads.root, frozen.relative_path, selected.size, selected.sha256, selected.mime, check)
+        content = frozen.received or selected
+        inspect_media_input(downloads.root, frozen.relative_path, content.size, content.sha256, selected.mime, check)
     with Session(downloads.engine) as session:
         paths = inputs_in(session, job.workspace_id, source)
-    for selected, relative in zip(source.tracks, paths, strict=True):
+    for selected, relative in zip(source.tracks if source.kind == 'local_pair' else (), paths, strict=True):
         inspect_media_input(downloads.root, relative, selected.size, selected.sha256, selected.mime, check)
     output = record.output
     inspect_media_input(downloads.root, output.pending_path, output.size, output.sha256, 'video/mp4', check)
