@@ -154,11 +154,11 @@ def check_library(directory, *, install=None):
                                optional=table == 'media_entries' and row['status'] != 'ready')
                 local_jobs, current_attempts = {}, set()
                 for row in rows(db, 'media_download_jobs'):
-                    if row['source_kind'] != 'local_pair':
+                    if row['source_kind'] not in ('local_pair', 'site_pair'):
                         continue
                     try:
                         source = stored_source(row)
-                        for track in source.tracks:
+                        for track in source.tracks if source.kind == 'local_pair' else ():
                             original = media.get(track.media_id)
                             if (original is None or original['workspace_id'] != row['workspace_id'] or original['status'] != 'ready' or
                                     (original['sha256'], original['size'], original['mime']) != (track.sha256, track.size, track.mime)):

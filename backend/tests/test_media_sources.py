@@ -181,8 +181,8 @@ def test_single_head_upgrade_keeps_every_legacy_column_no_invented_attempts_and_
         warnings.simplefilter('error', SAWarning)
         migrate(engine, path)
     with closing(backup_store.connect(path)) as db:
-        assert ScriptDirectory.from_config(config()).get_heads() == ['0022']
-        assert db.execute('SELECT version_num FROM alembic_version').fetchall()[0][0] == '0022'
+        assert ScriptDirectory.from_config(config()).get_heads() == ['0023']
+        assert db.execute('SELECT version_num FROM alembic_version').fetchall()[0][0] == '0023'
         old_columns = {row[0]: [c['name'] for c in db.execute('PRAGMA table_info("' + row[0] + '")')]
                        for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         old_columns['media_download_jobs'] = columns
@@ -208,7 +208,7 @@ def test_single_head_upgrade_keeps_every_legacy_column_no_invented_attempts_and_
             with pytest.raises(sqlite3.IntegrityError):
                 db.execute(sql)
             db.rollback()
-    backup = list((root / 'backups').glob('study-before-0022-*.db'))
+    backup = list((root / 'backups').glob('study-before-0023-*.db'))
     assert len(backup) == 1 and (root / 'retained.partial').read_bytes() == b'original failed attempt'
     with sqlite3.connect(backup[0]) as db:
         assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0017',)
@@ -233,19 +233,92 @@ def test_migration_failure_rolls_back_table_recreation_and_keeps_original_backup
         assert backup_store.table_summary(db) == before
         assert list(db.execute('SELECT name,sql FROM sqlite_master ORDER BY name')) == schema
         assert db.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
-    assert len(list((root / 'backups').glob('study-before-0022-*.db'))) == 1
+    assert len(list((root / 'backups').glob('study-before-0023-*.db'))) == 1
     assert (root / 'retained.partial').read_bytes() == b'original failed attempt'
     engine.dispose()
 
 
-def local_library(root, *, ready=False, prepared=False):
+def site_selection():
+    video_id = 'BV1234567890'
+    tracks = []
+    for index, (role, quality, codec) in enumerate((('video', 64, 'avc1.64001f'), ('audio', 30280, 'mp4a.40.2'))):
+        identity = media_sources.canonical([video_id, 7, 9, role, quality, codec])
+        tracks.append(dict(role=role, track_ref=role+'-'+hashlib.sha256(identity).hexdigest(),
+                           resource_sha256=str(index+1)*64, source_format_id=quality, codecs=codec,
+                           container='mp4' if index == 0 else 'm4a', width=None, height=None, fps=None, size_bytes=None))
+    return dict(schema_version=1, kind='site_pair', recipe_version=media_sources.RECIPE,
+                component_snapshot_sha256=SNAPSHOT, preview_id='b'*32, selection_sha256='c'*64, site='bilibili',
+                extractor_version='bilibili-preview-v3', video_id=video_id, aid=7, cid=9, duration_seconds=1, tracks=tracks)
+
+
+def test_0022_upgrade_preserves_old_jobs_attempts_triggers_and_unique_receipts(tmp_path, monkeypatch):
+    root = tmp_path / 'legacy'
+    local_library(root, ready=True, schema='0022')
+    path = root / 'study.db'
+    engine = database(path)
+    with sqlite3.connect(path) as db:
+        media_id = 'f'*32
+        old = dict(preview_id='e'*32, format_id='legacy-1', extractor_version='bilibili-preview-v3',
+                   video_id='BV1234567890', cid=9, quality=64, size=200, duration=1, container='mp4',
+                   cdn_host='upos-test.bilivideo.com', path_sha256='d'*64)
+        db.execute("""INSERT INTO media_download_jobs
+            (id,workspace_id,request_id,source_url,name,status,cancel_requested,attempt,relative_path,
+             progress,result,created_at,site_receipt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (media_id, 'default', 'old-site', 'https://www.bilibili.com/video/'+old['video_id'], 'old.mp4', 'paused',
+             0, 1, f'workspaces/default/downloads/{media_id}/1.mp4', '{}', '{}', '2026-01-01', json.dumps(old)))
+    def summary():
+        with closing(backup_store.connect(path)) as db:
+            return {k:v for k,v in backup_store.table_summary(db).items() if k != 'alembic_version'}
+    before = summary()
+    assert backup_store.create_backup(root, tmp_path/'before.zip')['schema_revision'] == '0022'
+    with monkeypatch.context() as patch:
+        execute = op.execute
+        def fail_restore(sql):
+            if sql.startswith('INSERT INTO media_download_attempts SELECT'):
+                raise RuntimeError('injected child restore failure')
+            return execute(sql)
+        patch.setattr(op, 'execute', fail_restore)
+        with pytest.raises(RuntimeError, match='injected child restore failure'):
+            migrate(engine, path)
+    assert summary() == before
+    with sqlite3.connect(path) as db:
+        assert db.execute('SELECT version_num FROM alembic_version').fetchone() == ('0022',)
+        assert db.execute('PRAGMA foreign_key_check').fetchall() == []
+    migrate(engine, path)
+    assert summary() == before
+    target = tmp_path/'restored'
+    assert backup_store.restore_backup(tmp_path/'before.zip', target, tmp_path/'config.json')['schema_revision'] == '0023'
+    with closing(backup_store.connect(target/'study.db')) as db:
+        assert {k:v for k,v in backup_store.table_summary(db).items() if k != 'alembic_version'} == before
+    with sqlite3.connect(path) as db:
+        names = {r[0] for r in db.execute("SELECT name FROM sqlite_master")}
+        assert {'uq_site_preview_format','uq_site_pair_preview','immutable_site_receipt','immutable_media_download_source'} <= names
+        assert db.execute('PRAGMA foreign_key_check').fetchall() == []
+        for sql in ["UPDATE media_download_jobs SET site_receipt=NULL WHERE id=?",
+                    "UPDATE media_download_jobs SET source_kind='site_pair' WHERE id=?"]:
+            with pytest.raises(sqlite3.IntegrityError):
+                db.execute(sql, ('f'*32,))
+    engine.dispose()
+
+
+def local_library(root, *, ready=False, prepared=False, site=False, schema=None):
     # Semantic persistence fixture only: these bytes/metadata are not a native mux result.
-    with client(root):
-        pass
-    raw = selection()
+    if schema is None:
+        with client(root):
+            pass
+    else:
+        root.mkdir()
+        engine = database(root / 'study.db')
+        with engine.begin() as connection:
+            connection.exec_driver_sql('BEGIN')
+            value = config()
+            value.attributes['connection'] = connection
+            command.upgrade(value, schema)
+        engine.dispose()
+    raw = site_selection() if site else selection()
     files = [b'owned test video', b'owned test audio']
     with sqlite3.connect(root / 'study.db') as db:
-        for ordinal, data in enumerate(files):
+        for ordinal, data in enumerate(() if site else files):
             track = raw['tracks'][ordinal]
             track['sha256'], track['size'] = hashlib.sha256(data).hexdigest(), len(data)
             relative = f"workspaces/default/media/{track['media_id']}{'.mp4' if ordinal == 0 else '.m4a'}"
@@ -258,6 +331,8 @@ def local_library(root, *, ready=False, prepared=False):
         source = media_sources.source_snapshot(raw)
         record = receipt(source, 'probed' if ready or prepared else 'copied')
         for track, data in zip(record['tracks'], files, strict=True):
+            if site:
+                track['received'] = dict(size=len(data), sha256=hashlib.sha256(data).hexdigest())
             path = root / track['relative_path']
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
@@ -284,7 +359,7 @@ def local_library(root, *, ready=False, prepared=False):
                    'progress,result,error,created_at,source_kind,source_snapshot,source_snapshot_sha256,run_generation) '
                    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (
                        JOB, 'default', None, 'owned-local-pair-request', None, 'result.mp4', 'ready' if ready else 'paused',
-                       0, 1, final, '{}', json.dumps(result), None, '2000-01-01', 'local_pair', json.dumps(raw),
+                       0, 1, final, '{}', json.dumps(result), None, '2000-01-01', raw['kind'], json.dumps(raw),
                        media_sources.source_digest(source), 1))
         db.execute('INSERT INTO media_download_attempts VALUES (?,?,?,?,?,?,?,?,?)', (
             JOB, 1, 'default', 1, media_sources.source_digest(source), 'ready' if ready else 'paused',
@@ -293,14 +368,15 @@ def local_library(root, *, ready=False, prepared=False):
 
 
 @pytest.mark.parametrize('state', ['copied', 'prepared_move', 'committed'])
-def test_complete_backup_restore_retains_originals_attempts_receipts_and_never_replays(tmp_path, state):
+@pytest.mark.parametrize('site', [False, True])
+def test_complete_backup_restore_retains_originals_attempts_receipts_and_never_replays(tmp_path, state, site):
     source_root, restored = tmp_path / 'source', tmp_path / 'restored'
-    local_library(source_root, ready=state == 'committed', prepared=state == 'prepared_move')
+    local_library(source_root, ready=state == 'committed', prepared=state == 'prepared_move', site=site)
     before = snapshot(source_root)
     package = tmp_path / 'backup.zip'
     saved = backup_store.create_backup(source_root, package)
     result = backup_store.restore_backup(package, restored, tmp_path / 'settings.json')
-    assert saved['schema_revision'] == result['schema_revision'] == '0022'
+    assert saved['schema_revision'] == result['schema_revision'] == '0023'
     assert snapshot(source_root) == before
     assert {k: v for k, v in snapshot(restored).items() if k != 'study.db'} == {
         k: v for k, v in before.items() if k != 'study.db'}
@@ -310,11 +386,63 @@ def test_complete_backup_restore_retains_originals_attempts_receipts_and_never_r
     assert checked['complete'] and checked['healthy'], checked
     with client(restored) as c:
         row = c.get(PREFIX + '/media-downloads/' + JOB).json()
-        assert row['source_kind'] == 'local_pair' and row['source_host'] == '本地所选媒体' and not row['can_resume']
+        kind = 'site_pair' if site else 'local_pair'
+        assert row['source_kind'] == kind and row['source_host'] == ('www.bilibili.com' if site else '本地所选媒体')
+        assert not row['can_resume']
         assert row['status'] == ('ready' if state == 'committed' else 'paused')
         if state != 'committed':
             assert c.post(PREFIX + '/media-downloads/' + JOB + '/retry', json={'mode': 'resume'}).status_code == 409
-        assert row['source_snapshot']['kind'] == 'local_pair' and 'private original title' not in str(row)
+        assert row['source_snapshot']['kind'] == kind and 'private original title' not in str(row)
+
+
+@pytest.mark.parametrize('fault', ['changed_track', 'missing_track', 'missing_hash', 'false_hash', 'false_size',
+                                   'shared_size', 'duplicate_resource', 'changed_quality', 'secret'])
+def test_site_pair_backup_refuses_inconsistent_source_or_received_content(tmp_path, fault):
+    root = tmp_path / 'root'
+    source, record = local_library(root, site=True, ready=True)
+    if fault in {'duplicate_resource', 'changed_quality', 'secret'}:
+        bad = source.model_dump(mode='json')
+        if fault == 'duplicate_resource':
+            bad['tracks'][1]['resource_sha256'] = bad['tracks'][0]['resource_sha256']
+        elif fault == 'changed_quality':
+            bad['tracks'][0]['source_format_id'] += 1
+        else:
+            bad['tracks'][0]['url'] = 'https://invalid.example/temporary'
+        with pytest.raises(ValueError):
+            media_sources.source_snapshot(bad)
+        return
+    track = record['tracks'][0]
+    path = root / track['relative_path']
+    if fault == 'changed_track':
+        path.write_bytes(b'changed locally')
+    elif fault == 'missing_track':
+        path.unlink()
+    else:
+        if fault == 'missing_hash':
+            track['received'].pop('sha256')
+        elif fault == 'false_hash':
+            track['received']['sha256'] = '0'*64
+        elif fault == 'false_size':
+            track['received']['size'] += 1
+        else:
+            track['received']['size'] = media_sources.INPUT_LIMIT
+        with sqlite3.connect(root / 'study.db') as db:
+            db.execute('UPDATE media_download_attempts SET record=?', (json.dumps(record),))
+    with pytest.raises(ValueError):
+        backup_store.create_backup(root, tmp_path/'rejected.zip')
+    assert not library_integrity.check_library(root)['healthy']
+
+
+def test_site_pair_preview_cannot_create_a_second_job_in_same_workspace(tmp_path):
+    root = tmp_path/'source'
+    local_library(root, site=True)
+    with sqlite3.connect(root/'study.db') as db:
+        names = [r[1] for r in db.execute('PRAGMA table_info(media_download_jobs)')]
+        row = dict(zip(names, db.execute('SELECT * FROM media_download_jobs WHERE id=?', (JOB,)).fetchone(), strict=True))
+        row.update(id='f'*32, request_id='different-enqueue-request', run_generation=0, status='queued')
+        with pytest.raises(sqlite3.IntegrityError, match='uq_site_pair_preview'):
+            db.execute('INSERT INTO media_download_jobs VALUES ('+','.join('?' for _ in names)+')',
+                       [row[k] for k in names])
 
 
 @pytest.mark.parametrize('fault', ['source_hash', 'source_extra', 'source_cross_workspace', 'record_path',

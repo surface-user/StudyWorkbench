@@ -96,7 +96,7 @@ def test_material_question_receipts_after_removal_and_restore(tmp_path):
     backup_store.create_backup(root, package)
     assert (
         backup_store.restore_backup(package, restored, tmp_path / 'settings.json')['schema_revision']
-        == '0022'
+        == '0023'
     )
     for library in (root, restored):
         with client(library) as c:
@@ -181,7 +181,7 @@ def test_corrupt_removal_with_valid_foreign_keys_refused_before_restore(tmp_path
 
     def unchecked(path, checkpoint):
         with closing(backup_store.connect(path)) as db:
-            return '0022', backup_store.table_summary(db, checkpoint)
+            return '0023', backup_store.table_summary(db, checkpoint)
 
     with monkeypatch.context() as patch:
         patch.setattr(backup_store, 'database_info', unchecked)

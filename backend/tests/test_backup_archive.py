@@ -70,7 +70,8 @@ def test_valid_zip64_read_only_inspection_and_cli_do_not_activate_data(tmp_path,
 
 
 @pytest.mark.parametrize('field,value', [
-    ('version', True), ('version', 2), ('schema_revision', '0023'), ('schema_revision', 14),
+    ('version', True), ('version', 2), ('schema_revision', f'{int(backup.SUPPORTED_SCHEMA) + 1:04d}'),
+    ('schema_revision', 14),
     ('format', 'other'), ('created_at', '2026-11-04T00:00:00'), ('created_at', '2026-11-04T08:00:00+08:00'),
     ('files', []), ('tables', {}), ('excluded', ['.study.lock', '.STUDY.LOCK']), ('excluded', ['study.db']),
 ])

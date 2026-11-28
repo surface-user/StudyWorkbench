@@ -148,7 +148,7 @@ worker()
             if path != root:
                 package = tmp_path / 'library.zip'
                 create_backup(root, package)
-                assert restore_backup(package, path, tmp_path/'settings.json')['schema_revision'] == '0022'
+                assert restore_backup(package, path, tmp_path/'settings.json')['schema_revision'] == '0023'
             with client(path) as c:
                 assert c.get(ENDPOINT+'/'+key).status_code == 404
                 assert c.post(endpoint, json=TARGET).json()['id'] == job_id

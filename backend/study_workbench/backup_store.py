@@ -225,11 +225,11 @@ def check_references(root, files):
                 require(row[0])  # An external conflict must remain a conflict, not be overwritten with the indexed hash.
         if 'media_download_jobs' in tables:
             for row in connection.execute('SELECT * FROM media_download_jobs'):
-                local = 'source_kind' in row.keys() and row['source_kind'] == 'local_pair'
+                paired = 'source_kind' in row.keys() and row['source_kind'] in ('local_pair', 'site_pair')
                 current = None
-                if local:
+                if paired:
                     source = stored_source(row)
-                    for track in source.tracks:
+                    for track in source.tracks if source.kind == 'local_pair' else ():
                         original = connection.execute('SELECT * FROM media_entries WHERE id=?', (track.media_id,)).fetchone()
                         if (original is None or original['workspace_id'] != row['workspace_id'] or original['status'] != 'ready' or
                                 (original['sha256'], original['size'], original['mime']) != (track.sha256, track.size, track.mime)):
@@ -253,7 +253,7 @@ def check_references(root, files):
                 if row['status'] != 'ready':
                     continue
                 result = json.loads(row['result'])
-                if local:
+                if paired:
                     if current is None or current[0]['status'] != 'ready' or current[0]['attempt'] != row['attempt']:
                         raise ValueError('本地合流完成状态与执行收据不符')
                     output = current[1].output
