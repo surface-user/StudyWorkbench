@@ -116,11 +116,19 @@ def main():
             request(endpoint + '/working-copy', {'expected_sha256': document['sha256']})
             saved = request(endpoint + '/document', {'expected_sha256': document['sha256'], 'text': '# 保存的工作副本'}, 'PUT')
             assert request(endpoint + '/document')['text'] == '# 保存的工作副本'
+            from docx import Document
             from numbered_cell_sample import numbered_range_docx
             range_sample = root / '自动编号.docx'
             range_sample.write_bytes(numbered_range_docx())
+            long_sample = root / '跨段材料.docx'
+            document = Document()
+            for _ in range(18):
+                document.add_paragraph('')
+            for line in ('阅读下列材料，回答第1-2题：', '共享原文', '1. 第一题', '2. 第二题'):
+                document.add_paragraph(line)
+            document.save(long_sample)
             sample_dir = Path(__file__).resolve().parents[1] / 'contracts/samples'
-            for fixture in (sample_dir / 'original-study.pdf', sample_dir / 'original-study.docx', range_sample):
+            for fixture in (sample_dir / 'original-study.pdf', sample_dir / 'original-study.docx', range_sample, long_sample):
                 suffix = fixture.suffix[1:]
                 added = request(prefix + '/resource-add-jobs', {'source_path': str(fixture)})
                 deadline = time.monotonic() + 20
@@ -150,6 +158,13 @@ def main():
                     word_confirm_url = prefix + '/imports/' + word_job['id'] + '/question-markdown'
                     word_receipt = request(word_confirm_url, chosen)
                     assert len(word_receipt) == 1 and word_receipt[0]['title'].startswith('3.')
+                elif fixture == long_sample:
+                    multiple = request(prefix + '/word-range-jobs', {'node_id': added_id, 'expected_sha256': value['source_sha256'],
+                                                                    'first_position': 1, 'last_position': 22})
+                    multiple_url = prefix + '/word-range-jobs/' + multiple['id']
+                    first = request(multiple_url+'/advance?expected_completed_positions=0', {})
+                    assert first['completed_positions'] == 20 and first['status'] == 'ready'
+                    assert request(multiple_url+'/cancel', {})['completed_positions'] == 20
                 elif suffix == 'pdf':
                     assert value['page_count'] == 2
                     value = request(prefix + '/nodes/' + added_id + '/document-page?page=2')
@@ -182,6 +197,14 @@ def main():
             assert request(word_index_url) == word_index
             assert request(word_job_url)['status'] == 'confirmed'
             assert request(word_confirm_url, chosen) == word_receipt
+            assert request(multiple_url+'/resume', {})['completed_positions'] == 20
+            assert request(multiple_url+'/advance?expected_completed_positions=20', {})['status'] == 'preview'
+            multi_preview = request(multiple_url+'/preview')
+            assert [q['shared_materials'][0]['source_positions'] for q in multi_preview['preview']['question_drafts']] == [[19,20],[19,20]]
+            multi_confirm = {'selected': [1], 'expected_revision': multi_preview['draft_revision'], 'confirm': True}
+            multi_url = prefix+'/imports/'+multiple['id']+'/question-markdown'
+            receipt = request(multi_url, multi_confirm)
+            assert len(receipt) == 1 and receipt[0]['title'].startswith('2.') and request(multi_url, multi_confirm) == receipt
             assert request(endpoint + '/document')['text'] == '# 保存的工作副本'
             with sqlite3.connect(root / 'data/study.db') as db:
                 relative = db.execute('SELECT relative_path FROM document_workfiles WHERE node_id=?', (node['resource_item_id'],)).fetchone()[0]

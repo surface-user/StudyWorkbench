@@ -253,6 +253,7 @@ def extract(data, suffix, *, page_range=None, two_columns=False, word_range=None
         warnings = ["Word按内容顺序与显式题号拆为MD候选，表格保留Markdown。不是实际分页截图；请核对复杂版式、图片顺序和题目边界，不推断缺失答案。",
                     "仅显式材料标题和完整有序题号范围自动归组为候选；其他卷头/材料仍在整篇预览，须核对或手动归组。"]
         if word_range is not None:
+            range_info['uncertain_positions'] = sorted(document._backend.uncertain)
             if first > 1:
                 warnings.append('选区起点之前可能有题干或材料')
             if last < range_info['total_positions']:

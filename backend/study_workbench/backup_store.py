@@ -15,7 +15,7 @@ from uuid import uuid4
 
 from . import backup_archive as envelope
 from .data_root import DataLock, digest, validate_root, write_settings
-from .word_outline import WORD_JOB_VERSION, word_job_id
+from .word_outline import WORD_BATCH_VERSION, WORD_JOB_VERSIONS, word_job_id
 
 CHUNK = 1024 * 1024
 VALUE_LIMIT = 64 * CHUNK
@@ -116,6 +116,11 @@ def check_references(root, files):
         item = files.get(relative)
         if item is None or sha is not None and item['sha256'] != sha or size is not None and item['size'] != size:
             raise ValueError('备份缺失受管文件或记录hash/大小不符：' + relative)
+    def word_image_size(connection, workspace, identifier):
+        image = connection.execute('SELECT workspace_id,size FROM resources WHERE id=?', (identifier,)).fetchone()
+        if image is None or image[0] != workspace:
+            raise ValueError('Word 选区候选的图片资源缺失或跨空间')
+        return image[1]
     with closing(connect(root / 'study.db')) as connection:
         tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         for table in ('resources', 'media_entries'):
@@ -125,36 +130,65 @@ def check_references(root, files):
                 if table == 'resources' or row['status'] == 'ready':
                     require(row['relative_path'], row['sha256'], row['size'])
         if 'import_jobs' in tables and 'workspace_nodes' in tables:
-            for row in connection.execute('SELECT * FROM import_jobs WHERE parser_version=?', (WORD_JOB_VERSION,)):
+            for row in connection.execute('SELECT * FROM import_jobs WHERE parser_version IN (?,?)', WORD_JOB_VERSIONS):
                 preview = json.loads(row['preview'])
                 state = preview.get('word_range', {})
+                batch = row['parser_version'] == WORD_BATCH_VERSION
                 original = connection.execute('SELECT workspace_id,sha256 FROM resources WHERE id=?',
                                               (row['resource_id'],)).fetchone()
                 if original is None or tuple(original) != (row['workspace_id'], state.get('source_sha256')):
                     raise ValueError('Word 选区任务的原件不属于记录的空间或版本')
                 if (any(type(state.get(k)) is not int for k in ('first_position', 'last_position', 'total_positions', 'generation'))
                         or not 1 <= state['first_position'] <= state['last_position'] <= state['total_positions'] <= 200000
-                        or state['last_position'] - state['first_position'] >= 20 or state['generation'] < 0):
+                        or state['last_position'] - state['first_position'] >= (100 if batch else 20) or state['generation'] < 0):
                     raise ValueError('Word 选区任务的正文范围或执行代次无效')
-                if not state.get('node_id') or word_job_id(row['workspace_id'], row['resource_id'], state) != row['id']:
+                if not state.get('node_id') or word_job_id(row['workspace_id'], row['resource_id'], state, row['parser_version']) != row['id']:
                     raise ValueError('Word 选区绑定信息与任务标识不符')
                 if row['status'] not in {'ready', 'running', 'cancelled', 'interrupted', 'failed', 'preview', 'confirmed'}:
                     raise ValueError('Word 选区任务状态无效')
-                if row['status'] in {'preview', 'confirmed'}:
+                complete = row['status'] in {'preview', 'confirmed'}
+                content = []
+                if batch:
+                    total = state['last_position'] - state['first_position'] + 1
+                    done, cost = state.get('completed_positions'), state.get('asset_bytes')
+                    if (type(done) is not int or type(cost) is not int or not 0 <= cost <= 64 * 1024 * 1024
+                            or total <= 20 or not 0 <= done <= total or complete != (done == total)):
+                        raise ValueError('Word 分块进度或预算无效')
+                    chunks = preview.get('word_chunks', [])
+                    if complete and chunks:
+                        raise ValueError('完整 Word 候选仍有未完成分块')
+                    if not complete:
+                        if done % 20 or not isinstance(chunks, list) or len(chunks) != done // 20:
+                            raise ValueError('Word 分块进度不连续')
+                        asset_bytes = 0
+                        for i, chunk in enumerate(chunks):
+                            first = state['first_position'] + i * 20
+                            if (chunk['first_position'] != first or chunk['last_position'] != first + 19
+                                    or len(chunk['blocks']) != len(chunk['block_positions'])
+                                    or any(type(n) is not int or not first <= n < first + 20 for positions in
+                                           ('block_positions', 'table_positions', 'uncertain_positions') for n in chunk[positions])
+                                    or type(chunk['asset_bytes']) is not int or chunk['asset_bytes'] < 0):
+                                raise ValueError('Word 分块来源或图片计数无效')
+                            amount = sum(word_image_size(connection, row['workspace_id'], b['attachment_id'])
+                                         for b in chunk['blocks'] if b.get('type') == 'image')
+                            if amount != chunk['asset_bytes']:
+                                raise ValueError('Word 分块图片计数与实际资源不符')
+                            asset_bytes += amount
+                        if asset_bytes != cost or sum(len(chunk['blocks']) for chunk in chunks) > 200:
+                            raise ValueError('Word 分块累计预算不匹配')
+                if complete:
                     if (not preview.get('available') or any(preview.get(k) != state[k] for k in
                             ('first_position', 'last_position', 'total_positions'))):
                         raise ValueError('Word 选区候选的正文范围不匹配')
-                    content = [preview['blocks']]
+                    content.append(preview['blocks'])
                     for draft in preview['question_drafts']:
                         content.append(draft['blocks'])
                         content.extend(m['blocks'] for m in draft.get('shared_materials', []))
-                    images = {b['attachment_id'] for blocks in content for b in blocks if b.get('type') == 'image'}
-                    for identifier in images:
-                        image = connection.execute('SELECT workspace_id FROM resources WHERE id=?', (identifier,)).fetchone()
-                        if image is None or image[0] != row['workspace_id']:
-                            raise ValueError('Word 选区候选的图片资源缺失或跨空间')
                 elif 'question_drafts' in preview or 'blocks' in preview:
                     raise ValueError('未完成的 Word 选区已有候选内容')
+                images = {b['attachment_id'] for blocks in content for b in blocks if b.get('type') == 'image'}
+                for identifier in images:
+                    word_image_size(connection, row['workspace_id'], identifier)
         if 'pdf_chunk_jobs' in tables:
             for job in connection.execute('SELECT * FROM pdf_chunk_jobs'):
                 original = connection.execute('SELECT workspace_id, sha256 FROM resources WHERE id=?',
