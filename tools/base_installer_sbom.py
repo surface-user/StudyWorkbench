@@ -1,4 +1,4 @@
-"""Inventory the default Windows installer and verify the compiler's solid LZMA2 file stream."""
+"""Inventory the Windows installer and verify the compiler's solid LZMA2 file stream."""
 import argparse
 import hashlib
 import io
@@ -18,6 +18,8 @@ from source_sbom import UniqueLoader, no_links, sha256
 from source_vulnerabilities import unique_object
 
 MAX_SETUP = 1024 * 1024**2
+# The measured optional payload has 21,041 files. Allow modest growth across Office updates.
+MAX_INSTALLER_FILES = 22_000
 BLOCK = 65536
 CALL = re.compile(rb'[\xe8\xe9]....', re.DOTALL)
 
@@ -201,7 +203,7 @@ def generate(stage, setup, runtime, log, output, desktop_report=None, webview_ma
             or not 0 < runtime.stat().st_size <= 512 << 20):
         raise ValueError('Installer, compiler log or runtime input exceeds budget')
     stage = stage.resolve()
-    files = inventory(stage)
+    files = inventory(stage, max_files=MAX_INSTALLER_FILES)
     inventory_name = 'build-inventory.json'
     if inventory_name not in files or files[inventory_name]['bytes'] > 16 << 20:
         raise ValueError('Missing or oversized build inventory')
@@ -271,7 +273,7 @@ def generate(stage, setup, runtime, log, output, desktop_report=None, webview_ma
             raise ValueError('Component comparison input changed during verification')
         bom['metadata']['properties'].append({'name': 'studyworkbench:' + label + '-sha256', 'value': digest})
     if (file_digest(setup) != setup_hash or file_digest(runtime) != records[bundled]['sha256']
-            or file_digest(log) != sha256(log_bytes) or inventory(stage) != files):
+            or file_digest(log) != sha256(log_bytes) or inventory(stage, max_files=MAX_INSTALLER_FILES) != files):
         raise ValueError('Installer validation input changed')
     with output.open('x', encoding='utf-8') as dest:
         json.dump(bom, dest, ensure_ascii=False, indent=2)

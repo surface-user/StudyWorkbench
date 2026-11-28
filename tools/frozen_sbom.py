@@ -54,13 +54,13 @@ def safe_name(name):
     return name
 
 
-def inventory(payload):
+def inventory(payload, *, max_files=None):
     no_links(payload)
     paths = stage_files(payload)
     # The SBOM inventories even a pre-existing inventory file; it is not its own output.
     if (payload / 'build-inventory.json').is_file():
         paths['build-inventory.json'] = payload / 'build-inventory.json'
-    if not paths or len(paths) > MAX_FILES:
+    if not paths or len(paths) > (MAX_FILES if max_files is None else max_files):
         raise ValueError('Payload file count exceeds budget or is empty')
     result, total = {}, 0
     for name, path in sorted(paths.items()):

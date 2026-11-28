@@ -2,9 +2,42 @@ import importlib
 import io
 import json
 import lzma
+from types import SimpleNamespace
 
 import pytest
 from test_staged_python_licenses import bundle_case as bundle_case
+
+
+@pytest.mark.parametrize(('count', 'is_installer', 'accepted'), [
+    (20_000, False, True), (20_001, False, False), (22_000, True, True), (22_001, True, False),
+])
+def test_installer_count_includes_the_stage_index_without_changing_other_limits(
+        installer, monkeypatch, tmp_path, count, is_installer, accepted):
+    tool, _, _, _ = installer
+    frozen = importlib.import_module('frozen_sbom')
+    root = tmp_path / 'counted'
+    root.mkdir()
+    (root / 'build-inventory.json').write_bytes(b'index')
+    sample = SimpleNamespace(stat=lambda: SimpleNamespace(st_size=1), open=lambda _: io.BytesIO(b'x'))
+    monkeypatch.setattr(frozen, 'stage_files', lambda _: {str(i): sample for i in range(count - 1)})
+    options = {'max_files': tool.MAX_INSTALLER_FILES} if is_installer else {}
+    if accepted:
+        assert len(frozen.inventory(root, **options)) == count
+    else:
+        with pytest.raises(ValueError, match='count exceeds'):
+            frozen.inventory(root, **options)
+
+
+def test_installer_rechecks_with_its_package_budget(installer, monkeypatch):
+    tool, args, _, _ = installer
+    calls = []
+    original = tool.inventory
+    def capture(stage, *, max_files):
+        calls.append(max_files)
+        return original(stage, max_files=max_files)
+    monkeypatch.setattr(tool, 'inventory', capture)
+    tool.generate(*args)
+    assert calls == [22_000, 22_000]
 
 
 @pytest.fixture

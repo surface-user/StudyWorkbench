@@ -23,3 +23,13 @@ WebView2 离线安装器摘要匹配微软 WinGet 的 x64 条目。另在本机�
 Python 3.12.7、3.13.17 各通过 128 项相关测试，其中 23 项覆盖新工具。Ruff 和题目 Schema 检查退出 0。初次用 Windows 换行检出作为来源输入时，固定 Git 字节校验中止。将来源覆盖核验与导出都切换到同一提交的原始 Git 字节后通过，既有断言保留。桌面来源工具和原生漏洞工具均按部分覆盖约定退出 2。
 
 2026-11-26 对实物映射的 55 个 PyPI 包向 OSV 查询，该次返回 0 项。实物中的 OpenSSL 3.5.9 在上游版本公告命中 12 项 Low，修复版本均为 3.5.10。OSV 按提交和标签分别返回 9 项，libffi 3.4.4 两次查询均返回 0 项。组件版本命中尚需核定本产品配置与可达性。WebView2 内部许可证和漏洞覆盖、安装器元数据、其余本机及生成组件、Office 整包、产品签名与正式发行另行跟踪。[OpenSSL 3.5 公告](https://openssl-library.org/news/vulnerabilities-3.5/) · [WebView2 运行时发布记录](https://learn.microsoft.com/en-us/microsoft-edge/webview2/release-notes/runtime)
+
+## REL-01n 可选安装器的文件数量上限
+
+安装器初次读取和写出前复核各允许最多 22,000 个暂存文件，含构建索引。相比本次已核验的输入预留 959 个文件，供组件常规更新使用。共用清单工具的默认上限仍为 20,000。Python 3.12.7、3.13.17 分别运行 `pytest backend/tests/test_base_installer_sbom.py backend/tests/test_frozen_sbom.py`，各通过 80 项，退出 0。边界用例覆盖共用工具的 20,000 和 20,001 个文件，以及安装器的 22,000 和 22,001 个文件。Ruff 与 `git diff --check` 退出 0。
+
+使用原编译日志和来源材料，对基础安装器重跑上面的命令，退出 0。生成的清单与原基础成品清单逐字节一致，包含 1,292 个暂存文件、单列的离线运行时安装器和 55 个已映射的 Python 包。
+
+本机另行组合这 1,292 个基础文件、19,746 个自包含 Office 文件和 3 个来源交付文件。21,041 对应该次观察到的旧候选，其中 Office 内置 Python 版本为 3.13.15。Office 升级时需重新清点。默认上限拒绝该组输入。安装器专用清单读取了全部 21,041 个文件，共 2,042,645,059 字节。每个文件的相对路径和 SHA256 分别与基础安装器清单、Office 实物清单、已安装的来源材料匹配。[Office 实物核验](https://github.com/surface-user/StudyWorkbench/pull/146) · [来源材料交付核验](https://github.com/surface-user/StudyWorkbench/pull/149)
+
+基础安装器的原构建索引只覆盖基础文件。将组合目录与该索引交给成品命令时，命令因 `Build inventory does not match stage` 退出 1，未生成报告。本次组合核验截至暂存输入。可选安装器成品核验仍需对应构建索引、编译日志和实际安装器，产品签名及正式发行仍待完成。完整清单和输入文件保留本机。
