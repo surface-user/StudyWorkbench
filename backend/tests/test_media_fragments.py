@@ -37,11 +37,13 @@ def init(role):
     return box(b"ftyp", b"iso5" + words(0) + b"iso6mp41") + box(b"moov", movie)
 
 
-def fragment(seq, ticks):
+def fragment(seq, ticks, offsets=None, version=0):
     def metadata(offset):
         header = box(b"tfhd", words(0x020000, 1))
         time = box(b"tfdt", words(0, ticks))
-        run = box(b"trun", words(1, 2, offset))
+        flags = 1 if offsets is None else (version << 24) | 0x801
+        composition = b"" if offsets is None else struct.pack(">ii" if version else ">II", *offsets)
+        run = box(b"trun", words(flags, 2, offset) + composition)
         return box(b"moof", box(b"mfhd", words(0, seq)) + box(b"traf", header + time + run))
 
     moof = metadata(len(metadata(0)) + 8)
@@ -69,6 +71,33 @@ def inspected(path, payload):
     return inspect_media_input(
         path.parent, path.name, len(payload), hashlib.sha256(payload).hexdigest(), "video/mp4"
     )
+
+
+@pytest.mark.parametrize(("version", "offsets", "first_pts", "earliest"), [
+    (0, (20, 0), 20, 10),
+    (0, (10, 10), 10, 10),
+    (1, (10, -10), 10, 0),
+])
+def test_indexes_compare_presentation_times_of_the_referenced_samples(tmp_path, version, offsets, first_pts, earliest):
+    segment = fragment(1, 0, offsets, version)
+    prefix = init("video")
+    idx = box(b"sidx", words(0, 1, 1000, earliest, 0, 1, len(segment), 20, 0))
+    def indexed(time, segment_index):
+        entry = struct.pack(">IIBBB", time, len(prefix) + len(segment_index), 1, 1, 1)
+        tfra = box(b"tfra", words(0, 1, 0, 1) + entry)
+        return prefix + segment_index + segment + box(b"mfra", tfra + box(b"mfro", words(0, len(tfra) + 24)))
+    path = tmp_path / "reordered.m4s"
+    assert inspected(path, indexed(first_pts, idx))["streams"][0]["role"] == "video"
+    relative_index = idx.replace(words(1000, earliest), words(1000, 0))
+    if first_pts == earliest:
+        assert inspected(path, indexed(first_pts, relative_index))["streams"][0]["role"] == "video"
+    elif earliest > 0:
+        with pytest.raises(HTTPException):
+            inspected(path, indexed(first_pts, relative_index))
+    with pytest.raises(HTTPException):
+        inspected(path, indexed(0, idx))
+    with pytest.raises(HTTPException):
+        inspected(path, indexed(first_pts, idx.replace(words(1000, earliest), words(1000, earliest + 1))))
 
 
 @pytest.mark.parametrize("role,codec", [("video", "h264"), ("audio", "aac")])
