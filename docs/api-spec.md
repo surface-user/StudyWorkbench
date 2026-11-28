@@ -243,7 +243,7 @@ POST W/media/{id}/input-preview为只读本地来源预检。请求仅`expected_
 
 首版policy_version=`local-mp4-input-v1`仅接受严格有界的非分片MP4 H.264/AAC、M4A AAC结构子集；单个视频/音频各最多1轨，必须有样本表和本文件mdat引用、单个self-contained dref，拒外部引用、加密/未知box/重复单值box及其他布局。此普通文件策略对WebM、其他codec、QuickTime音频版本等返回422，不改变旧导入/播放器兼容。预算512MiB原件、2MiB实际元数据读取、4096个box、每表至多100万项、30秒协作检查；超预算413，阻塞系统调用无即时终止保证。常规文本标签中的URL只是元数据，不作为外部来源执行。
 
-`local-fragmented-mp4-input-v1`接受单个本地文件内的完整初始化段及连续分片。仅限一条H.264视频或AAC音频轨。初始化段须声明本文件数据引用；每个moof只含同轨的一个traf和一个trun，解码时间连续，样本大小总和须与紧随的mdat完全一致。有全局sidx或末尾mfra时校验其索引。沿用文件、元数据、box及时间预算，所有分片合计最多100万个样本。缺初始化段、加密、外部引用、未知布局和多轨分片返回422。媒体导入及资源管理器复制本地.m4s后，在共享查看槽内按完整副本判定audio/mp4或video/mp4；两种轨道可以使用相同文件名。该范围不接收网址、播放清单或分别提供的初始化段与媒体段。
+`local-fragmented-mp4-input-v1`接受单个本地文件内的完整初始化段及连续分片。仅限一条H.264视频或AAC音频轨。初始化段须声明本文件数据引用；每个moof只含同轨的一个traf和一个trun，解码时间连续，样本大小总和须与紧随的mdat完全一致。索引另按样本的显示时间偏移校验。sidx 校验各段最早显示时间的间隔及末段显示时长。首包也是最早显示的样本时，全局 sidx 也支持从零起算。mfra 的首样本定位须匹配其实际显示时间和文件位置。沿用文件、元数据、box及时间预算，所有分片合计最多100万个样本。缺初始化段、加密、外部引用、未知布局和多轨分片返回422。媒体导入及资源管理器复制本地.m4s后，在共享查看槽内按完整副本判定audio/mp4或video/mp4；两种轨道可以使用相同文件名。该范围不接收网址、播放清单或分别提供的初始化段与媒体段。
 
 响应仅`media_id/policy_version/container/streams/size/sha256/native_probe_performed`；container=mp4，streams含role=video|audio、declared_codec=h264|aac，无标题/标签/路径或传输URL，native_probe_performed恒false。结构/声明不证明媒体可解码或完整有效；不执行FFmpeg、不创建下载/合流任务、能力或数据库收据，不修改文件/播放数据，不持久缓存或落库。普通媒体导入沿用容器头检查。本地双轨任务复用这两种预检策略，并在合成前重新核对轨道、冻结副本和原件。WebM及其他分片布局的预检仍待实现。见[预检实现](../backend/study_workbench/media_inputs.py)与[分片布局校验](../backend/study_workbench/media_fragments.py)。
 
