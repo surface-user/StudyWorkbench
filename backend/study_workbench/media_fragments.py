@@ -1,6 +1,7 @@
 """Bounded, single-track fragmented ISO BMFF with self-contained initialization and media data."""
 
 import struct
+from typing import NamedTuple
 
 from fastapi import HTTPException
 
@@ -39,7 +40,15 @@ def defaults(policy, bounds, track_id, inherited):
     return fields.get(0x08, inherited[0]), fields.get(0x10, inherited[1])
 
 
-def fragment_run(policy, bounds, relative_data, data_size, inherited, available_samples):
+class Segment(NamedTuple):
+    begin: int
+    end: int
+    first_pts: int
+    earliest_pts: int
+    presentation_end: int
+
+
+def fragment_run(policy, bounds, relative_data, data_size, inherited, available_samples, decode_start):
     raw = policy.payload(bounds)
     require(len(raw) >= 12)
     version_flags, count, offset = struct.unpack_from(">IIi", raw)
@@ -48,28 +57,35 @@ def fragment_run(policy, bounds, relative_data, data_size, inherited, available_
     require(count > 0 and offset == relative_data)
     if count > available_samples:
         raise HTTPException(413, "分片轨道样本总数超过预算，原件保留")
-    # First-sample flags, per-sample flags and composition offsets cannot change byte locations.
     start = 12 + (4 if flags & 4 else 0)
     columns = [bit for bit in (0x100, 0x200, 0x400, 0x800) if flags & bit]
     width = len(columns)
     require(len(raw) == start + count * width * 4)
-    sums = []
-    for key, default in zip((0x100, 0x200), inherited, strict=True):
-        if key not in columns:
-            require(default > 0)
-            sums.append(count * default)
-            continue
-        field = columns.index(key)
-        total = 0
-        for i in range(count):
-            if i % 1024 == 0:
-                policy.checkpoint()
-            value = struct.unpack_from(">I", raw, start + 4 * (i * width + field))[0]
-            require(value > 0)
-            total += value
-        sums.append(total)
-    require(sums[1] == data_size)
-    return sums[0], count
+    default_duration, default_size = inherited
+    if not (flags & 0xB00):  # Only optional sample flags, no size, duration or timestamp overrides.
+        require(default_duration > 0 and default_size > 0 and default_size * count == data_size)
+        end = decode_start + default_duration * count
+        return end, count, (decode_start, decode_start, end)
+    fields = {bit: i for i, bit in enumerate(columns)}
+    layout = ">" + "".join("i" if bit == 0x800 and version == 1 else "I" for bit in columns)
+    dts, used_bytes = decode_start, 0
+    for i, row in enumerate(struct.iter_unpack(layout, memoryview(raw)[start:])):
+        if i % 1024 == 0:
+            policy.checkpoint()
+        duration = row[fields[0x100]] if 0x100 in fields else default_duration
+        size = row[fields[0x200]] if 0x200 in fields else default_size
+        require(duration > 0 and size > 0)
+        pts = dts + (row[fields[0x800]] if 0x800 in fields else 0)
+        if i == 0:
+            first_pts = earliest = pts
+            presentation_end = pts + duration
+        else:
+            earliest = min(earliest, pts)
+            presentation_end = max(presentation_end, pts + duration)
+        dts += duration
+        used_bytes += size
+    require(used_bytes == data_size)
+    return dts, count, (first_pts, earliest, presentation_end)
 
 
 def index_segments(policy, bounds, segments, track_id, timescale):
@@ -82,11 +98,15 @@ def index_segments(policy, bounds, segments, track_id, timescale):
     require(len(raw) >= start + 4)
     earliest, skip = struct.unpack_from(layout, raw, 12)
     reserved, count = struct.unpack_from(">HH", raw, start)
-    require(earliest == segments[0][2] and skip == 0 and bounds[1] == segments[0][0])
+    first = segments[0]
+    # FFmpeg's global sidx can use a presentation timeline relative to the first packet.
+    relative_origin = earliest == 0 and first.earliest_pts == first.first_pts and first.first_pts > 0
+    require((earliest == first.earliest_pts or relative_origin) and skip == 0 and bounds[1] == first.begin)
     require(reserved == 0 and count == len(segments) and len(raw) == start + 4 + count * 12)
-    for i, (begin, end, _, duration) in enumerate(segments):
+    for i, segment in enumerate(segments):
         size, ticks, _ = struct.unpack_from(">III", raw, start + 4 + 12 * i)
-        require(size == end - begin and ticks == duration)  # No hierarchical or external references.
+        next_time = segments[i + 1].earliest_pts if i + 1 < count else segment.presentation_end
+        require(size == segment.end - segment.begin and ticks == next_time - segment.earliest_pts and ticks > 0)
 
 
 def index_random_access(policy, box, segments, track_id):
@@ -99,7 +119,7 @@ def index_random_access(policy, box, segments, track_id):
     layout = ">IIBBB" if vf == 0 else ">QQBBB"
     width = struct.calcsize(layout)
     require(len(raw) == 16 + count * width)
-    known = {segment[0]: segment[2] for segment in segments}
+    known = {segment.begin: segment.first_pts for segment in segments}
     previous = -1
     for i in range(count):
         ticks, offset, traf, trun, sample = struct.unpack_from(layout, raw, 16 + i * width)
@@ -152,18 +172,18 @@ def inspect_fragmented(policy, top, order, mime):
         tfdt = policy.payload(policy.one(traf, b"tfdt"))
         require((len(tfdt), tfdt[:4]) in ((8, bytes(4)), (12, b"\1\0\0\0")))
         require(int.from_bytes(tfdt[4:], "big") == ticks)
-        elapsed, used = fragment_run(
+        ticks, used, presentation = fragment_run(
             policy,
             policy.one(traf, b"trun"),
             mdat[2] - moof[1],
             mdat[3] - mdat[2],
             values,
             SAMPLE_LIMIT - count,
+            ticks,
         )
-        segments.append((moof[1], mdat[3], ticks, elapsed))
+        segments.append(Segment(moof[1], mdat[3], *presentation))
         # A single global index in this profile covers contiguous moof/mdat pairs only.
         require(b"sidx" not in top or start == moof[1])
-        ticks += elapsed
         count += used
         require(ticks < 1 << 63)
         pos += 2

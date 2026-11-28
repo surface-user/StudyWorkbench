@@ -24,3 +24,20 @@ python tools/check_site_pair_mux.py --runtime $runtime --fragment-tracks $video 
 ```
 
 自制媒体、数据库、原始证据和完整清单留在项目忽略目录。公网 B 站样本仍需在允许普通访问的环境获得成功下载证据。抖音、爱奇艺与其他格式的能力单独跟踪。
+
+## 2026-11-28 含重排帧的分轨下载与整库恢复
+
+将 [站点双轨执行](https://github.com/surface-user/StudyWorkbench/pull/148) 与 [显示时间索引修复](https://github.com/surface-user/StudyWorkbench/pull/143) 组合。用普通业务 API 显式选择同一预览的视频及音轨并确认下载。站点页面和两份 HTTPS 响应使用自制数据。队列实际启动了一个读取子进程和一个合成子进程。检查工具只在读取子进程里替换网络响应，复用产品的命令协议、额度、文件写入、媒体探测与合成。
+
+以 imageio-ffmpeg 0.6.0 的 Windows FFmpeg 7.1 开发工具生成素材，其程序 SHA-256 为 `2ce797a0f88d7f067180338fb227f7b1928ea727bd9a4d7a1d022f7c52af71a3`。下列命令可在新目录运行，文件不入库。
+
+```shell
+ffmpeg -n -f lavfi -i testsrc2=size=320x180:rate=10 -t 2.4 -c:v libx264 -g 8 -keyint_min 8 -sc_threshold 0 -bf 2 -threads:v 6 -x264-params lookahead-threads=1 -pix_fmt yuv420p -movflags +empty_moov+frag_keyframe+default_base_moof+global_sidx -f mp4 video.m4s
+ffmpeg -n -f lavfi -i sine=frequency=600:sample_rate=48000 -t 2.4 -c:a aac -threads:a 1 -movflags +empty_moov+frag_keyframe+default_base_moof+global_sidx -f mp4 audio.m4s
+python tools/check_site_pair_mux.py --fragment-tracks video.m4s audio.m4s --runtime <固定组件> --test-root <全新输出目录>
+```
+
+- 重新生成的两条轨道与原测试输入的 SHA-256 相同。运行检查工具两次，其中一次以 `--mux-exe <打包后端>` 启动冻结的合成子进程。两次均产生 71,599 字节的 H.264/AAC MP4，整库还原后重放同一确认请求均返回原任务。上述命令与打包均退出 0，61 个冻结模块与当前源代码匹配。
+- 对两次还原留下的文件，通过 Windows Media Foundation 解码并分别与输入轨比较。视频为 24 帧、2,211,840 字节，音频为 114 个缓冲区、233,472 字节，逐轨摘要一致。
+- 沿用原命令参数，在四个新资料库中分别复跑原有小样本和重排帧样本。源码合成和 Windows 打包合成都验证了原有 2,173 字节与新增 71,599 字节输出的固定摘要、音视频编码及还原后的确认收据，四次均退出 0。
+- `python -m pytest -q backend/tests/test_media_fragments.py backend/tests/test_site_pair_download.py backend/tests/test_site_pair_selection.py` 在 3.12.7、3.13.17 各通过 62 项，退出 0。此次组合未请求公网站点，也没有向仓库提交媒体或个人链接。
