@@ -11,10 +11,12 @@ from .office_inputs import validate_office
 WORD = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
 WORD_JOB_PREFIX = 'docx-range-job-'
 WORD_JOB_VERSION = WORD_JOB_PREFIX + 'v1'
+WORD_BATCH_VERSION = WORD_JOB_PREFIX + 'v2'
+WORD_JOB_VERSIONS = (WORD_JOB_VERSION, WORD_BATCH_VERSION)
 
 
-def word_job_id(workspace, resource, state):
-    key = [WORD_JOB_VERSION, workspace, state['node_id'], resource, state['source_sha256'],
+def word_job_id(workspace, resource, state, version=WORD_JOB_VERSION):
+    key = [version, workspace, state['node_id'], resource, state['source_sha256'],
            state['first_position'], state['last_position']]
     return hashlib.sha256(json.dumps(key, separators=(',', ':')).encode()).hexdigest()
 

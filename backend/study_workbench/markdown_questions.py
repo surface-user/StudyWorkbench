@@ -17,7 +17,7 @@ from .db import ImportJob, MarkdownQuestion, PdfChunkJob, Resource, write_transa
 from .document_files import limited_view
 from .imports import check_chunk_pdf, read_resource, read_word_source, resource_path, validate_attachments
 from .question_splitting import all_blocks, draft_revision, markdown
-from .word_outline import WORD_JOB_PREFIX, WORD_JOB_VERSION, word_job_id
+from .word_outline import WORD_JOB_PREFIX, WORD_JOB_VERSIONS, word_job_id
 from .workspaces import require_workspace
 
 
@@ -54,7 +54,7 @@ def question_bytes(draft, job, original, chunk_job):
                   'verification': 'unverified', 'answer_status': 'not_inferred'}
     if chunk_job is not None:
         provenance['selected_page_range'] = [chunk_job.first_page, chunk_job.last_page]
-    if job.parser_version == WORD_JOB_VERSION:
+    if job.parser_version in WORD_JOB_VERSIONS:
         state = job.preview['word_range']
         provenance['selected_body_range'] = [state['first_position'], state['last_position']]
         provenance['source_positions'] = draft['source_positions']
@@ -188,10 +188,10 @@ def match_recovery(session, root, workspace_id, job_id, body):
 
 
 def verify_word_job_source(session, root, job):
-    if job.parser_version != WORD_JOB_VERSION:
+    if job.parser_version not in WORD_JOB_VERSIONS:
         raise HTTPException(409, 'Word 选区解析器版本已变')
     state = job.preview['word_range']
-    if word_job_id(job.workspace_id, job.resource_id, state) != job.id:
+    if word_job_id(job.workspace_id, job.resource_id, state, job.parser_version) != job.id:
         raise HTTPException(409, 'Word 选区绑定信息已变化')
     read_word_source(session, root, job.workspace_id, state['node_id'], state['source_sha256'], job.resource_id)
 

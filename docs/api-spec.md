@@ -79,8 +79,8 @@ layout版本1/2；tabs最多16、closed_tabs最多10、active_tab_id须有效且
 | POST W/pdf-chunk-jobs/{id}/cancel、resume | 取消使进行中的执行代次失效。显式恢复会校验原件摘要与版本。重启留下的中断任务需显式恢复。 |
 | POST W/pdf-chunk-jobs/{id}/preview | 全部所选页解析后生成拆题预览。重复调用返回已有修订及编辑结果，通过现有 question-markdown 接口逐题显式确认。整篇导入重试不能覆盖页段预览。 |
 | GET W/pdf-chunk-jobs/{id}/chunks/{first_page} | 已提交区块的原始页图与区域以托管附件 ID 引用。parsed 表示选区解析完成，候选确认另行处理。 |
-| POST W/word-range-jobs、GET W/word-range-jobs[/{id}] | 提交 node_id、expected_sha256、first_position、last_position，创建同空间单段 Word 选区任务。正文位置从 1 开始，每段最多 20 个连续位置。可分页列出任务或按 ID 读取状态和已完成位置数。 |
-| POST W/word-range-jobs/{id}/advance、cancel、resume | 整段解析成功后提交预览。取消使进行中的结果失效。取消、失败或重启中断后需显式恢复，核对原件和解析器版本。 |
+| POST W/word-range-jobs、GET W/word-range-jobs[/{id}] | 提交 node_id、expected_sha256、first_position、last_position，创建同空间 Word 选区任务。正文位置从 1 开始，可选 1–100 个连续位置。1–20 个位置沿用 v1，较长选区使用 v2。可分页列出任务或按 ID 读取状态和已完成位置数。 |
+| POST W/word-range-jobs/{id}/advance、cancel、resume | 每次最多处理 20 个位置。v2 需传查询参数 expected_completed_positions，已提交的块起点重放返回现有状态，跳过检查点返回 409。完成全选区后提交预览。取消保留已提交块并使进行中的结果失效。取消、失败或重启中断后需显式恢复，核对原件和解析器版本。 |
 | GET W/word-range-jobs/{id}/preview | 获取整段候选、正文位置及草稿修订。逐题确认沿用 W/imports/{id}/question-markdown。 |
 | POST W/resources/{resource_id}/analyze | 同空间已有原件校验hash后复用ImportJob，不重复保存原件；不自动确认 |
 | GET W/imports、GET W/imports/{job_id} | 导入历史分页、单任务预览/失败 |

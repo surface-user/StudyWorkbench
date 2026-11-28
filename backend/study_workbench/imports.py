@@ -321,7 +321,7 @@ def describe(job, resource, *, preview=False):
               "parser_version": job.parser_version, "status": job.status, "error": job.error,
               "created_at": job.created_at}
     if preview:
-        result["preview"] = job.preview
+        result["preview"] = {k: v for k, v in job.preview.items() if k != 'word_chunks'}
         from .question_splitting import draft_revision, markdown
         drafts = job.preview.get('question_drafts', [])
         if drafts:
